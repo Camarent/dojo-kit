@@ -47,3 +47,20 @@ Allowed: MIT, Apache-2.0, BSD-2/3-Clause, ISC, Unicode-3.0 (deny.toml). Anything
 
 ## Install missing
 Rust tools: `cargo install cargo-audit cargo-deny cargo-machete cargo-bloat --locked`; `rustup component add clippy`. JS: `mkdir -p /tmp/audit-tools && cd /tmp/audit-tools && npm init -y && npm i knip jscpd madge eslint`. gitleaks: download release tarball from github.com/gitleaks/gitleaks/releases, verify against checksums.txt, put binary in PATH.
+
+## Coverage
+Measured 2026-10-22 on dev @ 98b22b5. Tool: cargo-llvm-cov 0.9.1 (crates.io, `cargo install cargo-llvm-cov --locked`) + `rustup component add llvm-tools-preview`; JS: built-in `node --test --experimental-test-coverage` (node v24.22.1).
+
+| Area | Command |
+|---|---|
+| Rust | `CARGO_LLVM_COV_TARGET_DIR=/tmp/cov-target cargo llvm-cov --workspace --summary-only` (profiles and build in /tmp, not the repo) |
+| JS | `scripts/build-wasm.sh` first (loader.js needs dojo_wasm.wasm in target/), then `node --test --experimental-test-coverage web/tests/*.test.js tests/*.test.js` |
+
+Baseline Rust (lines): total 92.96% (regions 92.62%, functions 85.28%); dojo-core ~93.5% lines (lowest: api.rs 81.5%, content.rs 89.1%, validate.rs 91.1%); dojo-cli ~88.5% lines (main.rs 84.4%, import_progress.rs 90.5%, add.rs 93.1%, build.rs 96.1%); dojo-wasm: 0 tests, not in the report (no instrumented code run).
+Baseline JS (1086 tests, 1085 pass, 1 todo): all files 93.10% lines / 89.56% branch / 93.46% funcs; session.js 98.79 / 91.40 / 98.63; ext.js 96.54 / 88.18 / 92.00; storage.js 98.17; speech.js 78.57; dojo-wasm.js 84.21; tools/reference/srs.js 43.33.
+
+Exclusions / not measured:
+- tests/ and web/tests files appear in the JS report but are not product code; web/vendor, tests/vectors, web/bundle.json, generated files and pkg/ are excluded by intent.
+- web/ui/app.js and web/types/{choice,gap,card}.js are NOT in the JS report: app-harness.js runs them via `vm.runInContext` and node coverage does not track vm scripts, so their real coverage is unknown (the 93% overstates nothing, but omits them).
+- The WASM boundary (dojo-wasm crate, wasm32 build) has no Rust coverage; it is exercised only by JS tests through loader.js, uncounted.
+- Branch coverage for Rust is not produced (stable toolchain, 0 branches reported).
