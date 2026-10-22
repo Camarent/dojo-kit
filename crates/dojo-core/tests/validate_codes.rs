@@ -1,23 +1,6 @@
-use dojo_core::validate::{CODES, Diagnostic, SourceFile, validate};
-
-fn file(name: &str, text: &str) -> SourceFile {
-    SourceFile { name: name.to_string(), text: text.to_string() }
-}
-
-fn run(course: &str, lines: &[&str]) -> Vec<Diagnostic> {
-    validate(course, &[file("content/u.jsonl", &lines.join("\n"))], None)
-}
-
-fn fires(course: &str, lines: &[&str], code: &str) {
-    let d = run(course, lines);
-    assert!(d.iter().any(|d| d.code == code), "{code} not in {d:?}");
-}
-
-const CHOICE: &str = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["a","b"],"answer":0}"#;
-
-fn with_course(extra: &str) -> String {
-    format!(r#"{{"id":"c","title":"C","uiLanguage":"en","units":[{{"id":"u","title":"U"}}],{extra}}}"#)
-}
+mod common;
+use common::*;
+use dojo_core::validate::CODES;
 
 #[test]
 fn fires_bar_matches_zero() {
