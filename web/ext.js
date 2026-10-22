@@ -10,7 +10,7 @@
  *   bindSettings(fn)  // called by app to bind getSetting to the store
  *   use(name)    selects the markup named by course.markup (registered first, then built-in "ruby" = {base|reading}); unknown name warns and keeps plain text
  *   useInputScript(scripts, message)  course.inputScript guard: scripts = array of script names ("non-latin", "han", "hiragana", "katakana", "cyrillic", "greek", "arabic", "hebrew", "hangul", "devanagari", "thai"); message = string shown on block. Block-only; runs before the plugin guard.
- *   useRuby(cfg, items)  course.ruby = { skip?, skipTag?, skipKey? }: Han characters of skip plus those of the string at item path skipKey (default "meta.kanji") of items tagged skipTag form the skip set; built-in ruby {base|reading} whose Han characters are all in the set renders as bare base
+ *   useRuby(cfg, items)  course.ruby = { skip?, skipTag?, skipKey?, dictKeys? }: Han characters of skip plus those of the string at item path skipKey (default "meta.kanji") of items tagged skipTag form the skip set; built-in ruby {base|reading} whose Han characters are all in the set renders as bare base; dictKeys (default ["meta.examples", "meta.irregular"]) = dotted paths into item for {w, r} pairs to add to the reading dictionary
  *   text(str[, {all, annotate, hide}])  vnode from the active markup, or str unchanged when none is active; all/annotate also annotate plain known words from the item reading dictionary (annotate hides skip-set kanji); hide: array of strings, segments whose reading is in hide render as bare base
  *   plain(str)   text for search/TTS; str unchanged when none is active
  *   getSetting(key) returns the stored value or registered default
@@ -186,14 +186,15 @@
     else if (dict[w] !== r) dict[w] = null;
   }
 
-  // Word -> reading map from items: meta.examples / meta.irregular entries {w, r} and {base|reading} in prompt/explanation. Only words of 2+ kanji with a single reading; ambiguous words are dropped.
-  function buildRubyDict(items) {
+  // Word -> reading map from items: entries {w, r} at dotted paths from dictKeys (default meta.examples, meta.irregular) and {base|reading} in prompt/explanation. Only words of 2+ kanji with a single reading; ambiguous words are dropped.
+  function buildRubyDict(items, dictKeys) {
     var dict = {};
     if (!Array.isArray(items)) return dict;
+    var keys = dictKeys && Array.isArray(dictKeys) ? dictKeys : ['meta.examples', 'meta.irregular'];
     items.forEach(function (it) {
       if (!it || typeof it !== 'object') return;
-      ['examples', 'irregular'].forEach(function (k) {
-        var arr = it.meta && it.meta[k];
+      keys.forEach(function (key) {
+        var arr = pathValue(it, key);
         if (Array.isArray(arr)) arr.forEach(function (e) { if (e && typeof e === 'object') dictAdd(dict, e.w, e.r); });
       });
       [it.prompt, it.explanation].forEach(function (str) {
@@ -251,7 +252,7 @@
     rubyDict = null;
     rubyDictMax = 0;
     if (!cfg || typeof cfg !== 'object') return false;
-    rubyDict = buildRubyDict(items);
+    rubyDict = buildRubyDict(items, cfg.dictKeys);
     Object.keys(rubyDict).forEach(function (w) { if (w.length > rubyDictMax) rubyDictMax = w.length; });
     var set = {};
     var n = 0;

@@ -732,6 +732,15 @@
             "string",
             "null"
           ]
+        },
+        "dictKeys": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false

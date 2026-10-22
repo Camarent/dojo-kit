@@ -349,6 +349,8 @@ pub struct RubyConfig {
     pub skip_tag: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub skip_key: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dict_keys: Option<Vec<String>>,
 }
 
 /// Contents of `course.json`.
