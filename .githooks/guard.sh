@@ -16,12 +16,26 @@ is_msg_email_ok() {
   [ "$1" = "noreply@anthropic.com" ]
 }
 
+# Message must not name jobs (stdin); returns 1 if it does
+msg_names_job() {
+  grep -qiE 'vibe job|squash of job|(^|[^A-Za-z0-9])job/[A-Za-z0-9._]+(-[A-Za-z0-9._]+)*-task-[0-9]+'
+}
+
+# Secret scanner must exist; DOJO_ALLOW_NO_GITLEAKS=1 overrides explicitly
+require_gitleaks() {
+  command -v gitleaks >/dev/null 2>&1 && return 0
+  [ "${DOJO_ALLOW_NO_GITLEAKS:-}" = "1" ] && { echo "guard: gitleaks missing, secret scan skipped (DOJO_ALLOW_NO_GITLEAKS=1)" >&2; return 0; }
+  echo "refused: gitleaks not found. Install gitleaks v8.30.1 (https://github.com/gitleaks/gitleaks/releases, verify sha256) onto PATH, or set DOJO_ALLOW_NO_GITLEAKS=1 to skip the secret scan" >&2
+  return 1
+}
+
 # Check author and committer email; prints error and returns 1 if bad
 check_ident() {
   for kind in AUTHOR COMMITTER; do
     ident=$(git var "GIT_${kind}_IDENT" 2>/dev/null) || { echo "refused: no ${kind} identity configured" >&2; return 1; }
     email=${ident#*<}; email=${email%%>*}
     is_owner_email "$email" || { echo "refused: $kind email '$email' is not the Camarent noreply address" >&2; return 1; }
+    [ "${ident##* }" = "+0000" ] || { echo "refused: $kind date offset '${ident##* }' is not +0000 (use TZ=UTC)" >&2; return 1; }
   done
   return 0
 }
@@ -52,6 +66,12 @@ check_commit_range() {
       is_owner_email "$email" || { echo "refused: commit ${commit_short}: ${kind} email '$email' is not the Camarent noreply address" >&2; return 1; }
     done
 
+    for kind in ad cd; do
+      off=$(git show -s --format="%${kind%d}i" "$commit" 2>/dev/null)
+      off=${off##* }
+      [ "$off" = "+0000" ] || { echo "refused: commit ${commit_short}: date offset '$off' is not +0000" >&2; return 1; }
+    done
+
     # Check commit message for personal email addresses and private references
     msg=$(git show -s --format=%B "$commit")
     if echo "$msg" | grep -qE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' ; then
@@ -60,6 +80,10 @@ check_commit_range() {
         echo "refused: commit ${commit_short}: message contains email '$bad_mail'" >&2
         return 1
       fi
+    fi
+    if echo "$msg" | msg_names_job; then
+      echo "refused: commit ${commit_short}: message names a job" >&2
+      return 1
     fi
     if echo "$msg" | grep -qE 'workspace/[A-Za-z0-9_/-]+' && ! echo "$msg" | grep -qE 'workspace/<'; then
       echo "refused: commit ${commit_short}: message references private workspace" >&2

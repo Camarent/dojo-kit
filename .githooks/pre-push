@@ -13,8 +13,17 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     continue
   fi
 
+  require_gitleaks || exit 1
   # Check the commit range
   check_commit_range "$local_sha" "$remote_sha" || fail=1
+  if command -v gitleaks >/dev/null 2>&1; then
+    case "$remote_sha" in
+      0000000000000000000000000000000000000000) opts="$local_sha --not --remotes" ;;
+      *) opts="${remote_sha}..${local_sha}" ;;
+    esac
+    # shellcheck disable=SC2086
+    gitleaks git --redact --no-banner --log-opts="$opts" || fail=1
+  fi
 done
 
 exit $fail

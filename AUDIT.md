@@ -20,7 +20,7 @@ Thresholds: /root/.claude/practices/{rust,rust-wasm,js}.md (no project overrides
 | knip | 6.42.1 | npm, webpro-nl/knip, ISC |
 | jscpd | 5.4.2 | npm, kucherenko/jscpd, MIT |
 | madge | 8.0.0 | npm, pahen/madge, MIT |
-| gitleaks | 8.30.1 | official GitHub release gitleaks/gitleaks (sha256 checked vs checksums.txt), MIT; in /opt/cargo/bin |
+| gitleaks | 8.30.1 | official GitHub release gitleaks/gitleaks (sha256 checked vs checksums.txt), MIT; not preinstalled: install onto PATH outside the repo; hooks refuse to run without it unless `DOJO_ALLOW_NO_GITLEAKS=1` is set |
 Not installed: cargo-udeps (needs nightly; only stable present; cargo-machete covers), twiggy/wasm-opt (not requested; wasm-pack not checked), trufflehog (gitleaks suffices).
 
 ## Commands (verified, run from repo root; B=/tmp/audit-tools/node_modules/.bin)

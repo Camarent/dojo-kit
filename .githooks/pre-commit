@@ -1,10 +1,9 @@
 #!/bin/sh
 "$(dirname "$0")/guard.sh" || exit 1
+. "$(dirname "$0")/guard.sh"
 
-# Run gitleaks on staged changes
-if ! command -v gitleaks >/dev/null 2>&1; then
-  echo "guard: gitleaks not found, secret scan skipped" >&2
-else
-  gitleaks git --pre-commit --staged --redact --no-banner
-  exit $?
-fi
+# Secret scan of staged changes; fails when gitleaks is missing unless DOJO_ALLOW_NO_GITLEAKS=1
+require_gitleaks || exit 1
+command -v gitleaks >/dev/null 2>&1 || exit 0
+gitleaks git --pre-commit --staged --redact --no-banner
+exit $?
