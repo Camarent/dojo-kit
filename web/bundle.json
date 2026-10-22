@@ -20,6 +20,9 @@
     "types/cloze.js",
     "types/numeric.js",
     "@course",
+    "ui/i18n.js",
+    "ui/common.js",
+    "ui/detail.js",
     "ui/app.js",
     "boot.js"
   ],

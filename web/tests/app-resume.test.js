@@ -17,7 +17,7 @@ function loadApp() {
   const sb = { console: { warn() {}, log: console.log } };
   loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext('self.DojoExt = { text: function (s) { return s; } };', sb);
-  loadBundle(sb, { only: ['ui/app.js'] });
+  loadBundle(sb, { only: ['ui/i18n.js', 'ui/common.js', 'ui/detail.js', 'ui/app.js'] });
   return sb.DojoApp;
 }
 function walk(n, id) {

@@ -300,7 +300,7 @@ function loadSandbox(opts) {
   win.document = doc;
   const sb = { console: { warn() {}, log() {}, error() {} }, document: doc, window: win, setTimeout, clearTimeout, setInterval, clearInterval, Promise };
   const { loadBundle } = require('./load-bundle.js');
-  loadBundle(sb, opts || { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/app.js'] });
+  loadBundle(sb, opts || { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/common.js', 'ui/detail.js', 'ui/app.js'] });
   return { sb, win };
 }
 

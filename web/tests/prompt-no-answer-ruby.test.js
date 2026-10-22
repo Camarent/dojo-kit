@@ -79,10 +79,10 @@ test('(b) regression: choice item with same prompt still has ruby', async () => 
 
 // Loads a mutated version of ui/app.js source via override; no temp files.
 async function withMutatedApp(mutationFn, testFn) {
-  const original = readSource('ui/app.js');
+  const original = readSource('ui/common.js');
   const mutated = mutationFn(original);
-  assert.notStrictEqual(mutated, original, 'mutation must change app.js');
-  await testFn(mutated);
+  assert.notStrictEqual(mutated, original, 'mutation must change common.js');
+  await testFn({ 'ui/common.js': mutated });
 }
 
 test('(c) mutation check - verify hide option is used', async () => {

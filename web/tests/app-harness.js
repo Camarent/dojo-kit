@@ -13,7 +13,7 @@ const TODAY = '2025-10-09';
 
 function loadApp(appSource) {
   const sb = { console: { warn() {}, log: console.log } };
-  const override = appSource != null ? { 'ui/app.js': appSource } : {};
+  const override = appSource == null ? {} : typeof appSource === 'string' ? { 'ui/app.js': appSource } : appSource;
   return loadBundle(sb, { skip: ['boot.js'], override });
 }
 function expand(n) {

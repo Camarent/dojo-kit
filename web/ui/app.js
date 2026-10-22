@@ -11,156 +11,87 @@
   var Fragment = preact.Fragment;
   var html = htm.bind(h);
   var DojoExt = root.DojoExt || {};
+  var DojoI18n = root.DojoI18n || (typeof require !== 'undefined' ? require('./i18n.js') : null) || {};
 
   // ---------- helpers ----------
 
-  function renderText(str) {
-    return DojoExt.text ? DojoExt.text(str) : str;
-  }
 
-  function answerReadings(item) {
-    var out = [];
-    if (!item) return out;
-    if (Array.isArray(item.answers)) out = item.answers.slice();
-    else if (Array.isArray(item.parts)) {
-      item.parts.forEach(function (p) { if (Array.isArray(p)) out = out.concat(p); });
-    }
-    return out;
-  }
+  // Load common UI helpers from common.js
+  var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
 
-  function renderPrompt(str, item) {
-    return DojoExt.text ? DojoExt.text(str, { annotate: true, hide: answerReadings(item) }) : str;
-  }
+  // Load detail rendering helpers
+  var DojoDetail = root.DojoDetail || (typeof require !== 'undefined' ? require('./detail.js') : null) || {};
 
-  function renderTextAll(str) {
-    return DojoExt.textAll ? DojoExt.textAll(str) : renderText(str);
-  }
-
-  function renderPromptEl(item, big) {
-    return html`<p class=${cls('qtext', big && 'big')} data-testid="prompt">${renderPrompt(item.prompt, item)}</p>`;
-  }
-
+  // Alias moved functions to preserve existing references
+  var renderText = DojoCommon.renderText;
+  var answerReadings = DojoCommon.answerReadings;
+  var renderPrompt = DojoCommon.renderPrompt;
+  var renderTextAll = DojoCommon.renderTextAll;
+  var renderPromptEl = DojoCommon.renderPromptEl;
+  var renderPromptLine = DojoCommon.renderPromptLine;
+  var speechLines = DojoCommon.speechLines;
+  var speechCfg = DojoCommon.speechCfg;
+  var PlayButton = DojoCommon.PlayButton;
+  var Playback = DojoCommon.Playback;
+  var cls = DojoCommon.cls;
+  var Chip = DojoCommon.Chip;
+  var Stepper = DojoCommon.Stepper;
+  var Dialog = DojoCommon.Dialog;
+  var StatusChip = DojoCommon.StatusChip;
+  var ProgressBar = DojoCommon.ProgressBar;
+  var ProgressMeter = DojoCommon.ProgressMeter;
+  var Notice = DojoCommon.Notice;
+  var Loading = DojoCommon.Loading;
+  var daysLeft = DojoCommon.daysLeft;
+  var applyTheme = DojoCommon.applyTheme;
   var Speech = root.DojoSpeech || null;
 
-  function speechLines(x) { return Speech ? Speech.lines(x) : []; }
-  // Play/status cfg: course speech merged with the learner's speech:* settings.
-  function speechCfg(course, store) {
-    var settings = store && store.doc && store.doc.settings;
-    if (Speech && Speech.effective) return Speech.effective(course, settings);
-    return { speech: course && course.speech, lang: course && course.contentLanguage };
-  }
-
-  class PlayButton extends Component {
-    constructor(props) {
-      super(props);
-      this.state = { playing: false, played: false };
+  // Alias from DojoDetail, or use local definitions if not available
+  var renderDeclarativeDetail = DojoDetail.renderDeclarativeDetail;
+  var renderIntroBody = DojoDetail.renderIntroBody;
+  var getMetaValue = DojoDetail.getMetaValue || function(item, key) {
+    if (!item || !item.meta || typeof item.meta !== 'object') return null;
+    var parts = key.replace(/^meta\./, "").split('.');
+    var value = item.meta;
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (value === null || typeof value !== 'object') return null;
+      if (!Object.prototype.hasOwnProperty.call(value, part)) return null;
+      value = value[part];
     }
-    componentWillUnmount() { this.gone = true; }
-    click() {
-      var p = this.props;
-      var self = this;
-      if (this.state.playing) {
-        Speech.stop(p.audio.win);
-        this.setState({ playing: false });
-        return;
-      }
-      var r = Speech.play(p.lines, p.audio.cfg, {
-        onEnd: function () { p.audio.played[p.pid] = true; if (!self.gone) self.setState({ playing: false, played: true }); },
-        onError: function () { if (!self.gone) self.setState({ playing: false }); p.audio.onFail(); }
-      }, p.audio.win);
-      if (r.ok) this.setState({ playing: true });
-      else p.audio.onFail();
+    return value;
+  };
+  var resolvePath = DojoDetail.resolvePath || function(obj, path) {
+    if (!obj || typeof obj !== 'object' || !path || typeof path !== 'string') return null;
+    var parts = path.split('.');
+    var value = obj;
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (value === null || typeof value !== 'object') return null;
+      if (!Object.prototype.hasOwnProperty.call(value, part)) return null;
+      value = value[part];
     }
-    render(p, s) {
-      var t = p.audio.t;
-      var exam = p.audio.exam;
-      var once = exam && (s.played || p.audio.played[p.pid]);
-      var label = once ? t('speech.played') : s.playing ? (exam ? t('speech.playing') : t('speech.stop')) : t('speech.play');
-      var self = this;
-      return html`<button type="button" class="btn icon play" data-testid=${p.testid} aria-label=${label} title=${label}
-        disabled=${once || (exam && s.playing)} onClick=${function () { self.click(); }}><span aria-hidden="true">${s.playing && !exam ? '\u25A0' : '\u25B6'}</span></button>`;
-    }
-  }
-
-  function renderPromptLine(promptEl, item, audio, lines) {
-    var pb = html`<${Playback} audio=${audio} lines=${lines} testid="play-item" pid=${'i:' + item.id} />`;
-    if (!lines.length) return promptEl;
-    if (audio && audio.status === 'ok') return html`<div class="qline">${promptEl}${pb}</div>`;
-    return [promptEl, pb];
-  }
-
-  function Playback(p) {
-    var a = p.audio;
-    if (a.status !== 'ok') {
-      var spoken = (a.cfg && a.cfg.speech && a.cfg.speech.lang) || (a.cfg && a.cfg.lang);
-      var displayLang = spoken;
-      if (a.uiLang && spoken) {
-        try {
-          displayLang = new Intl.DisplayNames([a.uiLang], { type: 'language' }).of(spoken);
-        } catch (e) { /* ignore */ }
-      }
-      return html`<p class="notice" role="status" data-testid=${p.testid + '-notice'}>${a.t('speech.novoice', { lang: displayLang })}</p>`;
-    }
-    return h(PlayButton, { key: p.pid, pid: p.pid, lines: p.lines, audio: a, testid: p.testid });
-  }
-
-  function Stimulus(p) {
-    var st = p.stimulus;
-    if (!st) return null;
-    var audio = p.audio;
-    var lines = audio ? speechLines(st) : [];
-    var speakable = lines.length > 0;
-    var showText = !st.hideText || (speakable && audio.status !== 'ok');
-    return html`<section class="stimulus" data-testid="stimulus">
-      ${st.title ? html`<h2 class="stimulus-title" data-testid="stimulus-title">${renderText(st.title)}</h2>` : null}
-      ${speakable && showText ? html`
-        <div class="qline">
-          <p class="qbody stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>
-          <${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />
-        </div>
-      ` : null}
-      ${showText && !speakable ? html`<p class="stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>` : null}
-      ${speakable && !showText ? html`<${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />` : null}
-    </section>`;
-  }
-
-  function primaryTag(lang) { return String(lang || 'en').split('-')[0]; }
-
-  function pluralForm(lang, n) {
-    if (primaryTag(lang) === 'ru') {
-      var m10 = n % 10;
-      var m100 = n % 100;
-      if (m10 === 1 && m100 !== 11) return 'one';
-      if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'few';
-      return 'many';
-    }
-    return n === 1 ? 'one' : 'other';
-  }
-
-  function makeT(i18n, lang) {
-    var langs = [lang];
-    if (primaryTag(lang) !== lang) langs.push(primaryTag(lang));
-    if (lang !== 'en' && primaryTag(lang) !== 'en') langs.push('en');
-    function find(key, n) {
-      for (var i = 0; i < langs.length; i++) {
-        var dict = (i18n && i18n[langs[i]]) || {};
-        if (typeof n === 'number') {
-          var forms = [pluralForm(langs[i], n), 'other', 'many'];
-          for (var j = 0; j < forms.length; j++) {
-            if (dict[key + '.' + forms[j]] !== undefined) return dict[key + '.' + forms[j]];
-          }
-        }
-        if (dict[key] !== undefined) return dict[key];
-      }
-      return key;
-    }
-    return function t(key, vars) {
-      var text = find(key, vars && typeof vars.n === 'number' ? vars.n : undefined);
-      return text.replace(/\{(\w+)\}/g, function (m, name) {
-        return vars && vars[name] !== undefined ? String(vars[name]) : m;
-      });
-    };
-  }
+    return value;
+  };
+  var topicStage = DojoDetail.topicStage || function(es) {
+    if (!es || !es.started) return 'new';
+    return es.minStage >= 2 ? 'review' : 'learning';
+  };
+  var topicState = DojoDetail.topicState || function(es) {
+    if (!es || !es.started) return 'new';
+    if (es.due) return 'due';
+    return es.learned ? 'learned' : 'learning';
+  };
+  var topicMastery = DojoDetail.topicMastery || function(es) {
+    return es && es.members ? Math.round(100 * es.atLearned / es.members) : 0;
+  };
+  var topicTitle = DojoDetail.topicTitle || function(item, intro) {
+    var m = item.meta || {};
+    if (m.title) return m.title;
+    if (intro && typeof intro.title === 'string' && intro.title) return intro.title;
+    if (typeof item.prompt === 'string' && item.prompt) return item.prompt;
+    return item.entity || item.id;
+  };
 
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -186,114 +117,6 @@
     return list.indexOf(value) >= 0 ? list.filter(function (x) { return x !== value; }) : list.concat([value]);
   }
 
-  function cls() {
-    return Array.prototype.filter.call(arguments, Boolean).join(' ');
-  }
-
-  // ---------- small components ----------
-
-  function Chip(p) {
-    return html`<button type="button" class=${cls('chip', p.on && 'on')} aria-pressed=${p.on ? 'true' : 'false'}
-      data-testid=${p.testid} onClick=${p.onClick}>${p.children}</button>`;
-  }
-
-  function Stepper(p) {
-    var v = p.value;
-    return html`<div class="stepper" data-testid=${p.testid} role="group" aria-label=${p.label}>
-      <button type="button" class="btn icon" aria-label=${p.decLabel} disabled=${v <= p.min}
-        data-testid=${p.testid + '-dec'} onClick=${function () { p.onChange(Math.max(p.min, v - p.step)); }}>−</button>
-      <output class="stepper-value" data-testid=${p.testid + '-value'}>${v}</output>
-      <button type="button" class="btn icon" aria-label=${p.incLabel} disabled=${v >= p.max}
-        data-testid=${p.testid + '-inc'} onClick=${function () { p.onChange(Math.min(p.max, v + p.step)); }}>+</button>
-    </div>`;
-  }
-
-  class Dialog extends Component {
-    componentDidMount() {
-      if (this.cancelBtn) this.cancelBtn.focus();
-    }
-    render(p) {
-      var self = this;
-      return html`<div class="overlay" data-testid=${p.testid}>
-        <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-title">
-          <h2 id="dlg-title">${p.title}</h2>
-          ${p.body ? html`<p>${p.body}</p>` : null}
-          <div class="row end">
-            <button type="button" class="btn" data-testid=${p.testid + '-cancel'} ref=${function (el) { self.cancelBtn = el; }}
-              onClick=${p.onCancel}>${p.cancelLabel}</button>
-            <button type="button" class=${cls('btn', p.danger ? 'danger' : 'primary')} data-testid=${p.testid + '-confirm'}
-              onClick=${p.onConfirm}>${p.confirmLabel}</button>
-          </div>
-        </div>
-      </div>`;
-    }
-  }
-
-  function StatusChip(p) {
-    var t = p.t;
-    var s = p.status;
-    return html`<span class=${cls('status', 'status-' + s)} data-testid="status-chip" data-status=${s}
-      title=${t('status.' + s + '.tip')}><i class="dot" aria-hidden="true"></i>${t('status.' + s)}</span>`;
-  }
-
-  function ProgressBar(p) {
-    var counts = p.counts;
-    var total = counts.total || 0;
-    if (total === 0) return null;
-    var fresh = counts.fresh || 0;
-    var learning = counts.learning || 0;
-    var learned = counts.learned || 0;
-    var newPct = fresh / total * 100;
-    var learningPct = learning / total * 100;
-    var learnedPct = learned / total * 100;
-    var segments = [];
-    if (learned > 0) {
-      segments.push({ className: 'progress-segment learned', style: 'width: ' + learnedPct.toFixed(1) + '%' });
-    }
-    if (learning > 0) {
-      segments.push({ className: 'progress-segment learning', style: 'width: ' + learningPct.toFixed(1) + '%' });
-    }
-    if (fresh > 0) {
-      segments.push({ className: 'progress-segment new', style: 'width: ' + newPct.toFixed(1) + '%' });
-    }
-    var sum = segments.reduce(function (s, seg) { return s + parseFloat(seg.style.match(/width: (\d+\.?\d*)%/)[1]); }, 0);
-    if (segments.length > 0) {
-      var last = segments[segments.length - 1];
-      var lastWidth = 100 - sum + parseFloat(last.style.match(/width: (\d+\.?\d*)%/)[1]);
-      if (lastWidth < 0) lastWidth = 0;
-      last.style = 'width: ' + lastWidth.toFixed(1) + '%';
-    }
-    var children = segments.map(function (s) {
-      return h('span', Object.assign({ 'aria-hidden': 'true' }, s));
-    });
-    var attrs = { className: 'progress-bar', role: 'img', 'aria-label': p.ariaLabel };
-    if (p.meter) {
-      attrs.role = 'progressbar';
-      attrs['aria-valuemin'] = 0;
-      attrs['aria-valuemax'] = total;
-      attrs['aria-valuenow'] = learned;
-    }
-    return h('div', attrs, children);
-  }
-
-  // Titled progress row: caption with explicit words + 8px segmented bar (learned / in progress / remaining).
-  function ProgressMeter(p) {
-    var t = p.t;
-    var total = p.total || 0;
-    var learned = p.learned || 0;
-    var started = p.started || 0;
-    var left = Math.max(0, total - learned - started);
-    var vars = { learned: learned, started: started, left: left, total: total };
-    return html`<div class="meter" data-testid=${p.testid}>
-      ${p.title !== undefined || p.due > 0 ? html`<div class="meter-head">
-        ${p.title !== undefined ? html`<span class="bar-title">${renderText(p.title)}</span>` : null}
-        ${p.due > 0 ? html`<span class="meter-due" data-testid=${p.dueTestid}>${t('home.unit.due', { n: p.due })}</span>` : null}
-      </div>` : null}
-      <p class="muted meter-caption">${t(p.short ? 'bar.caption.short' : 'bar.caption', vars)}</p>
-      ${total > 0 ? html`<${ProgressBar} meter=${true} counts=${{ total: total, fresh: left, learning: started, learned: learned }} ariaLabel=${t('bar.aria', vars)} />` : null}
-    </div>`;
-  }
-
   function fmtExamDate(lang, key) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key || '');
     if (!m) return '';
@@ -302,29 +125,26 @@
     } catch (e) { return key; }
   }
 
-  function Notice(p) {
-    return p.text ? html`<p class="notice" role="status" data-testid="notice">${p.text}</p>` : null;
+  function Stimulus(p) {
+    var st = p.stimulus;
+    if (!st) return null;
+    var audio = p.audio;
+    var lines = audio ? speechLines(st) : [];
+    var speakable = lines.length > 0;
+    var showText = !st.hideText || (speakable && audio.status !== 'ok');
+    return html`<section class="stimulus" data-testid="stimulus">
+      ${st.title ? html`<h2 class="stimulus-title" data-testid="stimulus-title">${renderText(st.title)}</h2>` : null}
+      ${speakable && showText ? html`
+        <div class="qline">
+          <p class="qbody stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>
+          <${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />
+        </div>
+      ` : null}
+      ${showText && !speakable ? html`<p class="stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>` : null}
+      ${speakable && !showText ? html`<${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />` : null}
+    </section>`;
   }
 
-  function Loading(p) {
-    return html`<main class="screen center" data-testid="loading"><p class="muted">${p.t('loading')}</p></main>`;
-  }
-
-  function daysLeft(examDate, todayKey) {
-    var re = /^(\d{4})-(\d{2})-(\d{2})$/;
-    var a = re.exec(examDate || '');
-    var b = re.exec(todayKey || '');
-    if (!a || !b) return null;
-    var diff = Math.round((Date.UTC(+a[1], +a[2] - 1, +a[3]) - Date.UTC(+b[1], +b[2] - 1, +b[3])) / 86400000);
-    return diff >= 0 ? diff : null;
-  }
-
-  function applyTheme(win, theme) {
-    var el = win && win.document && win.document.documentElement;
-    if (!el) return;
-    if (theme === 'light' || theme === 'dark') el.setAttribute('data-theme', theme);
-    else el.removeAttribute('data-theme');
-  }
 
   // ---------- Catalog ----------
 
@@ -358,159 +178,7 @@
     return out === key ? '' : out;
   }
 
-  // Intro card body: plugin hook output, else title + text. all=true uses renderTextAll.
-  // pre: when provided, use this pre-computed intro hook output instead of calling DojoExt.intro.
-  function renderIntroBody(intro, item, ctx, decl, all, pre) {
-    var r = all ? renderTextAll : renderText;
-    var out = pre !== undefined ? pre : (DojoExt.intro ? DojoExt.intro(intro, item, ctx) : null);
-    if (out) return html`<div class="intro-hook" data-testid="intro-hook">${out}</div>`;
-    return html`<div class="intro-default">
-      ${intro.title ? html`<h3 class="intro-title" data-testid="intro-title">${r(intro.title)}</h3>` : null}
-      ${intro.text ? html`<div class="intro-text pre" data-testid="intro-text">${r(intro.text)}</div>` : null}
-      ${decl || null}
-    </div>`;
-  }
 
-  // Helper to get nested value from item.meta by dot-separated key path
-  function getMetaValue(item, key) {
-    if (!item || !item.meta || typeof item.meta !== 'object') return null;
-    var parts = key.replace(/^meta\./, "").split('.');
-    var value = item.meta;
-    for (var i = 0; i < parts.length; i++) {
-      var part = parts[i];
-      if (value === null || typeof value !== 'object') return null;
-      if (!Object.prototype.hasOwnProperty.call(value, part)) return null;
-      value = value[part];
-    }
-    return value;
-  }
-
-  // Helper to resolve a dotted path in an object
-  function resolvePath(obj, path) {
-    if (!obj || typeof obj !== 'object' || !path || typeof path !== 'string') return null;
-    var parts = path.split('.');
-    var value = obj;
-    for (var i = 0; i < parts.length; i++) {
-      var part = parts[i];
-      if (value === null || typeof value !== 'object') return null;
-      if (!Object.prototype.hasOwnProperty.call(value, part)) return null;
-      value = value[part];
-    }
-    return value;
-  }
-
-  // Render declarative detail fields from item.meta. all=true uses renderTextAll.
-  function renderDeclarativeDetail(course, unit, item, t, all) {
-    var r = all ? renderTextAll : renderText;
-    // Try unit.detail first, then course.detail
-    var detailConfig = (unit && unit.detail) || (course && course.detail);
-    if (!detailConfig || !detailConfig.fields || !detailConfig.fields.length) return null;
-    
-    var fields = detailConfig.fields;
-    var rendered = [];
-    
-    for (var i = 0; i < fields.length; i++) {
-      var field = fields[i];
-      if (!field || !field.key) continue;
-      
-      var value = getMetaValue(item, field.key);
-      // Skip missing or empty fields
-      if (value === null || value === undefined || value === '') continue;
-      
-      var label = field.label || (field.labelKey && t ? t(field.labelKey) : field.key);
-      var type = field.type || 'text';
-      var content = null;
-      
-      if (type === 'text') {
-        // Render as text with markup
-        if (typeof value === 'string') {
-          content = html`<span data-testid=${'detail-' + field.key}>${r(value)}</span>`;
-        } else {
-          content = html`<span data-testid=${'detail-' + field.key}>${String(value)}</span>`;
-        }
-      } else if (type === 'list') {
-        // Render as unordered list
-        if (Array.isArray(value) && value.length > 0) {
-          content = html`<ul data-testid=${'detail-' + field.key + '-list'}>${value.map(function (v) {
-            return html`<li>${typeof v === 'string' ? r(v) : String(v)}</li>`;
-          })}</ul>`;
-        }
-      } else if (type === 'objects') {
-        // Render as rows of "k: v"
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
-          var rows = [];
-          for (var k in value) {
-            if (Object.prototype.hasOwnProperty.call(value, k)) {
-              rows.push(html`<tr data-testid=${'detail-' + field.key + '-' + k}><td>${k}:</td><td>${typeof value[k] === 'string' ? r(value[k]) : String(value[k])}</td></tr>`);
-            }
-          }
-          if (rows.length > 0) {
-            content = html`<table class="detail-objects" data-testid=${'detail-' + field.key + '-table'}>${rows}</table>`;
-          }
-        }
-      } else if (type === 'table') {
-        // Render as table with title, head, and rows
-        if (value && typeof value === 'object' && Array.isArray(value.head) && Array.isArray(value.rows) && value.rows.length > 0) {
-          var headCells = value.head.map(function (h, hi) {
-            return html`<th data-testid=${'detail-' + field.key + '-head-' + hi}>${typeof h === 'string' ? r(h) : String(h)}</th>`;
-          });
-          var bodyRows = value.rows.map(function (row, ri) {
-            var cells = (Array.isArray(row) ? row : []).map(function (c, ci) {
-              return html`<td data-testid=${'detail-' + field.key + '-row-' + ri + '-col-' + ci}>${typeof c === 'string' ? r(c) : String(c)}</td>`;
-            });
-            return html`<tr data-testid=${'detail-' + field.key + '-row-' + ri}>${cells}</tr>`;
-          });
-          content = html`<table class="detail-table" data-testid=${'detail-' + field.key + '-table'}>${value.title ? html`<caption data-testid=${'detail-' + field.key + '-title'}>${r(value.title)}</caption>` : null}<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
-        }
-      } else if (type === 'pairs') {
-        // Render as pairs: value is array of {a, b} or with configurable keys
-        if (Array.isArray(value) && value.length > 0) {
-          var leftKey = field.keys && field.keys[0] ? field.keys[0] : 'a';
-          var rightKey = field.keys && field.keys[1] ? field.keys[1] : 'b';
-          var items = value.map(function (entry, i) {
-            var left = entry[leftKey];
-            var right = entry[rightKey];
-            if (left === undefined || right === undefined) return null;
-            return html`<tr data-testid=${'detail-' + field.key + '-pair-' + i}><td data-testid=${'detail-' + field.key + '-pair-' + i + '-a'}>${typeof left === 'string' ? r(left) : String(left)}</td><td data-testid=${'detail-' + field.key + '-pair-' + i + '-b'}>${typeof right === 'string' ? r(right) : String(right)}</td></tr>`;
-          }).filter(Boolean);
-          if (items.length > 0) {
-            content = html`<table class="detail-pairs" data-testid=${'detail-' + field.key + '-pairs'}>${items}</table>`;
-          }
-        }
-      }
-      
-      if (content) {
-        rendered.push(html`<div class="detail-field" data-testid=${'detail-field-' + field.key}><b>${label}:</b> ${content}</div>`);
-      }
-    }
-    
-    if (rendered.length === 0) return null;
-    return html`<section class="declarative-detail" data-testid="declarative-detail">${rendered}</section>`;
-  }
-
-  // Entity stage for the stage filter: new = no member has a record; review = every member has min stage >= 2; else learning.
-  function topicStage(es) {
-    if (!es || !es.started) return 'new';
-    return es.minStage >= 2 ? 'review' : 'learning';
-  }
-  // Chip state: new / learning / due (any member due) / learned (all members at or above learnedStage).
-  function topicState(es) {
-    if (!es || !es.started) return 'new';
-    if (es.due) return 'due';
-    return es.learned ? 'learned' : 'learning';
-  }
-  // Mastery % = members at or above learnedStage / members.
-  function topicMastery(es) {
-    return es && es.members ? Math.round(100 * es.atLearned / es.members) : 0;
-  }
-  // Pick topic title: meta.title > entity intro title > item.prompt > item.entity > item.id.
-  function topicTitle(item, intro) {
-    var m = item.meta || {};
-    if (m.title) return m.title;
-    if (intro && typeof intro.title === 'string' && intro.title) return intro.title;
-    if (typeof item.prompt === 'string' && item.prompt) return item.prompt;
-    return item.entity || item.id;
-  }
 
   class CatalogScreen extends Component {
     constructor(props) {
@@ -693,7 +361,7 @@
               <h2>${t('catalog.detail')}</h2>
             </div>
             <article class="qcard">
-              ${dIntro ? html`<section class="intro" data-testid="detail-intro">${renderIntroBody(dIntro, d, self.hookCtx(), dDecl, false, dIntroOut)}</section>` : null}
+              ${dIntro ? html`<section class="intro" data-testid="detail-intro">${renderIntroBody({ intro: dIntro, item: d, ctx: self.hookCtx(), decl: dDecl, all: false, pre: dIntroOut })}</section>` : null}
               ${!dIntro && dDecl ? dDecl : null}
               <p class="qtext" data-testid="detail-prompt">${renderText(d.prompt)}</p>
               <p data-testid="detail-answers"><b>${t('session.expected')}</b> <span class="pre">${renderText(p.engine.expected(d))}</span></p>
@@ -1599,7 +1267,7 @@
       var intro = session.entityIntro ? session.entityIntro(item) : null;
       var body = null;
       if (intro) {
-        body = renderIntroBody(intro, item, ctx, decl, true);
+        body = renderIntroBody({ intro: intro, item: item, ctx: ctx, decl: decl, all: true });
       } else {
         var hook = DojoExt.detail ? DojoExt.detail(item, ctx) : null;
         body = hook ? html`<div data-testid="detail-hook">${hook}</div>` : decl;
@@ -1670,7 +1338,7 @@
         ${card ? html`<article class="qcard intro-card" data-testid="intro-card">
           <span class="badge" data-testid="intro-label">${t('intro.label')}</span>
           ${(function () {
-            var introBody = renderIntroBody(card, cur.item, { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: t, h: h }, renderDeclarativeDetail(p.course, (p.course.units || []).find(function (u) { return u.id === cur.item.unit; }) || null, cur.item, p.t));
+            var introBody = renderIntroBody({ intro: card, item: cur.item, ctx: { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: t, h: h }, decl: renderDeclarativeDetail(p.course, (p.course.units || []).find(function (u) { return u.id === cur.item.unit; }) || null, cur.item, p.t) });
             var speakable = audio && card.speak;
             if (speakable) {
               return html`<div class="qline">
@@ -1785,7 +1453,7 @@
     if (typeof label === 'string') return label;
     if (label && typeof label === 'object') {
       if (typeof label[lang] === 'string') return label[lang];
-      if (typeof label[primaryTag(lang)] === 'string') return label[primaryTag(lang)];
+      if (typeof label[DojoI18n.primaryTag(lang)] === 'string') return label[DojoI18n.primaryTag(lang)];
       if (typeof label.en === 'string') return label.en;
     }
     return '';
@@ -2686,13 +2354,6 @@
 
   // ---------- start / fail ----------
 
-  function pickLang(i18n, lang) {
-    if (i18n && i18n[lang]) return lang;
-    if (i18n && i18n[primaryTag(lang)]) return primaryTag(lang);
-    var keys = Object.keys(i18n || {}).filter(function (k) { return k !== 'en'; });
-    return keys.length ? keys[0] : 'en';
-  }
-
   function ErrorScreen(p) {
     var t = p.t;
     return html`<div class="app"><main class="screen" data-testid="error" role="alert">
@@ -2704,7 +2365,7 @@
 
   function fail(rootEl, err) {
     var i18n = root.__DOJO_I18N__ || null;
-    var t = makeT(i18n, pickLang(i18n, 'en'));
+    var t = DojoI18n.makeT(i18n, DojoI18n.pickLang(i18n, 'en'));
     var message = err && (err.stack || err.message) ? (err.name ? err.name + ': ' : '') + (err.message || String(err)) : String(err);
     try { preact.render(null, rootEl); } catch (e) { /* tree already broken */ }
     try { rootEl.textContent = ''; } catch (e) { /* no DOM */ }
@@ -2722,7 +2383,7 @@
     var now = opts.now || Date.now;
     var win = opts.win || root;
     var i18n = opts.i18n || root.__DOJO_I18N__ || null;
-    var t = makeT(i18n, opts.lang || course.uiLanguage || 'en');
+    var t = DojoI18n.makeT(i18n, opts.lang || course.uiLanguage || 'en');
     if (DojoExt.use) DojoExt.use(course.markup);
     if (DojoExt.useRuby) DojoExt.useRuby(course.ruby, content.items);
     if (DojoExt.useInputScript) DojoExt.useInputScript(course.inputScript, t('guard.script'));
@@ -2756,5 +2417,5 @@
     }).catch(function (e) { fail(rootEl, e); });
   }
 
-  root.DojoApp = { start: start, fail: fail, _makeT: makeT, _pickLang: pickLang, _Stimulus: Stimulus, _SessionScreen: SessionScreen, _Results: Results, _Home: Home, _App: App, _CatalogScreen: CatalogScreen, _SettingsScreen: SettingsScreen, _PlacementSession: PlacementSession, _PracticeSetup: PracticeSetup, _ProgressBar: ProgressBar, _daysLeft: daysLeft, _applyTheme: applyTheme, _pluralForm: pluralForm, _renderPluginSettings: renderPluginSettings };
+  root.DojoApp = { start: start, fail: fail, _makeT: DojoI18n.makeT, _pickLang: DojoI18n.pickLang, _Stimulus: Stimulus, _SessionScreen: SessionScreen, _Results: Results, _Home: Home, _App: App, _CatalogScreen: CatalogScreen, _SettingsScreen: SettingsScreen, _PlacementSession: PlacementSession, _PracticeSetup: PracticeSetup, _ProgressBar: ProgressBar, _daysLeft: daysLeft, _applyTheme: applyTheme, _pluralForm: DojoI18n.pluralForm, _renderPluginSettings: renderPluginSettings };
 })(typeof self !== 'undefined' ? self : this);
