@@ -79,10 +79,26 @@
       : null;
   }
 
+  function onKey(e, p) {
+    if (p.result || DojoTypes.keyBlocked(e)) return null;
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return null;
+    var container = e.target.closest('[data-testid="order"]');
+    if (!container) return null;
+    var buttons = container.querySelectorAll('button');
+    var enabled = [];
+    for (var i = 0; i < buttons.length; i++) if (!buttons[i].disabled) enabled.push(buttons[i]);
+    if (enabled.length === 0) return null;
+    var cur = enabled.indexOf(e.target);
+    var next = cur < 0 ? 0 : (cur + (e.key === 'ArrowDown' ? 1 : enabled.length - 1)) % enabled.length;
+    enabled[next].focus(); e.preventDefault();
+    return null;
+  }
+
   root.DojoTypes.register('order', {
     Question: Question,
     canSubmit: canSubmit,
     initialState: initialState,
-    Extra: Extra
+    Extra: Extra,
+    onKey: onKey
   });
 })(typeof self !== 'undefined' ? self : this);
