@@ -7,6 +7,14 @@ CARGO_HOME_DIR="${CARGO_HOME:-$HOME/.cargo}"
 RUSTC_HASH="$(rustc -vV | sed -n 's/^commit-hash: //p')"
 SYSROOT="$(rustc --print sysroot)"
 
+# Paths must not contain spaces
+for var in REPO_ROOT CARGO_HOME_DIR SYSROOT; do
+    if [[ "${!var}" == *" "* ]]; then
+        echo "build-wasm: path contains a space: $var" >&2
+        exit 1
+    fi
+done
+
 flags="--remap-path-prefix=$REPO_ROOT=/dojo-kit --remap-path-prefix=$CARGO_HOME_DIR=/cargo --remap-path-prefix=$SYSROOT=/rustup"
 if [ -n "$RUSTC_HASH" ]; then
     flags="$flags --remap-path-prefix=/rustc/$RUSTC_HASH=/rustc"
