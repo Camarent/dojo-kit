@@ -692,10 +692,12 @@ test('sortKeys does not assign to __proto__', () => {
   assert.strictEqual(result.__proto__, undefined);
 });
 
-test('sortKeys removes prototype and constructor keys', () => {
+test('sortKeys keeps prototype and constructor keys as data on a null-prototype result', () => {
   const { sortKeys } = require('../storage.js');
   const input = { b: 2, constructor: { x: 1 }, prototype: { y: 2 } };
   const result = sortKeys(input);
-  assert.deepStrictEqual(Object.keys(result).sort(), ['b']);
+  assert.strictEqual(Object.getPrototypeOf(result), null);
+  assert.deepStrictEqual(Object.keys(result), ['b', 'constructor', 'prototype']);
   assert.strictEqual(result.b, 2);
+  assert.strictEqual(({}).x, undefined);
 });
