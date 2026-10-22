@@ -48,6 +48,15 @@
             }
           ]
         },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
         "options": {
           "type": "array",
           "items": {
@@ -133,6 +142,15 @@
               "type": "null"
             }
           ]
+        },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "answers": {
           "type": "array",
@@ -230,6 +248,15 @@
             }
           ]
         },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
         "back": {
           "type": "string"
         },
@@ -306,6 +333,15 @@
               "type": "null"
             }
           ]
+        },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "options": {
           "type": "array",
@@ -396,6 +432,15 @@
             }
           ]
         },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
         "pairs": {
           "type": "array",
           "items": {
@@ -482,6 +527,15 @@
             }
           ]
         },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
         "steps": {
           "type": "array",
           "items": {
@@ -561,6 +615,15 @@
               "type": "null"
             }
           ]
+        },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "parts": {
           "type": "array",
@@ -651,6 +714,15 @@
               "type": "null"
             }
           ]
+        },
+        "supersedes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "answer": {
           "type": "number",

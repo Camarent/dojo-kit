@@ -506,6 +506,8 @@ pub struct ChoiceItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub options: Vec<String>,
     pub answer: usize,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -533,6 +535,8 @@ pub struct GapItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub answers: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub retry: Vec<String>,
@@ -563,6 +567,8 @@ pub struct CardItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub back: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub meta: Option<serde_json::Value>,
@@ -589,6 +595,8 @@ pub struct MultiItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub options: Vec<String>,
     pub correct: Vec<usize>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -624,6 +632,8 @@ pub struct MatchItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub pairs: Vec<Pair>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub distractors: Vec<String>,
@@ -652,6 +662,8 @@ pub struct OrderItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub steps: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub meta: Option<serde_json::Value>,
@@ -686,6 +698,8 @@ pub struct ClozeItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub parts: Vec<ClozePart>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub normalize: Option<Normalize>,
@@ -714,6 +728,8 @@ pub struct NumericItem {
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<Status>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<Vec<String>>,
     pub answer: f64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tolerance: Option<f64>,
@@ -780,6 +796,25 @@ impl Item {
             Item::Order(_) => ItemType::Order,
             Item::Cloze(_) => ItemType::Cloze,
             Item::Numeric(_) => ItemType::Numeric,
+        }
+    }
+
+    /// Ids of retired items this item replaces; empty when the field is absent.
+    pub fn supersedes(&self) -> &[String] {
+        self.supersedes_field().unwrap_or(&[])
+    }
+
+    /// The `supersedes` field as written; `None` when absent.
+    pub fn supersedes_field(&self) -> Option<&[String]> {
+        match self {
+            Item::Choice(i) => i.supersedes.as_deref(),
+            Item::Gap(i) => i.supersedes.as_deref(),
+            Item::Card(i) => i.supersedes.as_deref(),
+            Item::Multi(i) => i.supersedes.as_deref(),
+            Item::Match(i) => i.supersedes.as_deref(),
+            Item::Order(i) => i.supersedes.as_deref(),
+            Item::Cloze(i) => i.supersedes.as_deref(),
+            Item::Numeric(i) => i.supersedes.as_deref(),
         }
     }
 

@@ -40,7 +40,7 @@ pub struct SourceFile {
 }
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 90] = [
+pub const CODES: [(&str, Severity, &str); 91] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -92,6 +92,7 @@ pub const CODES: [(&str, Severity, &str); 90] = [
     ("order_many_steps", Severity::Warning, "order has more than 7 steps"),
     ("item_type_changed", Severity::Warning, "item type changed from the locked type"),
     ("id_removed", Severity::Error, "id in ids.lock is missing from the content"),
+    ("bad_supersedes", Severity::Error, "supersedes is invalid (empty, duplicate, self, not retired, or shared)"),
     ("retired_id_reused", Severity::Error, "active item uses an id retired in ids.lock"),
     ("bad_plugin_path", Severity::Error, "plugin path is absolute or contains '..'"),
     ("bad_fold", Severity::Error, "fold entry has empty from, or range lengths differ"),
@@ -1860,6 +1861,8 @@ pub fn validate_all(
 
     let mut out = course_sink.out;
     out.extend(file_diags.into_iter().flatten());
+
+    out.extend(crate::supersedes::check_supersedes(&all, lock));
 
     if let Some(lock) = lock {
         let present: HashSet<&str> = all.iter().map(|(_, _, i)| i.id()).collect();

@@ -125,3 +125,17 @@ fn every_code_has_a_firing_test() {
         .collect();
     assert!(missing.is_empty(), "codes without a test: {missing:?}");
 }
+
+#[test]
+fn bad_supersedes_cases() {
+    let old = r#"{"type":"choice","id":"o-1","unit":"u","prompt":"Old","options":["a","b"],"answer":0,"status":"retired"}"#;
+    let new = |extra: &str| format!(r#"{{"type":"choice","id":"n-1","unit":"u","prompt":"New","options":["a","b"],"answer":0,{extra}}}"#);
+    let c = with_course(r#""x":1"#).replace(r#","x":1"#, "");
+    let n = |s: &str| run(&c, &[old, &new(s)]).iter().filter(|d| d.code == "bad_supersedes").count();
+    assert_eq!(n(r#""supersedes":["o-1"]"#), 0);
+    for bad in [r#""supersedes":[]"#, r#""supersedes":["o-1","o-1"]"#, r#""supersedes":["n-1"]"#, r#""supersedes":["zz"]"#] {
+        assert!(n(bad) > 0, "{bad}");
+    }
+    let on_retired = old.replace(r#""status":"retired""#, r#""status":"retired","supersedes":["x"]"#);
+    assert!(run(&c, &[&on_retired]).iter().any(|d| d.code == "bad_supersedes"));
+}

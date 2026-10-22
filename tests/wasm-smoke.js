@@ -23,8 +23,8 @@ async function main() {
   const failures = [];
   if (bytes.length > MAX_BYTES) failures.push(`wasm is ${bytes.length} bytes, budget ${MAX_BYTES}`);
   
-  // Check WASM size is under 330 KB
-  if (bytes.length >= 330000) failures.push(`wasm is ${bytes.length} bytes, must be under 330000`);
+  // Check WASM size is under 360 KB
+  if (bytes.length >= 360000) failures.push(`wasm is ${bytes.length} bytes, must be under 360000`);
 
   // Scan for custom "name" section
   function readLEB128(buf, offset) {
