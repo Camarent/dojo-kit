@@ -19,6 +19,7 @@ mod items;
 mod course;
 mod quality;
 mod speech;
+mod dupes;
 use course::check_course;
 pub use codes::CODES;
 

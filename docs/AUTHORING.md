@@ -43,7 +43,7 @@ Also `--file <path>` (read the batch from a file) and `--dry-run` (check without
 
 ## Unambiguous-answer rules
 1. A learner who knows the fact must be able to answer without guessing; a gap has exactly one answer (every accepted spelling goes into `answers`; several different answers only when the prompt says "any" or "one of").
-2. The prompt matches the input type: no "write" on choice/match/order/card, no "choose/pick" on gap (validator `prompt_type_mismatch`).
+2. The prompt matches the input type: no "write" on choice/match/order/card, no "choose/pick" on gap (validator `prompt_type_mismatch`); no two non-stimulus gap/cloze/numeric items share the same normalized prompt with different normalized answer sets (validator `same_prompt_different_answers`).
 3. Options are unique after normalization (`choice_duplicate_options`, `multi_duplicate_options`); no readings glued with "/" in options (`ambiguous_answer`). Slashes inside a parenthetical note are fine. Alternatives like "брат/сестра" must be split into separate options or written with "or".
 4. The answer is not in the prompt (`answer_in_prompt`; for a listening script the question may name the topic, never the answer).
 5. The right option is not the longest; distractors have similar length and form and are mistakes a real learner makes. No "all/none of the above".

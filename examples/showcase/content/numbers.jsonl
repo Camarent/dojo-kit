@@ -4,8 +4,8 @@
 {"type":"multi","id":"numbers-4","unit":"numbers","tags":["primes"],"prompt":"Select all prime numbers.","options":["2","4","7","9"],"correct":[0,2],"explanation":"2 and 7 have no divisors besides 1 and themselves."}
 {"type":"gap","id":"numbers-5","unit":"numbers","tags":["arithmetic"],"prompt":"12 + 15 = ___","answers":["27"],"explanation":"12 plus 15 is 27."}
 {"type":"gap","id":"numbers-6","unit":"numbers","tags":["arithmetic"],"prompt":"The square root of 81 is ___.","answers":["9","nine"],"explanation":"9 times 9 is 81."}
-{"type":"cloze","id":"numbers-7","unit":"numbers","tags":["arithmetic"],"prompt":"Fill in the blanks","parts":["Half of 20 is ",["10","ten"]," and a quarter of 20 is ",["5","five"],"."],"explanation":"Divide 20 by 2 and by 4."}
-{"type":"cloze","id":"numbers-8","unit":"numbers","tags":["parity"],"prompt":"Fill in the blanks","parts":["Numbers divisible by 2 are called ",["even"],"."],"explanation":"The other whole numbers are odd."}
+{"type":"cloze","id":"numbers-7","unit":"numbers","tags":["arithmetic"],"prompt":"Fill in the arithmetic blanks","parts":["Half of 20 is ",["10","ten"]," and a quarter of 20 is ",["5","five"],"."],"explanation":"Divide 20 by 2 and by 4."}
+{"type":"cloze","id":"numbers-8","unit":"numbers","tags":["parity"],"prompt":"Fill in the parity blanks","parts":["Numbers divisible by 2 are called ",["even"],"."],"explanation":"The other whole numbers are odd."}
 {"type":"numeric","id":"numbers-9","unit":"numbers","tags":["physics"],"prompt":"About how fast does light travel in a vacuum, in millions of metres per second?","answer":300,"tolerance":1,"unitLabel":"million m/s","explanation":"The speed of light is about 3.0 x 10^8 m/s."}
 {"type":"numeric","id":"numbers-10","unit":"numbers","tags":["arithmetic"],"prompt":"What is 3 times 14?","answer":42,"explanation":"3 times 14 is 42."}
 {"type":"match","id":"numbers-11","unit":"numbers","tags":["roman"],"prompt":"Match each Roman numeral to its value.","pairs":[{"left":"V","right":"5"},{"left":"X","right":"10"},{"left":"L","right":"50"}],"explanation":"V is five, X is ten and L is fifty."}
