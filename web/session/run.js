@@ -16,27 +16,26 @@
   var store = ctx.store;
   var introById = ctx.introById;
 
-  function createSession(mode, plan) {
+  function initialSession(mode, plan) {
     var resume = plan.resume;
+    var n = plan.ids.length;
     var session = {
-      id: resume ? resume.sid : ctx.fn.newSessionId(mode),
-      mode: mode,
-      total: plan.ids.length,
-      initialTotal: plan.ids.length,
-      index: 0,
-      done: false,
-      answered: resume ? resume.answers.length : 0
+      id: resume ? resume.sid : ctx.fn.newSessionId(mode), mode: mode, total: n, initialTotal: n,
+      index: 0, done: false, answered: resume ? resume.answers.length : 0
     };
     if (plan.deadline !== undefined) session.deadline = plan.deadline;
-    if (mode === 'placement') {
-      session.seed = plan.seed;
-      session.placementMode = ctx.fn.placementMode();
-    }
+    if (mode === 'placement') { session.seed = plan.seed; session.placementMode = ctx.fn.placementMode(); }
     if (plan.warnings) session.warnings = plan.warnings;
     if (mode === 'exam') {
       if (plan.examId !== undefined) session.examId = plan.examId;
       session.training = !!plan.training;
     }
+    return session;
+  }
+
+  function createSession(mode, plan) {
+    var resume = plan.resume;
+    var session = initialSession(mode, plan);
     var groups = plan.groups || null;
     if (groups) session.group = { index: resume ? resume.group : 0, count: groups.length };
     var lockHolder = mode === 'exam' && plan.deadline !== undefined ? ctx.fn.acquireWakeLock() : null;
