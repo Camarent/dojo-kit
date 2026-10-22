@@ -386,6 +386,13 @@
           "items": {
             "$ref": "#/$defs/DetailField"
           }
+        },
+        "glyph": {
+          "description": "Dotted path into item for the header glyph.",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false

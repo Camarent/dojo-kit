@@ -385,6 +385,20 @@
     return value;
   }
 
+  // Helper to resolve a dotted path in an object
+  function resolvePath(obj, path) {
+    if (!obj || typeof obj !== 'object' || !path || typeof path !== 'string') return null;
+    var parts = path.split('.');
+    var value = obj;
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (value === null || typeof value !== 'object') return null;
+      if (!Object.prototype.hasOwnProperty.call(value, part)) return null;
+      value = value[part];
+    }
+    return value;
+  }
+
   // Render declarative detail fields from item.meta. all=true uses renderTextAll.
   function renderDeclarativeDetail(course, unit, item, t, all) {
     var r = all ? renderTextAll : renderText;
@@ -635,7 +649,21 @@
           <div class="dialog catalog-detail-dialog" role="dialog" aria-modal="true" onClick=${function (e) { e.stopPropagation(); }}>
             <div class="catalog-detail-header" data-testid="catalog-detail-header">
               <button type="button" class="btn icon" data-testid="btn-close-detail" onClick=${function () { self.setState({ detailItem: null }); }}>${t('close')}</button>
-              ${d.meta && typeof d.meta.kanji === 'string' && d.meta.kanji ? html`<span class="kanji-ch" data-testid="detail-glyph">${d.meta.kanji}</span>` : null}
+              ${(function () {
+                var course = p.course;
+                var detailConfig = (self.unitById[d.unit] && self.unitById[d.unit].detail) || course.detail;
+                var glyphValue = null;
+                if (detailConfig && detailConfig.glyph && typeof detailConfig.glyph === 'string' && detailConfig.glyph !== '') {
+                  glyphValue = resolvePath(d, detailConfig.glyph);
+                }
+                if (glyphValue !== null && typeof glyphValue === 'string' && glyphValue !== '') {
+                  return html`<span class="kanji-ch" data-testid="detail-glyph">${glyphValue}</span>`;
+                }
+                if (detailConfig && detailConfig.glyph) {
+                  return null;
+                }
+                return d.meta && typeof d.meta.kanji === 'string' && d.meta.kanji ? html`<span class="kanji-ch" data-testid="detail-glyph">${d.meta.kanji}</span>` : null;
+              })()}
               <h2>${t('catalog.detail')}</h2>
             </div>
             <article class="qcard">
