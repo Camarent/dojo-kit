@@ -12,6 +12,9 @@ Reference implementation of the progress document and SRS logic (taken from the 
 - `tools/reference/srs.js:554` `api` object (`module.exports`, or `window.SRS`): SRS functions including `applyAnswer`, `applyPractice`, `applyRelearn`, `applyPlacement` (`:99`, oracle for the Rust `apply_placement`), `pickVariant`, `usedAfter`, and the point-based helpers. Full list: see the `api` block.
 - `tools/reference/README.md` - states the directory is frozen and used only by `tests/gen-vectors.js`.
 
+- `tools/fw-root.js:15` `frameworkRoot(startDir)` (`module.exports`) - returns the dojo-kit root: `DOJO_KIT_ROOT` if set (must contain `web/dojo-wasm.js`, else throws), otherwise the first ancestor of `startDir` containing `web/dojo-wasm.js`, else throws. Used by course tests that need the framework.
+- `tools/reference/srs.js` exports only generic functions (no kanji or N5 helpers); pinned by `tests/reference-no-n5.test.js`.
+
 ## Key files
 - `reference/progress.js` - progress sanitize, merge, stable JSON.
 - `reference/srs.js` - ladder scheduling and variant picking.

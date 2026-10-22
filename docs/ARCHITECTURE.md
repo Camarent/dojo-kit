@@ -5,7 +5,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 
 ## Modules
 - [crates/dojo-core](modules/crates--dojo-core.md) - pure Rust logic: content model, answer checks (incl. gap retry readings, `gapVerdict`), SRS and placement marking (per-unit `newPerDay` caps, unit `srs.ladder` and `dropOnWrong`, `buildQueue`, `ladderForUnit`, `dropForUnit`, `newOrder`), entity groups and progress bars (`groupCounts`, group caps in `buildQueue`; `groups.rs`), progress merge, exam sampling and scoring (timing, scoring parts), validation.
-- [crates/dojo-cli](modules/crates--dojo-cli.md) - the `dojo` binary: validate, lock, build, stats, next-id, init, add, schema.
+- [crates/dojo-cli](modules/crates--dojo-cli.md) - the `dojo` binary: validate, lock, build, stats, next-id, init, add, schema, import-progress.
 - [crates/dojo-wasm](modules/crates--dojo-wasm.md) - cdylib with a JSON-string ABI over dojo-core for the browser.
 - [web](modules/web.md) - Preact app shell, catalog (browse, search, item detail), home screen (exam countdown, extra new items, group cards, progress bars), settings (theme, exam date, per-unit and per-group overrides, plugin settings), exam picker, storage adapters, session engine (per-unit new caps, practice, exams with timer groups, training, scored results, exam resume from a saved draft, placement self-assessment, gap retry, override, intro for new items), question-type UIs, speech playback (`DojoSpeech`), `DojoExt` plugin hooks, i18n, styles, dev server.
 - [schema](modules/schema.md) - generated JSON Schemas for `course.json` and item lines.
@@ -47,7 +47,7 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `dojo` wrapper, `tests/wr
 - Groups: `node --test web/tests/groups.test.js web/tests/groups-ui.test.js web/tests/groups-build.test.js`.
 - Web unit test: `node --test web/tests/storage.test.js`; exam flow: `node --test web/tests/exams.test.js`; placement: `node --test web/tests/placement.test.js`; unit caps and unit ladders: `node --test web/tests/unit-settings.test.js`.
 - Full web test run: `node --test web/tests/*.test.js` (the directory form `node --test web/tests` fails on Node 22). Web test files live under `web/tests/`; `tests/` holds no `*.test.js` files.
-- End-to-end wrapper check: `tests/wrapper.sh` (invocation not stated in repo; TODO(verify)).
+- End-to-end wrapper check: `tests/wrapper.sh` (`bash tests/wrapper.sh`).
 - Build a course: `./dojo validate <course-dir>` then `./dojo build <course-dir>`.
 
 ## Constraints that cut across modules

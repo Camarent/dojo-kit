@@ -12,6 +12,7 @@ Thin WebAssembly wrapper over `dojo-core`. The browser calls one generic entry p
 - `crates/dojo-wasm/src/lib.rs:20` `dealloc(ptr, len)` (unsafe; release each buffer once).
 - `crates/dojo-wasm/src/lib.rs:32` `call(name_ptr, name_len, args_ptr, args_len) -> u64` - returns `(ptr << 32) | len` of a UTF-8 JSON envelope; the caller must `dealloc` it.
 - Envelope and function names: see `crates/dojo-core/src/api.rs:15`.
+- `migrateProgress` (via `call`, arm at `crates/dojo-core/src/api/progress.rs:13`): args `{doc, items:[{id, status?, supersedes?}]}`, value `{folded, skipped, doc?}` (`doc` only when something folded); refusal is an ok-value `{error: "bad_links"|"invalid_document", message}`. No change to the WASM ABI itself.
 - Crate type `cdylib`, no wasm-bindgen (`Cargo.toml`).
 
 ## Key files

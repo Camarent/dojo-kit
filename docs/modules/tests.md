@@ -15,6 +15,8 @@ Holds the shared golden data (`tests/vectors/*.json`) that pins progress, SRS, c
 - Topic-level SRS vectors in `vectors/srs.json` (spec, append-only): groups `entityView`, `applyEntity`, and scoped `buildQueue` cases (`scoped_*`, `started_entity_new_member_not_fresh`, `no_scope_key_absent`); seeded picks use the JS mirror `pickDrillJs` in `tests/gen-vectors.js`.
 - `tests/vectors/` - `check.json`, `days.json`, `exam.json`, `merge.json`, `sanitize.json`, `srs.json`.
 
+- New node tests (run after `scripts/build-wasm.sh` with `node --test web/tests/*.test.js tests/*.test.js`): `tests/fw-root.test.js` (4 tests: `DOJO_KIT_ROOT` set, missing `web/dojo-wasm.js`, walk-up, not found), `tests/reference-no-n5.test.js` (2 tests: `tools/reference/srs.js` has no `kanjiChars`/`isN5Readable`/`relatedWords`, keeps the generic functions), `tests/build-wasm-paths.test.js` (2 tests: space-path guard in the wasm build script).
+
 ## Key files
 - `gen-vectors.js` - reads `tools/reference/*.js`; large (3026 lines), do not load whole.
 - `wasm-smoke.js` - the only JS test that runs the compiled core.
@@ -29,7 +31,7 @@ Holds the shared golden data (`tests/vectors/*.json`) that pins progress, SRS, c
 - The `merge` vectors cover diverged documents, foreign documents and unknown fields; do not drop cases to make tests pass.
 - `merge.json` has 37 `merge_examDraft_*` cases (closed vs open, ties, `resetAt`, invalid drafts, unknown fields, `_join_*` sets folded in every order). Their `expect` comes from the JS oracle, not from the Rust code. Regenerating them is a deliberate contract change.
 - The `gapVerdict` vectors pin the precedence: an input matching an answer is `ok` even when it also matches a `retry` reading. The Rust side runs them through `crates/dojo-core/tests/check_vectors.rs:67`, which dispatches `gapVerdict` next to the existing `check` cases.
-- Invocation of `tests/wrapper.sh` is not stated in the repo (TODO(verify)); it has a bash shebang and must be run from a shell.
+- Wrapper check: `bash tests/wrapper.sh`.
 
 ## Depends on / used by
 - Depends on: `tools/reference/progress.js`, `tools/reference/srs.js` (generator); `web/dojo-wasm.js` and the WASM build (smoke test); the root `dojo` wrapper (`wrapper.sh`).

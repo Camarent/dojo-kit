@@ -17,7 +17,8 @@ Commands (usage string at `crates/dojo-cli/src/main.rs:16`, dispatch in `run` at
 - `dojo stats <course-dir> [--json]` (`crates/dojo-cli/src/main.rs:522`).
 - `dojo next-id <course-dir> <prefix> [--count N]` (`crates/dojo-cli/src/main.rs:591`).
 - `dojo add <course-dir> <unit-id> [--file F] [--dry-run]` (`crates/dojo-cli/src/add.rs:109`). Reads JSON objects from stdin or file; all-or-nothing. Exits 1 before reading the course when `<unit-id>` does not match the slug rule `^[a-z0-9][a-z0-9_-]{0,47}$` (`validate::is_valid_course_id`).
-- `dojo import-progress <old.json> --map <id-map.json> --course <dir> [--out <file>] [--write] [--now <ISO>]` (`crates/dojo-cli/src/import_progress.rs`). Converts legacy progress to v:1 format; dry-run by default (prints report, writes nothing).
+- `dojo import-progress <old.json> --map <id-map.json> --course <dir> [--out <file>] [--write] [--now <ISO>]` (`crates/dojo-cli/src/import_progress.rs`). Converts legacy progress to v:1 format; dry-run by default (prints report, writes nothing). Separate from load-time `supersedes` migration (`crates/dojo-core/src/migrate.rs`), which runs in the browser.
+- i18n check: keys starting with `plugin.` or `course.` in a course `i18n/<lang>.json` are reserved for plugins/course and never warn `i18n_unknown_key` (`crates/dojo-cli/src/build/i18n.rs:147`; test `i18n_reserved_plugin_course_keys_do_not_warn`, `crates/dojo-cli/tests/validate.rs:373`).
 - Exit codes (`crates/dojo-cli/src/main.rs:795`): 0 success, 1 validation or build refusal, 2 usage or I/O error.
 - `--json` validate output: `{"ok","errors","warnings","diagnostics":[{severity,code,file,line,message}]}` (`print_json`, `crates/dojo-cli/src/main.rs:94`).
 - `validate`, `lock` and `build` all run `validate_course` (`crates/dojo-cli/src/main.rs:105`): `dojo-core` validate plus filesystem checks of `course.json` `plugins.{scripts,styles}`. Failures use code `bad_plugin_path` (file `course.json`, line 0).
