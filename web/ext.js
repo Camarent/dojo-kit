@@ -372,16 +372,13 @@
       var kanjiChar = pathValue(it, keyPath);
       if (typeof kanjiChar !== 'string' || kanjiChar.length !== 1) return;  // only single Han chars
       if (Object.prototype.hasOwnProperty.call(map, kanjiChar)) return;  // first wins
-      var meaning = pathValue(it, meaningPath);
-      if (meaning === undefined || meaning === null) meaning = pathValue(it, 'meta.meaning');
-      if (meaning === undefined || meaning === null) {
-        if (useConfig && meaningPath) {
-          // Config mode: meaning path is required, skip if not found
-          return;
-        }
-        // Fallback: try meta[lang] where lang is cfgOrLang as string
-        var lang = typeof cfgOrLang === 'string' ? cfgOrLang : 'meaning';
-        meaning = it.meta && it.meta[lang];
+      var meaning;
+      if (useConfig && meaningPath) {
+        meaning = pathValue(it, meaningPath);
+      } else {
+        var lang = typeof cfgOrLang === 'string' ? cfgOrLang : null;
+        meaning = lang && it.meta ? it.meta[lang] : undefined;
+        if (typeof meaning !== 'string' || meaning.length === 0) meaning = it.meta && it.meta.meaning;
       }
       if (typeof meaning !== 'string' || meaning.length === 0) return;  // skip items without a string meaning
       var on = undefined;
