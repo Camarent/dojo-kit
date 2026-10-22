@@ -1,6 +1,6 @@
 'use strict';
 
-const { splitmix64Js, sampleJs } = require('../utils.js');
+const { oracleCase, splitmixCase, sampleJs } = require('../utils.js');
 
 function examSplitmix64Part1(kit) {
   kit.groups = [];
@@ -8,69 +8,13 @@ function examSplitmix64Part1(kit) {
   // splitmix64 cases
   kit.splitmix64Cases = [];
 
-  kit.splitmix64Cases.push({
-    name: 'seed_0_n_5',
-    input: { seed: '0', n: 5 },
-    expect: (() => {
-      let state = 0n;
-      const results = [];
-      for (let i = 0; i < 5; i++) {
-        const { newState, value } = splitmix64Js(state);
-        state = newState;
-        results.push(value.toString());
-      }
-      return results;
-    })(),
-    source: 'spec'
-  });
+  kit.splitmix64Cases.push(splitmixCase('seed_0_n_5', '0', 5));
 
-  kit.splitmix64Cases.push({
-    name: 'seed_1_n_5',
-    input: { seed: '1', n: 5 },
-    expect: (() => {
-      let state = 1n;
-      const results = [];
-      for (let i = 0; i < 5; i++) {
-        const { newState, value } = splitmix64Js(state);
-        state = newState;
-        results.push(value.toString());
-      }
-      return results;
-    })(),
-    source: 'spec'
-  });
+  kit.splitmix64Cases.push(splitmixCase('seed_1_n_5', '1', 5));
 
-  kit.splitmix64Cases.push({
-    name: 'seed_42_n_5',
-    input: { seed: '42', n: 5 },
-    expect: (() => {
-      let state = 42n;
-      const results = [];
-      for (let i = 0; i < 5; i++) {
-        const { newState, value } = splitmix64Js(state);
-        state = newState;
-        results.push(value.toString());
-      }
-      return results;
-    })(),
-    source: 'spec'
-  });
+  kit.splitmix64Cases.push(splitmixCase('seed_42_n_5', '42', 5));
 
-  kit.splitmix64Cases.push({
-    name: 'seed_u64_max_n_5',
-    input: { seed: '18446744073709551615', n: 5 },
-    expect: (() => {
-      let state = 18446744073709551615n;
-      const results = [];
-      for (let i = 0; i < 5; i++) {
-        const { newState, value } = splitmix64Js(state);
-        state = newState;
-        results.push(value.toString());
-      }
-      return results;
-    })(),
-    source: 'spec'
-  });
+  kit.splitmix64Cases.push(splitmixCase('seed_u64_max_n_5', '18446744073709551615', 5));
 }
 
 function examSamplePart1(kit) {
@@ -102,9 +46,7 @@ function examSamplePart1(kit) {
     source: 'spec'
   });
 
-  kit.sampleCases.push({
-    name: 'two_sections_sharing_pool',
-    input: {
+  kit.sampleCases.push(oracleCase('two_sections_sharing_pool', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' },
         { id: 'c2', unit: 'u1', tags: [], type: 't1' },
@@ -116,26 +58,9 @@ function examSamplePart1(kit) {
         { title: 's2', count: 2 }
       ],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c2', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c3', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c4', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [
-        { title: 's1', count: 2 },
-        { title: 's2', count: 2 }
-      ],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
-  kit.sampleCases.push({
-    name: 'filter_by_unit',
-    input: {
+  kit.sampleCases.push(oracleCase('filter_by_unit', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' },
         { id: 'c2', unit: 'u2', tags: [], type: 't1' },
@@ -143,24 +68,11 @@ function examSamplePart1(kit) {
       ],
       sections: [{ title: 's1', count: 2, units: ['u1'] }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c2', unit: 'u2', tags: [], type: 't1' },
-        { id: 'c3', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 2, units: ['u1'] }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 }
 
 function examSamplePart2(kit) {
-  kit.sampleCases.push({
-    name: 'filter_by_tag',
-    input: {
+  kit.sampleCases.push(oracleCase('filter_by_tag', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: ['tag1'], type: 't1' },
         { id: 'c2', unit: 'u1', tags: ['tag2'], type: 't1' },
@@ -168,22 +80,9 @@ function examSamplePart2(kit) {
       ],
       sections: [{ title: 's1', count: 2, tags: ['tag1'] }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: ['tag1'], type: 't1' },
-        { id: 'c2', unit: 'u1', tags: ['tag2'], type: 't1' },
-        { id: 'c3', unit: 'u1', tags: ['tag1'], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 2, tags: ['tag1'] }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
-  kit.sampleCases.push({
-    name: 'filter_by_type',
-    input: {
+  kit.sampleCases.push(oracleCase('filter_by_type', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' },
         { id: 'c2', unit: 'u1', tags: [], type: 't2' },
@@ -191,123 +90,54 @@ function examSamplePart2(kit) {
       ],
       sections: [{ title: 's1', count: 2, types: ['t1'] }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c2', unit: 'u1', tags: [], type: 't2' },
-        { id: 'c3', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 2, types: ['t1'] }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
-  kit.sampleCases.push({
-    name: 'shortage',
-    input: {
+  kit.sampleCases.push(oracleCase('shortage', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' }
       ],
       sections: [{ title: 's1', count: 5 }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 5 }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 }
 
 function examSamplePart3(kit) {
-  kit.sampleCases.push({
-    name: 'count_0',
-    input: {
+  kit.sampleCases.push(oracleCase('count_0', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' },
         { id: 'c2', unit: 'u1', tags: [], type: 't1' }
       ],
       sections: [{ title: 's1', count: 0 }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c2', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 0 }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
-  kit.sampleCases.push({
-    name: 'empty_candidates',
-    input: {
+  kit.sampleCases.push(oracleCase('empty_candidates', {
       candidates: [],
       sections: [{ title: 's1', count: 2 }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [],
-      sections: [{ title: 's1', count: 2 }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
-  kit.sampleCases.push({
-    name: 'same_seed_same_input',
-    input: {
+  kit.sampleCases.push(oracleCase('same_seed_same_input', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' },
         { id: 'c2', unit: 'u1', tags: [], type: 't1' }
       ],
       sections: [{ title: 's1', count: 2 }],
       seed: '100'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c2', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 2 }],
-      seed: '100'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
-  kit.sampleCases.push({
-    name: 'different_seeds_differ',
-    input: {
+  kit.sampleCases.push(oracleCase('different_seeds_differ', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' },
         { id: 'c2', unit: 'u1', tags: [], type: 't1' }
       ],
       sections: [{ title: 's1', count: 1 }],
       seed: '101'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' },
-        { id: 'c2', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 1 }],
-      seed: '101'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 }
 
 function examSamplePart4(kit) {
-  kit.sampleCases.push({
-    name: 'large_pool',
-    input: {
+  kit.sampleCases.push(oracleCase('large_pool', {
       candidates: Array.from({ length: 30 }, (_, i) => ({
         id: `c${i + 1}`,
         unit: 'u1',
@@ -316,38 +146,15 @@ function examSamplePart4(kit) {
       })),
       sections: [{ title: 's1', count: 10 }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: Array.from({ length: 30 }, (_, i) => ({
-        id: `c${i + 1}`,
-        unit: 'u1',
-        tags: [],
-        type: 't1'
-      })),
-      sections: [{ title: 's1', count: 10 }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
-  kit.sampleCases.push({
-    name: 'empty_filter_list_passes_nothing',
-    input: {
+  kit.sampleCases.push(oracleCase('empty_filter_list_passes_nothing', {
       candidates: [
         { id: 'c1', unit: 'u1', tags: [], type: 't1' }
       ],
       sections: [{ title: 's1', count: 2, units: [] }],
       seed: '42'
-    },
-    expect: sampleJs({
-      candidates: [
-        { id: 'c1', unit: 'u1', tags: [], type: 't1' }
-      ],
-      sections: [{ title: 's1', count: 2, units: [] }],
-      seed: '42'
-    }),
-    source: 'spec'
-  });
+    }, sampleJs));
 
   // F10a: stimulus-group fill repair
   const grp = (stim, n) => Array.from({ length: n }, (_, k) => ({ id: `${stim}-${k + 1}`, unit: 'u1', tags: [], type: 'choice', stimulus: stim }));

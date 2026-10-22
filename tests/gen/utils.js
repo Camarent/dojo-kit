@@ -32,7 +32,30 @@ const { splitmix64Js, drawTierJs, sampleJs, scoreJs } = require('./oracles/exam.
 const { normalizeJs, gapVerdictJs } = require('./oracles/check.js');
 const { fnv1aJs, pickDrillJs, unitQueueOracle } = require('./oracles/srs.js');
 
+// A vector case whose expectation is the oracle applied to the input.
+function oracleCase(name, input, oracle) {
+  return { name, input, expect: oracle(input), source: 'spec' };
+}
+
+// A vector case with a literal expectation.
+function vec(name, input, expect, source = 'spec') {
+  return { name, input, expect, source };
+}
+
+// splitmix64 vector: the first n outputs (as decimal strings) from a decimal seed string.
+function splitmixCase(name, seed, n) {
+  let state = BigInt(seed);
+  const expect = [];
+  for (let i = 0; i < n; i++) {
+    const r = splitmix64Js(state);
+    state = r.newState;
+    expect.push(r.value.toString());
+  }
+  return { name, input: { seed, n }, expect, source: 'spec' };
+}
+
 module.exports = {
+  oracleCase, splitmixCase, vec,
   Fl, toJson, assertUnique, noonMsOf,
   fnv1aJs, pickDrillJs, splitmix64Js,
   normalizeJs, gapVerdictJs,
