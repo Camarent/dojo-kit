@@ -42,3 +42,4 @@ poc/
 *.pdf
 PLAN*.md
 .audits/
+web/*.wasm
