@@ -1,9 +1,9 @@
 'use strict';
 
-const { T0, H, D, INTERVALS } = require('./const.js');
-const { Fl, pickDrillJs } = require('./utils.js');
-const { ref } = require('./ref.js');
-const { unitQueueOracle } = require('./oracles/srs.js');
+const { T0, H, D, INTERVALS } = require('../const.js');
+const { Fl, pickDrillJs } = require('../utils.js');
+const { ref } = require('../ref.js');
+const { unitQueueOracle } = require('../oracles/srs.js');
 
 function srsBuildQueuePart1(kit) {
   kit.groups.push({ fn: 'weakest', cases: kit.weakestCases });

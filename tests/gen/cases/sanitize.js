@@ -1,8 +1,8 @@
 'use strict';
 
-const { T0 } = require('./const.js');
-const { Fl } = require('./utils.js');
-const { ref } = require('./ref.js');
+const { T0 } = require('../const.js');
+const { Fl } = require('../utils.js');
+const { ref } = require('../ref.js');
 
 function sanitizePartPart1(kit) {
   kit.cases = [];

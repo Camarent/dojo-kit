@@ -1,9 +1,9 @@
 'use strict';
 
-const { makeSrsCases } = require('./makeSrsCases.js');
-const { makeSanitizeCases } = require('./makeSanitizeCases.js');
-const { makeMergeCases } = require('./makeMergeCases.js');
-const { makeDaysCases } = require('./makeDaysCases.js');
+const { makeSrsCases } = require('./cases/srs.js');
+const { makeSanitizeCases } = require('./cases/sanitize.js');
+const { makeMergeCases } = require('./cases/merge.js');
+const { makeDaysCases } = require('./cases/days.js');
 const { makeCheckCases } = require('./makeCheckCases.js');
 const { makeExamCases } = require('./makeExamCases.js');
 

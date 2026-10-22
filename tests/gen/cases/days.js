@@ -1,7 +1,7 @@
 'use strict';
 
-const { Fl, noonMsOf } = require('./utils.js');
-const { ref } = require('./ref.js');
+const { Fl, noonMsOf } = require('../utils.js');
+const { ref } = require('../ref.js');
 
 function daysDayKeyPart1(kit) {
   kit.groups = [];

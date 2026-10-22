@@ -1,9 +1,9 @@
 'use strict';
 
-const progress = require('../../tools/reference/progress.js');
-const { T0, D } = require('./const.js');
-const { ref } = require('./ref.js');
-const { draftExpectAll } = require('./oracles/srs.js');
+const progress = require('../../../tools/reference/progress.js');
+const { T0, D } = require('../const.js');
+const { ref } = require('../ref.js');
+const { draftExpectAll } = require('../oracles/srs.js');
 
 function mergePartPart1(kit) {
   kit.cases = [];

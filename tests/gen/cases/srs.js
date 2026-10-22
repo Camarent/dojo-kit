@@ -1,7 +1,7 @@
 'use strict';
 
-const { srsApplyAnswerPart1, srsApplyPracticePart1, srsApplyRelearnPart1, srsIsDuePart1, srsWeakestPart1 } = require('./makeSrsCasesA.js');
-const { srsBuildQueuePart1, srsApplyPlacementPart1, srsApplyPlacementPart2, srsApplyPlacementPart3, srsLadderPart1, srsLadderPart2 } = require('./makeSrsCasesB.js');
+const { srsApplyAnswerPart1, srsApplyPracticePart1, srsApplyRelearnPart1, srsIsDuePart1, srsWeakestPart1 } = require('./srsA.js');
+const { srsBuildQueuePart1, srsApplyPlacementPart1, srsApplyPlacementPart2, srsApplyPlacementPart3, srsLadderPart1, srsLadderPart2 } = require('./srsB.js');
 
 function makeSrsCases() {
   const kit = {};
