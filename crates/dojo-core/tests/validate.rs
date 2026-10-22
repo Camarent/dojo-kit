@@ -1464,3 +1464,33 @@ fn pass_rule_default_with_scoring() {
     let c = exam_course(r#"{"id":"x","sections":[{"title":"s","count":1}],"scoring":[{"title":"P","sections":["s"],"points":100}]}"#);
     assert!(!exam_codes(&c).contains(&"pass_rule_default"));
 }
+
+#[test]
+fn breakdown_empty_key() {
+    let c = with_course(r#""breakdown":{"key":"","meaning":"meta.en","readings":["meta.on"]}"#);
+    fires(&c, &[CHOICE], "bad_breakdown");
+}
+
+#[test]
+fn breakdown_empty_key() {
+    let c = with_course(r#""breakdown":{"key":"","meaning":"meta.en","readings":["meta.on"]}"#);
+    fires(&c, &[CHOICE], "bad_breakdown");
+}
+
+#[test]
+fn breakdown_empty_meaning() {
+    let c = with_course(r#""breakdown":{"key":"meta.kanji","meaning":"","readings":["meta.on"]}"#);
+    fires(&c, &[CHOICE], "bad_breakdown");
+}
+
+#[test]
+fn breakdown_empty_reading() {
+    let c = with_course(r#""breakdown":{"key":"meta.kanji","meaning":"meta.en","readings":["","meta.on"]}"#);
+    fires(&c, &[CHOICE], "bad_breakdown");
+}
+
+#[test]
+fn breakdown_valid() {
+    let c = with_course(r#""breakdown":{"key":"meta.kanji","meaning":"meta.en","readings":["meta.on","meta.kun"]}"#);
+    assert!(!codes(&run(&c, &[CHOICE])).contains(&"bad_breakdown"));
+}

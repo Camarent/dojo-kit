@@ -284,6 +284,7 @@ mod tests {
             input_script: None,
             ruby: None,
             captions: None,
+            breakdown: None,
         }
     }
 
@@ -450,6 +451,7 @@ mod tests {
             input_script: None,
             ruby: None,
             captions: None,
+            breakdown: None,
         };
         let items = vec![
             choice_item("u1-1", "unit-1"),

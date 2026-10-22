@@ -187,3 +187,29 @@ test('kanji-rows: no trailing separator when kanji has only on-reading', async (
   const read0 = H.find(row0, 'kanji-read');
   assert.strictEqual(H.text(read0).replace(/\s+/g, ' ').trim(), 'ニチ / ひ', 'First row kanji-read should be ニチ / ひ');
 });
+
+test('kanji-rows: uses course.breakdown config when present', async () => {
+  const items = [
+    word('w-日本', '日本'),
+    kanji('日', '日', { ru: 'день', on: ['ニチ', 'ジツ'], kun: ['ひ', 'び'] }),
+    kanji('本', '本', { ru: 'книга', on: ['ホン'], kun: ['もと'] })
+  ];
+  const courseWithBreakdown = {
+    contentLanguage: 'en',
+    breakdown: { key: 'meta.kanji', meaning: 'meta.ru', readings: ['meta.on', 'meta.kun'] },
+    tagLabels: { t1: 'Tag One' }
+  };
+  const { scr } = await start({ items, course: courseWithBreakdown });
+  scr.answer({ text: 'wrong' });
+
+  const fb = H.find(scr.view(), 'kanji-rows');
+  assert.ok(fb, 'kanji-rows should be present');
+
+  const rows = H.findAll(scr.view(), /^kanji-row$/);
+  assert.strictEqual(rows.length, 2, 'Should have 2 kanji rows');
+
+  const mean0 = H.find(rows[0], 'kanji-mean');
+  const mean1 = H.find(rows[1], 'kanji-mean');
+  assert.strictEqual(H.text(mean0), 'день', 'First row meaning should be from meta.ru');
+  assert.strictEqual(H.text(mean1), 'книга', 'Second row meaning should be from meta.ru');
+});
