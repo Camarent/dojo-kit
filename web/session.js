@@ -21,22 +21,8 @@
 (function (root) {
   'use strict';
 
-  var UNIT_NEW_PREFIX = 'newBy:';
-  var GROUP_NEW_PREFIX = 'newBy:g:';
-  var DEFAULT_NEW_PER_DAY = 10;
-  var DEFAULT_PRACTICE_LIMIT = 20;
-  var DEFAULT_WEAK_LIMIT = 10;
-  var DEFAULT_LEARNED_STAGE = 4;
-  var TYPED = ['gap', 'cloze', 'numeric'];
-  var SELF_RATED = ['card'];
-  var DRAFT_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
-  var MAX_ANSWER_G = 200;
-  var MAX_IDS_COUNT = 1000;
-  var MAX_CLOSED_SIDS = 32;
-  var WRITE_THROTTLE_MS = 1000;
-  var TICK_INTERVAL_MS = 60000;
-
   var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./session/util.js') : null);
+
   var hashString = util.hashString;
   var mulberry32 = util.mulberry32;
   var shuffledIndexes = util.shuffledIndexes;
@@ -48,6 +34,21 @@
   var clozeBlanks = util.clozeBlanks;
   var correctIndexes = util.correctIndexes;
   var optionText = util.optionText;
+
+  var UNIT_NEW_PREFIX = util.K.UNIT_NEW_PREFIX;
+  var GROUP_NEW_PREFIX = util.K.GROUP_NEW_PREFIX;
+  var DEFAULT_NEW_PER_DAY = util.K.DEFAULT_NEW_PER_DAY;
+  var DEFAULT_PRACTICE_LIMIT = util.K.DEFAULT_PRACTICE_LIMIT;
+  var DEFAULT_WEAK_LIMIT = util.K.DEFAULT_WEAK_LIMIT;
+  var DEFAULT_LEARNED_STAGE = util.K.DEFAULT_LEARNED_STAGE;
+  var TYPED = util.K.TYPED;
+  var SELF_RATED = util.K.SELF_RATED;
+  var DRAFT_EXPIRY_MS = util.K.DRAFT_EXPIRY_MS;
+  var MAX_ANSWER_G = util.K.MAX_ANSWER_G;
+  var MAX_IDS_COUNT = util.K.MAX_IDS_COUNT;
+  var MAX_CLOSED_SIDS = util.K.MAX_CLOSED_SIDS;
+  var WRITE_THROTTLE_MS = util.K.WRITE_THROTTLE_MS;
+  var TICK_INTERVAL_MS = util.K.TICK_INTERVAL_MS;
 
   function createEngine(deps) {
     var dojo = deps.dojo;
@@ -65,6 +66,96 @@
     (content.intros || []).forEach(function (i) { if (i && typeof i.id === 'string') introById[i.id] = i; });
     var stimById = {};
     (content.stimuli || []).forEach(function (st) { stimById[st.id] = st; });
+
+    // ctx: engine context for extracted modules `create(ctx)`; read getters and ctx.store.doc at call time; other engine functions via ctx.fn.<name>.
+    var ctx = {
+      dojo: dojo, store: store, content: content, course: course, items: items, byId: byId,
+      introById: introById, stimById: stimById, nav: nav, now: now, today: today, random: random,
+      get groupList() { return groupList; }, get groupById() { return groupById; }, get unitGroup() { return unitGroup; },
+      get itemEntities() { return itemEntities; }, get entityMembers() { return entityMembers; },
+      get scopedMembers() { return scopedMembers; }, get scopedEntityOf() { return scopedEntityOf; },
+      get scopedUnit() { return scopedUnit; }, get hasScope() { return hasScope; },
+      fn: {
+        placementPerUnit: placementPerUnit,
+        placementMode: placementMode,
+        stimulusOf: stimulusOf,
+        hasAudioLines: hasAudioLines,
+        normalizeOpts: normalizeOpts,
+        applyLadderScale: applyLadderScale,
+        ladderForUnit: ladderForUnit,
+        learnedStage: learnedStage,
+        getUnitThreshold: getUnitThreshold,
+        itemLadderFor: itemLadderFor,
+        dropForItem: dropForItem,
+        unitFieldKey: unitFieldKey,
+        unitConfig: unitConfig,
+        validateUnitOverrideField: validateUnitOverrideField,
+        getUnitSettingsOverride: getUnitSettingsOverride,
+        unitSettings: unitSettings,
+        scaleLadder: scaleLadder,
+        setUnitSetting: setUnitSetting,
+        activeItems: activeItems,
+        records: records,
+        scopedArgs: scopedArgs,
+        scopedRecords: scopedRecords,
+        scopedMemberList: scopedMemberList,
+        entityViewOf: entityViewOf,
+        groupFieldKey: groupFieldKey,
+        validateGroupOverrideField: validateGroupOverrideField,
+        groupSettings: groupSettings,
+        setGroupSetting: setGroupSetting,
+        groupCap: groupCap,
+        groupOrder: groupOrder,
+        dayStat: dayStat,
+        extraNewToday: extraNewToday,
+        extraGroup: extraGroup,
+        groupUsed: groupUsed,
+        groupedItemsUsedToday: groupedItemsUsedToday,
+        groupQueueArgs: groupQueueArgs,
+        globalNewPerDay: globalNewPerDay,
+        newAllowance: newAllowance,
+        buildUnitNewCaps: buildUnitNewCaps,
+        buildItemUnits: buildItemUnits,
+        resolveNewOrder: resolveNewOrder,
+        preferShared: preferShared,
+        unitIsExamOnly: unitIsExamOnly,
+        builtQueue: builtQueue,
+        rawBuiltQueue: rawBuiltQueue,
+        dailyQueue: dailyQueue,
+        counts: counts,
+        summarize: summarize,
+        groupCounts: groupCounts,
+        entityStates: entityStates,
+        matches: matches,
+        practiceQueue: practiceQueue,
+        weakIds: weakIds,
+        weakValidIds: weakValidIds,
+        weakQueue: weakQueue,
+        weakList: weakList,
+        placementQueue: placementQueue,
+        examList: examList,
+        findExam: findExam,
+        timingGroups: timingGroups,
+        describeExam: describeExam,
+        exams: exams,
+        examQueue: examQueue,
+        acquireWakeLock: acquireWakeLock,
+        releaseLock: releaseLock,
+        buildPlan: buildPlan,
+        start: start,
+        newSessionId: newSessionId,
+        createSession: createSession,
+        moreNew: moreNew,
+        stage: stage,
+        record: record,
+        placement: placement,
+        isInt: isInt,
+        validateDraft: validateDraft,
+        closeSlot: closeSlot,
+        examDraft: examDraft,
+        discardDraft: discardDraft
+      }
+    };
 
     function placementPerUnit() {
       return (course.placement && course.placement.perUnit) || 5;

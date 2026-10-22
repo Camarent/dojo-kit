@@ -84,7 +84,25 @@
     return item.options[index];
   }
 
+  var K = {
+    UNIT_NEW_PREFIX: 'newBy:',
+    GROUP_NEW_PREFIX: 'newBy:g:',
+    DEFAULT_NEW_PER_DAY: 10,
+    DEFAULT_PRACTICE_LIMIT: 20,
+    DEFAULT_WEAK_LIMIT: 10,
+    DEFAULT_LEARNED_STAGE: 4,
+    TYPED: ['gap', 'cloze', 'numeric'],
+    SELF_RATED: ['card'],
+    DRAFT_EXPIRY_MS: 7 * 24 * 60 * 60 * 1000,
+    MAX_ANSWER_G: 200,
+    MAX_IDS_COUNT: 1000,
+    MAX_CLOSED_SIDS: 32,
+    WRITE_THROTTLE_MS: 1000,
+    TICK_INTERVAL_MS: 60000
+  };
+
   var api = {
+    K: K,
     hashString: hashString, mulberry32: mulberry32, shuffledIndexes: shuffledIndexes, isRetired: isRetired,
     ensureObject: ensureObject, expectedFor: expectedFor, isIdList: isIdList, orderPerm: orderPerm,
     clozeBlanks: clozeBlanks, correctIndexes: correctIndexes, optionText: optionText
