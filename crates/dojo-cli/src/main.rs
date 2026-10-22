@@ -166,12 +166,34 @@ fn i18n_check(dir: &Path, web: Option<&Path>) -> Vec<Diagnostic> {
 fn validate_course(dir: &Path, course: &CourseFiles, web: Option<&Path>) -> Vec<Diagnostic> {
     let mut diags = validate_all(&course.course_text, &course.files, course.lock.as_ref(), course.stimuli.as_ref(), course.intros.as_ref());
     diags.extend(i18n_check(dir, web));
-    let Ok(root) = fs::canonicalize(dir) else { return diags };
+    let root = match fs::canonicalize(dir) {
+        Ok(r) => r,
+        Err(e) => {
+            diags.push(Diagnostic { severity: Severity::Error, code: "bad_plugin_path", file: dir.display().to_string(), line: 0, message: format!("cannot canonicalize course directory: {e}") });
+            return diags;
+        }
+    };
     let value: serde_json::Value = serde_json::from_str(&course.course_text).unwrap_or_default();
     for kind in ["scripts", "styles"] {
         let list = value.get("plugins").and_then(|p| p.get(kind)).and_then(|v| v.as_array());
         for path in list.into_iter().flatten().filter_map(|v| v.as_str()) {
-            let problem = match fs::canonicalize(root.join(path)) {
+            let full_path = root.join(path);
+            let metadata = match fs::symlink_metadata(&full_path) {
+                Ok(m) => m,
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                    diags.push(Diagnostic { severity: Severity::Error, code: "bad_plugin_path", file: "course.json".to_string(), line: 0, message: format!("plugins.{kind} file '{path}' cannot be read: {e}") });
+                    continue;
+                }
+                Err(e) => {
+                    diags.push(Diagnostic { severity: Severity::Error, code: "bad_plugin_path", file: "course.json".to_string(), line: 0, message: format!("plugins.{kind} file '{path}' cannot be checked: {e}") });
+                    continue;
+                }
+            };
+            if metadata.file_type().is_symlink() {
+                diags.push(Diagnostic { severity: Severity::Error, code: "bad_plugin_path", file: "course.json".to_string(), line: 0, message: format!("plugins.{kind} '{path}' is a symlink, which is not allowed for security reasons") });
+                continue;
+            }
+            let problem = match fs::canonicalize(&full_path) {
                 Err(e) => Some(format!("plugins.{kind} file '{path}' cannot be read: {e}")),
                 Ok(real) if !real.starts_with(&root) => Some(format!("plugins.{kind} path '{path}' resolves outside the course folder")),
                 Ok(real) if !real.is_file() => Some(format!("plugins.{kind} path '{path}' is not a file")),
@@ -298,13 +320,19 @@ fn write_out(path: &Path, bytes: &[u8]) -> Result<(), String> {
 }
 
 /// Reads the files listed in `course.json` `plugins.<kind>`, relative to the course folder.
-fn plugin_files(dir: &Path, course: &serde_json::Value, kind: &str) -> Result<Vec<String>, String> {
+fn plugin_files(canonical_root: &Path, course: &serde_json::Value, kind: &str) -> Result<Vec<String>, String> {
     let list = course.get("plugins").and_then(|p| p.get(kind)).and_then(|v| v.as_array());
     let mut out = Vec::new();
     for path in list.into_iter().flatten().filter_map(|v| v.as_str()) {
-        let full_path = dir.join(path);
-        // Check that plugin file is not a symlink
-        check_symlink(&full_path, &format!("plugins.{kind} '{path}'"))?;
+        let full_path = canonical_root.join(path);
+        let real = fs::canonicalize(&full_path).map_err(|e| format!("plugins.{kind} '{path}': {e}"))?;
+        if !real.starts_with(canonical_root) {
+            return Err(format!("plugins.{kind} path '{path}' resolves outside the course folder"));
+        }
+        let metadata = fs::symlink_metadata(&full_path).map_err(|e| format!("plugins.{kind} '{path}': cannot check: {e}"))?;
+        if metadata.file_type().is_symlink() {
+            return Err(format!("plugins.{kind} '{path}' is a symlink, which is not allowed for security reasons"));
+        }
         let text = read(&full_path).map_err(|e| format!("plugins.{kind} '{path}': {e}"))?;
         out.push(text);
     }
@@ -375,11 +403,12 @@ fn run_build(args: &[String]) -> Result<u8, String> {
         }
     };
 
-    let plugin_scripts = match plugin_files(dir, &course_json, "scripts") {
+    let canonical_root = fs::canonicalize(dir).map_err(|e| format!("cannot canonicalize course directory: {e}"))?;
+    let plugin_scripts = match plugin_files(&canonical_root, &course_json, "scripts") {
         Ok(v) => v,
         Err(e) => return fail(e),
     };
-    let plugin_styles = match plugin_files(dir, &course_json, "styles") {
+    let plugin_styles = match plugin_files(&canonical_root, &course_json, "styles") {
         Ok(v) => v,
         Err(e) => return fail(e),
     };
@@ -1016,5 +1045,58 @@ fn main() -> ExitCode {
             eprintln!("{msg}");
             ExitCode::from(2)
         }
+    }
+}
+
+#[cfg(test)]
+mod plugin_files_tests {
+    use super::*;
+    use std::os::unix::fs as unix_fs;
+
+    fn setup(tag: &str) -> (PathBuf, PathBuf) {
+        let base = std::env::temp_dir().join(format!("dojo-pf-{tag}-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&base);
+        let root = base.join("course");
+        let outside = base.join("outside");
+        fs::create_dir_all(&root).unwrap();
+        fs::create_dir_all(&outside).unwrap();
+        (fs::canonicalize(&root).unwrap(), fs::canonicalize(&outside).unwrap())
+    }
+
+    fn course(path: &str) -> serde_json::Value {
+        serde_json::json!({"plugins": {"scripts": [path]}})
+    }
+
+    #[test]
+    fn plugin_files_reads_regular_file_inside_root() {
+        let (root, _) = setup("ok");
+        fs::write(root.join("a.js"), "A").unwrap();
+        assert_eq!(plugin_files(&root, &course("a.js"), "scripts").unwrap(), vec!["A".to_string()]);
+    }
+
+    #[test]
+    fn plugin_files_rejects_dotdot_escape() {
+        let (root, outside) = setup("dotdot");
+        fs::write(outside.join("o.js"), "O").unwrap();
+        let err = plugin_files(&root, &course("../outside/o.js"), "scripts").unwrap_err();
+        assert!(err.contains("outside the course folder"), "{err}");
+    }
+
+    #[test]
+    fn plugin_files_rejects_symlinked_directory_pointing_outside() {
+        let (root, outside) = setup("dirlink");
+        fs::write(outside.join("o.js"), "O").unwrap();
+        unix_fs::symlink(&outside, root.join("sub")).unwrap();
+        let err = plugin_files(&root, &course("sub/o.js"), "scripts").unwrap_err();
+        assert!(err.contains("outside the course folder"), "{err}");
+    }
+
+    #[test]
+    fn plugin_files_rejects_symlink_file_even_when_target_is_inside_root() {
+        let (root, _) = setup("filelink");
+        fs::write(root.join("real.js"), "R").unwrap();
+        unix_fs::symlink(root.join("real.js"), root.join("link.js")).unwrap();
+        let err = plugin_files(&root, &course("link.js"), "scripts").unwrap_err();
+        assert!(err.contains("symlink"), "{err}");
     }
 }
