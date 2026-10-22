@@ -32,7 +32,7 @@
     if (s && !voicesChanged.has(s) && s.addEventListener) {
       try {
         s.addEventListener('voiceschanged', function () { voicesChanged.set(s, true); });
-      } catch (e) { /* ignore */ }
+      } catch { /* ignore */ }
       voicesChanged.set(s, false);
     }
     return !!s;
@@ -60,7 +60,7 @@
   function primary(s) { return tag(s).split('-')[0]; }
 
   function voiceList(s) {
-    try { return Array.prototype.slice.call(s.getVoices() || []); } catch (e) { return []; }
+    try { return Array.prototype.slice.call(s.getVoices() || []); } catch { return []; }
   }
 
   function langOf(cfg) { return (cfg && cfg.speech && cfg.speech.lang) || (cfg && cfg.lang) || undefined; }
@@ -80,7 +80,7 @@
       if (!voicesChanged.has(s) && s.addEventListener) {
         try {
           s.addEventListener('voiceschanged', function () { voicesChanged.set(s, true); });
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
         voicesChanged.set(s, false);
       }
       return 'ok';
@@ -98,7 +98,7 @@
     var out = [];
     (Array.isArray(prefer) ? prefer : []).forEach(function (src) {
       if (typeof src !== 'string' || src === '') return;
-      try { out.push(new RegExp(src, 'i')); } catch (e) { /* invalid pattern: ignored */ }
+      try { out.push(new RegExp(src, 'i')); } catch { /* invalid pattern: ignored */ }
     });
     return out;
   }
@@ -179,7 +179,7 @@
   function stop(win) {
     token++;
     var s = synth(win);
-    if (s) { try { s.cancel(); } catch (e) { /* ignore */ } }
+    if (s) { try { s.cancel(); } catch { /* ignore */ } }
   }
 
   function play(list, cfg, cb, win) {
@@ -210,7 +210,7 @@
       var code = e && e.error;
       if (mine !== token || code === 'canceled' || code === 'interrupted') return;
       token++;
-      try { s.cancel(); } catch (x) { /* ignore */ }
+      try { s.cancel(); } catch { /* ignore */ }
       if (cb.onError) cb.onError(e);
     }
     try {
@@ -237,10 +237,10 @@
         if (started || mine !== token) return;
         clearWatchdog();
         token++;
-        try { s.cancel(); } catch (x) { /* ignore */ }
+        try { s.cancel(); } catch { /* ignore */ }
         if (cb.onError) cb.onError({ error: 'no-start' });
       }, 2500);
-    } catch (e) {
+    } catch {
       clearWatchdog();
       token++;
       return { ok: false, reason: 'unavailable' };

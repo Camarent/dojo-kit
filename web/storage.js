@@ -7,12 +7,11 @@
   'use strict';
 
   var warn = root.DojoStorageWarn ? root.DojoStorageWarn.warn : (typeof require !== 'undefined' ? require('./storage/warn.js').warn : function () {});
-  var adapters;
   var store;
 
   try {
-    adapters = require('./storage/adapters.js');
-  } catch (e) { warn({}, 'storage.adapters.require', e); adapters = root.DojoStorageAdapters || null; }
+    require('./storage/adapters.js');
+  } catch (e) { warn({}, 'storage.adapters.require', e); }
 
   try {
     store = require('./storage/store.js');
