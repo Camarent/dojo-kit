@@ -352,6 +352,22 @@ fn i18n_plural_underscore_suffix_is_warning() {
     assert!(text.contains("n_few"), "{}", text);
 }
 
+#[test]
+fn i18n_reserved_plugin_course_keys_do_not_warn() {
+    let (dir, web) = i18n_setup("i18n-reserved", r#"{"plugin.x.y":"val","course.a":"val","hi":"Salut {name}","bye":"Ciao","lang":"Langue {lang}"}"#);
+    let out = validate_i18n(&dir, &web, &[]);
+    assert_eq!(code(&out), Some(0));
+    assert!(!stdout(&out).contains("warning[i18n_unknown_key]"), "reserved keys should not warn: {}", stdout(&out));
+}
+
+#[test]
+fn i18n_unknown_key_foo_bar_still_warns() {
+    let (dir, web) = i18n_setup("i18n-foo-bar", r#"{"foo.bar":"val","hi":"Salut {name}","bye":"Ciao","lang":"Langue {lang}"}"#);
+    let out = validate_i18n(&dir, &web, &[]);
+    assert_eq!(code(&out), Some(0));
+    assert!(stdout(&out).contains("warning[i18n_unknown_key] i18n/xx.json: "), "{}", stdout(&out));
+}
+
 #[cfg(unix)]
 #[test]
 fn i18n_symlinked_file_is_rejected_by_validate_like_build() {
