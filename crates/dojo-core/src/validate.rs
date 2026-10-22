@@ -40,7 +40,7 @@ pub struct SourceFile {
 }
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 87] = [
+pub const CODES: [(&str, Severity, &str); 88] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -98,6 +98,7 @@ pub const CODES: [(&str, Severity, &str); 87] = [
     ("fold_too_large", Severity::Error, "fold target string or pair count exceeds the limit"),
     ("unknown_stimulus", Severity::Error, "item references a stimulus id that does not exist"),
     ("duplicate_stimulus", Severity::Error, "two stimuli share an id"),
+    ("bad_breakdown", Severity::Error, "breakdown config is invalid"),
     ("bad_speech", Severity::Error, "speech config: rate/pitch out of range, empty voice label, empty lines, or empty text"),
     ("unknown_voice", Severity::Error, "speak line references a voice label not defined in speech.voices"),
     ("unknown_section", Severity::Error, "a timing or scoring section references a section title that does not exist"),
@@ -880,6 +881,17 @@ fn check_course(course: &Course, sink: &mut Sink) {
                     }
                     Some(_) => {}
                 }
+            }
+        }
+    }
+    if let Some(breakdown) = &course.breakdown {
+        if breakdown.key.as_ref().map_or(true, |k| k.trim().is_empty()) ||
+           breakdown.meaning.as_ref().map_or(true, |m| m.trim().is_empty()) {
+            sink.error("bad_breakdown", COURSE_FILE, 0, "breakdown key and meaning must be non-empty strings".to_string());
+        }
+        for (i, reading) in breakdown.readings.iter().enumerate() {
+            if reading.trim().is_empty() {
+                sink.error("bad_breakdown", COURSE_FILE, 0, format!("breakdown readings[{}] must be a non-empty string", i));
             }
         }
     }

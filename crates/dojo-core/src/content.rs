@@ -415,6 +415,24 @@ pub struct Course {
     /// Declarative detail rendering config from item.meta (per-course default).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub detail: Option<DetailConfig>,
+    /// Kanji/Han breakdown config: dotted paths into item for key, meaning, and readings.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub breakdown: Option<BreakdownConfig>,
+}
+
+/// Kanji/Han breakdown configuration for kanjiIndex/kanjiBreakdown.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BreakdownConfig {
+    /// Dot-separated path into item.meta for the kanji character (e.g., "meta.kanji").
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub key: Option<String>,
+    /// Dot-separated path into item.meta for the meaning (e.g., "meta.ru").
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub meaning: Option<String>,
+    /// Array of dot-separated paths into item.meta for readings (e.g., ["meta.on", "meta.kun"]).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub readings: Vec<String>,
 }
 
 /// A tag's display metadata: a plain label string, or an object with an optional label and `kind` (`public` or `internal`).

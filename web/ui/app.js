@@ -984,7 +984,8 @@
   function kanjiRows(p, s, examMode) {
     var item = s.cur && s.cur.item;
     if (!item || !s.result || examMode || !DojoExt.kanjiBreakdown || !p.content || !p.content.items) return null;
-    var breakdown = DojoExt.kanjiBreakdown(item, p.content.items, p.course.contentLanguage);
+    var cfgOrLang = p.course.breakdown ? p.course.breakdown : p.course.contentLanguage;
+    var breakdown = DojoExt.kanjiBreakdown(item, p.content.items, cfgOrLang);
     if (!breakdown || !breakdown.length) return null;
     var t = p.t;
     return html`<ul class="kanji-rows" data-testid="kanji-rows">

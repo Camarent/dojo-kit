@@ -360,23 +360,42 @@
 
   // Build a lookup map from kanji char -> {meaning, on, kun} from items with meta.kanji.
   // First item per char wins; items without a string meaning are skipped.
-  function kanjiIndex(items, lang) {
+  function kanjiIndex(items, cfgOrLang) {
     var map = {};
     if (!Array.isArray(items)) return map;
+    var useConfig = typeof cfgOrLang === 'object' && cfgOrLang !== null;
+    var keyPath = useConfig && cfgOrLang.key ? cfgOrLang.key : 'meta.kanji';
+    var meaningPath = useConfig && cfgOrLang.meaning ? cfgOrLang.meaning : null;
+    var readingsPaths = useConfig && Array.isArray(cfgOrLang.readings) ? cfgOrLang.readings : ['meta.on', 'meta.kun'];
     items.forEach(function (it) {
-      if (!it || !it.meta || typeof it.meta.kanji !== 'string') return;
-      var c = it.meta.kanji;
-      if (c.length !== 1) return;  // only single Han chars
-      if (Object.prototype.hasOwnProperty.call(map, c)) return;  // first wins
-      var meaning = null;
-      if (it.meta && typeof it.meta[lang] === 'string') meaning = it.meta[lang];
-      else if (it.meta && typeof it.meta.meaning === 'string') meaning = it.meta.meaning;
-      if (meaning === null) return;  // skip items without a string meaning
-      map[c] = {
-        kanji: c,
+      if (!it || typeof it !== 'object') return;
+      var kanjiChar = pathValue(it, keyPath);
+      if (typeof kanjiChar !== 'string' || kanjiChar.length !== 1) return;  // only single Han chars
+      if (Object.prototype.hasOwnProperty.call(map, kanjiChar)) return;  // first wins
+      var meaning;
+      if (useConfig && meaningPath) {
+        meaning = pathValue(it, meaningPath);
+      } else {
+        var lang = typeof cfgOrLang === 'string' ? cfgOrLang : null;
+        meaning = lang && it.meta ? it.meta[lang] : undefined;
+        if (typeof meaning !== 'string' || meaning.length === 0) meaning = it.meta && it.meta.meaning;
+      }
+      if (typeof meaning !== 'string' || meaning.length === 0) return;  // skip items without a string meaning
+      var on = undefined;
+      var kun = undefined;
+      if (readingsPaths.length >= 1) {
+        on = pathValue(it, readingsPaths[0]);
+        if (on === undefined || on === null || !Array.isArray(on)) on = undefined;
+      }
+      if (readingsPaths.length >= 2) {
+        kun = pathValue(it, readingsPaths[1]);
+        if (kun === undefined || kun === null || !Array.isArray(kun)) kun = undefined;
+      }
+      map[kanjiChar] = {
+        kanji: kanjiChar,
         meaning: meaning,
-        on: Array.isArray(it.meta.on) ? it.meta.on : undefined,
-        kun: Array.isArray(it.meta.kun) ? it.meta.kun : undefined
+        on: on,
+        kun: kun
       };
     });
     return map;
@@ -386,7 +405,7 @@
   // ordered by first appearance, capped at 12 rows.
   // Returns [] when the prompt has fewer than 2 Han characters, or when the only distinct kanji equals the item's own meta.kanji
   // (kanji items themselves) or when nothing is found.
-  function kanjiBreakdown(item, items, lang) {
+  function kanjiBreakdown(item, items, cfgOrLang) {
     if (!item) return [];
     // Count Han characters in the prompt only
     var promptText = typeof item.prompt === 'string' ? plain(item.prompt) : '';
@@ -398,10 +417,12 @@
     expectedTexts(item).forEach(function (t) { text += plain(t); });
     answerTexts(item).forEach(function (t) { text += plain(t); });
     var han = hanOf(text);
-    var index = kanjiIndex(items, lang);
+    var index = kanjiIndex(items, cfgOrLang);
     var seen = {};
     var result = [];
-    var ownKanji = (item.meta && typeof item.meta.kanji === 'string') ? item.meta.kanji : null;
+    var keyPath = typeof cfgOrLang === 'object' && cfgOrLang !== null && cfgOrLang.key ? cfgOrLang.key : 'meta.kanji';
+    var ownKanji = pathValue(item, keyPath);
+    if (typeof ownKanji !== 'string' || ownKanji.length !== 1) ownKanji = null;
     han.forEach(function (c) {
       if (seen[c]) return;
       seen[c] = true;
