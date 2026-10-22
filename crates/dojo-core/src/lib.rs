@@ -6,6 +6,7 @@ pub mod exam;
 pub mod groups;
 pub mod lock;
 pub mod progress;
+pub mod rng;
 pub mod schema;
 pub mod slug;
 pub mod srs;

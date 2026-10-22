@@ -6,7 +6,7 @@ mod speech;
 pub use course::{
     Bar, BreakdownConfig, Course, DetailConfig, DetailField, ExamConfig, Group, GroupNewOrder,
     PassBasis, PassMode, PassRule, PlacementConfig, Plugins, RubyConfig, ScoringPart, SrsConfig,
-    SrsScope, TagLabel, TagLabelDetail, TimingGroup, Unit,
+    SrsScope, Section, TagLabel, TagLabelDetail, TimingGroup, Unit,
 };
 pub use item::{
     CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, ItemType, MatchItem, MultiItem,

@@ -1,10 +1,23 @@
 use crate::check::Normalize;
-use crate::exam::Section;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use super::{ItemType, NewOrder, SpeechConfig};
+
+/// One exam section: how many items to draw and from where. `None` filters match everything.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Section {
+    pub title: String,
+    pub count: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub units: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub types: Option<Vec<String>>,
+}
 
 /// A unit of a course.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

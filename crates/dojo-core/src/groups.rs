@@ -242,26 +242,13 @@ pub fn entity_state(item_ids: &[&str], records: &Map<String, Value>, now: i64, l
     }
 }
 
-pub(crate) fn fnv1a(text: &str) -> u64 {
-    let mut h: u64 = 0xcbf29ce484222325;
-    for b in text.bytes() {
-        h ^= u64::from(b);
-        h = h.wrapping_mul(0x100000001b3);
-    }
-    h
-}
-
 /// Seeded Fisher-Yates shuffle (splitmix64) of entities; seed = hash of `course_id|day|group_id`.
 pub fn shuffle_entities(entities: &mut [String], course_id: &str, day: &str, group_id: &str) {
-    use crate::exam::splitmix64;
     if entities.len() <= 1 {
         return;
     }
-    let mut state = fnv1a(&format!("{course_id}|{day}|{group_id}"));
-    for i in (1..entities.len()).rev() {
-        let j = (splitmix64(&mut state) % (i as u64 + 1)) as usize;
-        entities.swap(i, j);
-    }
+    let mut state = crate::rng::fnv1a(&format!("{course_id}|{day}|{group_id}"));
+    crate::rng::seeded_shuffle(entities, &mut state);
 }
 
 /// Check if an item matches the bar's filters (unit AND all tags). Empty filters match all.

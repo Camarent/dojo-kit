@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
 use crate::content::{ScoringPart, PassRule, PassMode};
+pub use crate::content::Section;
+use crate::rng::seeded_shuffle;
 
 /// Default pass mark (60%).
 pub const DEFAULT_PASS_MARK: f64 = 0.6;
@@ -10,20 +12,6 @@ pub const DEFAULT_PASS_MARK: f64 = 0.6;
 /// Resolves the pass mode from the pass rule and whether scoring parts are present.
 pub fn resolve_mode(pass: Option<&PassRule>, has_scoring: bool) -> PassMode {
     pass.and_then(|p| p.mode).unwrap_or(if has_scoring { PassMode::Points } else { PassMode::Percent })
-}
-
-/// One exam section: how many items to draw and from where. `None` filters match everything.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Section {
-    pub title: String,
-    pub count: usize,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub units: Option<Vec<String>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub tags: Option<Vec<String>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub types: Option<Vec<String>>,
 }
 
 /// A section range in sample output: start index and count of items for a section.
@@ -88,14 +76,7 @@ pub struct Score {
     pub estimate: bool,
 }
 
-/// splitmix64 step: advances `state` and returns the next value.
-pub fn splitmix64(state: &mut u64) -> u64 {
-    *state = state.wrapping_add(0x9E3779B97F4A7C15);
-    let mut z = *state;
-    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
-    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
-    z ^ (z >> 31)
-}
+pub use crate::rng::splitmix64;
 
 fn matches_section(c: &Candidate, section: &Section) -> bool {
     section.units.as_ref().is_none_or(|units| units.contains(&c.unit))
@@ -106,10 +87,7 @@ fn matches_section(c: &Candidate, section: &Section) -> bool {
 /// Draw groups from a pool with the given count, using the provided splitmix64 state.
 /// Returns (picked_indices, remaining_count)
 fn draw_tier(units: &mut Vec<Vec<usize>>, count: usize, state: &mut u64) -> (Vec<usize>, usize) {
-    for i in (1..units.len()).rev() {
-        let j = (splitmix64(state) % (i as u64 + 1)) as usize;
-        units.swap(i, j);
-    }
+    seeded_shuffle(units, state);
     let pool_size: usize = units.iter().map(|u| u.len()).sum();
     let mut remaining = count;
     let mut picked: Vec<usize> = Vec::new();

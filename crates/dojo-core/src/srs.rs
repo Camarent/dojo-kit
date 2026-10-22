@@ -2,7 +2,7 @@ use crate::progress::{num_i64, truthy};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 
-use crate::exam::splitmix64;
+use crate::rng::splitmix64;
 
 pub const HOUR: i64 = 3_600_000;
 pub const DAY: i64 = 24 * HOUR;
@@ -282,7 +282,8 @@ pub fn apply_entity(
 /// Members to ask for one entity slot: seeded shuffle (`course|day|entity`) of `members`, first `min(n, len)`; `n = 0` counts as 1.
 pub fn pick_drill(members: &[String], n: usize, course_id: &str, day: &str, entity: &str) -> Vec<String> {
     let mut list = members.to_vec();
-    crate::groups::shuffle_entities(&mut list, course_id, day, entity);
+    let mut state = crate::rng::fnv1a(&format!("{course_id}|{day}|{entity}"));
+    crate::rng::seeded_shuffle(&mut list, &mut state);
     list.truncate(n.max(1));
     list
 }
