@@ -214,3 +214,20 @@ fn api_migrate_progress() {
     let out: Value = serde_json::from_str(&call("migrateProgress", &json!({"doc": 1, "items": items}).to_string())).unwrap();
     assert_eq!(out["value"]["error"], json!("invalid_document"));
 }
+
+#[test]
+fn equal_last_predecessors_take_extra_fields_from_lower_id() {
+    let mut lo = rec(2, 20);
+    lo["ok"] = json!(4);
+    lo["bad"] = json!(1);
+    lo["note"] = json!("lo");
+    let mut hi = rec(2, 20);
+    hi["ok"] = json!(7);
+    hi["bad"] = json!(0);
+    hi["note"] = json!("hi");
+    let d = doc(0, json!({"o-2": hi, "o-1": lo}));
+    let out = run(&d, &links(&[("n-1", &["o-2", "o-1"])])).0.unwrap();
+    let got = item_of(&out, "n-1");
+    assert_eq!(got["note"], json!("lo"));
+    assert_eq!((got["ok"].clone(), got["bad"].clone()), (json!(7), json!(1)));
+}
