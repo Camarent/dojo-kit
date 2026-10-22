@@ -1,3 +1,5 @@
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
+#![cfg_attr(not(test), warn(clippy::indexing_slicing))]
 mod build;
 mod cmd;
 mod course_files;

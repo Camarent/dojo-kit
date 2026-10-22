@@ -29,6 +29,8 @@ pub fn group_counts(
 }
 
 /// `group_counts`; entities in `scoped` are judged on `entity_view` (see `entity_stats_scoped`).
+// Contract: every entity in `entity_order` has an entry in `entity_items`, inserted in the same pass.
+#[allow(clippy::indexing_slicing)]
 pub fn group_counts_scoped(
     course: &Value,
     items_meta: &[ItemMeta],

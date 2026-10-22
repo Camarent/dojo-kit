@@ -4,6 +4,8 @@ const B64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012
 use serde_json::Value;
 
 /// Standard base64 with padding.
+// Contract: `chunks(3)` yields non-empty chunks; `B64` has 64 entries and is indexed by `& 63`.
+#[allow(clippy::indexing_slicing)]
 pub fn base64(data: &[u8]) -> String {
     let mut out = String::with_capacity(data.len().div_ceil(3) * 4);
     for chunk in data.chunks(3) {

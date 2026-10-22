@@ -132,6 +132,8 @@ fn group_counts(a: &Value) -> Result<Value, CallError> {
         Ok(json!({ "groups": gmap, "bars": bars }))
 }
 
+// Contract: every key in `order` was inserted into `members` in the loop above.
+#[allow(clippy::indexing_slicing)]
 fn entity_states(a: &Value) -> Result<Value, CallError> {
         let mut order: Vec<String> = Vec::new();
         let mut members: HashMap<String, Vec<String>> = HashMap::new();

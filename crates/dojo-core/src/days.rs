@@ -72,6 +72,8 @@ fn is_leap_year(year: i64) -> bool {
     (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 }
 
+// Contract: callers check `1..=12` for `month` before the call.
+#[allow(clippy::indexing_slicing)]
 fn days_in_month(year: i64, month: i64) -> i64 {
     let days: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     if month == 2 && is_leap_year(year) {
@@ -101,6 +103,8 @@ pub fn parse_iso_ms(s: &str) -> Option<i64> {
 
 const MAX_YEAR: i64 = 9999;
 
+// Contract: `parts`, `date_parts` and `time_parts` lengths are checked (2, 3, 3) before indexing; `idx` comes from `find` on `sec_part`.
+#[allow(clippy::indexing_slicing)]
 fn parse_datetime(no_z: &str) -> Option<i64> {
     let parts: Vec<&str> = no_z.split('T').collect();
     if parts.len() != 2 { return None; }
@@ -132,6 +136,8 @@ fn parse_datetime(no_z: &str) -> Option<i64> {
     Some(days * 86400000 + hour * 3600000 + minute * 60000 + second * 1000 + millis)
 }
 
+// Contract: `date_parts.len() == 3` is checked before indexing.
+#[allow(clippy::indexing_slicing)]
 fn parse_date(s: &str) -> Option<i64> {
     let date_parts: Vec<&str> = s.split('-').collect();
     if date_parts.len() != 3 { return None; }

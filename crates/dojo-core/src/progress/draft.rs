@@ -102,6 +102,8 @@ pub(super) fn merge_draft(a: Option<&Value>, b: Option<&Value>, reset_at: f64) -
     merge_draft_bounded(a, b, reset_at, CLOSED_SIDS_MAX)
 }
 
+// Contract: `skip <= entries.len()` by `saturating_sub`.
+#[allow(clippy::indexing_slicing)]
 pub(super) fn merge_draft_bounded(a: Option<&Value>, b: Option<&Value>, reset_at: f64, bound: usize) -> DraftMerge {
     let fresh = |t: f64| reset_at == 0.0 || t >= reset_at;
     let mut valid_seen = false;

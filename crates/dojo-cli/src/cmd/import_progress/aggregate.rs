@@ -17,6 +17,8 @@ fn entity_of(item: &Item) -> &str {
 }
 
 /// Aggregate multiple old records into one new record.
+// Contract: `records` is non-empty (early return above).
+#[allow(clippy::indexing_slicing)]
 fn aggregate_records(records: &[OldRecord], method: Aggregate) -> OldRecord {
     if records.is_empty() {
         return OldRecord {
@@ -69,6 +71,8 @@ pub struct ImportStats {
 }
 
 /// Import progress from old format to new format.
+// Contract: `pos` indexes a slot just pushed or looked up in `new_id_records`; `entity_members` has a key for every `entity_id` read.
+#[allow(clippy::indexing_slicing)]
 pub fn import_progress(
     old_progress: &OldProgress,
     id_map: &IdMapConfig,

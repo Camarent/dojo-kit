@@ -68,6 +68,8 @@ fn is_self_rated(item: &Item) -> bool {
 
 /// Computes statistics for a course given its JSON text, parsed course, and all items.
 /// The items are expected to be from content/*.jsonl files; parse errors are not handled here.
+// Contract: `unit_idx` comes from `unit_id_to_index`, built over the same units as `unit_stats`.
+#[allow(clippy::indexing_slicing)]
 pub fn compute(course: &Course, items: &[Item]) -> Stats {
     let mut unit_id_to_index: HashMap<&str, usize> = HashMap::new();
     for (idx, unit) in course.units.iter().enumerate() {

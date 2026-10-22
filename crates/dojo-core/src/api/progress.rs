@@ -1,6 +1,8 @@
 use super::*;
 use crate::{days, migrate, progress, supersedes};
 
+// Contract: `out` is a `json!` object, so string-key assignment cannot panic.
+#[allow(clippy::indexing_slicing)]
 pub(super) fn progress_call(name: &str, a: &Value) -> Result<Value, CallError> {
     match name {
         "emptyProgress" => Ok(progress::empty_progress()),

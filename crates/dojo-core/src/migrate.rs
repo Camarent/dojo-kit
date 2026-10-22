@@ -25,6 +25,8 @@ fn num(r: &Map<String, Value>, k: &str) -> f64 {
     r.get(k).and_then(Value::as_f64).unwrap_or(0.0)
 }
 
+// Contract: `recs` is non-empty: its only caller passes a vector holding at least one predecessor record.
+#[allow(clippy::indexing_slicing)]
 fn pick<'a>(recs: &[&'a Map<String, Value>], k: &str, max: bool) -> &'a Value {
     let mut best = recs[0];
     for r in &recs[1..] {
@@ -41,6 +43,8 @@ fn pick<'a>(recs: &[&'a Map<String, Value>], k: &str, max: bool) -> &'a Value {
 /// `s`, `due` = min; `ok`, `bad`, `last` = max; other fields from the record with the greatest `last`
 /// (ties: successor first, then predecessors by ascending id). Invalid successor records are kept and listed in `skipped`.
 /// Predecessors with `last < resetAt` are ignored when `resetAt != 0`. Idempotent.
+// Contract: `recs` holds at least the predecessor records (`pred_recs` is non-empty, checked above); `doc` is an object when `items` is assigned.
+#[allow(clippy::indexing_slicing)]
 pub fn migrate_progress(doc: &Value, links: &Links) -> Result<Migration, MigrateError> {
     let mut doc = sanitize(doc).ok_or(MigrateError::InvalidDocument)?;
     let reset_at = doc.get("resetAt").and_then(Value::as_f64).unwrap_or(0.0);

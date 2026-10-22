@@ -105,6 +105,8 @@ fn check_exam_pass(id: &str, exam: &ExamConfig, sink: &mut Sink) {
 
 type KnownCheck<'a> = dyn FnMut(&mut Sink, String, &str) + 'a;
 
+// Contract: `indices[i]` is read for `i` in `1..indices.len()` after the length check; `tg.sections` is non-empty.
+#[allow(clippy::indexing_slicing)]
 fn check_exam_timing(id: &str, exam: &ExamConfig, check_known: &mut KnownCheck, sink: &mut Sink) {
     if let Some(timing) = &exam.timing {
         if timing.is_empty() {

@@ -65,6 +65,8 @@ fn normalize_numeric_str(s: &str) -> Option<String> {
     Some(s.to_string())
 }
 
+// Contract: every `bytes[i]` read is preceded by `i < n` (or `i >= n ||`) in the same condition or loop.
+#[allow(clippy::indexing_slicing)]
 fn is_valid_numeric_string(s: &str) -> bool {
     let bytes = s.as_bytes();
     if bytes.is_empty() {

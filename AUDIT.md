@@ -27,7 +27,7 @@ Not installed: cargo-udeps (needs nightly; only stable present; cargo-machete co
 | Goal | Command |
 |---|---|
 | Clippy size/complexity | `cargo clippy --workspace --all-targets -- -W clippy::too_many_lines -W clippy::cognitive_complexity -W clippy::too_many_arguments -W clippy::type_complexity -W clippy::excessive_nesting -W clippy::fn_params_excessive_bools -W clippy::struct_excessive_bools` (add `-D warnings` for gate; thresholds in clippy.toml, not yet present) |
-| Panics | `cargo clippy --workspace -- -W clippy::unwrap_used -W clippy::expect_used -W clippy::indexing_slicing -W clippy::panic` |
+| Panics | `cargo clippy --workspace -- -W clippy::unwrap_used -W clippy::expect_used -W clippy::indexing_slicing -W clippy::panic` (gate: same with each `-W` replaced by `-D`, plus `-D warnings` once other lints are clean; 0 panic warnings expected; needs `rustup component add clippy`) |
 | WASM clippy | `cargo clippy -p dojo-wasm --target wasm32-unknown-unknown -- -D warnings` (target not checked) |
 | CVEs | `cargo audit` (clean at setup) |
 | Licenses/bans/sources | `cargo deny check` (deny.toml in repo; at setup fails only on foldhash = Zlib, flagged) |

@@ -18,6 +18,8 @@ pub struct LinkItem {
 pub struct LinkError(pub String);
 
 /// Checks one item list; `retired_extra` are ids known retired outside the list (ids.lock). Returns `(item id, message)` pairs.
+// Contract: `n` comes from `enumerate` over `list`, so `list[..n]` is in range.
+#[allow(clippy::indexing_slicing)]
 fn problems(items: &[LinkItem], retired_extra: &[&str]) -> Vec<(String, String)> {
     let is_live = |p: &str| items.iter().any(|i| !i.retired && i.id == p);
     let is_retired = |p: &str| retired_extra.contains(&p) || items.iter().any(|i| i.retired && i.id == p);

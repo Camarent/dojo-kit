@@ -47,6 +47,8 @@ fn matches_section(c: &Candidate, section: &Section) -> bool {
 
 /// Draw groups from a pool with the given count, using the provided splitmix64 state.
 /// Returns (picked_indices, remaining_count)
+// Contract: `reach` has `units.len() + 1` rows of `effective_count + 1` columns; `i < units.len()`, `s <= effective_count`, `size <= s` before `s - size`; `units[i]` bounded by `n`.
+#[allow(clippy::indexing_slicing)]
 fn draw_tier(units: &mut Vec<Vec<usize>>, count: usize, state: &mut u64) -> (Vec<usize>, usize) {
     seeded_shuffle(units, state);
     let pool_size: usize = units.iter().map(|u| u.len()).sum();
@@ -96,6 +98,8 @@ fn draw_tier(units: &mut Vec<Vec<usize>>, count: usize, state: &mut u64) -> (Vec
 /// A group larger than the remaining count is skipped and the unfilled rest is reported in `short`.
 /// If `section.count` exceeds the candidate pool, it is clamped to the pool size before sampling.
 /// Returns section ranges that map each section to its index range in the output `ids`.
+// Contract: group indices come from `groups.len() - 1` at push time; `picked` indices are produced by `draw_tier` over `tier`; candidate indices come from `enumerate`.
+#[allow(clippy::indexing_slicing)]
 pub fn sample(candidates: &[Candidate], sections: &[Section], seed: u64) -> Sample {
     let mut state = seed;
     let mut used: HashSet<&str> = HashSet::new();

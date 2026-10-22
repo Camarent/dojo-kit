@@ -282,6 +282,8 @@ fn sorted_tags(item: &Item) -> Vec<String> {
     t
 }
 
+// Contract: the only caller passes groups with at least 2 items; `message.len() >= 2` when it ends with ", ".
+#[allow(clippy::indexing_slicing)]
 fn stimulus_split_message(stim_id: &str, stim_items: &[&Item]) -> Option<String> {
     let first_item = stim_items[0];
     let first_unit = first_item.unit();
