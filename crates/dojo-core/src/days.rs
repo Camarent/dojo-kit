@@ -99,6 +99,8 @@ pub fn parse_iso_ms(s: &str) -> Option<i64> {
     }
 }
 
+const MAX_YEAR: i64 = 9999;
+
 fn parse_datetime(no_z: &str) -> Option<i64> {
     let parts: Vec<&str> = no_z.split('T').collect();
     if parts.len() != 2 { return None; }
@@ -122,7 +124,7 @@ fn parse_datetime(no_z: &str) -> Option<i64> {
         let sec: i64 = sec_part.parse().ok()?;
         (sec, 0)
     };
-    if year < 1970 || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
+    if !(1970..=MAX_YEAR).contains(&year) || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
         return None;
     }
     if hour > 23 || minute > 59 || second > 59 { return None; }
@@ -136,7 +138,7 @@ fn parse_date(s: &str) -> Option<i64> {
     let year: i64 = date_parts[0].parse().ok()?;
     let month: i64 = date_parts[1].parse().ok()?;
     let day: i64 = date_parts[2].parse().ok()?;
-    if year < 1970 || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
+    if !(1970..=MAX_YEAR).contains(&year) || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
         return None;
     }
     Some(days_from_civil(year, month, day) * MS_PER_DAY)
@@ -162,6 +164,15 @@ mod tests {
             parse_iso_ms("2026-01-15T10:20:30.5Z"),
             Some(1768472430500)
         );
+    }
+
+    #[test]
+    fn parse_iso_ms_year_cap() {
+        assert_eq!(parse_iso_ms("10000-01-01"), None);
+        assert_eq!(parse_iso_ms("10000-01-01T00:00:00Z"), None);
+        assert_eq!(parse_iso_ms("300000000-01-01T00:00:00Z"), None);
+        assert_eq!(parse_iso_ms("9999-12-31"), Some(253402214400000));
+        assert_eq!(parse_iso_ms("9999-12-31T23:59:59Z"), Some(253402300799000));
     }
 
     #[test]
