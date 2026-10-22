@@ -220,17 +220,13 @@ test('valid key formats work', () => {
 
 // ============ SettingsScreen plugin settings tests ============
 
-const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
-const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
+const { loadBundle } = require('./load-bundle.js');
 const NOW = 1760000000000;
 
 function loadApp() {
   const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'ui/app.js'] });
   return sb;
 }
 function find(n, id) {

@@ -3,21 +3,20 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const vm = require('node:vm');
+const { loadBundle } = require('./load-bundle.js');
 
 const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const NOW = 1760000000000;
 
 function loadApp() {
   const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext('self.DojoExt = { text: function (s) { return s; } };', sb);
-  ['registry', 'card', 'choice', 'cloze', 'gap', 'match', 'multi', 'numeric', 'order'].map((n) => 'types/' + n + '.js').concat(['ui/app.js']).forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/app.js'] });
   return sb.DojoApp;
 }
 function walk(n, id) {

@@ -4,10 +4,10 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
 const ROOT = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -76,10 +76,7 @@ async function setup(content, settings) {
 
 function loadApp() {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  ['types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'] });
   return sb;
 }
 

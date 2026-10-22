@@ -17,11 +17,12 @@ function bundleScripts(bundle = DEFAULT_BUNDLE) {
 
 // bundle: path to a bundle.json or a { scripts } object (default web/bundle.json).
 // root: directory the script paths resolve against (default web/).
-function loadBundle(sandbox, { skip = [], override = {}, bundle = DEFAULT_BUNDLE, root = WEB } = {}) {
+function loadBundle(sandbox, { skip = [], only, override = {}, bundle = DEFAULT_BUNDLE, root = WEB } = {}) {
   sandbox.self = sandbox;
   vm.createContext(sandbox);
   sandbox.console = sandbox.console || { warn() {}, log: console.log };
-  for (const f of bundleScripts(bundle)) {
+  const scripts = only ? only : bundleScripts(bundle);
+  for (const f of scripts) {
     if (skip.includes(f)) continue;
     const src = override[f] !== undefined ? override[f] : readSource(f, root);
     vm.runInContext(src, sandbox, { filename: f });

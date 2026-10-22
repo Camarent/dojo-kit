@@ -3,9 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
+const { loadBundle } = require('./load-bundle.js');
 
-const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 
 // Setup preact mock
 global.preact = {
@@ -23,19 +22,13 @@ global.preact = {
 
 function loadExtAndPlugin() {
   const sb = { console, self: {}, preact: global.preact };
-  sb.self = sb;
-  vm.createContext(sb);
-  vm.runInContext(read('ext.js'), sb, { filename: 'ext.js' });
-  vm.runInContext(read('../examples/plugins/ja-readings/ja-readings.js'), sb, { filename: 'ja-readings.js' });
+  loadBundle(sb, { only: ['ext.js', '../examples/plugins/ja-readings/ja-readings.js'] });
   return sb;
 }
 
 function loadExtAndPluginNoPreact() {
   const sb = { console, self: {} };
-  sb.self = sb;
-  vm.createContext(sb);
-  vm.runInContext(read('ext.js'), sb, { filename: 'ext.js' });
-  vm.runInContext(read('../examples/plugins/ja-readings/ja-readings.js'), sb, { filename: 'ja-readings.js' });
+  loadBundle(sb, { only: ['ext.js', '../examples/plugins/ja-readings/ja-readings.js'] });
   return sb;
 }
 

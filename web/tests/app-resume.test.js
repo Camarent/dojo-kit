@@ -7,19 +7,17 @@ const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
-const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const NOW = 1760000000000;
 const SECTIONS = [{ title: 'A', count: 3, tags: ['a'] }, { title: 'B', count: 3, tags: ['b'] }];
 const EXAM = { id: 'm1', passMark: 0.5, sections: SECTIONS, minutes: 30 };
 
 function loadApp() {
-  const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  const sb = { console: { warn() {}, log: console.log } };
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext('self.DojoExt = { text: function (s) { return s; } };', sb);
-  vm.runInContext(read('ui/app.js'), sb, { filename: 'ui/app.js' });
+  loadBundle(sb, { only: ['ui/app.js'] });
   return sb.DojoApp;
 }
 function walk(n, id) {
