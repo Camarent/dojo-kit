@@ -40,7 +40,7 @@ pub struct SourceFile {
 }
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 88] = [
+pub const CODES: [(&str, Severity, &str); 89] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -124,6 +124,7 @@ pub const CODES: [(&str, Severity, &str); 88] = [
     ("unknown_input_script", Severity::Error, "inputScript names an unknown script or is empty"),
     ("bar_matches_zero", Severity::Warning, "bar/extraTags match 0 items"),
     ("empty_detail_key", Severity::Error, "detail field has an empty key"),
+    ("empty_detail_glyph", Severity::Error, "detail glyph path must not be empty"),
     ("unknown_detail_type", Severity::Error, "detail field has an unknown type (must be text, list, or objects)"),
     ("bad_pass_rule", Severity::Error, "pass.mode is points but scoring is empty"),
     ("pass_mark_ignored", Severity::Warning, "pass.mode resolves to points but passMark is set"),
@@ -1022,6 +1023,11 @@ fn check_bars(course: &Course, sink: &mut Sink) {
 fn check_detail_config(config: &Option<DetailConfig>, file: &str, sink: &mut Sink) {
     if let Some(cfg) = config {
         check_detail_fields(&cfg.fields, file, sink);
+        if let Some(ref glyph) = cfg.glyph {
+            if glyph.is_empty() {
+                sink.error("empty_detail_glyph", file, 0, "detail glyph path must not be empty".to_string());
+            }
+        }
     }
 }
 

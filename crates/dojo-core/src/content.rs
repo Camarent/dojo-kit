@@ -481,6 +481,9 @@ pub struct DetailConfig {
     /// List of detail fields to render.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub fields: Vec<DetailField>,
+    /// Dotted path into item for the header glyph.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub glyph: Option<String>,
 }
 
 /// Multiple-choice item; `answer` is the index into `options`.
