@@ -9,15 +9,12 @@
   var h = preact.h;
   var Component = preact.Component;
   var html = htm.bind(h);
-  var DojoExt = root.DojoExt || {};
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
   var renderText = DojoCommon.renderText;
-  var renderTextAll = DojoCommon.renderTextAll;
   var renderPromptEl = DojoCommon.renderPromptEl;
   var renderPromptLine = DojoCommon.renderPromptLine;
   var speechLines = DojoCommon.speechLines;
   var speechCfg = DojoCommon.speechCfg;
-  var cls = DojoCommon.cls;
   var Chip = DojoCommon.Chip;
   var Stepper = DojoCommon.Stepper;
   var Dialog = DojoCommon.Dialog;
@@ -155,33 +152,37 @@
     focusSoon() {
       var self = this;
       setTimeout(function () {
-        var s = self.state;
-        if (s.confirm) return;
-        if (self.isCheckMode()) {
-          var last = self.lastFocus;
-          var box = self.qbox;
-          var doc = self.props.win && self.props.win.document;
-          var active = doc && doc.activeElement;
-          var inBox = !!(box && active && box.contains && box.contains(active));
-          var had = self.hadFocus;
-          self.hadFocus = inBox;
-          if (last && last.cur === s.cur && last.answered === !!s.result) {
-            var lost = doc && (!active || active === doc.body);
-            if (had && lost && !s.result && box && box.querySelector) {
-              var re = box.querySelector('[data-refocus]');
-              if (re && re.focus) { re.focus(); self.hadFocus = true; }
-            }
-            return;
-          }
-          self.lastFocus = { cur: s.cur, answered: !!s.result };
-          var el = s.result ? self.nextBtn : self.input;
-          if (!el && !s.result && box && box.querySelector) el = box.querySelector('[data-autofocus]');
-          if (el && el.focus) { el.focus(); self.hadFocus = !s.result; }
-        } else {
-          var btn = self.knownBtn || self.unknownBtn;
-          if (btn && btn.focus) btn.focus();
-        }
+        if (self.state.confirm) return;
+        if (self.isCheckMode()) self.focusCheck(); else self.focusSelf();
       }, 0);
+    }
+    focusSelf() {
+      var btn = this.knownBtn || this.unknownBtn;
+      if (btn && btn.focus) btn.focus();
+    }
+    refocusLost(s, box, doc, active, had) {
+      var lost = doc && (!active || active === doc.body);
+      if (!(had && lost && !s.result && box && box.querySelector)) return;
+      var re = box.querySelector('[data-refocus]');
+      if (re && re.focus) { re.focus(); this.hadFocus = true; }
+    }
+    focusCheck() {
+      var s = this.state;
+      var last = this.lastFocus;
+      var box = this.qbox;
+      var doc = this.props.win && this.props.win.document;
+      var active = doc && doc.activeElement;
+      var inBox = !!(box && active && box.contains && box.contains(active));
+      var had = this.hadFocus;
+      this.hadFocus = inBox;
+      if (last && last.cur === s.cur && last.answered === !!s.result) {
+        this.refocusLost(s, box, doc, active, had);
+        return;
+      }
+      this.lastFocus = { cur: s.cur, answered: !!s.result };
+      var el = s.result ? this.nextBtn : this.input;
+      if (!el && !s.result && box && box.querySelector) el = box.querySelector('[data-autofocus]');
+      if (el && el.focus) { el.focus(); this.hadFocus = !s.result; }
     }
     answer(known) {
       if (this.state.result) return;
