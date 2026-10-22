@@ -8,17 +8,15 @@ mod glue {
 
     #[unsafe(no_mangle)]
     pub extern "C" fn alloc(len: u32) -> u32 {
-        let mut buf = Vec::<u8>::with_capacity(len as usize);
-        let ptr = buf.as_mut_ptr();
-        std::mem::forget(buf);
-        ptr as u32
+        let boxed = vec![0u8; len as usize].into_boxed_slice();
+        Box::into_raw(boxed) as *mut u8 as u32
     }
 
     /// # Safety
     /// `ptr`/`len` must come from `alloc` or from a `call` result and be released once.
     #[unsafe(no_mangle)]
     pub unsafe extern "C" fn dealloc(ptr: u32, len: u32) {
-        drop(unsafe { Vec::from_raw_parts(ptr as *mut u8, 0, len as usize) });
+        drop(unsafe { Box::from_raw(std::ptr::slice_from_raw_parts_mut(ptr as *mut u8, len as usize)) });
     }
 
     fn read(ptr: u32, len: u32) -> Option<&'static str> {
@@ -34,10 +32,9 @@ mod glue {
             (Some(name), Some(args)) => api::call(name, args),
             _ => r#"{"ok":false,"error":{"code":"bad_utf8","message":"input is not valid UTF-8"}}"#.to_string(),
         };
-        let mut bytes = out.into_bytes();
-        bytes.shrink_to_fit();
-        let (ptr, len) = (bytes.as_mut_ptr() as u32, bytes.len() as u64);
-        std::mem::forget(bytes);
+        let boxed = out.into_bytes().into_boxed_slice();
+        let len = boxed.len() as u64;
+        let ptr = Box::into_raw(boxed) as *mut u8 as u32;
         ((ptr as u64) << 32) | len
     }
 }
