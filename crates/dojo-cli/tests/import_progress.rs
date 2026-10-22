@@ -698,3 +698,35 @@ fn usage_and_error_exit_codes() {
     assert_ne!(code(&out), Some(0));
     assert!(stderr(&out).contains("invalid JSON"), "{}", stderr(&out));
 }
+
+#[test]
+fn write_without_out_is_refused() {
+    let dir = unique_dir("write-no-out");
+    create_test_course(&dir, "item");
+    let old = dir.join("old.json");
+    write_json(&old, &six_item_old());
+    let map = dir.join("map.json");
+    write_json(&map, &json!({"map": {"o1": ["item1"]}}));
+    let out = run_import_progress(&old, &map, &dir, None, true, None);
+    assert_ne!(code(&out), Some(0));
+    assert!(stderr(&out).contains("--out"));
+    assert!(!dir.join("progress.json").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn write_through_symlink_is_refused() {
+    let dir = unique_dir("write-symlink");
+    create_test_course(&dir, "item");
+    let old = dir.join("old.json");
+    write_json(&old, &six_item_old());
+    let map = dir.join("map.json");
+    write_json(&map, &json!({"map": {"o1": ["item1"]}}));
+    let target = dir.join("victim.json");
+    fs::write(&target, "keep").unwrap();
+    let link = dir.join("link.json");
+    std::os::unix::fs::symlink(&target, &link).unwrap();
+    let out = run_import_progress(&old, &map, &dir, Some(&link), true, None);
+    assert_ne!(code(&out), Some(0));
+    assert_eq!(fs::read_to_string(&target).unwrap(), "keep");
+}

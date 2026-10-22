@@ -44,3 +44,4 @@ PLAN*.md
 .audits/
 web/*.wasm
 /target
+progress*.json

@@ -515,11 +515,12 @@ pub fn run(
     }
     
     // Write output
-    let output_path = if let Some(p) = out_path {
-        p.to_path_buf()
-    } else {
-        course_dir.join("progress.json")
-    };
+    let output_path = out_path
+        .ok_or_else(|| "--write requires an explicit --out <file>".to_string())?
+        .to_path_buf();
+    if fs::symlink_metadata(&output_path).map(|m| m.file_type().is_symlink()).unwrap_or(false) {
+        return Err(format!("refusing to write through symlink {}", output_path.display()));
+    }
     let new_progress_text = serde_json::to_string_pretty(&new_progress)
         .map_err(|e| format!("cannot serialize progress: {}", e))?;
     
