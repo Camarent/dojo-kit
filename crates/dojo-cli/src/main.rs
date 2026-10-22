@@ -3,6 +3,7 @@ mod build;
 mod import_progress;
 
 use dojo_core::content::{Course, Item, ItemType, Intro, Stimulus, parse_course, parse_intros, parse_items, parse_stimuli};
+use dojo_core::days;
 use dojo_core::lock::{self, IdLock};
 use dojo_core::schema;
 use dojo_core::slug::is_valid_course_id;
@@ -934,100 +935,8 @@ fn run_add(args: &[String]) -> Result<u8, String> {
     add::run(Path::new(course_dir), unit_id, file.as_deref(), dry_run)
 }
 
-fn is_leap_year(year: i64) -> bool {
-    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-}
-
 fn parse_timestamp(s: &str) -> Result<i64, String> {
-    if let Ok(n) = s.parse::<i64>() {
-        return Ok(n);
-    }
-    let s = s.trim();
-    if s.ends_with('Z') && s.len() >= 20 {
-        let parts: Vec<&str> = s[..s.len()-1].split('T').collect();
-        if parts.len() == 2 {
-            let date_part = parts[0];
-            let time_part = parts[1];
-            let date_parts: Vec<&str> = date_part.split('-').collect();
-            if date_parts.len() != 3 {
-                return Err(format!("invalid timestamp format: {}", s));
-            }
-            let year: i64 = date_parts[0].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            let month: u32 = date_parts[1].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            let day: u32 = date_parts[2].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            let time_parts: Vec<&str> = time_part.split(':').collect();
-            if time_parts.len() != 3 {
-                return Err(format!("invalid timestamp format: {}", s));
-            }
-            let hour: u64 = time_parts[0].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            let minute: u64 = time_parts[1].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            let sec_part = time_parts[2];
-            let (second, millis): (u64, u64) = if let Some(idx) = sec_part.find('.') {
-                let sec: u64 = sec_part[..idx].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-                let frac_str = &sec_part[idx+1..sec_part.len().min(idx+4)];
-                let millis: u64 = frac_str.parse().unwrap_or(0);
-                let millis = match frac_str.len() {
-                    1 => millis * 100,
-                    2 => millis * 10,
-                    _ => millis,
-                };
-                (sec, millis)
-            } else {
-                let sec: u64 = sec_part.parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-                (sec, 0)
-            };
-            if month > 12 || day > 31 {
-                return Err(format!("invalid timestamp: {}", s));
-            }
-            if hour > 23 || minute > 59 || second > 59 {
-                return Err(format!("invalid timestamp: {}", s));
-            }
-            let mut days = 0i64;
-            for y in 1970..year {
-                days += if is_leap_year(y) { 366 } else { 365 };
-            }
-            let month_days: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            let is_leap = is_leap_year(year);
-            let mut md = month_days;
-            if is_leap {
-                md[1] = 29;
-            }
-            for m in 1..month {
-                days += md[m as usize - 1];
-            }
-            days += (day - 1) as i64;
-            let seconds = days * 86400 + hour as i64 * 3600 + minute as i64 * 60 + second as i64;
-            let millis = seconds * 1000 + millis as i64;
-            return Ok(millis);
-        }
-    }
-    if s.len() == 10 && s.chars().nth(4) == Some('-') && s.chars().nth(7) == Some('-') {
-        let date_parts: Vec<&str> = s.split('-').collect();
-        if date_parts.len() == 3 {
-            let year: i64 = date_parts[0].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            let month: u32 = date_parts[1].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            let day: u32 = date_parts[2].parse().map_err(|_| format!("invalid timestamp: {}", s))?;
-            if month > 12 || day > 31 {
-                return Err(format!("invalid timestamp: {}", s));
-            }
-            let mut days = 0i64;
-            for y in 1970..year {
-                days += if is_leap_year(y) { 366 } else { 365 };
-            }
-            let month_days: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            let is_leap = is_leap_year(year);
-            let mut md = month_days;
-            if is_leap {
-                md[1] = 29;
-            }
-            for m in 1..month {
-                days += md[m as usize - 1];
-            }
-            days += (day - 1) as i64;
-            return Ok(days * 86400000);
-        }
-    }
-    Err(format!("invalid timestamp: {}", s))
+    days::parse_iso_ms(s).ok_or_else(|| format!("invalid timestamp: {}", s))
 }
 
 fn run_import_progress(args: &[String]) -> Result<u8, String> {
@@ -1055,7 +964,7 @@ fn run_import_progress(args: &[String]) -> Result<u8, String> {
             }
             "--now" => {
                 let now_str = it.next().ok_or_else(|| USAGE.to_string())?;
-                now = Some(parse_timestamp(&now_str)?);
+                now = Some(parse_timestamp(now_str)?);
             }
             f if f.starts_with("--") => return Err(USAGE.to_string()),
             _ if old_progress_path.is_none() => old_progress_path = Some(PathBuf::from(a)),
