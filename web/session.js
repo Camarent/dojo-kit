@@ -23,6 +23,7 @@
 
   var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./session/util.js') : null);
   var queuesMod = root.DojoSessionQueues || (typeof require === 'function' ? require('./session/queues.js') : null);
+  var placementQueueMod = root.DojoSessionPlacementQueue || (typeof require === 'function' ? require('./session/placement-queue.js') : null);
   var countsMod = root.DojoSessionCounts || (typeof require === 'function' ? require('./session/counts.js') : null);
   var examMod = root.DojoSessionExam || (typeof require === 'function' ? require('./session/exam.js') : null);
   var runMod = root.DojoSessionRun || (typeof require === 'function' ? require('./session/run.js') : null);
@@ -84,6 +85,8 @@
     var setGroupSetting = overrides.setGroupSetting;
     var queues = queuesMod.create(ctx);
     Object.assign(ctx.fn, queues);
+    var placementQueueApi = placementQueueMod.create(ctx);
+    Object.assign(ctx.fn, placementQueueApi);
     var globalNewPerDay = queues.globalNewPerDay;
     var weakList = queues.weakList;
     var runApi = runMod.create(ctx);

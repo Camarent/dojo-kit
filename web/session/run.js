@@ -6,6 +6,7 @@
 
   var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./util.js') : null);
   var gradeMod = root.DojoSessionGrade || (typeof require === 'function' ? require('./grade.js') : null);
+  var runViewMod = root.DojoSessionRunView || (typeof require === 'function' ? require('./run-view.js') : null);
   var examRunMod = root.DojoSessionExamRun || (typeof require === 'function' ? require('./exam-run.js') : null);
 
   function create(ctx) {
@@ -47,8 +48,8 @@
     var review = [];
     var requeued = {};
     var entityWrong = {}; // scoped entities that already dropped once in this session
-    var skipped = []; // Track items skipped due to timer expiry
-    var introduced = {}; // Track which items have shown their intro (for introNew feature)
+    var skipped = []; // items skipped due to timer expiry
+    var introduced = {}; // items that showed their intro (introNew)
     var introSeen = Object.create(null); // entities whose intro card was dismissed in this session
     var isTimedExam = mode === 'exam' && !plan.training && plan.deadline !== undefined;
     var draftAnswers = {};
@@ -61,10 +62,16 @@
       groupIdx: groups ? session.group.index : 0, revealed: false, summary: null, lastAnswer: null,
       draftClosed: false, draftDirty: false, lastWriteAt: -Infinity
     };
-    sx.fn.rightsOf = rightsOf;
+    var view = runViewMod.create(ctx, sx);
+    var viewFor = view.viewFor, isNewFor = view.isNewFor;
+    var prevOf = view.prevOf;
+    var requeueKey = view.requeueKey;
+    var result = view.result;
+    var baseSummary = view.baseSummary;
+    sx.fn.rightsOf = view.rightsOf;
     sx.fn.remainingList = remainingList;
     sx.fn.result = result;
-    sx.fn.recordGrade = recordGrade;
+    sx.fn.recordGrade = view.recordGrade;
     var gradeApi = gradeMod.create(ctx, sx);
     sx.fn.gradeInput = gradeApi.gradeInput;
     sx.fn.nextRecord = gradeApi.nextRecord;
@@ -153,42 +160,6 @@
       return Math.max(0, queue.length - Math.max(session.index, session.total));
     };
 
-    function rightsOf(item) {
-      return item.pairs.map(function (p) { return p.right; }).concat(item.distractors || []);
-    }
-
-    function viewFor(item) {
-      if (item.type === 'choice') {
-        var order = util.shuffledIndexes(item.options.length, session.id + '|' + item.id);
-        return { options: order.map(function (orig) { return { label: util.optionText(item, orig), index: orig }; }) };
-      }
-      var seed = session.id + '|' + item.id;
-      if (item.type === 'multi') {
-        return { options: util.shuffledIndexes(item.options.length, seed).map(function (orig, pos) { return { label: item.options[orig], id: pos }; }) };
-      }
-      if (item.type === 'match') {
-        var lp = util.shuffledIndexes(item.pairs.length, seed + '|L');
-        var rp = util.shuffledIndexes(rightsOf(item).length, seed + '|R');
-        return {
-          lefts: lp.map(function (orig, pos) { return { label: item.pairs[orig].left, id: pos }; }),
-          rights: rp.map(function (orig, pos) { return { label: rightsOf(item)[orig], id: pos }; })
-        };
-      }
-      if (item.type === 'order') {
-        return { steps: util.orderPerm(item.steps.length, seed).map(function (orig, pos) { return { label: item.steps[orig], id: pos }; }) };
-      }
-      if (item.type === 'cloze') {
-        var n = 0;
-        return {
-          segments: item.parts.map(function (p) { return typeof p === 'string' ? { text: p } : { blank: n++ }; }),
-          blanks: n
-        };
-      }
-      if (item.type === 'numeric') return { unitLabel: item.unitLabel || null };
-      if (item.type === 'card') return sx.revealed ? { back: item.back } : {};
-      return {};
-    }
-
     session.current = function () {
       var id = currentId();
       if (id === null) return null;
@@ -199,45 +170,6 @@
     session.reveal = function () {
       sx.revealed = true;
     };
-
-    function isNewFor(item) {
-      var se = ctx.scopedEntityOf[item.id];
-      return se !== undefined ? ctx.fn.entityViewOf(se) === null : ctx.fn.records()[item.id] === undefined;
-    }
-
-    function scopedPrev(e) {
-      var snap = {};
-      var recs = ctx.fn.records();
-      ctx.entityMembers[e].forEach(function (id) { snap[id] = recs[id]; });
-      return snap;
-    }
-
-    function requeueKey(item) {
-      var se = ctx.scopedEntityOf[item.id];
-      return se !== undefined ? 'e:' + se : item.id;
-    }
-
-    function result(item, graded_) {
-      if (mode === 'exam' && !session.training) return { recorded: true };
-      if (mode === 'placement') {
-        var placementModeVar = session.placementMode || ctx.fn.placementMode();
-        if (placementModeVar === 'check') {
-          var out = { correct: graded_.correct, expected: util.expectedFor(item), explanation: item.explanation || null };
-          if (graded_.dontKnow) out.given = graded_.given;
-          if (item.type === 'gap') out.accepted = item.answers.slice();
-          if (graded_.detail) out.detail = graded_.detail;
-          return out;
-        } else {
-          // Self mode: original behavior - no feedback
-          return { recorded: true };
-        }
-      }
-      var out = { correct: graded_.correct, expected: util.expectedFor(item), explanation: item.explanation || null };
-      if (graded_.dontKnow) out.given = graded_.given;
-      if (item.type === 'gap') out.accepted = item.answers.slice();
-      if (graded_.detail) out.detail = graded_.detail;
-      return out;
-    }
 
     session.answer = function (input) {
       var id = currentId();
@@ -307,23 +239,6 @@
       }
       return sx.fn.applyVerdict(item, verdict, { rec: rec, prev: prev, relearn: relearn, isNewRecord: isNewRecord });
     };
-
-    function prevOf(item) {
-      var se = ctx.scopedEntityOf[item.id];
-      return se !== undefined ? scopedPrev(se) : ctx.fn.records()[item.id];
-    }
-
-    function recordGrade(item, verdict) {
-      graded[item.id] = verdict.correct;
-      review.push({ id: item.id, correct: verdict.correct, given: verdict.given, expected: util.expectedFor(item) });
-      var rk = requeueKey(item);
-      if (!verdict.correct && mode !== 'exam' && !requeued[rk]) {
-        requeued[rk] = true;
-        queue.push(item.id);
-        return true;
-      }
-      return false;
-    }
 
     session.canDontKnow = function () {
       if (course.dontKnow !== true) return false;
@@ -427,19 +342,6 @@
       store.update(function (doc) { sx.fn.closeDraft(doc, 'abandoned'); });
     };
 
-    function baseSummary() {
-      var correct = review.filter(function (r) { return r.correct; }).length;
-      return {
-        mode: mode,
-        correct: correct,
-        total: session.total,
-        answered: review.length,
-        skipped: skipped.slice(),
-        durationMs: now() - startedAt,
-        review: review.slice()
-      };
-    }
-
     session.finish = function () {
       if (sx.summary) return sx.summary;
       var sum = baseSummary();
@@ -495,3 +397,4 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DojoSessionRun = api;
 })(typeof self !== 'undefined' ? self : this);
+
