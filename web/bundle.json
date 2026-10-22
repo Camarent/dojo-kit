@@ -47,6 +47,7 @@
     "ui/placement.js",
     "ui/settings-speech.js",
     "ui/settings-sections.js",
+    "ui/settings-dialogs.js",
     "ui/settings.js",
     "ui/app.js",
     "boot.js"

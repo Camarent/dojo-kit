@@ -7,7 +7,7 @@ function load() {
   const sb = { console: { warn() {}, log() {} } };
   sb.setTimeout = (f) => f();
   loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js'] });
-  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js', 'ui/catalog.js', 'ui/home.js', 'ui/stimulus.js', 'ui/session-feedback.js', 'ui/session-screen.js', 'ui/results.js', 'ui/placement.js', 'ui/settings-speech.js', 'ui/settings-sections.js', 'ui/settings.js', 'ui/app.js'] });
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js', 'ui/catalog.js', 'ui/home.js', 'ui/stimulus.js', 'ui/session-feedback.js', 'ui/session-screen.js', 'ui/results.js', 'ui/placement.js', 'ui/settings-speech.js', 'ui/settings-sections.js', 'ui/settings-dialogs.js', 'ui/settings.js', 'ui/app.js'] });
   return sb;
 }
 
