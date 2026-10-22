@@ -22,7 +22,7 @@ const V = (name, lang) => ({ name, lang });
 
 function load() {
   const sb = { console };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'speech.js'] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext.js', 'speech.js'] });
   return sb;
 }
 

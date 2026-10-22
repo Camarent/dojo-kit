@@ -226,7 +226,7 @@ const NOW = 1760000000000;
 
 function loadApp() {
   const sb = { console };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'ui/app.js'] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext.js', 'ui/app.js'] });
   return sb;
 }
 function find(n, id) {

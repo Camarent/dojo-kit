@@ -22,298 +22,33 @@
  */
 (function (root, factory) {
   'use strict';
-  var api = factory();
+  var DojoExtRegistry = root.DojoExtRegistry || (typeof require !== 'undefined' ? require('./ext/registry.js') : null);
+  var api = factory(DojoExtRegistry);
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.DojoExt = api;
-})(typeof self !== 'undefined' ? self : this, function (root) {
+})(typeof self !== 'undefined' ? self : this, function (registry) {
   'use strict';
 
-  var markups = {};
-  var active = null;
-  var scriptGuard = null;
-  var guard = null;
-  var detailFn = null;
-  var introFn = null;
-  var rankFn = null;
-  var pluginSettings = {};
-  var settingsAccessor = null;
-  var settingsBound = false;
+  // Import state and functions from registry
+  var S = registry.state;
+  var builtinMarkups = registry.builtinMarkups;
+  var warn = registry.warn;
+  var hanOf = registry.hanOf;
+  var pathValue = registry.pathValue;
+  var RUBY_RE = registry.RUBY_RE;
+  var HAN_G = registry.HAN_G;
 
-  function warn(msg, e) {
-    if (typeof console !== 'undefined' && console.warn) console.warn('DojoExt: ' + msg, e || '');
-  }
-
-  function registerMarkup(name, def) {
-    if (typeof name !== 'string' || name === '') throw new Error('DojoExt.registerMarkup: name required');
-    if (!def || typeof def.render !== 'function' || typeof def.plain !== 'function') {
-      throw new Error('DojoExt.registerMarkup: render and plain functions required');
-    }
-    markups[name] = def;
-  }
-
-  function registerBeforeSubmit(fn) {
-    if (typeof fn !== 'function') throw new Error('DojoExt.registerBeforeSubmit: function required');
-    guard = fn;
-  }
-
-  function registerDetail(fn) {
-    if (typeof fn !== 'function') throw new Error('DojoExt.registerDetail: function required');
-    detailFn = fn;
-  }
-
-  function registerIntro(fn) {
-    if (typeof fn !== 'function') throw new Error('DojoExt.registerIntro: function required');
-    introFn = fn;
-  }
-
-  function registerVoiceRank(fn) {
-    if (typeof fn !== 'function') throw new Error('DojoExt.registerVoiceRank: function required');
-    rankFn = fn;
-  }
-
-  function registerSetting(config) {
-    if (!config || typeof config !== 'object') throw new Error('DojoExt.registerSetting: config object required');
-    var key = config.key;
-    if (typeof key !== 'string' || key === '') throw new Error('DojoExt.registerSetting: key required');
-    if (!/^[a-z][a-z0-9_.-]*$/.test(key)) {
-      throw new Error('DojoExt.registerSetting: key must match /^[a-z][a-z0-9_.-]*$/, got "' + key + '"');
-    }
-    var label = config.label;
-    if (label === undefined) throw new Error('DojoExt.registerSetting: label required');
-    if (typeof label !== 'string' && (typeof label !== 'object' || label === null || typeof label.en !== 'string')) {
-      throw new Error('DojoExt.registerSetting: label must be a string or an object with a string en');
-    }
-    var options = config.options;
-    if (!Array.isArray(options)) throw new Error('DojoExt.registerSetting: options array required');
-    if (options.length === 0) throw new Error('DojoExt.registerSetting: options array must not be empty');
-    for (var i = 0; i < options.length; i++) {
-      var opt = options[i];
-      if (!opt || typeof opt !== 'object' || typeof opt.value === 'undefined') {
-        throw new Error('DojoExt.registerSetting: each option must have a "value" property');
-      }
-    }
-    var def = config.default;
-    if (def === undefined) throw new Error('DojoExt.registerSetting: default value required');
-
-    pluginSettings[key] = {
-      label: label,
-      options: options,
-      default: def
-    };
-  }
-
-  function bindSettings(fn) {
-    if (typeof fn !== 'function') throw new Error('DojoExt.bindSettings: function required');
-    settingsAccessor = fn;
-    settingsBound = true;
-  }
-
-  function getSetting(key) {
-    if (!Object.prototype.hasOwnProperty.call(pluginSettings, key)) return undefined;
-    var setting = pluginSettings[key];
-
-    // If bound and accessor returns a valid value, use it
-    if (settingsBound && settingsAccessor) {
-      try {
-        // Use the plugin-prefixed key
-        var stored = settingsAccessor('plugin:' + key);
-        if (stored !== undefined && isValidOptionValue(setting, stored)) {
-          return stored;
-        }
-      } catch (e) {
-        warn('getSetting accessor failed', e);
-      }
-    }
-
-    // Return default
-    return setting.default;
-  }
-
-  function isValidOptionValue(setting, value) {
-    for (var i = 0; i < setting.options.length; i++) {
-      if (setting.options[i].value === value) return true;
-    }
-    return false;
-  }
-
-  function getRegisteredSettings() {
-    return Object.keys(pluginSettings).map(function (key) {
-      return Object.assign({ key: key }, pluginSettings[key]);
-    });
-  }
-
-  var RUBY_RE = /\{([^{}|]+)\|([^{}|]+)\}/g;
-
-  // [{ text } | { base, reading }]; text without markup is one text segment.
-  function rubyParse(str) {
-    var out = [], last = 0, m;
-    RUBY_RE.lastIndex = 0;
-    while ((m = RUBY_RE.exec(str))) {
-      if (m.index > last) out.push({ text: str.slice(last, m.index) });
-      out.push({ base: m[1], reading: m[2] });
-      last = RUBY_RE.lastIndex;
-    }
-    if (last < str.length) out.push({ text: str.slice(last) });
-    return out;
-  }
-
-  function escHtml(s) {
-    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  var rubySkip = null;
-  var HAN_G = /[\u4e00-\u9fff\u3400-\u4dbf\u{20000}-\u{2CEAF}]/gu;
-
-  function hanOf(str) { return typeof str === 'string' ? (str.match(HAN_G) || []) : []; }
-
-  function pathValue(item, path) {
-    var v = item;
-    var parts = String(path).split('.');
-    for (var i = 0; i < parts.length; i++) {
-      if (v === null || typeof v !== 'object' || !Object.prototype.hasOwnProperty.call(v, parts[i])) return undefined;
-      v = v[parts[i]];
-    }
-    return v;
-  }
-
-  var rubyDict = null;
-  var rubyDictMax = 0;
-
-  function dictAdd(dict, w, r) {
-    if (typeof w !== 'string' || typeof r !== 'string' || !w || !r) return;
-    if (hanOf(w).length < 2) return;
-    if (!Object.prototype.hasOwnProperty.call(dict, w)) dict[w] = r;
-    else if (dict[w] !== r) dict[w] = null;
-  }
-
-  // Word -> reading map from items: entries {w, r} at dotted paths from dictKeys (default meta.examples, meta.irregular) and {base|reading} in prompt/explanation. Only words of 2+ kanji with a single reading; ambiguous words are dropped.
-  function buildRubyDict(items, dictKeys) {
-    var dict = {};
-    if (!Array.isArray(items)) return dict;
-    var keys = dictKeys && Array.isArray(dictKeys) ? dictKeys : ['meta.examples', 'meta.irregular'];
-    items.forEach(function (it) {
-      if (!it || typeof it !== 'object') return;
-      keys.forEach(function (key) {
-        var arr = pathValue(it, key);
-        if (Array.isArray(arr)) arr.forEach(function (e) { if (e && typeof e === 'object') dictAdd(dict, e.w, e.r); });
-      });
-      [it.prompt, it.explanation].forEach(function (str) {
-        if (typeof str !== 'string') return;
-        rubyParse(str).forEach(function (g) { if (g.base != null) dictAdd(dict, g.base, g.reading); });
-      });
-    });
-    Object.keys(dict).forEach(function (w) { if (dict[w] === null) delete dict[w]; });
-    return dict;
-  }
-
-  function isHan(ch) { return !!ch && hanOf(ch).length === 1; }
-
-  // Splits plain text into text/ruby segments, longest known word first; unknown kanji stay bare.
-  function annotateText(str) {
-    if (!rubyDict || typeof str !== 'string') return [{ text: str }];
-    var out = [];
-    var buf = '';
-    var i = 0;
-    var lastEnd = -1;
-    function startsWord(j) {
-      for (var l = Math.min(rubyDictMax, str.length - j); l > 0; l--) {
-        if (Object.prototype.hasOwnProperty.call(rubyDict, str.substr(j, l))) return true;
-      }
-      return false;
-    }
-    while (i < str.length) {
-      var hit = null;
-      if (!(i > 0 && i !== lastEnd && isHan(str.charAt(i - 1)))) {
-        for (var len = Math.min(rubyDictMax, str.length - i); len > 0; len--) {
-          var w = str.substr(i, len);
-          if (!Object.prototype.hasOwnProperty.call(rubyDict, w)) continue;
-          var nx = i + len;
-          if (nx < str.length && isHan(str.charAt(nx)) && !startsWord(nx)) continue;
-          hit = w;
-          break;
-        }
-      }
-      if (hit) {
-        if (buf) { out.push({ text: buf }); buf = ''; }
-        out.push({ base: hit, reading: rubyDict[hit] });
-        i += hit.length;
-        lastEnd = i;
-      } else {
-        buf += str.charAt(i);
-        i++;
-      }
-    }
-    if (buf) out.push({ text: buf });
-    return out;
-  }
-
-  function useRuby(cfg, items) {
-    rubySkip = null;
-    rubyDict = null;
-    rubyDictMax = 0;
-    if (!cfg || typeof cfg !== 'object') return false;
-    rubyDict = buildRubyDict(items, cfg.dictKeys);
-    Object.keys(rubyDict).forEach(function (w) { if (w.length > rubyDictMax) rubyDictMax = w.length; });
-    var set = {};
-    var n = 0;
-    hanOf(cfg.skip).forEach(function (c) { set[c] = true; n++; });
-    if (typeof cfg.skipTag === 'string' && Array.isArray(items)) {
-      var key = typeof cfg.skipKey === 'string' && cfg.skipKey ? cfg.skipKey : 'meta.kanji';
-      items.forEach(function (it) {
-        if (!it || !Array.isArray(it.tags) || it.tags.indexOf(cfg.skipTag) < 0) return;
-        hanOf(pathValue(it, key)).forEach(function (c) { set[c] = true; n++; });
-      });
-    }
-    rubySkip = n ? set : null;
-    return !!rubySkip;
-  }
-
-  // True when the base has Han characters and every one is in the skip set.
-  function rubyHidden(base) {
-    if (!rubySkip) return false;
-    var han = hanOf(base);
-    return han.length > 0 && han.every(function (c) { return rubySkip[c] === true; });
-  }
-
-  // {base|reading} -> <ruby>base<rt>reading</rt></ruby> (bare base for skipped kanji or when reading is in hide); all other text is escaped (vnode children or HTML string without h).
-  function rubyRender(str, h, opts) {
-    if (typeof str !== 'string') return str;
-    var all = opts && opts.all;
-    var annotate = opts && opts.annotate;
-    var hide = opts && opts.hide;
-    var segs = rubyParse(str);
-    if ((all || annotate) && rubyDict) {
-      var expanded = [];
-      segs.forEach(function (g) {
-        if (g.text != null) annotateText(g.text).forEach(function (x) { expanded.push(x); });
-        else expanded.push(g);
-      });
-      segs = expanded;
-    }
-    function shouldHide(g) {
-      if (!g.reading || typeof g.reading !== 'string') return false;
-      if (hide && Array.isArray(hide) && hide.indexOf(g.reading) >= 0) return true;
-      return false;
-    }
-    if (h) {
-      return segs.map(function (g) {
-        if (g.text != null) return h('span', null, g.text);
-        if (all || (!rubyHidden(g.base) && !shouldHide(g))) return h('ruby', null, h('span', null, g.base), h('rt', null, g.reading));
-        return h('span', null, g.base);
-      });
-    }
-    return segs.map(function (g) {
-      if (g.text != null) return escHtml(g.text);
-      if (all || (!rubyHidden(g.base) && !shouldHide(g))) return '<ruby>' + escHtml(g.base) + '<rt>' + escHtml(g.reading) + '</rt></ruby>';
-      return escHtml(g.base);
-    }).join('');
-  }
-
-  function rubyPlain(str) {
-    return typeof str === 'string' ? str.replace(RUBY_RE, '$1') : str;
-  }
-
-  var builtinMarkups = { ruby: { render: rubyRender, plain: rubyPlain, parse: rubyParse } };
+  // Re-export registration functions
+  function registerMarkup(name, def) { return registry.registerMarkup(name, def); }
+  function registerBeforeSubmit(fn) { return registry.registerBeforeSubmit(fn); }
+  function registerDetail(fn) { return registry.registerDetail(fn); }
+  function registerIntro(fn) { return registry.registerIntro(fn); }
+  function registerVoiceRank(fn) { return registry.registerVoiceRank(fn); }
+  function registerSetting(config) { return registry.registerSetting(config); }
+  function bindSettings(fn) { return registry.bindSettings(fn); }
+  function getSetting(key) { return registry.getSetting(key); }
+  function getRegisteredSettings() { return registry.getRegisteredSettings(); }
+  function useRuby(cfg, items) { return registry.useRuby(cfg, items); }
 
   // Unicode script ranges per name; "non-latin" is every listed script.
   var SCRIPTS = {
@@ -447,8 +182,8 @@
 
   function useInputScript(scripts, message) {
     var names = scriptNames(scripts);
-    if (names.length === 0) { scriptGuard = null; return false; }
-    scriptGuard = function (item, input) {
+    if (names.length === 0) { S.scriptGuard = null; return false; }
+    S.scriptGuard = function (item, input) {
       var exp = expectedTexts(item);
       var inScript = exp.some(function (a) { return names.some(function (n) { return SCRIPTS[n].test(a); }); });
       if (inScript && LATIN_RE.test(inputText(input))) return { message: String(message || '') };
@@ -458,17 +193,17 @@
   }
 
   function use(name) {
-    active = null;
+    S.active = null;
     if (name === undefined || name === null || name === '') return false;
-    if (!Object.prototype.hasOwnProperty.call(markups, name) && Object.prototype.hasOwnProperty.call(builtinMarkups, name)) {
-      active = builtinMarkups[name];
+    if (!Object.prototype.hasOwnProperty.call(S.markups, name) && Object.prototype.hasOwnProperty.call(builtinMarkups, name)) {
+      S.active = builtinMarkups[name];
       return true;
     }
-    if (!Object.prototype.hasOwnProperty.call(markups, name)) {
+    if (!Object.prototype.hasOwnProperty.call(S.markups, name)) {
       warn('markup "' + name + '" is not registered; using plain text');
       return false;
     }
-    active = markups[name];
+    S.active = S.markups[name];
     return true;
   }
 
@@ -481,9 +216,9 @@
   }
 
   function text(str, opts) {
-    if (!active || typeof str !== 'string') return str;
+    if (!S.active || typeof str !== 'string') return str;
     try {
-      return keyed(active.render(str, typeof preact !== 'undefined' ? preact.h : undefined, opts));
+      return keyed(S.active.render(str, typeof preact !== 'undefined' ? preact.h : undefined, opts));
     } catch (e) {
       warn('markup render failed', e);
       return str;
@@ -491,9 +226,9 @@
   }
 
   function plain(str) {
-    if (!active || typeof str !== 'string') return str;
+    if (!S.active || typeof str !== 'string') return str;
     try {
-      var out = active.plain(str);
+      var out = S.active.plain(str);
       return typeof out === 'string' ? out : str;
     } catch (e) {
       warn('markup plain failed', e);
@@ -508,17 +243,17 @@
   function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
 
   function beforeSubmit(item, input) {
-    if (scriptGuard) {
+    if (S.scriptGuard) {
       try {
-        var sg = scriptGuard(clone(item), clone(input));
+        var sg = S.scriptGuard(clone(item), clone(input));
         if (sg) return { message: sg.message };
       } catch (e) {
         warn('inputScript failed', e);
       }
     }
-    if (!guard) return null;
+    if (!S.guard) return null;
     try {
-      var r = guard(clone(item), clone(input));
+      var r = S.guard(clone(item), clone(input));
       if (r && typeof r === 'object' && typeof r.message === 'string') return { message: r.message };
       return null;
     } catch (e) {
@@ -528,12 +263,12 @@
   }
 
   function detail(item, ctx) {
-    if (!detailFn) return null;
+    if (!S.detailFn) return null;
     try {
       var c = Object.assign({}, ctx);
       if (ctx && ctx.items !== undefined) c.items = clone(ctx.items);
       if (ctx && ctx.records !== undefined) c.records = clone(ctx.records);
-      var r = detailFn(clone(item), c);
+      var r = S.detailFn(clone(item), c);
       return r === undefined ? null : r;
     } catch (e) {
       warn('detail failed', e);
@@ -542,12 +277,12 @@
   }
 
   function intro(card, item, ctx) {
-    if (!introFn) return null;
+    if (!S.introFn) return null;
     try {
       var c = Object.assign({}, ctx);
       if (ctx && ctx.items !== undefined) c.items = clone(ctx.items);
       if (ctx && ctx.records !== undefined) c.records = clone(ctx.records);
-      var r = introFn(clone(card), clone(item), c);
+      var r = S.introFn(clone(card), clone(item), c);
       return r === undefined ? null : r;
     } catch (e) {
       warn('intro failed', e);
@@ -556,9 +291,9 @@
   }
 
   function voiceRank(voice, role) {
-    if (!rankFn) return 0;
+    if (!S.rankFn) return 0;
     try {
-      var r = rankFn(voice, role);
+      var r = S.rankFn(voice, role);
       return typeof r === 'number' && isFinite(r) ? r : 0;
     } catch (e) {
       warn('voiceRank failed', e);
@@ -567,19 +302,19 @@
   }
 
   function reset() {
-    introFn = null;
-    rankFn = null;
-    markups = {};
-    active = null;
-    rubySkip = null;
-    rubyDict = null;
-    rubyDictMax = 0;
-    guard = null;
-    scriptGuard = null;
-    detailFn = null;
-    pluginSettings = {};
-    settingsAccessor = null;
-    settingsBound = false;
+    S.introFn = null;
+    S.rankFn = null;
+    S.markups = {};
+    S.active = null;
+    S.rubySkip = null;
+    S.rubyDict = null;
+    S.rubyDictMax = 0;
+    S.guard = null;
+    S.scriptGuard = null;
+    S.detailFn = null;
+    S.pluginSettings = {};
+    S.settingsAccessor = null;
+    S.settingsBound = false;
   }
 
   return {

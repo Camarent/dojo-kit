@@ -6,7 +6,7 @@ const { loadBundle } = require('./load-bundle.js');
 
 function load() {
   const sb = { console };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'ext.js'] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'ext/registry.js', 'ext.js'] });
   return sb;
 }
 const J = (x) => JSON.parse(JSON.stringify(x));
