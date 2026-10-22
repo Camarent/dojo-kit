@@ -63,7 +63,7 @@ test('ui sources avoid innerHTML, dangerouslySetInnerHTML, document.write and ev
 
 function loadApp() {
   const sandbox = { console };
-  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js', 'ui/app.js'] });
+  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/app.js']) });
   return sandbox.DojoApp;
 }
 

@@ -58,7 +58,7 @@ function loadSandbox() {
   const win = new Node_(1, 'WINDOW');
   win.document = doc;
   const sb = { console: { warn() {}, log() {}, error() {} }, document: doc, window: win, setTimeout, clearTimeout, setInterval, clearInterval, Promise };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js', 'ui/app.js'] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/app.js']) });
   return { sb, win };
 }
 

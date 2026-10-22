@@ -1,0 +1,115 @@
+/*
+ * ui/results.js — Results component
+ * Globals expected: preact, htm, DojoCommon.
+ * create(deps) takes { percent, fmtClock } and returns { Results }.
+ */
+(function (root) {
+  'use strict';
+
+  var h = preact.h;
+  var html = htm.bind(h);
+
+  var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
+  var renderText = DojoCommon.renderText;
+  var cls = DojoCommon.cls;
+
+  function create(deps) {
+    var percent = deps.percent;
+    var fmtClock = deps.fmtClock;
+
+    function label(t, value) {
+      return value === 'known' ? t('session.known') : value === 'again' ? t('session.again') : value === '-' ? t('session.dontKnow') : value;
+    }
+
+    function examVerdict(t, sum) {
+      return html`<p class=${cls('banner', sum.pass ? 'good' : 'bad')} data-testid="exam-verdict">${sum.estimate ? (sum.pass ? t('results.pass_estimate') : t('results.fail_estimate')) : (sum.pass ? t('results.pass') : t('results.fail'))}</p>`;
+    }
+
+    function stats(t, sum, raw, total, pct) {
+      return html`<section class="stats">
+        <div class="stat" data-testid="score"><b>${raw} / ${total}</b><span>${t('results.score')}</span></div>
+        <div class="stat" data-testid="percent"><b>${pct}%</b><span>${t('results.percent')}</span></div>
+        <div class="stat" data-testid="time"><b>${fmtClock(sum.durationMs)}</b><span>${t('results.time')}</span></div>
+      </section>`;
+    }
+
+    function examParts(t, sum) {
+      return html`<section data-testid="exam-parts">
+        <h2>${t('results.parts')}</h2>
+        <ul class="parts">
+          ${sum.parts.map(function (part, i) {
+            return html`<li key=${i} data-testid=${'part-' + i}>
+              <b>${part.title}</b>: <span>${part.raw} / ${part.total}</span> · <span>${t('results.points', { n: part.points })}</span> · <span class=${part.pass ? 'good' : 'bad'}>${part.pass ? t('results.pass') : t('results.fail')}</span>
+            </li>`;
+          })}
+        </ul>
+        <p data-testid="exam-total-points"><b>${t('results.total_points', { n: sum.totalPoints })}</b>${sum.passPoints !== undefined ? ' · ' + t('results.pass_points', { n: sum.passPoints }) : ''}</p>
+      </section>`;
+    }
+
+    function missedItem(p, t, r) {
+      var item = p.byId[r.id];
+      return html`<li key=${r.id} data-testid=${'missed-' + r.id}>
+        <p class="qtext">${item ? renderText(item.prompt) : r.id}</p>
+        <p class="pre"><span class="muted">${t('results.given')}:</span> ${renderText(label(t, r.given))}</p>
+        <p class="pre"><span class="muted">${t('session.expected')}</span> ${renderText(r.expected)}</p>
+      </li>`;
+    }
+
+    function skippedItem(p, t, id) {
+      var item = p.byId[id];
+      return html`<li key=${id} data-testid=${'skipped-' + id} class="skipped">
+        <p class="qtext">${item ? renderText(item.prompt) : id}</p>
+        <p class="muted" data-testid="skipped-label">${t('results.skipped')}</p>
+      </li>`;
+    }
+
+    function missedList(p, t, sum, missed) {
+      return html`<ul class="missed" data-testid="missed">
+        ${missed.map(function (r) { return missedItem(p, t, r); })}
+        ${sum.skipped && sum.skipped.length > 0 ? sum.skipped.map(function (id) { return skippedItem(p, t, id); }) : null}
+      </ul>`;
+    }
+
+    function missedSection(p, t, sum, missed) {
+      return html`<section>
+        <h2>${t('results.missed')}</h2>
+        ${missed.length === 0 && (!sum.skipped || sum.skipped.length === 0) ? html`<p class="muted" data-testid="no-missed">${t('results.none')}</p>` : missedList(p, t, sum, missed)}
+      </section>`;
+    }
+
+    function Results(p) {
+      var t = p.t;
+      var sum = p.summary;
+      var exam = sum.mode === 'exam';
+      var isPlacement = sum.mode === 'placement';
+      var missed = sum.review.filter(function (r) { return !r.correct; });
+      var total = exam ? sum.total : sum.answered;
+      var pct = exam ? percent(sum.fraction) : percent(total ? sum.correct / total : 0);
+      var raw = exam ? sum.raw : sum.correct;
+      return html`<main class="screen" data-testid="results">
+        <header class="head"><h1>${t('results.title')}</h1></header>
+        ${isPlacement ? html`<p class="banner good" data-testid="placement-result">${t('results.placement')}</p>` : null}
+        ${exam ? examVerdict(t, sum) : null}
+        ${exam && sum.estimate ? html`<p class="notice" data-testid="exam-estimate">${t('results.estimate_note')}</p>` : null}
+        ${exam && sum.training ? html`<p class="notice" data-testid="exam-training">${t('results.training')}</p>` : null}
+        ${!isPlacement ? stats(t, sum, raw, total, pct) : null}
+        ${!isPlacement && raw === 0 && total > 0 ? html`<p class="notice" data-testid="results-hint">${t('results.hint')}</p>` : null}
+        ${exam && sum.parts && sum.parts.length ? examParts(t, sum) : null}
+        ${exam && sum.note ? html`<p class="notice" data-testid="exam-note">${sum.note}</p>` : null}
+        ${exam && sum.short && sum.short.length ? html`<p class="notice">${t('session.short')}</p>` : null}
+        ${!isPlacement ? missedSection(p, t, sum, missed) : null}
+        <div class="row results-actions">
+          <button type="button" class="btn" data-testid="btn-home" onClick=${function () { p.go('home'); }}>${t('results.home')}</button>
+          ${!isPlacement ? html`<button type="button" class="btn primary btn-again-session" data-testid="btn-again-session" onClick=${p.onAgain}>${t('results.again')}</button>` : null}
+        </div>
+      </main>`;
+    }
+
+    return { Results: Results };
+  }
+
+  var api = { create: create };
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  root.DojoResults = api;
+})(typeof self !== 'undefined' ? self : this);

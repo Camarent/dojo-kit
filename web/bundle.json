@@ -23,6 +23,10 @@
     "ui/i18n.js",
     "ui/common.js",
     "ui/detail.js",
+    "ui/catalog.js",
+    "ui/home.js",
+    "ui/session-screen.js",
+    "ui/results.js",
     "ui/app.js",
     "boot.js"
   ],

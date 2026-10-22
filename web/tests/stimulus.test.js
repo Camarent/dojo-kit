@@ -68,6 +68,8 @@ function loadApp() {
   loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext("self.DojoExt = { text: function (s) { return { marked: s }; } };", sandbox);
   vm.runInContext(read('ui/common.js'), sandbox, { filename: 'ui/common.js' });
+  vm.runInContext(read('ui/session-screen.js'), sandbox, { filename: 'ui/session-screen.js' });
+  vm.runInContext(read('ui/results.js'), sandbox, { filename: 'ui/results.js' });
   vm.runInContext(read('ui/app.js'), sandbox, { filename: 'ui/app.js' });
   return sandbox.DojoApp._Stimulus;
 }
