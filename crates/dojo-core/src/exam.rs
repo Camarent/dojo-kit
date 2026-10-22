@@ -279,6 +279,15 @@ pub fn compute_parts(
     Ok((part_results, total_points))
 }
 
+/// Grouped arguments of `score_with_parts`.
+pub struct PartsInput<'a> {
+    pub section_ranges: &'a [SectionRange],
+    pub scoring_parts: &'a [ScoringPart],
+    pub pass_points: Option<i64>,
+    pub pass_mode: PassMode,
+    pub scaled: bool,
+}
+
 /// Score with scoring parts. Percent mode: pass = total > 0 AND fraction >= pass_mark.
 /// Points mode: pass = all parts pass AND (when `pass_points` is set) total_points >= pass_points;
 /// `estimate` is set only for points mode with `scaled`.
@@ -286,20 +295,16 @@ pub fn score_with_parts(
     results: &[(String, bool)],
     total: usize,
     pass_mark: f64,
-    section_ranges: &[SectionRange],
-    scoring_parts: &[ScoringPart],
-    pass_points: Option<i64>,
-    pass_mode: PassMode,
-    scaled: bool,
+    input: PartsInput<'_>,
 ) -> Result<Score, String> {
     let base = score(results, total, pass_mark);
-    let (parts, total_points) = compute_parts(results, section_ranges, scoring_parts)?;
+    let (parts, total_points) = compute_parts(results, input.section_ranges, input.scoring_parts)?;
     let parts_pass = parts.iter().all(|p| p.pass);
-    let points_pass = pass_points.is_none_or(|pp| total_points as i64 >= pp);
+    let points_pass = input.pass_points.is_none_or(|pp| total_points as i64 >= pp);
     let total_points_u32 = u32::try_from(total_points).map_err(|_| format!("total points {} overflows u32", total_points))?;
-    let (pass, estimate) = match pass_mode {
+    let (pass, estimate) = match input.pass_mode {
         PassMode::Percent => (base.pass, false),
-        PassMode::Points => (parts_pass && points_pass, scaled),
+        PassMode::Points => (parts_pass && points_pass, input.scaled),
     };
     Ok(Score {
         pass,
@@ -424,7 +429,18 @@ mod tests {
                 min_points: None,
             },
         ];
-        let s = score_with_parts(&results, 4, 0.7, &section_ranges, &scoring_parts, None, PassMode::Points, false).unwrap();
+        let s = score_with_parts(
+            &results,
+            4,
+            0.7,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).unwrap();
         assert_eq!(s.raw, 3);
         assert_eq!(s.total, 4);
         assert!(s.fraction >= 0.7);
@@ -448,7 +464,18 @@ mod tests {
         let results: Vec<(String, bool)> = (0..8).map(|i| (format!("q{i}"), i == 0)).collect();
         let section_ranges = vec![SectionRange { title: "s1".to_string(), start: 0, count: 8 }];
         let scoring_parts = vec![ScoringPart { title: "P".to_string(), sections: vec!["s1".to_string()], points: 60, min_points: None }];
-        let s = score_with_parts(&results, 8, 0.0, &section_ranges, &scoring_parts, None, PassMode::Points, false).unwrap();
+        let s = score_with_parts(
+            &results,
+            8,
+            0.0,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).unwrap();
         assert_eq!(s.parts[0].points, 8); // 60 * 1 / 8 = 7.5
     }
 
@@ -457,7 +484,18 @@ mod tests {
         let results = vec![("q1".to_string(), true)];
         let section_ranges = vec![SectionRange { title: "s1".to_string(), start: 0, count: 1 }];
         let scoring_parts = vec![ScoringPart { title: "P".to_string(), sections: vec!["nope".to_string()], points: 10, min_points: None }];
-        assert!(score_with_parts(&results, 1, 0.0, &section_ranges, &scoring_parts, None, PassMode::Points, false).is_err());
+        assert!(score_with_parts(
+            &results,
+            1,
+            0.0,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).is_err());
     }
 
     #[test]
@@ -465,7 +503,18 @@ mod tests {
         let results = vec![("q1".to_string(), true)];
         let section_ranges = vec![SectionRange { title: "s1".to_string(), start: 0, count: 1 }];
         let part = |t: &str| ScoringPart { title: t.to_string(), sections: vec!["s1".to_string()], points: 10, min_points: None };
-        assert!(score_with_parts(&results, 1, 0.0, &section_ranges, &[part("A"), part("B")], None, PassMode::Points, false).is_err());
+        assert!(score_with_parts(
+            &results,
+            1,
+            0.0,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &[part("A"), part("B")],
+                pass_points: None,
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).is_err());
     }
 
     #[test]
@@ -473,7 +522,18 @@ mod tests {
         let results = vec![("q1".to_string(), true)];
         let section_ranges = vec![SectionRange { title: "s1".to_string(), start: 0, count: 4 }];
         let scoring_parts = vec![ScoringPart { title: "P".to_string(), sections: vec!["s1".to_string()], points: 100, min_points: None }];
-        let s = score_with_parts(&results, 4, 0.5, &section_ranges, &scoring_parts, None, PassMode::Percent, false).unwrap();
+        let s = score_with_parts(
+            &results,
+            4,
+            0.5,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Percent,
+                scaled: false,
+            },
+        ).unwrap();
         assert_eq!(s.parts[0].points, 25);
         assert!(!s.pass); // 1/4 < 0.5
     }
@@ -495,7 +555,18 @@ mod tests {
                 min_points: Some(60), // Need at least 60 points to pass this part
             },
         ];
-        let s = score_with_parts(&results, 2, 0.5, &section_ranges, &scoring_parts, None, PassMode::Points, false).unwrap();
+        let s = score_with_parts(
+            &results,
+            2,
+            0.5,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).unwrap();
         assert_eq!(s.parts.len(), 1);
         // 1/2 correct: points = round(100 * 1 / 2) = 50
         assert_eq!(s.parts[0].points, 50);
@@ -520,7 +591,18 @@ mod tests {
                 min_points: None,
             },
         ];
-        let s = score_with_parts(&results, 2, 0.5, &section_ranges, &scoring_parts, Some(80), PassMode::Points, false).unwrap();
+        let s = score_with_parts(
+            &results,
+            2,
+            0.5,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: Some(80),
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).unwrap();
         assert_eq!(s.parts.len(), 1);
         // 2/2 correct: points = round(100 * 2 / 2) = 100
         assert_eq!(s.parts[0].points, 100);
@@ -546,7 +628,18 @@ mod tests {
                 min_points: None,
             },
         ];
-        let s = score_with_parts(&results, 2, 0.0, &section_ranges, &scoring_parts, Some(50), PassMode::Points, false).unwrap();
+        let s = score_with_parts(
+            &results,
+            2,
+            0.0,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: Some(50),
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).unwrap();
         // 1/2 correct: points = round(100 * 1 / 2) = 50
         assert_eq!(s.total_points, Some(50));
         assert!(s.pass); // 50 >= 50
@@ -609,7 +702,7 @@ mod tests {
             },
         ];
         let pass_mark = 0.9;
-        let s = score_with_parts(&results, 4, pass_mark, &section_ranges, &scoring_parts, None, PassMode::Points, false).unwrap();
+        let s = score_with_parts(&results, 4, pass_mark, PartsInput { section_ranges: &section_ranges, scoring_parts: &scoring_parts, pass_points: None, pass_mode: PassMode::Points, scaled: false }).unwrap();
         assert!(s.pass); // Passes because parts_pass && points_pass, fraction is ignored
         assert!(!s.estimate);
     }
@@ -640,7 +733,18 @@ mod tests {
                 min_points: None,
             },
         ];
-        let s = score_with_parts(&results, 4, 0.7, &section_ranges, &scoring_parts, None, PassMode::Percent, false).unwrap();
+        let s = score_with_parts(
+            &results,
+            4,
+            0.7,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Percent,
+                scaled: false,
+            },
+        ).unwrap();
         assert!(s.pass); // Passes because fraction (0.75) >= pass_mark (0.7), part min_points are ignored
         assert!(!s.estimate);
     }
@@ -682,10 +786,32 @@ mod tests {
                 min_points: None,
             },
         ];
-        let s_points = score_with_parts(&results, 2, 0.5, &section_ranges, &scoring_parts, None, PassMode::Points, false).unwrap();
-        let s_percent = score_with_parts(&results, 2, 0.5, &section_ranges, &scoring_parts, None, PassMode::Percent, false).unwrap();
-        let s_scaled = score_with_parts(&results, 2, 0.5, &section_ranges, &scoring_parts, None, PassMode::Points, true).unwrap();
-        let s_percent_scaled = score_with_parts(&results, 2, 0.5, &section_ranges, &scoring_parts, None, PassMode::Percent, true).unwrap();
+        let s_points = score_with_parts(
+            &results,
+            2,
+            0.5,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Points,
+                scaled: false,
+            },
+        ).unwrap();
+        let s_percent = score_with_parts(
+            &results,
+            2,
+            0.5,
+            PartsInput {
+                section_ranges: &section_ranges,
+                scoring_parts: &scoring_parts,
+                pass_points: None,
+                pass_mode: PassMode::Percent,
+                scaled: false,
+            },
+        ).unwrap();
+        let s_scaled = score_with_parts(&results, 2, 0.5, PartsInput { section_ranges: &section_ranges, scoring_parts: &scoring_parts, pass_points: None, pass_mode: PassMode::Points, scaled: true }).unwrap();
+        let s_percent_scaled = score_with_parts(&results, 2, 0.5, PartsInput { section_ranges: &section_ranges, scoring_parts: &scoring_parts, pass_points: None, pass_mode: PassMode::Percent, scaled: true }).unwrap();
         assert!(!s_points.estimate);
         assert!(!s_percent.estimate);
         assert!(s_scaled.estimate);

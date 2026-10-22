@@ -206,7 +206,7 @@ test('CSS: 390px case - qtext has min-width:0 and overflow-wrap:anywhere, btn.pl
 
 // Test (d): prompt JSX is rendered from one place
 test('app.js: data-testid="prompt" occurs only once', () => {
-  const appJs = read('ui/app.js');
+  const appJs = read('ui/app.js') + read('ui/common.js');
   
   // Count occurrences of data-testid="prompt" in app.js
   // We need to exclude the notice branch
@@ -219,7 +219,7 @@ test('app.js: data-testid="prompt" occurs only once', () => {
 
 test('intro and speakable stimulus use .qbody (no .qtext typography); css rule has no font rules', () => {
   const css = read('styles/app.css');
-  const js = read('ui/app.js');
+  const js = read('ui/app.js') + read('ui/common.js') + read('ui/stimulus.js') + read('ui/session-screen.js');
   const m = css.match(/\.qline \.qbody\s*\{([^}]*)\}/);
   assert.ok(m, 'app.css must contain .qline .qbody rule');
   assert.ok(m[1].includes('min-width: 0') && m[1].includes('flex: 1 1 auto'));

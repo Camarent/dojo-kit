@@ -321,7 +321,5 @@
   "catalog.state.learning": "Learning",
   "catalog.state.due": "Review due",
   "catalog.state.learned": "Learned",
-  "session.kanji": "Kanji in this word",
-  "ja.part.phonetic": "phonetic",
-  "ja.part.meaning": "meaning"
+  "session.kanji": "Kanji in this word"
 }

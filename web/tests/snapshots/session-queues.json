@@ -1,0 +1,987 @@
+{
+  "uncappedStaleDueRetired": {
+    "counts": {
+      "total": 12,
+      "active": 11,
+      "due": 3,
+      "fresh": 7,
+      "learning": 4,
+      "learned": 0,
+      "newToday": 4,
+      "queue": 7,
+      "byUnit": {
+        "a": {
+          "total": 5,
+          "due": 2,
+          "fresh": 3,
+          "learning": 2,
+          "learned": 0
+        },
+        "b": {
+          "total": 6,
+          "due": 1,
+          "fresh": 4,
+          "learning": 2,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 11,
+        "fresh": 7,
+        "learning": 4,
+        "learned": 0
+      }
+    },
+    "groupCounts": {},
+    "dailyQueue": {},
+    "weakList": [
+      "a-1",
+      "b-2"
+    ],
+    "builtQueue": [
+      "b-2",
+      "a-2",
+      "a-1",
+      "a-4",
+      "a-5",
+      "a-6",
+      "b-3"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "b-2",
+      "a-4",
+      "a-5",
+      "a-6",
+      "b-3",
+      "b-4"
+    ],
+    "weakQueue": [
+      "a-1",
+      "b-2"
+    ]
+  },
+  "cappedAndUncappedGroups": {
+    "counts": {
+      "total": 16,
+      "active": 16,
+      "due": 2,
+      "fresh": 14,
+      "learning": 2,
+      "learned": 0,
+      "newToday": 6,
+      "queue": 8,
+      "byUnit": {
+        "a": {
+          "total": 6,
+          "due": 1,
+          "fresh": 5,
+          "learning": 1,
+          "learned": 0
+        },
+        "b": {
+          "total": 6,
+          "due": 0,
+          "fresh": 6,
+          "learning": 0,
+          "learned": 0
+        },
+        "c": {
+          "total": 4,
+          "due": 1,
+          "fresh": 3,
+          "learning": 1,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 16,
+        "fresh": 14,
+        "learning": 2,
+        "learned": 0
+      },
+      "summary": {
+        "due": 2,
+        "newToday": 6,
+        "queue": 8
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g2": {
+          "due": 1,
+          "fresh": 3,
+          "newToday": 3,
+          "started": 1,
+          "total": 4
+        },
+        "g1": {
+          "due": 1,
+          "fresh": 11,
+          "newToday": 3,
+          "started": 1,
+          "total": 12
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-1",
+        "a-2",
+        "a-3",
+        "a-4"
+      ],
+      "g2": [
+        "c-1",
+        "c-2",
+        "c-3",
+        "c-4"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "c-1",
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "c-2",
+      "c-3",
+      "c-4"
+    ],
+    "practice": [
+      "a-1",
+      "c-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "b-1"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "sharedEntitiesAcrossUnits": {
+    "counts": {
+      "total": 10,
+      "active": 10,
+      "due": 1,
+      "fresh": 9,
+      "learning": 1,
+      "learned": 0,
+      "newToday": 5,
+      "queue": 6,
+      "byUnit": {
+        "a": {
+          "total": 5,
+          "due": 1,
+          "fresh": 4,
+          "learning": 1,
+          "learned": 0
+        },
+        "b": {
+          "total": 5,
+          "due": 0,
+          "fresh": 5,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 10,
+        "fresh": 9,
+        "learning": 1,
+        "learned": 0
+      },
+      "summary": {
+        "due": 1,
+        "newToday": 2,
+        "queue": 6
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 1,
+          "fresh": 4,
+          "newToday": 2,
+          "started": 1,
+          "total": 5
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-2",
+        "a-1",
+        "b-1",
+        "a-3",
+        "b-3",
+        "b-2"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-2",
+      "a-1",
+      "b-1",
+      "a-3",
+      "b-3",
+      "b-2"
+    ],
+    "practice": [
+      "a-2",
+      "a-1",
+      "a-3",
+      "a-4",
+      "a-5",
+      "b-1",
+      "b-2",
+      "b-3"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "extraNewPlain": {
+    "counts": {
+      "total": 12,
+      "active": 12,
+      "due": 0,
+      "fresh": 12,
+      "learning": 0,
+      "learned": 0,
+      "newToday": 8,
+      "queue": 8,
+      "byUnit": {
+        "a": {
+          "total": 8,
+          "due": 0,
+          "fresh": 8,
+          "learning": 0,
+          "learned": 0
+        },
+        "b": {
+          "total": 4,
+          "due": 0,
+          "fresh": 4,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 12,
+        "fresh": 12,
+        "learning": 0,
+        "learned": 0
+      },
+      "summary": {
+        "due": 0,
+        "newToday": 8,
+        "queue": 8
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 0,
+          "fresh": 8,
+          "newToday": 5,
+          "started": 0,
+          "total": 8
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-1",
+        "a-2",
+        "a-3",
+        "a-4",
+        "a-5"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "b-1",
+      "b-2",
+      "b-3"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "extraNewOnlyTags": {
+    "counts": {
+      "total": 10,
+      "active": 10,
+      "due": 0,
+      "fresh": 10,
+      "learning": 0,
+      "learned": 0,
+      "newToday": 5,
+      "queue": 5,
+      "byUnit": {
+        "a": {
+          "total": 10,
+          "due": 0,
+          "fresh": 10,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 10,
+        "fresh": 10,
+        "learning": 0,
+        "learned": 0
+      },
+      "summary": {
+        "due": 0,
+        "newToday": 5,
+        "queue": 5
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 0,
+          "fresh": 10,
+          "newToday": 5,
+          "started": 0,
+          "total": 10
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-1",
+        "a-2",
+        "a-3",
+        "a-5",
+        "a-7"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-5",
+      "a-7"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "extraNewRandom": {
+    "counts": {
+      "total": 10,
+      "active": 10,
+      "due": 1,
+      "fresh": 9,
+      "learning": 1,
+      "learned": 0,
+      "newToday": 7,
+      "queue": 8,
+      "byUnit": {
+        "a": {
+          "total": 10,
+          "due": 1,
+          "fresh": 9,
+          "learning": 1,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 10,
+        "fresh": 9,
+        "learning": 1,
+        "learned": 0
+      },
+      "summary": {
+        "due": 1,
+        "newToday": 3,
+        "queue": 8
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 1,
+          "fresh": 4,
+          "newToday": 3,
+          "started": 1,
+          "total": 5
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-9",
+        "a-1",
+        "a-2",
+        "a-10",
+        "a-3",
+        "a-4",
+        "a-5",
+        "a-6"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-9",
+      "a-1",
+      "a-2",
+      "a-10",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6"
+    ],
+    "practice": [
+      "a-9",
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "extraNewTagsAndRandom": {
+    "counts": {
+      "total": 12,
+      "active": 12,
+      "due": 0,
+      "fresh": 12,
+      "learning": 0,
+      "learned": 0,
+      "newToday": 7,
+      "queue": 7,
+      "byUnit": {
+        "a": {
+          "total": 12,
+          "due": 0,
+          "fresh": 12,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 12,
+        "fresh": 12,
+        "learning": 0,
+        "learned": 0
+      },
+      "summary": {
+        "due": 0,
+        "newToday": 7,
+        "queue": 7
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 0,
+          "fresh": 12,
+          "newToday": 7,
+          "started": 0,
+          "total": 12
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-1",
+        "a-2",
+        "a-3",
+        "a-5",
+        "a-7",
+        "a-9",
+        "a-11"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-5",
+      "a-7",
+      "a-9",
+      "a-11"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "unitNewOrderRandom": {
+    "counts": {
+      "total": 13,
+      "active": 13,
+      "due": 1,
+      "fresh": 12,
+      "learning": 1,
+      "learned": 0,
+      "newToday": 12,
+      "queue": 13,
+      "byUnit": {
+        "a": {
+          "total": 8,
+          "due": 1,
+          "fresh": 7,
+          "learning": 1,
+          "learned": 0
+        },
+        "b": {
+          "total": 5,
+          "due": 0,
+          "fresh": 5,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 13,
+        "fresh": 12,
+        "learning": 1,
+        "learned": 0
+      }
+    },
+    "groupCounts": {},
+    "dailyQueue": {},
+    "weakList": [],
+    "builtQueue": [
+      "a-2",
+      "a-1",
+      "a-3",
+      "a-8",
+      "a-4",
+      "a-7",
+      "a-5",
+      "a-6",
+      "b-1",
+      "b-2",
+      "b-3",
+      "b-4",
+      "b-5"
+    ],
+    "practice": [
+      "a-2",
+      "a-1",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "groupNewOrderRandomCapped": {
+    "counts": {
+      "total": 12,
+      "active": 12,
+      "due": 0,
+      "fresh": 12,
+      "learning": 0,
+      "learned": 0,
+      "newToday": 7,
+      "queue": 7,
+      "byUnit": {
+        "a": {
+          "total": 8,
+          "due": 0,
+          "fresh": 8,
+          "learning": 0,
+          "learned": 0
+        },
+        "b": {
+          "total": 4,
+          "due": 0,
+          "fresh": 4,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 12,
+        "fresh": 12,
+        "learning": 0,
+        "learned": 0
+      },
+      "summary": {
+        "due": 0,
+        "newToday": 7,
+        "queue": 7
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 0,
+          "fresh": 8,
+          "newToday": 3,
+          "started": 0,
+          "total": 8
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-3",
+        "a-7",
+        "a-1"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-3",
+      "a-7",
+      "a-1",
+      "b-1",
+      "b-3",
+      "b-2",
+      "b-4"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "scopedEntities": {
+    "counts": {
+      "total": 10,
+      "active": 10,
+      "due": 1,
+      "fresh": 6,
+      "learning": 4,
+      "learned": 0,
+      "newToday": 3,
+      "queue": 4,
+      "byUnit": {
+        "a": {
+          "total": 6,
+          "due": 1,
+          "fresh": 2,
+          "learning": 4,
+          "learned": 0
+        },
+        "b": {
+          "total": 4,
+          "due": 0,
+          "fresh": 4,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 10,
+        "fresh": 6,
+        "learning": 4,
+        "learned": 0
+      }
+    },
+    "groupCounts": {},
+    "dailyQueue": {},
+    "weakList": [
+      "a-1"
+    ],
+    "builtQueue": [
+      "a-2",
+      "a-6",
+      "b-1",
+      "b-2"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "a-4",
+      "a-5",
+      "a-6",
+      "b-1",
+      "b-2",
+      "b-3"
+    ],
+    "weakQueue": [
+      "a-1"
+    ]
+  },
+  "overridesUnitAndGroup": {
+    "counts": {
+      "total": 16,
+      "active": 16,
+      "due": 0,
+      "fresh": 16,
+      "learning": 0,
+      "learned": 0,
+      "newToday": 4,
+      "queue": 4,
+      "byUnit": {
+        "a": {
+          "total": 8,
+          "due": 0,
+          "fresh": 8,
+          "learning": 0,
+          "learned": 0
+        },
+        "b": {
+          "total": 8,
+          "due": 0,
+          "fresh": 8,
+          "learning": 0,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 16,
+        "fresh": 16,
+        "learning": 0,
+        "learned": 0
+      },
+      "summary": {
+        "due": 0,
+        "newToday": 4,
+        "queue": 4
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 0,
+          "fresh": 8,
+          "newToday": 2,
+          "started": 0,
+          "total": 8
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-3",
+        "a-7"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-3",
+      "a-7",
+      "b-8",
+      "b-1"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "extraNewCapSpent": {
+    "counts": {
+      "total": 10,
+      "active": 10,
+      "due": 0,
+      "fresh": 8,
+      "learning": 2,
+      "learned": 0,
+      "newToday": 1,
+      "queue": 1,
+      "byUnit": {
+        "a": {
+          "total": 10,
+          "due": 0,
+          "fresh": 8,
+          "learning": 2,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 10,
+        "fresh": 8,
+        "learning": 2,
+        "learned": 0
+      },
+      "summary": {
+        "due": 0,
+        "newToday": 1,
+        "queue": 1
+      }
+    },
+    "groupCounts": {
+      "groups": {
+        "g1": {
+          "due": 0,
+          "fresh": 8,
+          "newToday": 1,
+          "started": 2,
+          "total": 10
+        }
+      },
+      "bars": []
+    },
+    "dailyQueue": {
+      "g1": [
+        "a-3"
+      ]
+    },
+    "weakList": [],
+    "builtQueue": [
+      "a-3"
+    ],
+    "practice": [
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8",
+      "a-9",
+      "a-10"
+    ],
+    "weakQueue": {
+      "error": "empty"
+    }
+  },
+  "placementCourse": {
+    "counts": {
+      "total": 16,
+      "active": 15,
+      "due": 1,
+      "fresh": 13,
+      "learning": 2,
+      "learned": 0,
+      "newToday": 10,
+      "queue": 11,
+      "byUnit": {
+        "a": {
+          "total": 8,
+          "due": 1,
+          "fresh": 7,
+          "learning": 1,
+          "learned": 0
+        },
+        "b": {
+          "total": 7,
+          "due": 0,
+          "fresh": 6,
+          "learning": 1,
+          "learned": 0
+        }
+      },
+      "totals": {
+        "total": 15,
+        "fresh": 13,
+        "learning": 2,
+        "learned": 0
+      }
+    },
+    "groupCounts": {},
+    "dailyQueue": {},
+    "weakList": [
+      "a-1",
+      "b-1"
+    ],
+    "builtQueue": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8",
+      "b-3",
+      "b-4",
+      "b-5"
+    ],
+    "practice": [
+      "a-1",
+      "a-2",
+      "a-3",
+      "a-4",
+      "a-5",
+      "a-6",
+      "a-7",
+      "a-8"
+    ],
+    "weakQueue": [
+      "a-1",
+      "b-1"
+    ],
+    "placement": [
+      "a-1",
+      "b-1",
+      "a-2",
+      "b-3"
+    ]
+  }
+}

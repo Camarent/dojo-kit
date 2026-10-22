@@ -4,6 +4,10 @@
 # Compute framework .githooks path from script location
 guard_dir=$(cd "$(dirname "$0")/.." && pwd)/.githooks
 
+# Sandboxes may lack gitleaks; Tests 24-25 cover the strict path
+export DOJO_ALLOW_NO_GITLEAKS=1
+export TZ=UTC
+
 # Create scratch repo
 scratch=$(mktemp -d)
 trap "rm -rf $scratch" EXIT
@@ -114,6 +118,46 @@ if git push origin HEAD 2>/dev/null; then
 else
   echo "PASS"
 fi
+
+A="Test <Camarent@users.noreply.github.com>"
+expect_refused() { # name, reason regex, then command
+  name="$1"; reason="$2"; shift 2
+  echo "$name"
+  out=$("$@" 2>&1)
+  if [ $? -ne 0 ] && echo "$out" | grep -qE "$reason"; then echo "PASS"; else echo "FAIL: not refused for '$reason'"; fail_count=$((fail_count + 1)); fi
+}
+expect_ok() {
+  name="$1"; shift
+  echo "$name"
+  if "$@" >/dev/null 2>&1; then echo "PASS"; else echo "FAIL: refused"; fail_count=$((fail_count + 1)); fi
+}
+
+new_repo; echo a > a.txt; git add a.txt
+expect_refused "Test 21: commit message naming a job is refused (vibe job)" "names a job" git commit --quiet -m "vibe job foo" --author="$A"
+expect_refused "Test 22: commit message naming job/ branch is refused" "names a job" git commit --quiet -m "Merge job/foo-task-12 into dev" --author="$A"
+expect_refused "Test 22b: job/<stage>-task-N is refused" "names a job" git commit --quiet -m "from job/audit-fixes-1-task-70" --author="$A"
+expect_refused "Test 23: non-UTC author date is refused" "date offset" env GIT_AUTHOR_DATE="2026-01-01T10:00:00 +0300" git commit --quiet -m "dated" --author="$A"
+expect_refused "Test 23b: non-UTC committer date is refused" "date offset" env GIT_COMMITTER_DATE="2026-01-01T10:00:00 +0300" git commit --quiet -m "dated" --author="$A"
+expect_ok "Test 22c: legit messages with subtask-1, job/queue, task-3 pass" git commit --quiet -m "subtask-1 style ids; job/queue docs; see task-3" --author="$A"
+echo a2 > a2.txt; git add a2.txt
+expect_ok "Test 23c: UTC dates and plain message pass" git commit --quiet -m "plain" --author="$A"
+# pre-push range check with a non-UTC / job commit made with --no-verify
+echo b > b.txt; git add b.txt
+GIT_AUTHOR_DATE="2026-01-01T10:00:00 +0300" git commit --quiet --no-verify -m "late" --author="$A"
+expect_refused "Test 23d: pre-push refuses non-UTC date in range" "date offset" sh -c "printf 'refs/heads/m %s refs/heads/m 0000000000000000000000000000000000000000\n' \"\$(git rev-parse HEAD)\" | '$guard_dir/pre-push'"
+echo c > c.txt; git add c.txt
+git commit --quiet --no-verify -m "Squash of job x" --author="$A"
+expect_refused "Test 23e: pre-push refuses job message in range" "names a job" sh -c "printf 'refs/heads/m %s refs/heads/m 0000000000000000000000000000000000000000\n' \"\$(git rev-parse HEAD)\" | '$guard_dir/pre-push'"
+
+# gitleaks missing: fails without the override (empty PATH dir without gitleaks)
+new_repo; echo d > d.txt; git add d.txt
+nogl=$(mktemp -d)
+for t in git sh grep sed cut head mktemp rm dirname tr cat env; do ln -s "$(command -v $t)" "$nogl/$t"; done
+expect_refused "Test 24: pre-commit fails without gitleaks and without override" "gitleaks not found" env -u DOJO_ALLOW_NO_GITLEAKS PATH="$nogl" git commit --quiet -m "nogl" --author="$A"
+expect_refused "Test 25: pre-push fails without gitleaks and without override" "gitleaks not found" sh -c "printf 'refs/heads/m %s refs/heads/m 0000000000000000000000000000000000000000\\n' \"\$(git rev-parse HEAD)\" | env -u DOJO_ALLOW_NO_GITLEAKS PATH='$nogl' '$guard_dir/pre-push'"
+expect_ok "Test 25b: delete-only push does not need gitleaks" sh -c "printf 'refs/heads/m 0000000000000000000000000000000000000000 refs/heads/m abc\\n' | env -u DOJO_ALLOW_NO_GITLEAKS PATH='$nogl' '$guard_dir/pre-push'"
+expect_ok "Test 26: override lets commit pass" git commit --quiet -m "withov" --author="$A"
+cd "$scratch"
 
 # Cleanup
 rm -rf "$remote"
@@ -316,6 +360,83 @@ out=$(printf 'refs/heads/main %s refs/heads/main %s\n' "$(git rev-parse HEAD)" 0
 if [ $? -ne 0 ]; then echo "PASS"; else echo "FAIL: pre-push passed message with email"; fail_count=$((fail_count + 1)); fi
 cd "$scratch"
 
+# Test 16: staged file with fake GitHub token is refused (skip if gitleaks missing)
+echo "Test 16: staged file with fake GitHub token is refused"
+new_repo
+# Generate exactly 36 alphanumeric characters for a realistic GitHub token
+fake_token=$(printf 'ghp_%s' "$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c36)")
+echo "token: $fake_token" > secret.txt
+git add secret.txt
+if command -v gitleaks >/dev/null 2>&1; then
+  if git commit --quiet --message "add secret" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+    echo "FAIL: fake GitHub token was accepted"
+    fail_count=$((fail_count + 1))
+  else
+    echo "PASS"
+  fi
+else
+  echo "SKIP"
+fi
+cd "$scratch"
+
+# Test 17: staged file with foreign email is refused
+echo "Test 17: staged file with foreign email is refused"
+new_repo
+echo "contact someone@gmail.com" > contact.txt
+git add contact.txt
+if git commit --quiet --message "add contact" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: foreign email was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+cd "$scratch"
+
+# Test 18: staged file with /root/ path is refused
+echo "Test 18: staged file with /root/ path is refused"
+new_repo
+echo "path: /root/x" > paths.txt
+git add paths.txt
+if git commit --quiet --message "add path" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: /root/ path was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+cd "$scratch"
+
+# Test 19: clean staged file passes
+echo "Test 19: clean staged file passes"
+new_repo
+echo "This is a clean file with no secrets or paths" > clean.txt
+git add clean.txt
+if git commit --quiet --message "add clean" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "PASS"
+else
+  echo "FAIL: clean file was refused"
+  fail_count=$((fail_count + 1))
+fi
+cd "$scratch"
+
+# Test 20: forbidden lines inside tests/hooks-test.sh itself are accepted (exempt path)
+echo "Test 20: forbidden lines in tests/hooks-test.sh are accepted"
+new_repo
+mkdir -p tests
+# Create a minimal hooks-test.sh with forbidden content
+cat > tests/hooks-test.sh << 'TESTEOF'
+#!/bin/sh
+# This file contains someone@gmail.com and /root/x which should be exempt
+echo "someone@gmail.com /root/x"
+TESTEOF
+git add tests/hooks-test.sh
+if git commit --quiet --message "add test script" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "PASS"
+else
+  echo "FAIL: exempt file tests/hooks-test.sh was refused"
+  fail_count=$((fail_count + 1))
+fi
+cd "$scratch"
+
 
 # Cleanup
 rm -rf "$remote"
@@ -326,5 +447,5 @@ if [ "$fail_count" -gt 0 ]; then
   exit 1
 fi
 
-echo "All tests passed"
+echo "all passed"
 exit 0

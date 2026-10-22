@@ -1,20 +1,12 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
-
-const web = path.join(__dirname, '..');
-const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
+const { loadBundle } = require('./load-bundle.js');
 
 // Load type components directly
 function loadType(typeName) {
   const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  vm.runInContext(read(`types/${typeName}.js`), sb, { filename: `types/${typeName}.js` });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', `types/${typeName}.js`] });
   return sb.DojoTypes.get(typeName);
 }
 

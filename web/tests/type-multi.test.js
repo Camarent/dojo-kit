@@ -1,17 +1,11 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const path = require('path');
 
-const fs = require('fs');
-const vm = require('vm');
+const { loadBundle } = require('./load-bundle.js');
 
-const web = path.join(__dirname, '..');
 const sandbox = {};
-sandbox.self = sandbox;
-vm.createContext(sandbox);
-['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/multi.js'].forEach((f) =>
-  vm.runInContext(fs.readFileSync(path.join(web, f), 'utf8'), sandbox, { filename: f }));
+loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/multi.js'] });
 const def = sandbox.DojoTypes.get('multi');
 
 const view = { options: [

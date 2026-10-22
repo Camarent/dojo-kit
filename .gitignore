@@ -41,3 +41,7 @@ poc/
 .notes/
 *.pdf
 PLAN*.md
+.audits/
+web/*.wasm
+/target
+progress*.json

@@ -28,7 +28,7 @@ function createFakeWinWithBody() {
 // Lifecycle driver: setState re-renders and fires componentDidUpdate like Preact; mount fires componentDidMount.
 async function openCatalog() {
   const items = [choice('a1', 'u1', { meta: { kanji: '一' } }), choice('a2', 'u1')];
-  const course = { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }] };
+  const course = { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1', detail: { glyph: 'meta.kanji' } }], detail: { glyph: 'meta.kanji' } };
   const m = await H.mount({ items, course, win: createFakeWinWithBody() });
   m.app.go('catalog');
   const cat = m.screen(m.sb.DojoApp._CatalogScreen);

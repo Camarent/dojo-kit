@@ -10,4 +10,5 @@ if [ -n "$bad" ]; then echo "refused: message contains email '$bad'" >&2; exit 1
 if echo "$msg" | grep -E 'workspace/[A-Za-z0-9_/-]+' | grep -qv 'workspace/<'; then
   echo "refused: message references private workspace" >&2; exit 1
 fi
+if echo "$msg" | msg_names_job; then echo "refused: message names a job" >&2; exit 1; fi
 exit 0

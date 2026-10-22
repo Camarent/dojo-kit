@@ -76,19 +76,20 @@ test('own-kanji item returns empty array', () => {
   assert.strictEqual(result.length, 0);
 });
 
-test('lang fallback to meta.meaning', () => {
+test('config with meaning path uses meta.meaning', () => {
   const item = {
     type: 'gap',
     prompt: '日本',
     answers: ['にほん'],
     meta: {}
   };
-  // Create a kanji item without 'en' but with 'meaning'
-  const itemsWithFallback = [
-    { id: 'k-fallback', type: 'card', prompt: '日', back: 'Day', meta: { kanji: '日', meaning: 'day' } },
-    { id: 'k-fallback2', type: 'card', prompt: '本', back: 'Book', meta: { kanji: '本', meaning: 'book' } }
+  // Create a kanji item without 'en' but with 'meaning', using config to specify meaning path
+  const cfg = { key: 'meta.kanji', meaning: 'meta.meaning', readings: [] };
+  const itemsWithMeaning = [
+    { id: 'k-meaning', type: 'card', prompt: '日', back: 'Day', meta: { kanji: '日', meaning: 'day' } },
+    { id: 'k-meaning2', type: 'card', prompt: '本', back: 'Book', meta: { kanji: '本', meaning: 'book' } }
   ];
-  const result = Ext.kanjiBreakdown(item, itemsWithFallback, lang);
+  const result = Ext.kanjiBreakdown(item, itemsWithMeaning, cfg);
   assert.strictEqual(result.length, 2);
   assert.strictEqual(result[0].meaning, 'day');
   assert.strictEqual(result[1].meaning, 'book');
@@ -147,14 +148,15 @@ test('cap at 12 rows', () => {
   assert.strictEqual(result.length, 12);
 });
 
-test('readings on and kun are included', () => {
+test('readings on and kun are included with config', () => {
   const item = {
     type: 'gap',
     prompt: '日本',
     answers: [],
     meta: {}
   };
-  const result = Ext.kanjiBreakdown(item, kanjiItems, lang);
+  const cfg = { key: 'meta.kanji', meaning: 'meta.en', readings: ['meta.on', 'meta.kun'] };
+  const result = Ext.kanjiBreakdown(item, kanjiItems, cfg);
   assert.strictEqual(result.length, 2);
   assert.deepStrictEqual(result[0].on, ['ニチ', 'ジツ']);
   assert.deepStrictEqual(result[0].kun, ['ひ', 'び']);
@@ -232,4 +234,98 @@ test('own-kanji guard: repeated own kanji in prompt returns empty array', () => 
 test('own kanji plus another kanji in prompt keeps both rows', () => {
   const item = { type: 'gap', prompt: '日本', answers: ['にほん'], meta: { kanji: '日' } };
   assert.strictEqual(Ext.kanjiBreakdown(item, kanjiItems, lang).length, 2);
+});
+
+test('config given: meanings come from configured path although contentLanguage is ja', () => {
+  const cfg = { key: 'meta.kanji', meaning: 'meta.ru', readings: ['meta.on', 'meta.kun'] };
+  const itemsWithRu = [
+    { id: 'k-ru-1', type: 'card', prompt: '日', back: 'Sun', meta: { kanji: '日', ru: 'день', on: ['ニチ', 'ジツ'], kun: ['ひ', 'び'] } },
+    { id: 'k-ru-2', type: 'card', prompt: '本', back: 'Book', meta: { kanji: '本', ru: 'книга', on: ['ホン'], kun: ['もと'] } }
+  ];
+  const item = {
+    type: 'gap',
+    prompt: '日本',
+    answers: ['にほん'],
+    meta: {}
+  };
+  const result = Ext.kanjiBreakdown(item, itemsWithRu, cfg);
+  assert.strictEqual(result.length, 2);
+  assert.strictEqual(result[0].meaning, 'день');
+  assert.strictEqual(result[1].meaning, 'книга');
+});
+
+test('config given: custom readings list from config is used', () => {
+  const cfg = { key: 'meta.kanji', meaning: 'meta.en', readings: ['meta.reading'] };
+  const itemsWithCustom = [
+    { id: 'k-cust-1', type: 'card', prompt: '日', back: 'Sun', meta: { kanji: '日', en: 'sun', reading: ['ニコ'] } },
+    { id: 'k-cust-2', type: 'card', prompt: '本', back: 'Book', meta: { kanji: '本', en: 'book', reading: ['ハン'] } }
+  ];
+  const item = {
+    type: 'gap',
+    prompt: '日本',
+    answers: ['にほん'],
+    meta: {}
+  };
+  const result = Ext.kanjiBreakdown(item, itemsWithCustom, cfg);
+  assert.strictEqual(result.length, 2);
+  assert.deepStrictEqual(result[0].on, ['ニコ']);
+  assert.strictEqual(result[0].kun, undefined);
+  assert.deepStrictEqual(result[1].on, ['ハン']);
+});
+
+test('no config: output identical to before (fallback with lang string)', () => {
+  const item = {
+    type: 'gap',
+    prompt: '日本',
+    answers: ['にほん'],
+    meta: {}
+  };
+  const result = Ext.kanjiBreakdown(item, kanjiItems, 'en');
+  assert.strictEqual(result.length, 2);
+  assert.strictEqual(result[0].meaning, 'sun');
+  assert.strictEqual(result[1].meaning, 'book');
+});
+
+test('config with custom key path', () => {
+  const cfg = { key: 'meta.character', meaning: 'meta.translation', readings: ['meta.reading'] };
+  const itemsCustomKey = [
+    { id: 'k-key-1', type: 'card', prompt: '日', back: 'Sun', meta: { character: '日', translation: 'day', reading: ['ニコ'] } },
+    { id: 'k-key-2', type: 'card', prompt: '本', back: 'Book', meta: { character: '本', translation: 'book', reading: ['ハン'] } }
+  ];
+  const item = {
+    type: 'gap',
+    prompt: '日本',
+    answers: ['にほん'],
+    meta: {}
+  };
+  const result = Ext.kanjiBreakdown(item, itemsCustomKey, cfg);
+  assert.strictEqual(result.length, 2);
+  assert.strictEqual(result[0].kanji, '日');
+  assert.strictEqual(result[0].meaning, 'day');
+  assert.strictEqual(result[1].kanji, '本');
+  assert.strictEqual(result[1].meaning, 'book');
+});
+
+test('config own-kanji guard uses custom key path', () => {
+  const cfg = { key: 'meta.character', meaning: 'meta.translation', readings: ['meta.reading'] };
+  const itemsCustomKey = [
+    { id: 'k-key-1', type: 'card', prompt: '日', back: 'Sun', meta: { character: '日', translation: 'day', reading: ['ニコ'] } }
+  ];
+  const item = {
+    type: 'gap',
+    prompt: '日',
+    answers: ['にち'],
+    meta: { character: '日' }
+  };
+  const result = Ext.kanjiBreakdown(item, itemsCustomKey, cfg);
+  assert.strictEqual(result.length, 0, 'Should return empty when item has own kanji in custom key path');
+});
+
+test('config without readings yields rows with no on/kun', () => {
+  const item = { type: 'gap', prompt: '日本', answers: [], meta: {} };
+  const cfg = { key: 'meta.kanji', meaning: 'meta.en' };
+  const result = Ext.kanjiBreakdown(item, kanjiItems, cfg);
+  assert.strictEqual(result.length, 2);
+  assert.strictEqual(result[0].on, undefined);
+  assert.strictEqual(result[0].kun, undefined);
 });

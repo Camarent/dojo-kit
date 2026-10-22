@@ -67,3 +67,125 @@ pub fn streak(days: &Value, today_key: &str) -> u32 {
     }
     count
 }
+
+fn is_leap_year(year: i64) -> bool {
+    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+}
+
+fn days_in_month(year: i64, month: i64) -> i64 {
+    let days: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    if month == 2 && is_leap_year(year) {
+        29
+    } else {
+        days[month as usize - 1]
+    }
+}
+
+/// Parse an ISO timestamp string and return milliseconds since Unix epoch.
+/// Accepts `YYYY-MM-DD` and `YYYY-MM-DDTHH:MM:SS[.fff]Z`.
+/// Returns `None` for invalid or out-of-range values.
+pub fn parse_iso_ms(s: &str) -> Option<i64> {
+    let s = s.trim();
+    if !s.is_ascii() { return None; }
+    if let Ok(n) = s.parse::<i64>() {
+        return Some(n);
+    }
+    if s.ends_with('Z') && s.len() >= 20 {
+        parse_datetime(&s[..s.len() - 1])
+    } else if s.len() == 10 && s.chars().nth(4) == Some('-') && s.chars().nth(7) == Some('-') {
+        parse_date(s)
+    } else {
+        None
+    }
+}
+
+fn parse_datetime(no_z: &str) -> Option<i64> {
+    let parts: Vec<&str> = no_z.split('T').collect();
+    if parts.len() != 2 { return None; }
+    let date_parts: Vec<&str> = parts[0].split('-').collect();
+    if date_parts.len() != 3 { return None; }
+    let year: i64 = date_parts[0].parse().ok()?;
+    let month: i64 = date_parts[1].parse().ok()?;
+    let day: i64 = date_parts[2].parse().ok()?;
+    let time_parts: Vec<&str> = parts[1].split(':').collect();
+    if time_parts.len() != 3 { return None; }
+    let hour: i64 = time_parts[0].parse().ok()?;
+    let minute: i64 = time_parts[1].parse().ok()?;
+    let sec_part = time_parts[2];
+    let (second, millis): (i64, i64) = if let Some(idx) = sec_part.find('.') {
+        let sec: i64 = sec_part[..idx].parse().ok()?;
+        let frac_str = &sec_part[idx + 1..sec_part.len().min(idx + 4)];
+        let m: i64 = frac_str.parse().unwrap_or(0);
+        let m = match frac_str.len() { 1 => m * 100, 2 => m * 10, _ => m };
+        (sec, m)
+    } else {
+        let sec: i64 = sec_part.parse().ok()?;
+        (sec, 0)
+    };
+    if year < 1970 || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
+        return None;
+    }
+    if hour > 23 || minute > 59 || second > 59 { return None; }
+    let days = days_from_civil(year, month, day);
+    Some(days * 86400000 + hour * 3600000 + minute * 60000 + second * 1000 + millis)
+}
+
+fn parse_date(s: &str) -> Option<i64> {
+    let date_parts: Vec<&str> = s.split('-').collect();
+    if date_parts.len() != 3 { return None; }
+    let year: i64 = date_parts[0].parse().ok()?;
+    let month: i64 = date_parts[1].parse().ok()?;
+    let day: i64 = date_parts[2].parse().ok()?;
+    if year < 1970 || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
+        return None;
+    }
+    Some(days_from_civil(year, month, day) * MS_PER_DAY)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_iso_ms_date_only() {
+        assert_eq!(parse_iso_ms("1970-01-01"), Some(0));
+        assert_eq!(parse_iso_ms("2024-02-29"), Some(1709164800000));
+    }
+
+    #[test]
+    fn test_parse_iso_ms_datetime() {
+        assert_eq!(
+            parse_iso_ms("2025-12-31T23:59:59Z"),
+            Some(1767225599000)
+        );
+        assert_eq!(
+            parse_iso_ms("2026-01-15T10:20:30.5Z"),
+            Some(1768472430500)
+        );
+    }
+
+    #[test]
+    fn test_parse_iso_ms_accepts_valid_leap_day() {
+        assert!(parse_iso_ms("2024-02-29").is_some());
+    }
+
+    #[test]
+    fn test_parse_iso_ms_rejects_invalid() {
+        assert_eq!(parse_iso_ms("2026-01-00"), None);
+        assert_eq!(parse_iso_ms("2026-00-10"), None);
+        assert_eq!(parse_iso_ms("2026-13-01"), None);
+        assert_eq!(parse_iso_ms("2025-02-29"), None);
+        assert_eq!(parse_iso_ms("1969-12-31"), None);
+        assert_eq!(parse_iso_ms("2026-01-15T24:00:00Z"), None);
+    }
+
+    #[test]
+    fn test_parse_iso_ms_rejects_non_ascii_without_panic() {
+        assert_eq!(parse_iso_ms("2026-01-15T10:20:30.éé0Z"), None);
+    }
+
+    #[test]
+    fn test_parse_iso_ms_numeric() {
+        assert_eq!(parse_iso_ms("12345"), Some(12345));
+    }
+}

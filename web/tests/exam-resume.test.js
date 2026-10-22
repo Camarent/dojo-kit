@@ -7,6 +7,7 @@ const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const DojoStorage = require('../storage.js');
 const { checkWasmFresh } = require('./loader.js');
+const { readSource, bundleScripts } = require('./load-bundle.js');
 
 const ROOT = path.join(__dirname, '..', '..');
 const NOW = 1760000000000;
@@ -444,8 +445,9 @@ test('storage oversize: g is stripped, then an open draft is dropped (no tombsto
 
 test('UI: every resume string exists in every locale and app.js has no hard-coded resume text', () => {
   const dir = path.join(ROOT, 'web', 'i18n');
-  const app = fs.readFileSync(path.join(ROOT, 'web', 'ui', 'app.js'), 'utf8');
-  const keys = Array.from(new Set((app.match(/t\('(home\.resume\.[a-z.]+)'/g) || []).map((m) => m.slice(3, -1))));
+  // Concatenate all UI sources from bundle.json
+  const uiSources = bundleScripts().filter((s) => s.startsWith('ui/')).map((f) => readSource(f)).join('\n');
+  const keys = Array.from(new Set((uiSources.match(/t\('(home\.resume\.[a-z.]+)'/g) || []).map((m) => m.slice(3, -1))));
   assert.ok(keys.length >= 6);
   const locales = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
   assert.ok(locales.length >= 2);
@@ -453,5 +455,5 @@ test('UI: every resume string exists in every locale and app.js has no hard-code
     const tr = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
     for (const k of keys) assert.ok(typeof tr[k] === 'string' && tr[k].length, f + ' lacks ' + k);
   }
-  assert.ok(!/>\s*(Resume|Start over|Discard)\s*</.test(app));
+  assert.ok(!/>\s*(Resume|Start over|Discard)\s*</.test(uiSources));
 });

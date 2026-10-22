@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
+const { loadBundle } = require('./load-bundle.js');
 
 const web = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
@@ -63,9 +63,7 @@ test('ui sources avoid innerHTML, dangerouslySetInnerHTML, document.write and ev
 
 function loadApp() {
   const sandbox = { console };
-  sandbox.self = sandbox;
-  vm.createContext(sandbox);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sandbox, { filename: f }));
+  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings.js']).concat(['ui/app.js']) });
   return sandbox.DojoApp;
 }
 

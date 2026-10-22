@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
 const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const NOW = 1760000000000;
@@ -12,11 +13,8 @@ const TODAY = '2025-10-09';
 
 function loadApp(appSource) {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'speech.js', 'session.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  ['types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'].forEach((f) => vm.runInContext(f === 'ui/app.js' && appSource != null ? appSource : read(f), sb, { filename: f }));
-  return sb;
+  const override = appSource == null ? {} : typeof appSource === 'string' ? { 'ui/app.js': appSource } : appSource;
+  return loadBundle(sb, { skip: ['boot.js'], override });
 }
 function expand(n) {
   if (Array.isArray(n)) return n.map(expand);

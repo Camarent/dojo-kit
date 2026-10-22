@@ -226,6 +226,17 @@
           "type": "null"
         }
       ]
+    },
+    "breakdown": {
+      "description": "Kanji/Han breakdown config: dotted paths into item for key, meaning, and readings.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BreakdownConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,
@@ -375,6 +386,13 @@
           "items": {
             "$ref": "#/$defs/DetailField"
           }
+        },
+        "glyph": {
+          "description": "Dotted path into item for the header glyph.",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -402,7 +420,7 @@
           ]
         },
         "type": {
-          "description": "Field type: \"text\" (default), \"list\", or \"objects\".",
+          "description": "Field type: \"text\" (default), \"list\", \"objects\", \"table\", or \"pairs\".",
           "type": [
             "string",
             "null"
@@ -416,6 +434,16 @@
           ],
           "items": {
             "$ref": "#/$defs/DetailField"
+          }
+        },
+        "keys": {
+          "description": "Two entry keys (left, right) for the \"pairs\" type; defaults to `a` and `b`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
           }
         }
       },
@@ -714,6 +742,15 @@
             "string",
             "null"
           ]
+        },
+        "dictKeys": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false
@@ -960,6 +997,34 @@
             "string",
             "null"
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "BreakdownConfig": {
+      "description": "Kanji/Han breakdown configuration for kanjiIndex/kanjiBreakdown.",
+      "type": "object",
+      "properties": {
+        "key": {
+          "description": "Dot-separated path into item.meta for the kanji character (e.g., \"meta.kanji\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "meaning": {
+          "description": "Dot-separated path into item.meta for the meaning (e.g., \"meta.ru\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "readings": {
+          "description": "Array of dot-separated paths into item.meta for readings (e.g., [\"meta.on\", \"meta.kun\"]).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false

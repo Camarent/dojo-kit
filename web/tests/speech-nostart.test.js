@@ -1,12 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
+const { loadBundle } = require('./load-bundle.js');
 
-const web = path.join(__dirname, '..');
-const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 
 function fakeWin(voices, opts) {
   const spoken = [];
@@ -26,10 +22,7 @@ const V = (name, lang) => ({ name, lang });
 
 function load() {
   const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  ['speech.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js', 'speech.js'] });
   return sb;
 }
 

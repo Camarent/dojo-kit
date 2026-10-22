@@ -11,7 +11,7 @@ Reference rules for the AI model that generates a course from a user's materials
 - `stimuli.jsonl` - optional shared passages (see "Shared passage").
 
 ## Item types and fields
-Common: `type`, `prompt` (required); optional `tags`, `explanation`, `source`, `status` (`active`|`retired`), `stimulus`; `id` and `unit` are filled by `./dojo add`. Unknown fields are rejected. Ids match `^[a-z][a-z0-9]*-[0-9]+$`.
+Common: `type`, `prompt` (required); optional `tags`, `explanation`, `source`, `status` (`active`|`retired`), `stimulus`, `supersedes` (see "Superseding retired items"); `id` and `unit` are filled by `./dojo add`. Unknown fields are rejected. Ids match `^[a-z][a-z0-9]*-[0-9]+$`.
 
 | type | required | optional | notes |
 |---|---|---|---|
@@ -96,7 +96,7 @@ Pass rule:
 - `pass: {mode?: percent|points, basis?: official|author, source?, scaled?}`. `mode` defaults to `points` when `scoring` is set, else `percent` (`crates/dojo-core/src/exam.rs:11`). In points mode `passMark` is ignored (`pass_mark_ignored` warning); `mode: points` without `scoring` is an error (`bad_pass_rule`). `basis: official` without `source` warns (`pass_rule_no_source`). `scaled: true` sets the result's `estimate` flag, points mode only (`crates/dojo-core/src/exam.rs:88`).
 Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
 - Ideally mock-exam questions differ from training questions: put them in units with `examOnly: true` (unit field above) and point the exam sections at those units.
-- Each exam section needs at least 20% of its `count` (rounded up) from `examOnly` units; below that `exam_few_unique` warns (`crates/dojo-core/src/validate.rs:908`).
+- Each exam section needs at least 20% of its `count` (rounded up) from `examOnly` units; below that `exam_few_unique` warns (`crates/dojo-core/src/validate/exam.rs:279`).
 - Decide the split once the materials are known (e.g. past papers or chapter tests kept for the exam only); ask the user if unclear. If materials are scarce, overlap is allowed: accept the warning and mention it in the final report.
 - `timing: [{sections:[section titles], minutes}]` - timer groups; a section is in at most one group.
 - `scoring: [{title, sections:[...], points, minPoints?}]` - score parts; `passPoints` = points needed to pass. Section titles must be unique (`unknown_section`, `bad_exam`).
@@ -106,6 +106,11 @@ Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
 
 ## UI and content languages
 `uiLanguage` (`en` and `ru` are shipped) and `contentLanguage`. For another UI language the course supplies `i18n/<lang>.json` next to `course.json`, with the keys of `web/i18n/en.json` (AGENTS.md section 9); `dojo build` overlays it on the shipped file key by key, and a missing language falls back to en with a warning. Ru plural forms are `.one`, `.few`, `.many`, `.other`; other languages use `.one` and `.other` only. Items are written in the content language; do not mix in other scripts.
+
+Keys starting with `plugin.` or `course.` in `i18n/<lang>.json` are reserved for plugins and the course and are never reported as unknown.
+
+## Course tests
+Course tests that need the framework find it with `tools/fw-root.js`; set `DOJO_KIT_ROOT=<dojo-kit dir>` when the course is not nested inside the framework tree.
 
 ## Question captions and ruby skip set
 - `captions` (course-level): object `key -> text`. The key is an item tag or an item type (`choice`, `multi`, `gap`, `cloze`, `numeric`, `match`, `order`, `card`). For a question, the first of the item's tags with an entry wins, then the entry for its type, then the built-in caption for the type (`session.caption.<type>` in `web/i18n/`). An empty text shows no caption.
@@ -119,6 +124,7 @@ Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
   ```json
   "ruby": { "skipTag": "core", "skipKey": "meta.kanji" }
   ```
+- `dictKeys`: dotted item paths holding `{w, r}` word-reading entries for the ruby dictionary (default `meta.examples`, `meta.irregular`; `web/ext/registry.js:166`); `skipKey` defaults to `meta.kanji`. Course `breakdown`: `{key, meaning, readings:[...]}` dotted paths into the item for the kanji breakdown. `speech.lang` picks the voice language.
 - Core types both fields but does not validate them, so a wrong value is found only in the browser. Keys and paths are generic: they name your own tags and `meta` fields.
 
 ## Declarative detail rendering from item.meta
@@ -130,6 +136,8 @@ Field types:
 - `text`: render as plain text (with course markup applied).
 - `list`: render as `<ul>` with each element as a list item.
 - `objects`: render as a table with rows of "key: value".
+- `table`: value `{head: [..], rows: [[..],..], title?}` renders a table with header cells and an optional caption (`web/ui/detail.js:79`).
+- `pairs`: value is a list of objects; two columns are read from `keys: [left, right]` (default `a`, `b`); entries missing either key are skipped (`web/ui/detail.js:96`). `keys` on any other type is `bad_detail_keys`.
 
 Rules:
 - `key` is a dot-separated path into `item.meta` (e.g., `"meta.meaning"`, `"meta.readings.kanji"`).
@@ -138,7 +146,8 @@ Rules:
 - Ruby markup and `renderText` are honored for string values.
 - A registered plugin detail hook takes precedence over declarative detail.
 - `labelKey` (i18n key) is used when `label` is absent; a leading `meta.` in `key` is optional.
-- Unknown `type` values are a validation error (`unknown_detail_type`).
+- Unknown `type` values (anything but text, list, objects, table, pairs) are a validation error (`unknown_detail_type`).
+- Course-level `detail.glyph` (dotted path into the item, header glyph) must not be empty (`empty_detail_glyph`).
 
 Example:
 ```json
@@ -163,6 +172,12 @@ Write your own questions and short explanations. Quote at most a short phrase. N
 
 ## When to leave an item out
 Leave the item out and tell the user when: the materials give no answer or two readings are defensible; the page is unreadable (bad OCR); the fact needs an unavailable audio/image; the right answer cannot be made unique in the available type; the source is the only wording and would need a long quote. List these in the final report (and in `GAPS.md` when it is a format limit).
+
+## Superseding retired items
+When a retired item is replaced by a new one, list the retired ids on the live item: `"supersedes": ["old-1", "old-2"]` (optional, any item type). Learners' saved progress is then carried over automatically at load; no document marker is written.
+- Validator error `bad_supersedes`: field on a retired item, empty list, duplicate id, the item itself, an id that is not retired, or an id listed by two successors. For a chain, list all transitive predecessors.
+- Fold rule (`crates/dojo-core/src/migrate.rs:44` `migrate_progress`): the successor is folded only if some predecessor has a record and the successor has none or an older `last`. Result: `s` and `due` = min, `ok` and `bad` = max, `last` = max over successor and predecessors (predecessors with `last` before `resetAt` are ignored). Retired records are never changed. Re-running is a no-op, so it is idempotent.
+- Content using `supersedes` needs a framework build that knows the field (unknown fields are rejected).
 
 ## Legacy progress import
 

@@ -1,64 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const fs = require('node:fs');
-const path = require('node:path');
-const DojoWasm = require('../dojo-wasm.js');
-const DojoSession = require('../session.js');
-const { checkWasmFresh } = require('./loader.js');
-
-const ROOT = path.join(__dirname, '..', '..');
-const DAY = 86400000;
-const NOW = 1760000000000;
-const TODAY = '2025-10-09';
-
-function loadContent() {
-  const dir = path.join(ROOT, 'examples', 'demo');
-  const course = JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'));
-  const items = [];
-  course.units.forEach((u) => {
-    const text = fs.readFileSync(path.join(dir, 'content', u.id + '.jsonl'), 'utf8');
-    text.split('\n').filter(Boolean).forEach((line) => items.push(JSON.parse(line)));
-  });
-  return { v: 1, course, items, version: 'test', lock: items.map((i) => i.id) };
-}
-
-let dojoPromise;
-function getDojo() {
-  if (!dojoPromise) {
-    checkWasmFresh();
-    dojoPromise = DojoWasm.load(fs.readFileSync(checkWasmFresh()));
-  }
-  return dojoPromise;
-}
-
-async function setup(opts) {
-  const o = opts || {};
-  const doc = o.doc || { v: 1, t: 0, items: {}, stats: { days: {}, newByDay: {} }, settings: {}, exams: {} };
-  const clock = { t: o.now || NOW };
-  let noted = 0;
-  const store = {
-    doc,
-    update(fn) { fn(doc); doc.t = clock.t; },
-    noteAnswer() { noted++; }
-  };
-  const content = o.content || loadContent();
-  const dojo = o.dojo || await getDojo();
-  let seq = 0;
-  const engine = DojoSession.createEngine({
-    dojo, store, content,
-    now: () => clock.t,
-    today: () => TODAY,
-    random: o.random || (() => ((seq++ * 0.37) % 1)),
-  });
-  return { engine, doc, store, clock, content, notes: () => noted };
-}
-
-function ids(session) {
-  const out = [];
-  for (let c = session.current(); c; c = session.next()) out.push(c.item.id);
-  return out;
-}
+const { loadContent, getDojo, setup, ids, NOW, DAY, TODAY, ROOT } = require('./fixtures.js');
 
 function withPlacement(cfg) {
   const content = loadContent();

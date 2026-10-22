@@ -332,7 +332,5 @@
   "catalog.state.learning": "Изучается",
   "catalog.state.due": "Пора повторить",
   "catalog.state.learned": "Выучена",
-  "session.kanji": "Кандзи в слове",
-  "ja.part.phonetic": "фонетик",
-  "ja.part.meaning": "значение"
+  "session.kanji": "Кандзи в слове"
 }

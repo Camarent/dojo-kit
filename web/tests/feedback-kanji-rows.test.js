@@ -11,7 +11,7 @@ const kanji = (id, prompt, metaExtra) => {
 };
 const word = (id, prompt, extra) => Object.assign({ id, unit: 'u1', type: 'gap', prompt, answers: [prompt], tags: ['t1'], meta: {} }, extra);
 
-const course = { contentLanguage: 'en', tagLabels: { t1: 'Tag One' } };
+const course = { contentLanguage: 'en', breakdown: { key: 'meta.kanji', meaning: 'meta.en', readings: ['meta.on', 'meta.kun'] }, tagLabels: { t1: 'Tag One' } };
 
 async function start(o) {
   const items = o && o.items ? o.items : o;
@@ -186,4 +186,47 @@ test('kanji-rows: no trailing separator when kanji has only on-reading', async (
 
   const read0 = H.find(row0, 'kanji-read');
   assert.strictEqual(H.text(read0).replace(/\s+/g, ' ').trim(), 'ニチ / ひ', 'First row kanji-read should be ニチ / ひ');
+});
+
+test('kanji-rows: uses course.breakdown config when present', async () => {
+  const items = [
+    word('w-日本', '日本'),
+    kanji('日', '日', { ru: 'день', on: ['ニチ', 'ジツ'], kun: ['ひ', 'び'] }),
+    kanji('本', '本', { ru: 'книга', on: ['ホン'], kun: ['もと'] })
+  ];
+  const courseWithBreakdown = {
+    contentLanguage: 'en',
+    breakdown: { key: 'meta.kanji', meaning: 'meta.ru', readings: ['meta.on', 'meta.kun'] },
+    tagLabels: { t1: 'Tag One' }
+  };
+  const { scr } = await start({ items, course: courseWithBreakdown });
+  scr.answer({ text: 'wrong' });
+
+  const fb = H.find(scr.view(), 'kanji-rows');
+  assert.ok(fb, 'kanji-rows should be present');
+
+  const rows = H.findAll(scr.view(), /^kanji-row$/);
+  assert.strictEqual(rows.length, 2, 'Should have 2 kanji rows');
+
+  const mean0 = H.find(rows[0], 'kanji-mean');
+  const mean1 = H.find(rows[1], 'kanji-mean');
+  assert.strictEqual(H.text(mean0), 'день', 'First row meaning should be from meta.ru');
+  assert.strictEqual(H.text(mean1), 'книга', 'Second row meaning should be from meta.ru');
+});
+
+test('kanji-rows: no breakdown config means no kanji rows', async () => {
+  const courseNoBreakdown = {
+    contentLanguage: 'en',
+    tagLabels: { t1: 'Tag One' }
+  };
+  const items = [
+    word('w-日本', '日本'),
+    kanji('日', '日', { on: ['ニチ', 'ジツ'], kun: ['ひ', 'び'] }),
+    kanji('本', '本', { on: ['ホン'], kun: ['もと'] })
+  ];
+  const { scr } = await start({ items, course: courseNoBreakdown });
+  scr.answer({ text: 'wrong' });
+
+  const fb = H.find(scr.view(), 'kanji-rows');
+  assert.strictEqual(fb, null, 'kanji-rows should be absent when no breakdown config');
 });

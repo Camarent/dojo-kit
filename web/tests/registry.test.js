@@ -43,9 +43,8 @@ test('every file listed in bundle.json exists', () => {
 
 test('type scripts load before ui/app.js in registry, choice, gap, card order', () => {
   const s = bundle.scripts;
-  const idx = ['types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'].map((f) => s.indexOf(f));
-  idx.forEach((i) => assert.ok(i >= 0));
-  assert.deepStrictEqual(idx.slice().sort((a, b) => a - b), idx);
+  const order = s.filter((f) => /^types\/(registry|choice|gap|card)\.js$|^ui\/app\.js$/.test(f)).map((f) => path.basename(f, '.js'));
+  assert.deepStrictEqual(order, ['registry', 'choice', 'gap', 'card', 'app']);
 });
 
 test('ui/app.js holds no question-type internals', () => {

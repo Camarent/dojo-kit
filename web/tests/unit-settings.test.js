@@ -1,63 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const DojoWasm = require('../dojo-wasm.js');
-const DojoSession = require('../session.js');
-const { checkWasmFresh } = require('./loader.js');
-
-const DAY = 86400000;
-const NOW = 1760000000000;
-const TODAY = '2025-10-09';
-
-function simpleContent(units) {
-  const items = [];
-  units.forEach((u, uidx) => {
-    for (let i = 1; i <= 3; i++) {
-      items.push({
-        id: u.id + '-' + i,
-        unit: u.id,
-        type: 'gap',
-        prompt: 'Q ' + u.id + ' ' + i,
-        answers: ['a' + u.id + i],
-        explanation: 'e'
-      });
-    }
-  });
-  return { v: 1, course: { units: units }, items: items, version: 't', lock: items.map(i => i.id) };
-}
-
-let dojoPromise;
-async function getDojo() {
-  if (!dojoPromise) {
-    checkWasmFresh();
-    dojoPromise = DojoWasm.load(require('node:fs').readFileSync(checkWasmFresh()));
-  }
-  return dojoPromise;
-}
-
-async function setup(content) {
-  const doc = { v: 1, t: 0, items: {}, stats: { days: {}, newByDay: {} }, settings: {}, exams: {} };
-  const clock = { t: NOW };
-  const store = {
-    doc,
-    update(fn) { fn(doc); doc.t = clock.t; },
-    noteAnswer() {}
-  };
-  const dojo = await getDojo();
-  const engine = DojoSession.createEngine({
-    dojo, store, content,
-    now: () => clock.t,
-    today: () => TODAY,
-    random: () => 0.5
-  });
-  return { engine, doc, store, clock, content };
-}
-
-function ids(session) {
-  const out = [];
-  for (let c = session.current(); c; c = session.next()) out.push(c.item.id);
-  return out;
-}
+const { simpleContent, getDojo, setup2: setup, ids, NOW, DAY, TODAY } = require('./fixtures.js');
 
 // Test 1: unit ladder is used for due computation
 test('unit ladder is used for answer and due computation', async () => {

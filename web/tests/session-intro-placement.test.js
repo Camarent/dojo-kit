@@ -2,14 +2,11 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
-const ROOT = path.join(__dirname, '..', '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, 'web', p), 'utf8');
 const NOW = 1760000000000;
 const MIN = 60000;
 const TODAY = '2025-10-09';
@@ -60,14 +57,12 @@ const EXAM = { passMark: 0.5, minutes: 5, sections: [{ title: 'A', count: 4, tag
 
 function load(markup) {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js'] });
   if (markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });
     sb.DojoExt.use('ruby');
   }
-  ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings.js']).concat(['ui/app.js']) });
   return sb;
 }
 
@@ -226,6 +221,7 @@ test('start() applies the saved theme before rendering', async () => {
   const win = fakeEnv();
   win.addEventListener = () => {};
   const doc = { settings: { theme: 'dark' } };
+  sb.DojoMigrate = { create: () => () => null };
   sb.DojoStorage = { createStore: () => ({ doc, load: () => Promise.resolve(), attachLifecycle() {} }) };
   sb.DojoSession = { createEngine: () => ({}) };
   sb.preact.render = () => {};
@@ -609,7 +605,7 @@ test('placement: per-item seed derives from session.seed and the item id', async
   assert.notDeepStrictEqual(seeds, seeds1);
 });
 
-test('placement check: renderFeedbackCheck does not throw on right or wrong answers', async () => {
+test('placement check: renderFeedback does not throw on right or wrong answers', async () => {
   const t = await setup({ placement: { mode: 'self' } }, { n: 3 });
   const s = t.engine.start('placement', { seed: 'S1' });
   const ui = inst(load().DojoApp._PlacementSession, { t: tr, session: s, now: () => NOW, win: {}, course: t.content.course, content: t.content, onEnd() {}, onExit() {} });
@@ -617,7 +613,7 @@ test('placement check: renderFeedbackCheck does not throw on right or wrong answ
   [true, false].forEach((correct) => {
     const res = { correct, expected: 'x', given: 'y' };
     let v;
-    assert.doesNotThrow(() => { v = ui.renderFeedbackCheck(ui.props, { cur: { item }, result: res }, tr, {}); });
+    assert.doesNotThrow(() => { v = ui.renderFeedback(ui.props, { cur: { item }, result: res }); });
     assert.ok(find(v, 'feedback'));
     const str = JSON.stringify(v);
     assert.ok(!/undefined|\[object/.test(str), str);

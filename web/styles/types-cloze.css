@@ -16,4 +16,3 @@
 .cloze-mark { flex: none; font-weight: 700; }
 .cloze-field.right + .cloze-mark { color: var(--good); }
 .cloze-field.wrong + .cloze-mark { color: var(--bad); }
-.cloze-expected { margin: 0; }

@@ -220,17 +220,13 @@ test('valid key formats work', () => {
 
 // ============ SettingsScreen plugin settings tests ============
 
-const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
-const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
+const { loadBundle } = require('./load-bundle.js');
 const NOW = 1760000000000;
 
 function loadApp() {
   const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings.js']).concat(['ui/app.js']) });
   return sb;
 }
 function find(n, id) {
@@ -373,6 +369,7 @@ test('start() binds getSetting to the store', async () => {
   const sb = loadApp();
   sb.DojoExt.registerSetting(REG);
   const doc = { settings: { 'plugin:myplugin': 'opt2' } };
+  sb.DojoMigrate = { create: () => () => null };
   sb.DojoStorage = { createStore: () => ({ doc, load: () => Promise.resolve(), attachLifecycle() {} }) };
   sb.DojoSession = { createEngine: () => ({}) };
   sb.preact.render = () => {};

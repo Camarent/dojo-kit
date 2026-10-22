@@ -7,6 +7,7 @@ const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
 const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const NOW = 1760000000000;
@@ -14,11 +15,9 @@ const MIN = 60000;
 
 function loadApp() {
   const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext('self.DojoExt = { text: function (s) { return s; } };', sb);
-  ['registry', 'card', 'choice', 'cloze', 'gap', 'match', 'multi', 'numeric', 'order'].map((n) => 'types/' + n + '.js').concat(['ui/app.js']).forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  ['registry', 'card', 'choice', 'cloze', 'gap', 'match', 'multi', 'numeric', 'order'].map((n) => 'types/' + n + '.js').concat(['ui/common.js']).concat(['ui/detail.js']).concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings.js']).concat(['ui/app.js']).forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
   return sb;
 }
 function walk(n, id) {

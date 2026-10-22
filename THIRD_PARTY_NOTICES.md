@@ -68,7 +68,7 @@ The following Rust crates from crates.io are linked into the WASM binary:
 
 ### zmij
 - **Version**: 1.0.23
-- **License**: MIT OR Apache-2.0
+- **License**: MIT
 - **SPDX**: MIT
 - **Homepage**: https://docs.rs/zmij
 
