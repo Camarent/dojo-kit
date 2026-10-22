@@ -248,5 +248,5 @@
     return { ok: true };
   }
 
-  return { available: available, lines: lines, status: status, play: play, stop: stop, pickVoice: pickVoice, effective: effective };
+  return { available: available, lines: lines, status: status, play: play, stop: stop, pickVoice: pickVoice, effective: effective, langOf: langOf };
 });

@@ -1813,7 +1813,7 @@
         <p class="notice" role="status" data-testid="speech-novoices">${t('settings.speech.novoices')}</p>
       </section>`;
     }
-    var lang = String(course.contentLanguage || '').toLowerCase().split(/[-_]/)[0];
+    var lang = String(Speech.langOf({ speech: course.speech, lang: course.contentLanguage }) || '').toLowerCase().split(/[-_]/)[0];
     var pool = lang ? voices.filter(function (v) { return String(v.lang || '').toLowerCase().split(/[-_]/)[0] === lang; }) : voices;
     if (pool.length === 0) pool = voices;
     var roles = Object.keys((course.speech && course.speech.voices) || {});
