@@ -7,7 +7,7 @@ use serde_json::Value;
 fn every_vector_through_the_api() {
     let mut failures = vec![];
     let mut total = 0;
-    for file in ["sanitize", "merge", "srs", "days", "check", "exam"] {
+    for file in ["sanitize", "merge", "srs", "days", "check", "exam", "groups"] {
         for (f, cases) in groups(&load(&format!("{file}.json"))) {
             for c in cases {
                 total += 1;

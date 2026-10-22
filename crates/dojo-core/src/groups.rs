@@ -53,6 +53,11 @@ pub struct Bar {
 /// Stage threshold for "learned" when a bar has no `learnedStage`.
 pub const DEFAULT_LEARNED_STAGE: i64 = 4;
 
+/// Learned threshold: `bar_stage`, else `course.learnedStage`, else `DEFAULT_LEARNED_STAGE`.
+pub fn learned_stage_of(course: &Value, bar_stage: Option<i64>) -> i64 {
+    bar_stage.or_else(|| course.get("learnedStage").and_then(Value::as_i64)).unwrap_or(DEFAULT_LEARNED_STAGE)
+}
+
 /// Entity state classification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntityState {
@@ -345,7 +350,7 @@ pub fn group_counts_scoped(
         .map(|a| a.iter().filter_map(|b| serde_json::from_value::<Bar>(b.clone()).ok()).collect())
         .unwrap_or_default();
     for bar in &bars {
-        let stage = bar.learned_stage.unwrap_or(DEFAULT_LEARNED_STAGE);
+        let stage = learned_stage_of(course, bar.learned_stage);
         let mut c = BarCounts::default();
         for e in &entity_order {
             let items = &entity_items[e];
@@ -857,6 +862,19 @@ mod tests {
         let missing = json!({"a1": {"s": 5, "due": 9999}});
         let r = group_counts(&course, &meta, missing.as_object().unwrap(), 0, &HashMap::new(), 0);
         assert_eq!((r.bars[0].learned, r.bars[0].started, r.bars[0].total), (0, 1, 3));
+    }
+
+    #[test]
+    fn bar_learned_stage_precedence_bar_then_course_then_default() {
+        let meta = vec![meta("a1", "k", "a", &[])];
+        let records = json!({"a1": {"s": 3, "due": 9999}});
+        let learned = |course: Value| {
+            group_counts_scoped(&course, &meta, records.as_object().unwrap(), 0, &HashMap::new(), 0, None).bars[0].learned
+        };
+        assert_eq!(learned(json!({"learnedStage": 2, "bars": [{"title": "T"}]})), 1);
+        assert_eq!(learned(json!({"learnedStage": 2, "bars": [{"title": "T", "learnedStage": 5}]})), 0);
+        assert_eq!(learned(json!({"bars": [{"title": "T"}]})), 0);
+        assert_eq!(learned(json!({"learnedStage": 5, "bars": [{"title": "T", "learnedStage": 3}]})), 1);
     }
 
     #[test]

@@ -148,7 +148,7 @@ fn entity_states(a: &Value) -> Result<Value, CallError> {
         }
         let empty = Map::new();
         let records = a.get("records").and_then(Value::as_object).unwrap_or(&empty);
-        let learned = a.get("learnedStage").and_then(Value::as_i64).unwrap_or(groups::DEFAULT_LEARNED_STAGE);
+        let learned = groups::learned_stage_of(a, None);
         let now = int(a, "now")?;
         let scoped = scoped_set(a)?;
         let out: Vec<Value> = order
