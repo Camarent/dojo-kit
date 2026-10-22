@@ -3,6 +3,7 @@
 const progress = require('../../tools/reference/progress.js');
 const { T0, D } = require('./const.js');
 const { ref } = require('./ref.js');
+const { draftExpectAll } = require('./oracles/srs.js');
 
 function mergePartPart1(kit) {
   kit.cases = [];
@@ -18,7 +19,7 @@ function mergePartPart1(kit) {
       source: 'reference',
       commutes: commutes
     });
-  }
+  };
 
   // identical docs
   const doc1 = ref('sanitize', { v: 1, t: 10, items: { a: { s: 1, due: T0, ok: 1, bad: 0, last: T0 } }, stats: {}, settings: {} });
@@ -199,64 +200,7 @@ function mergePartPart3(kit) {
 
 function mergePartPart4(kit) {
   // examDraft kit.cases (F9a). The expectation is computed by an independent JS oracle from the design rules.
-  const BOUND = 32;
-  const isValidDraft = (d) => d !== null && typeof d === 'object' && !Array.isArray(d) && typeof d.sid === 'string' && typeof d.updatedAt === 'number';
-  const isClosedDraft = (d) => typeof d.closed === 'string';
-  const withoutClosedSids = (d) => { const c = JSON.parse(JSON.stringify(d)); delete c.closedSids; return c; };
-  // Sort key of a candidate: greater key wins. Closed reason "expired" is the bottom reason.
-  const draftKey = (d) => {
-    const closed = isClosedDraft(d);
-    const tail = closed
-      ? [d.closed === 'expired' ? 0 : 1, d.closed]
-      : [Array.isArray(d.answers) ? d.answers.length : 0, progress.stableJson(withoutClosedSids(d))];
-    return [d.updatedAt, d.sid, closed ? 1 : 0].concat(tail);
-  };
-  const keyCmp = (ka, kb) => {
-    for (let i = 0; i < ka.length; i++) {
-      if (ka[i] < kb[i]) return -1;
-      if (ka[i] > kb[i]) return 1;
-    }
-    return 0;
-  };
-  // Expected merged doc for a LIST of docs (n-ary, so every fold order must equal it): generic merge from the
-  // reference for everything but examDraft; examDraft = greatest candidate + bounded set of closed sids.
-  kit.draftExpectAll = (docs) => {
-    let out = JSON.parse(JSON.stringify(docs[0]));
-    for (let i = 1; i < docs.length; i++) out = JSON.parse(JSON.stringify(ref('merge', out, docs[i])));
-    const reset = Math.max.apply(null, docs.map((d) => d.resetAt || 0));
-    const fresh = (t) => reset === 0 || t >= reset;
-    const valid = docs.map((d) => d.examDraft).filter(isValidDraft);
-    const closedAt = {};
-    const cands = [];
-    valid.forEach((d) => {
-      (Array.isArray(d.closedSids) ? d.closedSids : []).filter(isValidDraft).forEach((e) => {
-        if (!fresh(e.updatedAt)) return;
-        closedAt[e.sid] = Math.max(closedAt[e.sid] === undefined ? -Infinity : closedAt[e.sid], e.updatedAt);
-        cands.push({ sid: e.sid, updatedAt: e.updatedAt, closed: 'expired' });
-      });
-      if (!fresh(d.updatedAt)) return;
-      if (isClosedDraft(d)) {
-        closedAt[d.sid] = Math.max(closedAt[d.sid] === undefined ? -Infinity : closedAt[d.sid], d.updatedAt);
-        cands.push({ sid: d.sid, updatedAt: d.updatedAt, closed: d.closed });
-      } else {
-        cands.push(d);
-      }
-    });
-    if (!cands.length) {
-      if (valid.length) delete out.examDraft;
-      return out;
-    }
-    const best = cands.reduce((m, d) => (keyCmp(draftKey(d), draftKey(m)) > 0 ? d : m));
-    const list = Object.keys(closedAt)
-      .map((sid) => ({ sid: sid, updatedAt: closedAt[sid] }))
-      .sort((x, y) => keyCmp([x.updatedAt, x.sid], [y.updatedAt, y.sid]))
-      .slice(-BOUND);
-    const slot = JSON.parse(JSON.stringify(best));
-    delete slot.closedSids;
-    if (list.length) slot.closedSids = list;
-    out.examDraft = slot;
-    return out;
-  };
+  kit.draftExpectAll = (docs) => draftExpectAll(docs, ref);
   kit.sj = (x) => JSON.stringify(progress.stableJson(x));
 }
 

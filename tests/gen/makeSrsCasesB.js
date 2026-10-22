@@ -3,6 +3,7 @@
 const { T0, H, D, INTERVALS } = require('./const.js');
 const { Fl, pickDrillJs } = require('./utils.js');
 const { ref } = require('./ref.js');
+const { unitQueueOracle } = require('./oracles/srs.js');
 
 function srsBuildQueuePart1(kit) {
   kit.groups.push({ fn: 'weakest', cases: kit.weakestCases });
@@ -193,23 +194,7 @@ function srsApplyPlacementPart2(kit) {
   kit.groups.push({ fn: 'applyPlacement', cases: kit.applyPlacementCases });
 
   // Per-unit new caps: independent oracle (spec: a fresh id is taken only while its unit's count < cap and total < allowance).
-  kit.unitQueueOracle = (items, ord, allowance, caps, itemUnits) => {
-    const due = ord.filter((id) => items[id] && items[id].due <= T0)
-      .sort((x, y) => items[x].due - items[y].due);
-    const used = {};
-    const fresh = [];
-    for (const id of ord) {
-      if (fresh.length >= allowance) break;
-      if (items[id]) continue;
-      const u = itemUnits[id];
-      if (u !== undefined && Object.prototype.hasOwnProperty.call(caps, u)) {
-        if ((used[u] || 0) >= caps[u]) continue;
-        used[u] = (used[u] || 0) + 1;
-      }
-      fresh.push(id);
-    }
-    return { due: due, fresh: fresh };
-  };
+  kit.unitQueueOracle = unitQueueOracle;
 }
 
 function srsApplyPlacementPart3(kit) {
@@ -220,7 +205,7 @@ function srsApplyPlacementPart3(kit) {
     kit.buildQueueCases.push({
       name: name,
       input: { items: items, order: uOrder, now: T0, newAllowance: allowance, unitNewCaps: caps, itemUnits: itemUnits },
-      expect: kit.unitQueueOracle(items, uOrder, allowance, caps, itemUnits),
+      expect: kit.unitQueueOracle({ items, ord: uOrder, allowance, caps, itemUnits }),
       source: 'spec'
     });
   };
@@ -269,7 +254,7 @@ function srsApplyPlacementPart3(kit) {
   const sOrder = ['a1', 'a2', 'a3', 'b1', 'b2', 'x1'];
   const sEnt = { a1: 'A', a2: 'A', a3: 'A', b1: 'B', b2: 'B', x1: 'X' };
   const sMembers = { A: ['a1', 'a2', 'a3'], B: ['b1', 'b2'] };
-  kit.pick = (e, n) => pickDrillJs(sMembers[e], n, 'c', '2025-01-01', e);
+  kit.pick = (e, n) => pickDrillJs({ members: sMembers[e], n, courseId: 'c', day: '2025-01-01', entity: e });
   kit.sRec = (s, due) => ({ s: s, due: due, ok: s, bad: 0, last: T0 - D });
   kit.addScoped = (name, extra, items, allowance, expect, withScope) => {
     const input = { items: items, order: sOrder, now: T0, newAllowance: allowance, itemEntities: sEnt, day: '2025-01-01', courseId: 'c' };

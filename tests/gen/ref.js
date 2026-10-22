@@ -2,7 +2,7 @@
 
 const progress = require('../../tools/reference/progress.js');
 const srs = require('../../tools/reference/srs.js');
-const { gapVerdictJs } = require('./utils.js');
+const { gapVerdictJs } = require('./oracles/check.js');
 
 // The reference always adds an n5-specific empty stats.gNewByDay map; the generic core has no such fixed map.
 function withoutEmptyGrammarStats(doc) {
