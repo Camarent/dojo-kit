@@ -218,6 +218,23 @@ fn i18n_setup(tag: &str, file: &str) -> (PathBuf, PathBuf) {
     (dir, web)
 }
 
+fn fixture_web(root: &Path) -> PathBuf {
+    let web = root.join("web");
+    std::fs::create_dir_all(web.join("i18n")).unwrap();
+    let _ = std::fs::write(web.join("bundle.json"), r#"{"scripts":["a.js","b.js"],"styles":["s.css"],"i18n":["en","ru"],"licenses":["L.txt"]}"#);
+    let _ = std::fs::write(web.join("a.js"), "var a=1;");
+    let _ = std::fs::write(web.join("b.js"), "var s='</script>';");
+    let _ = std::fs::write(web.join("s.css"), "body{margin:0}");
+    let _ = std::fs::write(web.join("L.txt"), "MIT -- license");
+    let _ = std::fs::write(web.join("i18n/en.json"), EN);
+    let _ = std::fs::write(web.join("i18n/ru.json"), r#"{"hi":"Privet","bye":"Poka","thanks":"Spasibo"}"#);
+    let _ = std::fs::write(
+        web.join("index.template.html"),
+        "<title><!--DOJO:TITLE--></title>\n<style><!--DOJO:CSS--></style>\n<div id=\"dojo-root\"></div>\n<script><!--DOJO:WASM--><!--DOJO:I18N--></script>\n<!--DOJO:SCRIPTS-->\n<!--DOJO:LICENSES-->\n",
+    );
+    web
+}
+
 fn validate_i18n(dir: &Path, web: &Path, extra: &[&str]) -> Output {
     dojo().arg("validate").arg(dir).arg("--web").arg(web).args(extra).output().unwrap()
 }
@@ -350,6 +367,50 @@ fn i18n_plural_underscore_suffix_is_warning() {
     let text = stdout(&out);
     assert!(text.contains("warning[i18n_unknown_key] i18n/xx.json: "), "{}", text);
     assert!(text.contains("n_few"), "{}", text);
+}
+
+#[test]
+fn i18n_reserved_plugin_course_keys_do_not_warn() {
+    let (dir, _web) = i18n_setup("i18n-reserved", r#"{"plugin.x.y":"val","course.a":"val","hi":"Salut {name}","bye":"Ciao","lang":"Langue {lang}"}"#);
+    let out = validate_i18n(&dir, &_web, &[]);
+    assert_eq!(code(&out), Some(0));
+    assert!(!stdout(&out).contains("warning[i18n_unknown_key]"), "reserved keys should not warn: {}", stdout(&out));
+    
+    let build_web_root = unique_dir("i18n-reserved-build-web");
+    let build_web = fixture_web(&build_web_root);
+    let build_out = unique_dir("i18n-reserved-build");
+    let wasm = unique_dir("i18n-reserved-wasm");
+    std::fs::write(wasm.join("tiny.wasm"), [0u8, 0x61, 0x73, 0x6d, 1, 0, 0, 0]).unwrap();
+    
+    let path = dir.join("course.json");
+    let text = std::fs::read_to_string(&path).unwrap().replace("\"uiLanguage\": \"en\"", "\"uiLanguage\": \"xx\"");
+    std::fs::write(&path, text).unwrap();
+    
+    let build_result = dojo()
+        .arg("build")
+        .arg(&dir)
+        .arg("--out")
+        .arg(&build_out)
+        .arg("--wasm")
+        .arg(wasm.join("tiny.wasm"))
+        .arg("--web")
+        .arg(&build_web)
+        .output()
+        .unwrap();
+    assert_eq!(code(&build_result), Some(0), "{}", String::from_utf8_lossy(&build_result.stderr));
+    assert!(!stdout(&build_result).contains("warning[i18n_unknown_key]"), "build should not warn for reserved keys: {}", stdout(&build_result));
+    
+    let html = std::fs::read_to_string(build_out.join("demo/index.html")).unwrap();
+    assert!(html.contains(r#""plugin.x.y":"val""#), "built bundle should contain plugin.x.y");
+    assert!(html.contains(r#""course.a":"val""#), "built bundle should contain course.a");
+}
+
+#[test]
+fn i18n_unknown_key_foo_bar_still_warns() {
+    let (dir, web) = i18n_setup("i18n-foo-bar", r#"{"foo.bar":"val","hi":"Salut {name}","bye":"Ciao","lang":"Langue {lang}"}"#);
+    let out = validate_i18n(&dir, &web, &[]);
+    assert_eq!(code(&out), Some(0));
+    assert!(stdout(&out).contains("warning[i18n_unknown_key] i18n/xx.json: "), "{}", stdout(&out));
 }
 
 #[cfg(unix)]

@@ -265,7 +265,7 @@ pub fn i18n_diagnostics(reference: &Map<String, Value>, file_name: &str, course:
                     diags.push(i18n_diag(Error, "i18n_placeholder", file_name, format!("key \"{key}\" has placeholders {got:?}, expected {want:?}")));
                 }
             }
-            None if !ref_families.contains(family(key)) => {
+            None if !ref_families.contains(family(key)) && !key.starts_with("plugin.") && !key.starts_with("course.") => {
                 diags.push(i18n_diag(Warning, "i18n_unknown_key", file_name, format!("key \"{key}\" is not in the English reference")));
             }
             None => {}
