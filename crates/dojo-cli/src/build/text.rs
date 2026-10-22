@@ -48,8 +48,9 @@ pub fn escape_script_text(s: &str) -> String {
     let lower = s.to_ascii_lowercase();
     let mut out = String::with_capacity(s.len());
     let mut last = 0;
+    let last_script = lower.rfind("<script");
     for (i, _) in lower.match_indices("<!--") {
-        if lower[i + 4..].contains("<script") {
+        if last_script.is_some_and(|p| i < p) {
             out.push_str(&s[last..i]);
             out.push_str("<\\!");
             last = i + 2;
@@ -126,6 +127,20 @@ pub fn fill_template(template: &str, parts: &[(&str, String)]) -> Result<String,
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn comment_open_escaped_only_before_a_later_script() {
+        assert_eq!(escape_script_text("<!-- a <script"), "<\\!-- a <script");
+        assert_eq!(escape_script_text("<script <!-- a"), "<script <!-- a");
+        assert_eq!(escape_script_text("<!--<SCRIPT"), "<\\!--<SCRIPT");
+        assert_eq!(escape_script_text("x</SCRIPT y"), "x<\\/SCRIPT y");
+    }
+
+    #[test]
+    fn many_comment_opens_without_script_unchanged() {
+        let s = "<!--".repeat(20000);
+        assert_eq!(escape_script_text(&s), s);
+    }
 
     #[test]
     fn base64_vectors() {
