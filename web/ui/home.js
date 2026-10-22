@@ -6,25 +6,20 @@
   'use strict';
 
   var h = preact.h;
-  var Component = preact.Component;
   var html = htm.bind(h);
 
   // Load dependencies
   var DojoExt = root.DojoExt || {};
-  var DojoTypes = root.DojoTypes || {};
   var DojoSession = root.DojoSession || (typeof require !== 'undefined' ? require('./session.js') : null) || {};
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
-  var DojoCatalog = root.DojoCatalog || (typeof require !== 'undefined' ? require('./catalog.js') : null) || {};
 
   // Alias from DojoCommon
   var renderText = DojoCommon.renderText;
   var cls = DojoCommon.cls;
-  var Chip = DojoCommon.Chip;
   var ProgressBar = DojoCommon.ProgressBar;
   var ProgressMeter = DojoCommon.ProgressMeter;
   var Notice = DojoCommon.Notice;
   var StatusChip = DojoCommon.StatusChip;
-  var daysLeft = DojoCommon.daysLeft;
 
   // Use tagInfo from DojoSession if available, otherwise define it
   var tagInfo = DojoSession.tagInfo || function(course, tag) {
@@ -65,7 +60,10 @@
     var fresh = g.fresh || 0;
     var newToday = g.newToday || 0;
     var canStart = due + newToday > 0;
-    var labels = p.tagLabels;
+    var randomLabel = t('home.group.randomOrder');
+    var onlyTagsLabel = g.extraTags && g.extraTags.length > 0
+      ? t('home.group.onlyTags', { tag: g.extraTags.map(function (tag) { return tagInfo({ tagLabels: p.tagLabels }, tag).label; }).join(', ') })
+      : '';
     return html`<li key=${g.id} class="group-card" data-testid=${'group-' + g.id}>
       <h3 class="group-title">${renderText(g.title)}</h3>
       <div class="group-counts">
@@ -89,16 +87,20 @@
         ${isExtraNew ? html`<label class="chip toggles" data-testid=${'toggle-random-' + g.id}>
           <input type="checkbox"
             checked=${g.extraRandom === true}
+            id=${'group-toggle-random-' + g.id}
+            aria-label=${randomLabel}
             name=${'random-' + g.id}
             onChange=${function () { p.onGroupSetting(g.id, 'extraRandom', g.extraRandom === true ? null : true); }} />
-          <span>${t('home.group.randomOrder')}</span>
+          <span>${randomLabel}</span>
         </label>` : null}
         ${g.extraTags && g.extraTags.length > 0 ? html`<label class="chip toggles" data-testid=${'toggle-onlyTags-' + g.id}>
           <input type="checkbox"
             checked=${g.onlyTags === true}
+            id=${'group-toggle-onlyTags-' + g.id}
+            aria-label=${onlyTagsLabel}
             name=${'onlyTags-' + g.id}
             onChange=${function () { p.onGroupSetting(g.id, 'onlyTags', g.onlyTags === true ? null : true); }} />
-          <span>${t('home.group.onlyTags', { tag: g.extraTags.map(function (tag) { return tagInfo({ tagLabels: labels }, tag).label; }).join(', ') })}</span>
+          <span>${onlyTagsLabel}</span>
         </label>` : null}
       </div>` : null}
     </li>`;
@@ -119,11 +121,10 @@
     var groups = c.groups;
     var bars = c.bars;
     var hasGroups = groups && Object.keys(groups).length > 0;
-    var hasBars = bars && bars.length > 0;
+    var hasBars = !!(bars && bars.length > 0);
     var sumDue = c.summary ? c.summary.due : c.due;
     var sumNew = c.summary ? c.summary.newToday : c.newToday;
     var weakList = p.engine && p.engine.weakList && p.engine.weakList(8) || [];
-    var hasWeak = weakList.length > 0;
 
     return html`<main class="screen" data-testid="home">
       <header class="head">
@@ -131,18 +132,23 @@
         <${StatusChip} t=${t} status=${p.status} />
       </header>
       <${Notice} text=${p.notice} />
-      ${p.examDaysLeft !== null ? html`<p class=${cls('exam-countdown', p.examDaysLeft <= 7 && 'soon')} data-testid="exam-countdown">${t('home.exam.countdown', { n: p.examDaysLeft }) + (fmtExamDate(p.lang, p.examDate) ? ' · ' + fmtExamDate(p.lang, p.examDate) : '')}</p>` : null}
+      ${p.examDaysLeft !== null ? renderCountdown(p, t) : null}
       ${resume ? renderResumeSection(p, t, resume) : null}
       ${renderStatsSection(t, d, sumDue, sumNew)}
       ${c.summary && hasGroups ? html`<p class="muted stats-note" data-testid="stats-note">${t('home.stat.newHint')}</p>` : null}
       ${c.summary ? html`<p class="muted session-count" data-testid="session-count">${t('home.session.count', { n: c.summary.queue })}</p>` : null}
-      ${renderActionsSection(p, t, c, hasPlacement, placementDone, canReview, weakList, hasWeak, course, hasGroups)}
-      ${hasGroups ? renderGroupsSection(p, t, course, groups, c) : null}
+      ${renderActionsSection({ p: p, t: t, c: c, hasPlacement: hasPlacement, placementDone: placementDone, canReview: canReview, weakList: weakList, hasGroups: hasGroups })}
+      ${hasGroups ? renderGroupsSection(p, t, course, groups) : null}
       ${exams.length ? renderExamsSection(t, exams, p) : null}
       ${hasBars ? renderBarsSection(t, bars) : null}
       ${!hasGroups ? renderUnitsSection(p, t, course, c) : null}
       ${hasGroups ? renderOtherSection(p, t, course, groups, c) : null}
     </main>`;
+  }
+
+  function renderCountdown(p, t) {
+    var date = fmtExamDate(p.lang, p.examDate);
+    return html`<p class=${cls('exam-countdown', p.examDaysLeft <= 7 && 'soon')} data-testid="exam-countdown">${t('home.exam.countdown', { n: p.examDaysLeft }) + (date ? ' · ' + date : '')}</p>`;
   }
 
   // Helper: resume section
@@ -167,7 +173,10 @@
   }
 
   // Helper: actions section
-  function renderActionsSection(p, t, c, hasPlacement, placementDone, canReview, weakList, hasWeak, course, hasGroups) {
+  function renderActionsSection(o) {
+    var p = o.p, t = o.t, c = o.c, weakList = o.weakList;
+    var hasWeak = weakList.length > 0;
+    var hasPlacement = o.hasPlacement, placementDone = o.placementDone, canReview = o.canReview, hasGroups = o.hasGroups;
     return html`<section class="actions">
       ${c.fresh > c.newToday && !hasGroups ? html`<div class="row wrap more-new" data-testid="more-new">
         <button type="button" class="btn" data-testid="btn-more-5" onClick=${function () { p.onMoreNew(5); }}>${t('home.moreNew', { n: 5 })}</button>
@@ -200,7 +209,7 @@
   }
 
   // Helper: groups section
-  function renderGroupsSection(p, t, course, groups, c) {
+  function renderGroupsSection(p, t, course, groups) {
     return html`<section aria-labelledby="groups-title">
       <h2 id="groups-title">${t('home.groups')}</h2>
       <ul class="groups" data-testid="groups">
