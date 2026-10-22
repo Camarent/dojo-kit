@@ -7,6 +7,8 @@
     "session.js",
     "types/registry.js",
     "ext/registry.js",
+    "ext/ruby.js",
+    "ext/readings.js",
     "ext.js",
     "speech.js",
     "types/choice.js",
