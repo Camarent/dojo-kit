@@ -55,7 +55,6 @@
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
   }
-
   function shuffledIndexes(count, seedText) {
     var rand = mulberry32(hashString(seedText));
     var order = [];
@@ -68,23 +67,12 @@
     }
     return order;
   }
-
   function isRetired(item) {
     return item.status === 'retired';
   }
-
   function ensureObject(v) {
     return v && typeof v === 'object' && !Array.isArray(v) ? v : {};
   }
-
-  function itemLadder(dojo, course, item) {
-    return dojo.call('ladderForUnit', { course: course, unitId: item.unit, itemType: item.type });
-  }
-
-  function dropForUnit(dojo, course, item) {
-    return dojo.call('dropForUnit', { course: course, unitId: item.unit, itemType: item.type });
-  }
-
   function expectedFor(item) {
     if (item.type === 'choice') return optionText(item, correctIndexes(item)[0]);
     if (item.type === 'gap') return item.answers[0];
@@ -112,29 +100,23 @@
     }
     return true;
   }
-
   function isIdentity(perm) {
     return perm.every(function (v, i) { return v === i; });
   }
-
   function orderPerm(count, seedText) {
     var perm = shuffledIndexes(count, seedText);
     if (count >= 2 && isIdentity(perm)) perm = perm.slice(1).concat(perm[0]);
     return perm;
   }
-
   function clozeBlanks(item) {
     return item.parts.filter(function (p) { return typeof p !== 'string'; });
   }
-
   function correctIndexes(item) {
     return Array.isArray(item.answer) ? item.answer : [item.answer];
   }
-
   function optionText(item, index) {
     return item.options[index];
   }
-
   function createEngine(deps) {
     var dojo = deps.dojo;
     var store = deps.store;
@@ -180,14 +162,13 @@
       return item.normalize || course.normalize || null;
     }
 
+    function applyLadderScale(ladder, unitId) {
+      var scale = getUnitSettingsOverride(unitId).ladderScale;
+      return scale !== undefined && scale !== 1 && ladder && ladder.length ? scaleLadder(ladder, scale) : ladder;
+    }
+
     function ladderForUnit(unitId) {
-      var ladder = unitConfig(unitId).ladder;
-      var override = getUnitSettingsOverride(unitId);
-      var scale = override.ladderScale;
-      if (scale !== undefined && scale !== 1 && ladder && ladder.length) {
-        return scaleLadder(ladder, scale);
-      }
-      return ladder;
+      return applyLadderScale(unitConfig(unitId).ladder, unitId);
     }
 
     function learnedStage() {
@@ -206,13 +187,7 @@
     }
 
     function itemLadderFor(item) {
-      var ladder = dojo.call('ladderForUnit', { course: course, unitId: item.unit, itemType: item.type });
-      var override = getUnitSettingsOverride(item.unit);
-      var scale = override.ladderScale;
-      if (scale !== undefined && scale !== 1 && ladder && ladder.length) {
-        return scaleLadder(ladder, scale);
-      }
-      return ladder;
+      return applyLadderScale(dojo.call('ladderForUnit', { course: course, unitId: item.unit, itemType: item.type }), item.unit);
     }
 
     function dropForItem(item) {
@@ -566,7 +541,6 @@
       var unitPositions = {};
       order.forEach(function (id, idx) {
         var unitId = itemUnit[id];
-        var unit = unitLookup[unitId];
         if (!unitPositions[unitId]) unitPositions[unitId] = [];
         unitPositions[unitId].push(idx);
       });
@@ -782,22 +756,18 @@
 
     // Weakest ids among shared items; among all valid ones when no shared item is weak.
     function weakIds(valid, limit) {
-      var keep = {};
-      Object.keys(valid).forEach(function (id) { keep[id] = true; });
-      var shared = preferShared(Object.keys(valid));
-      if (shared.length < Object.keys(valid).length) {
+      var all = Object.keys(valid);
+      var shared = preferShared(all);
+      if (shared.length < all.length) {
         var sv = {};
         shared.forEach(function (id) { sv[id] = true; });
         var ids = dojo.call('weakest', { items: records(), limit: limit, validIds: sv });
         if (ids.length > 0) return ids;
       }
-      return dojo.call('weakest', { items: records(), limit: limit, validIds: keep });
+      return dojo.call('weakest', { items: records(), limit: limit, validIds: valid });
     }
-
-    function weakQueue(opts) {
-      var valid = {};
-      var recs = records();
-      var seenEntity = {};
+    function weakValidIds() {
+      var valid = {}, recs = records(), seenEntity = {};
       activeItems().forEach(function (it) {
         var se = scopedEntityOf[it.id];
         if (se !== undefined) {
@@ -807,27 +777,17 @@
         }
         valid[it.id] = true;
       });
+      return valid;
+    }
+    function weakQueue(opts) {
+      var valid = weakValidIds();
       return weakIds(valid, opts.limit || DEFAULT_WEAK_LIMIT);
     }
-
-    // Returns up to limit weak items as [{id, prompt}]; read-only, no write, no new WASM call.
     function weakList(limit) {
-      var valid = {};
-      var recs = records();
-      var seenEntity = {};
-      activeItems().forEach(function (it) {
-        var se = scopedEntityOf[it.id];
-        if (se !== undefined) {
-          var r = recs[it.id];
-          if (seenEntity[se] || !r || !(r.bad > 0)) return;
-          seenEntity[se] = true;
-        }
-        valid[it.id] = true;
-      });
+      var valid = weakValidIds();
       var ids = weakIds(valid, limit);
       return ids.map(function (id) { return { id: id, prompt: byId[id] ? byId[id].prompt : '' }; });
     }
-
     function placementQueue(opts) {
       var mode = placementMode();
       var perUnit = opts.perUnit || placementPerUnit();
