@@ -13,6 +13,7 @@
     "session/overrides.js",
     "session/queues.js",
     "session/counts.js",
+    "session/exam.js",
     "session.js",
     "types/registry.js",
     "ext/registry.js",
