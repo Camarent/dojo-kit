@@ -70,7 +70,7 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 ## Key files
 - `web/boot.js` - startup sequence; the only place that reads `__DOJO_WASM__`, `__DOJO_I18N__`.
 - `web/bundle.json` - ordered list of scripts, styles, i18n languages and vendored licenses that `dojo build` inlines. The order matters: registry and `ext.js` before the types, `@course` (course plugin scripts) after the types and before `ui/app.js`, `speech.js` before `ui/app.js` (app.js reads `root.DojoSpeech` at load), `boot.js` last. In `styles`, `@course` is a placeholder; plugin CSS is appended after all listed styles.
-- `web/ext.js` - `DojoExt` registry for build-time course plugins: markup, hooks and plugin settings (see Settings precedence and Invariants); also the built-in ruby renderer and its skip set (`useRuby`, `rubyRender`, `rubyPlain`).
+- `web/ext.js` - `DojoExt` registry for build-time course plugins: markup, hooks and plugin settings (see Settings precedence and Invariants); the built-in ruby renderer and its skip set (`useRuby`, `rubyRender`, `rubyPlain`) live in `web/ext/ruby.js`.
 - `web/styles/app.css` - session layout at the end of the file (centered question card, full-width answers, `feedback-detail` with its own scroll).
 - `web/speech.js` - `DojoSpeech` playback over `window.speechSynthesis`; course voice settings come from `course.speech` in `content.json`.
 - `web/storage.js` - store, progress document handling, paste import/export, artifact-db adapter.
