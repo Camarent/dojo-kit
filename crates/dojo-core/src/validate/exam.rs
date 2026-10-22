@@ -135,11 +135,11 @@ fn check_exam_timing(id: &str, exam: &ExamConfig, check_known: &mut KnownCheck, 
             for (tg_idx, tg) in timing.iter().enumerate() {
                 // Get indices for all sections in this group (only those that exist)
                 let mut indices: Vec<usize> = tg.sections.iter().filter_map(|st| section_to_idx.get(st.as_str())).copied().collect();
-                if indices.is_empty() {
-                    continue; // all sections are unknown, already reported
-                }
                 indices.sort();
-                let range = (*indices.first().unwrap(), *indices.last().unwrap());
+                let (Some(&lo), Some(&hi)) = (indices.first(), indices.last()) else {
+                    continue; // all sections are unknown, already reported
+                };
+                let range = (lo, hi);
                 group_ranges.push(range);
                 
                 // Check contiguity: each index should be exactly one more than the previous
