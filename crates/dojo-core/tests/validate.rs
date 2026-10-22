@@ -1472,12 +1472,6 @@ fn breakdown_empty_key() {
 }
 
 #[test]
-fn breakdown_empty_key() {
-    let c = with_course(r#""breakdown":{"key":"","meaning":"meta.en","readings":["meta.on"]}"#);
-    fires(&c, &[CHOICE], "bad_breakdown");
-}
-
-#[test]
 fn breakdown_empty_meaning() {
     let c = with_course(r#""breakdown":{"key":"meta.kanji","meaning":"","readings":["meta.on"]}"#);
     fires(&c, &[CHOICE], "bad_breakdown");
