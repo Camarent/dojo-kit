@@ -1,0 +1,20 @@
+#!/bin/sh
+# Pre-push hook: check all commits in the pushed range
+
+# Source the shared guard functions
+guard_dir=$(dirname "$0")
+. "$guard_dir/guard.sh"
+
+fail=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # Skip deleted refs
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  # Check the commit range
+  check_commit_range "$local_sha" "$remote_sha" || fail=1
+done
+
+exit $fail

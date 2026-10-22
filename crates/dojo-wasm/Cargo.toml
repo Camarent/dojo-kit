@@ -1,0 +1,11 @@
+[package]
+name = "dojo-wasm"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+dojo-core = { version = "0.1.0", path = "../dojo-core" }
+
+[lib]
+crate-type = ["cdylib"]

@@ -1,0 +1,13 @@
+#!/bin/sh
+# Runs the shared checks, then scans the message file ($1)
+dir=$(dirname "$0")
+"$dir/guard.sh" || exit 1
+[ -n "$1" ] && [ -f "$1" ] || exit 0
+. "$dir/guard.sh"
+msg=$(grep -v '^#' "$1")
+bad=$(echo "$msg" | grep -oE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' | while read -r m; do is_msg_email_ok "$m" || echo "$m"; done | head -1)
+if [ -n "$bad" ]; then echo "refused: message contains email '$bad'" >&2; exit 1; fi
+if echo "$msg" | grep -E 'workspace/[A-Za-z0-9_/-]+' | grep -qv 'workspace/<'; then
+  echo "refused: message references private workspace" >&2; exit 1
+fi
+exit 0

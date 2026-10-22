@@ -1,0 +1,13 @@
+.match { display: flex; flex-direction: column; gap: var(--space-3); }
+.match-hint { margin: 0; }
+.match-row { display: flex; gap: var(--space-3); align-items: center; width: 100%; min-height: var(--tap); }
+.match-left { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.match-select { flex: 1; min-width: 0; min-height: var(--tap); padding: var(--space-1); background: var(--bg); border: 1px solid var(--control-border); border-radius: var(--radius-sm); font: inherit; color: inherit; }
+.match-select:disabled { cursor: default; background: var(--surface); }
+.match-select option { background: var(--surface); color: var(--fg); }
+.match-row.wrong .match-select { border-color: var(--bad); background: var(--bad-soft); }
+.match-actions { margin-top: var(--space-2); justify-content: flex-end; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .match-select { transition: background-color 0.12s, border-color 0.12s; }
+}

@@ -1,0 +1,1506 @@
+{
+  "groups": [
+    {
+      "fn": "normalize",
+      "cases": [
+        {
+          "name": "default_trim_lowercase",
+          "input": {
+            "text": "  Paris "
+          },
+          "expect": "paris",
+          "source": "spec"
+        },
+        {
+          "name": "case_sensitive_on",
+          "input": {
+            "text": "  Paris ",
+            "opts": {
+              "caseSensitive": true,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "Paris",
+          "source": "spec"
+        },
+        {
+          "name": "collapse_spaces",
+          "input": {
+            "text": "new   york",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "new york",
+          "source": "spec"
+        },
+        {
+          "name": "collapse_off_keeps_double_space",
+          "input": {
+            "text": "new  york",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": false,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "new  york",
+          "source": "spec"
+        },
+        {
+          "name": "trim_off_keeps_leading_space",
+          "input": {
+            "text": " paris",
+            "opts": {
+              "caseSensitive": false,
+              "trim": false,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": " paris",
+          "source": "spec"
+        },
+        {
+          "name": "strip_punctuation",
+          "input": {
+            "text": "Don't!",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": true
+            }
+          },
+          "expect": "dont",
+          "source": "spec"
+        },
+        {
+          "name": "punctuation_kept_by_default",
+          "input": {
+            "text": "Don't!"
+          },
+          "expect": "don't!",
+          "source": "spec"
+        },
+        {
+          "name": "cyrillic",
+          "input": {
+            "text": "МОСКВА",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "москва",
+          "source": "spec"
+        },
+        {
+          "name": "accented_latin",
+          "input": {
+            "text": "Café",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "café",
+          "source": "spec"
+        },
+        {
+          "name": "cafe_not_equal_cafe",
+          "input": {
+            "text": "cafe",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "cafe",
+          "source": "spec"
+        },
+        {
+          "name": "fold_kana_table",
+          "input": {
+            "text": "アイ",
+            "opts": {
+              "fold": [
+                [
+                  "ア",
+                  "あ"
+                ],
+                [
+                  "イ",
+                  "い"
+                ]
+              ]
+            }
+          },
+          "expect": "あい",
+          "source": "spec"
+        },
+        {
+          "name": "fold_yo_to_ye",
+          "input": {
+            "text": "Ёлка",
+            "opts": {
+              "fold": [
+                [
+                  "ё",
+                  "е"
+                ]
+              ]
+            }
+          },
+          "expect": "елка",
+          "source": "spec"
+        },
+        {
+          "name": "fold_range_case_sensitive",
+          "input": {
+            "text": "ABC xyz",
+            "opts": {
+              "caseSensitive": true,
+              "fold": [
+                [
+                  "A-Z",
+                  "a-z"
+                ]
+              ]
+            }
+          },
+          "expect": "abc xyz",
+          "source": "spec"
+        },
+        {
+          "name": "fold_delete",
+          "input": {
+            "text": "はい。",
+            "opts": {
+              "fold": [
+                [
+                  "。",
+                  ""
+                ]
+              ]
+            }
+          },
+          "expect": "はい",
+          "source": "spec"
+        },
+        {
+          "name": "digits",
+          "input": {
+            "text": "42"
+          },
+          "expect": "42",
+          "source": "spec"
+        },
+        {
+          "name": "digits_with_space",
+          "input": {
+            "text": "4 2",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "4 2",
+          "source": "spec"
+        },
+        {
+          "name": "strip_punctuation_comma",
+          "input": {
+            "text": "a,b",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": true
+            }
+          },
+          "expect": "ab",
+          "source": "spec"
+        },
+        {
+          "name": "empty_input",
+          "input": {
+            "text": ""
+          },
+          "expect": "",
+          "source": "spec"
+        },
+        {
+          "name": "tab_and_newline",
+          "input": {
+            "text": "a\tb\nc",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "a b c",
+          "source": "spec"
+        },
+        {
+          "name": "non_breaking_space",
+          "input": {
+            "text": "a b",
+            "opts": {
+              "caseSensitive": false,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": "a b",
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "checkGap",
+      "cases": [
+        {
+          "name": "multiple_accepted_answers_second_matches",
+          "input": {
+            "answers": [
+              "Paris",
+              "paris"
+            ],
+            "input": "paris"
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "empty_answers",
+          "input": {
+            "answers": [],
+            "input": "paris"
+          },
+          "expect": false,
+          "source": "spec"
+        },
+        {
+          "name": "empty_input",
+          "input": {
+            "answers": [
+              "paris"
+            ],
+            "input": ""
+          },
+          "expect": false,
+          "source": "spec"
+        },
+        {
+          "name": "empty_input_matches_empty_answer",
+          "input": {
+            "answers": [
+              ""
+            ],
+            "input": ""
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "digits_match",
+          "input": {
+            "answers": [
+              "42"
+            ],
+            "input": "42"
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "digits_with_space_no_match",
+          "input": {
+            "answers": [
+              "42"
+            ],
+            "input": "4 2",
+            "opts": {
+              "collapseSpaces": false
+            }
+          },
+          "expect": false,
+          "source": "spec"
+        },
+        {
+          "name": "cyrillic_case_insensitive",
+          "input": {
+            "answers": [
+              "МОСКВА"
+            ],
+            "input": "москва"
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "accented_latin_match",
+          "input": {
+            "answers": [
+              "café"
+            ],
+            "input": "Café"
+          },
+          "expect": true,
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "gapVerdict",
+      "cases": [
+        {
+          "name": "input_matches_answer",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [],
+            "input": "Paris"
+          },
+          "expect": "ok",
+          "source": "spec"
+        },
+        {
+          "name": "input_matches_retry",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [
+              "Pariz"
+            ],
+            "input": "Pariz"
+          },
+          "expect": "retry",
+          "source": "spec"
+        },
+        {
+          "name": "input_matches_neither",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [
+              "Pariz"
+            ],
+            "input": "London"
+          },
+          "expect": "wrong",
+          "source": "spec"
+        },
+        {
+          "name": "empty_retry_treated_as_no_retry",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "input": "London"
+          },
+          "expect": "wrong",
+          "source": "spec"
+        },
+        {
+          "name": "normalization_applies_to_retry",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [
+              "Pariz"
+            ],
+            "input": "pariz",
+            "opts": {
+              "caseSensitive": false
+            }
+          },
+          "expect": "retry",
+          "source": "spec"
+        },
+        {
+          "name": "case_sensitive_retry_no_match",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [
+              "paris"
+            ],
+            "input": "PARIS",
+            "opts": {
+              "caseSensitive": true
+            }
+          },
+          "expect": "wrong",
+          "source": "spec"
+        },
+        {
+          "name": "retry_answer_overlap_checked_first",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [
+              "Paris"
+            ],
+            "input": "Paris"
+          },
+          "expect": "ok",
+          "source": "spec"
+        },
+        {
+          "name": "multiple_answers_match",
+          "input": {
+            "answers": [
+              "Paris",
+              "Roma"
+            ],
+            "retry": [
+              "Pariz"
+            ],
+            "input": "Roma"
+          },
+          "expect": "ok",
+          "source": "spec"
+        },
+        {
+          "name": "multiple_retry_match",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [
+              "Pariz",
+              "Londinium"
+            ],
+            "input": "Londinium"
+          },
+          "expect": "retry",
+          "source": "spec"
+        },
+        {
+          "name": "fold_applies_to_input_and_answer",
+          "input": {
+            "answers": [
+              "Ёлка"
+            ],
+            "retry": [],
+            "input": "елка",
+            "opts": {
+              "fold": [
+                [
+                  "ё",
+                  "е"
+                ]
+              ]
+            }
+          },
+          "expect": "ok",
+          "source": "spec"
+        },
+        {
+          "name": "fold_applies_to_retry",
+          "input": {
+            "answers": [
+              "Paris"
+            ],
+            "retry": [
+              "Ёлка"
+            ],
+            "input": "елка",
+            "opts": {
+              "fold": [
+                [
+                  "ё",
+                  "е"
+                ]
+              ]
+            }
+          },
+          "expect": "retry",
+          "source": "spec"
+        },
+        {
+          "name": "fold_absent_distinguishes_yo",
+          "input": {
+            "answers": [
+              "Ёлка"
+            ],
+            "retry": [],
+            "input": "елка"
+          },
+          "expect": "wrong",
+          "source": "spec"
+        },
+        {
+          "name": "case_and_space_normalized",
+          "input": {
+            "answers": [
+              "New York"
+            ],
+            "retry": [
+              "Nu York"
+            ],
+            "input": "  NEW   york "
+          },
+          "expect": "ok",
+          "source": "spec"
+        },
+        {
+          "name": "space_normalized_retry",
+          "input": {
+            "answers": [
+              "New York"
+            ],
+            "retry": [
+              "Nu York"
+            ],
+            "input": " nu \t YORK  "
+          },
+          "expect": "retry",
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "checkChoice",
+      "cases": [
+        {
+          "name": "same_answer",
+          "input": {
+            "answer": 5,
+            "selected": 5
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "different_answer",
+          "input": {
+            "answer": 5,
+            "selected": 3
+          },
+          "expect": false,
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "checkMulti",
+      "cases": [
+        {
+          "name": "exact_set_equal_different_order",
+          "input": {
+            "correct": [
+              0,
+              1,
+              2
+            ],
+            "selected": [
+              2,
+              1,
+              0
+            ]
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "duplicates_in_selected",
+          "input": {
+            "correct": [
+              0,
+              1,
+              2
+            ],
+            "selected": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "empty_selected_empty_correct",
+          "input": {
+            "correct": [],
+            "selected": []
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "empty_selected_non_empty_correct",
+          "input": {
+            "correct": [
+              0,
+              1
+            ],
+            "selected": []
+          },
+          "expect": false,
+          "source": "spec"
+        },
+        {
+          "name": "out_of_range_index_in_selected",
+          "input": {
+            "correct": [
+              0,
+              1
+            ],
+            "selected": [
+              0,
+              2
+            ]
+          },
+          "expect": false,
+          "source": "spec"
+        },
+        {
+          "name": "subset_not_equal",
+          "input": {
+            "correct": [
+              0,
+              1,
+              2
+            ],
+            "selected": [
+              0,
+              1
+            ]
+          },
+          "expect": false,
+          "source": "spec"
+        },
+        {
+          "name": "superset_not_equal",
+          "input": {
+            "correct": [
+              0,
+              1
+            ],
+            "selected": [
+              0,
+              1,
+              2
+            ]
+          },
+          "expect": false,
+          "source": "spec"
+        },
+        {
+          "name": "single_element_match",
+          "input": {
+            "correct": [
+              3
+            ],
+            "selected": [
+              3
+            ]
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "duplicates_in_both",
+          "input": {
+            "correct": [
+              1,
+              1,
+              2
+            ],
+            "selected": [
+              2,
+              1,
+              1
+            ]
+          },
+          "expect": true,
+          "source": "spec"
+        },
+        {
+          "name": "different_sets",
+          "input": {
+            "correct": [
+              0,
+              1
+            ],
+            "selected": [
+              2,
+              3
+            ]
+          },
+          "expect": false,
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "checkMatch",
+      "cases": [
+        {
+          "name": "identity_mapping_correct",
+          "input": {
+            "pairCount": 3,
+            "mapping": [
+              0,
+              1,
+              2
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "wrong": []
+          },
+          "source": "spec"
+        },
+        {
+          "name": "one_wrong_pair",
+          "input": {
+            "pairCount": 3,
+            "mapping": [
+              0,
+              2,
+              2
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "wrong": [
+              1
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "short_mapping_missing_entry",
+          "input": {
+            "pairCount": 3,
+            "mapping": [
+              0,
+              1
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "wrong": [
+              2
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "long_mapping_not_correct",
+          "input": {
+            "pairCount": 2,
+            "mapping": [
+              0,
+              1,
+              2
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "wrong": []
+          },
+          "source": "spec"
+        },
+        {
+          "name": "pair_count_0_empty_mapping",
+          "input": {
+            "pairCount": 0,
+            "mapping": []
+          },
+          "expect": {
+            "correct": true,
+            "wrong": []
+          },
+          "source": "spec"
+        },
+        {
+          "name": "all_wrong",
+          "input": {
+            "pairCount": 2,
+            "mapping": [
+              1,
+              0
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "wrong": [
+              0,
+              1
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "first_pair_wrong",
+          "input": {
+            "pairCount": 3,
+            "mapping": [
+              1,
+              1,
+              2
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "wrong": [
+              0
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "partial_correct",
+          "input": {
+            "pairCount": 4,
+            "mapping": [
+              0,
+              1,
+              3,
+              3
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "wrong": [
+              2
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "empty_mapping_non_zero_pair_count",
+          "input": {
+            "pairCount": 2,
+            "mapping": []
+          },
+          "expect": {
+            "correct": false,
+            "wrong": [
+              0,
+              1
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "identity_with_extra",
+          "input": {
+            "pairCount": 2,
+            "mapping": [
+              0,
+              1,
+              0
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "wrong": []
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "checkOrder",
+      "cases": [
+        {
+          "name": "correct_order",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              0,
+              1,
+              2
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "firstWrong": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "reversed_order",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              2,
+              1,
+              0
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 0
+          },
+          "source": "spec"
+        },
+        {
+          "name": "one_swap_first_wrong",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              1,
+              0,
+              2
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 0
+          },
+          "source": "spec"
+        },
+        {
+          "name": "sequence_too_short",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              0,
+              1
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 2
+          },
+          "source": "spec"
+        },
+        {
+          "name": "sequence_too_long",
+          "input": {
+            "stepCount": 2,
+            "sequence": [
+              0,
+              1,
+              2
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 2
+          },
+          "source": "spec"
+        },
+        {
+          "name": "step_count_0_empty_sequence",
+          "input": {
+            "stepCount": 0,
+            "sequence": []
+          },
+          "expect": {
+            "correct": true,
+            "firstWrong": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "all_wrong_from_start",
+          "input": {
+            "stepCount": 4,
+            "sequence": [
+              1,
+              2,
+              3,
+              0
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 0
+          },
+          "source": "spec"
+        },
+        {
+          "name": "correct_until_last",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              0,
+              1,
+              0
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 2
+          },
+          "source": "spec"
+        },
+        {
+          "name": "single_element_correct",
+          "input": {
+            "stepCount": 1,
+            "sequence": [
+              0
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "firstWrong": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "empty_sequence_non_zero_step_count",
+          "input": {
+            "stepCount": 2,
+            "sequence": []
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 0
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "checkCloze",
+      "cases": [
+        {
+          "name": "all_blanks_match",
+          "input": {
+            "blanks": [
+              [
+                "Paris"
+              ],
+              [
+                "Rome"
+              ]
+            ],
+            "inputs": [
+              "Paris",
+              "Rome"
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "results": [
+              true,
+              true
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "second_alternative_matches",
+          "input": {
+            "blanks": [
+              [
+                "Paris",
+                "paris"
+              ]
+            ],
+            "inputs": [
+              "paris"
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "results": [
+              true
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "case_sensitive_fail",
+          "input": {
+            "blanks": [
+              [
+                "Paris"
+              ]
+            ],
+            "inputs": [
+              "paris"
+            ],
+            "opts": {
+              "caseSensitive": true,
+              "trim": true,
+              "collapseSpaces": true,
+              "stripPunctuation": false
+            }
+          },
+          "expect": {
+            "correct": false,
+            "results": [
+              false
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "input_missing_for_blank",
+          "input": {
+            "blanks": [
+              [
+                "Paris"
+              ],
+              [
+                "Rome"
+              ]
+            ],
+            "inputs": [
+              "Paris"
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "results": [
+              true,
+              false
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "empty_blanks_list",
+          "input": {
+            "blanks": [],
+            "inputs": []
+          },
+          "expect": {
+            "correct": false,
+            "results": []
+          },
+          "source": "spec"
+        },
+        {
+          "name": "extra_inputs_ignored",
+          "input": {
+            "blanks": [
+              [
+                "Paris"
+              ]
+            ],
+            "inputs": [
+              "Paris",
+              "extra"
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "results": [
+              true
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "wrong_answer",
+          "input": {
+            "blanks": [
+              [
+                "Paris"
+              ]
+            ],
+            "inputs": [
+              "London"
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "results": [
+              false
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "multiple_blanks_all_correct",
+          "input": {
+            "blanks": [
+              [
+                "A",
+                "a"
+              ],
+              [
+                "B",
+                "b"
+              ],
+              [
+                "C",
+                "c"
+              ]
+            ],
+            "inputs": [
+              "a",
+              "B",
+              "c"
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "results": [
+              true,
+              true,
+              true
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "one_blank_wrong",
+          "input": {
+            "blanks": [
+              [
+                "A"
+              ],
+              [
+                "B"
+              ],
+              [
+                "C"
+              ]
+            ],
+            "inputs": [
+              "A",
+              "X",
+              "C"
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "results": [
+              true,
+              false,
+              true
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "all_empty_inputs",
+          "input": {
+            "blanks": [
+              [
+                "A"
+              ],
+              [
+                "B"
+              ]
+            ],
+            "inputs": [
+              "",
+              ""
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "results": [
+              false,
+              false
+            ]
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "checkNumeric",
+      "cases": [
+        {
+          "name": "comma_as_decimal_1_5",
+          "input": {
+            "answer": 1.5,
+            "input": "1,5"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 1.5
+          },
+          "source": "spec"
+        },
+        {
+          "name": "comma_as_decimal_1_000",
+          "input": {
+            "answer": 1,
+            "input": "1,000"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 1
+          },
+          "source": "spec"
+        },
+        {
+          "name": "space_invalid",
+          "input": {
+            "answer": 0,
+            "input": "1 000"
+          },
+          "expect": {
+            "correct": false,
+            "parsed": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "plus_sign",
+          "input": {
+            "answer": 2,
+            "input": "+2"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 2
+          },
+          "source": "spec"
+        },
+        {
+          "name": "scientific_notation",
+          "input": {
+            "answer": 1000,
+            "input": "1e3"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 1000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "dot_five",
+          "input": {
+            "answer": 0.5,
+            "input": ".5"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 0.5
+          },
+          "source": "spec"
+        },
+        {
+          "name": "five_dot",
+          "input": {
+            "answer": 5,
+            "input": "5."
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 5
+          },
+          "source": "spec"
+        },
+        {
+          "name": "empty_string",
+          "input": {
+            "answer": 0,
+            "input": ""
+          },
+          "expect": {
+            "correct": false,
+            "parsed": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "abc_invalid",
+          "input": {
+            "answer": 0,
+            "input": "abc"
+          },
+          "expect": {
+            "correct": false,
+            "parsed": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "double_minus_invalid",
+          "input": {
+            "answer": 0,
+            "input": "--1"
+          },
+          "expect": {
+            "correct": false,
+            "parsed": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "tolerance_boundary_exact",
+          "input": {
+            "answer": 1,
+            "tolerance": 0.5,
+            "input": "1.5"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 1.5
+          },
+          "source": "spec"
+        },
+        {
+          "name": "float_slack_0_3",
+          "input": {
+            "answer": 0.30000000000000004,
+            "input": "0.3"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": 0.3
+          },
+          "source": "spec"
+        },
+        {
+          "name": "negative_answer_correct",
+          "input": {
+            "answer": -2,
+            "input": "-2"
+          },
+          "expect": {
+            "correct": true,
+            "parsed": -2
+          },
+          "source": "spec"
+        },
+        {
+          "name": "negative_input_wrong",
+          "input": {
+            "answer": 2,
+            "input": "-2"
+          },
+          "expect": {
+            "correct": false,
+            "parsed": -2
+          },
+          "source": "spec"
+        }
+      ]
+    }
+  ]
+}

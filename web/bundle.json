@@ -1,0 +1,41 @@
+{
+  "scripts": [
+    "vendor/preact.min.js",
+    "vendor/htm.umd.js",
+    "dojo-wasm.js",
+    "storage.js",
+    "session.js",
+    "types/registry.js",
+    "ext.js",
+    "speech.js",
+    "types/choice.js",
+    "types/gap.js",
+    "types/card.js",
+    "types/multi.js",
+    "types/match.js",
+    "types/order.js",
+    "types/cloze.js",
+    "types/numeric.js",
+    "@course",
+    "ui/app.js",
+    "boot.js"
+  ],
+  "styles": [
+    "styles/tokens.css",
+    "styles/app.css",
+    "styles/types-multi.css",
+    "styles/types-match.css",
+    "styles/types-order.css",
+    "styles/types-cloze.css",
+    "styles/types-numeric.css",
+    "@course"
+  ],
+  "i18n": [
+    "en",
+    "ru"
+  ],
+  "licenses": [
+    "vendor/preact.LICENSE",
+    "vendor/htm.LICENSE"
+  ]
+}

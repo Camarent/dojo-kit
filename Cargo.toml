@@ -1,0 +1,14 @@
+[workspace]
+resolver = "3"
+members = ["crates/dojo-core", "crates/dojo-wasm", "crates/dojo-cli"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+version = "0.1.0"
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
+codegen-units = 1

@@ -1,0 +1,782 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Item",
+  "description": "One line of a content JSONL file, tagged by `\"type\"`.",
+  "oneOf": [
+    {
+      "description": "Multiple-choice item; `answer` is the index into `options`.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "choice"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "answer": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "options",
+        "answer"
+      ]
+    },
+    {
+      "description": "Typed-answer item; any entry of `answers` is accepted after normalization.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "gap"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "retry": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "normalize": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Normalize"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "answers"
+      ]
+    },
+    {
+      "description": "Self-rated flash card; the front is `prompt`.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "card"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "back": {
+          "type": "string"
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "back"
+      ]
+    },
+    {
+      "description": "Multiple-answer item; `correct` lists the indices into `options` that must all be selected.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "multi"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "correct": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint",
+            "minimum": 0
+          }
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "options",
+        "correct"
+      ]
+    },
+    {
+      "description": "Matching item; `distractors` are extra wrong right-hand choices.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "match"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pairs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Pair"
+          }
+        },
+        "distractors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "pairs"
+      ]
+    },
+    {
+      "description": "Ordering item; `steps` are listed in the correct order.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "order"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "steps"
+      ]
+    },
+    {
+      "description": "Fill-in-the-blanks item built from `parts`.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "cloze"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClozePart"
+          }
+        },
+        "normalize": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Normalize"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "parts"
+      ]
+    },
+    {
+      "description": "Numeric-answer item; `tolerance` is absolute, `unit_label` (wire `unitLabel`) is display only.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "numeric"
+        },
+        "id": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "answer": {
+          "type": "number",
+          "format": "double"
+        },
+        "tolerance": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "unitLabel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "meta": true,
+        "stimulus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speak": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "unit",
+        "prompt",
+        "answer"
+      ]
+    }
+  ],
+  "$defs": {
+    "Status": {
+      "description": "Lifecycle state of an item; retired items stay in shipped data and are skipped by queues.",
+      "type": "string",
+      "enum": [
+        "active",
+        "retired"
+      ]
+    },
+    "Normalize": {
+      "description": "How typed answers are compared. Defaults: trim and collapse spaces, case-insensitive, keep punctuation.",
+      "type": "object",
+      "properties": {
+        "caseSensitive": {
+          "type": "boolean",
+          "default": false
+        },
+        "trim": {
+          "type": "boolean",
+          "default": true
+        },
+        "collapseSpaces": {
+          "type": "boolean",
+          "default": true
+        },
+        "stripPunctuation": {
+          "type": "boolean",
+          "default": false
+        },
+        "fold": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Pair": {
+      "description": "One left/right pair of a `match` item.",
+      "type": "object",
+      "properties": {
+        "left": {
+          "type": "string"
+        },
+        "right": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "left",
+        "right"
+      ]
+    },
+    "ClozePart": {
+      "description": "A cloze part: literal text, or a blank listing its accepted alternatives.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

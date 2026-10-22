@@ -1,0 +1,968 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Course",
+  "description": "Contents of `course.json`.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "uiLanguage": {
+      "type": "string"
+    },
+    "contentLanguage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Unit"
+      },
+      "minItems": 1
+    },
+    "types": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/ItemType"
+      }
+    },
+    "srs": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SrsConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "srsByType": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/SrsConfig"
+      }
+    },
+    "exam": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExamConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "exams": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ExamConfig"
+      }
+    },
+    "storage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "plugins": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Plugins"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "markup": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "inputScript": {
+      "description": "Script names (`non-latin`, `han`, `hiragana`, `katakana`, `cyrillic`, `greek`, `arabic`, `hebrew`, `hangul`, `devanagari`, `thai`): typed answers in these scripts are blocked while the input holds Latin letters.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "captions": {
+      "description": "Small caption above the question: key = item tag or item type (first matching tag, then type), value = caption text. Absent = the built-in caption for the type.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "ruby": {
+      "description": "Ruby (`{base|reading}`) display options: readings over kanji in the skip set are not shown.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RubyConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "normalize": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Normalize"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "speech": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SpeechConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "placement": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PlacementConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "newOrder": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NewOrder"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scripts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowOverride": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "introNew": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "dontKnow": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "learnedStage": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "int64"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Group"
+      }
+    },
+    "bars": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Bar"
+      }
+    },
+    "tagLabels": {
+      "description": "Display labels for tags (e.g. `{\"n5\": \"N5\"}`); a tag without a label is shown uppercased.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/TagLabel"
+      }
+    },
+    "detail": {
+      "description": "Declarative detail rendering config from item.meta (per-course default).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DetailConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "uiLanguage",
+    "units"
+  ],
+  "$defs": {
+    "Unit": {
+      "description": "A unit of a course.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "newPerDay": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "srs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SrsConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "placement": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "newOrder": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NewOrder"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "examOnly": {
+          "description": "Exam-only items. Exams take these first and fill up from shared units; training, daily, practice and placement prefer shared items and use these only when the queue would otherwise be empty.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "detail": {
+          "description": "Declarative detail rendering config from item.meta for this unit.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DetailConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
+      ]
+    },
+    "SrsConfig": {
+      "description": "Spaced-repetition settings; `ladder` holds intervals in milliseconds, indexed by stage.",
+      "type": "object",
+      "properties": {
+        "ladder": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "dropOnWrong": {
+          "description": "Stages lost on a wrong answer (default 1; 0 keeps the stage).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "scope": {
+          "description": "`\"item\"` (default) schedules every item alone; `\"entity\"` schedules all active items of an entity as one topic.\nNot allowed in `srsByType`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SrsScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "drill": {
+          "description": "Items asked per entity slot when `scope` is `\"entity\"` (1..=5, default 1).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "SrsScope": {
+      "description": "Scheduling scope of a unit.",
+      "type": "string",
+      "enum": [
+        "item",
+        "entity"
+      ]
+    },
+    "NewOrder": {
+      "description": "Order for new items: file order or random.",
+      "type": "string",
+      "enum": [
+        "file",
+        "random"
+      ]
+    },
+    "DetailConfig": {
+      "description": "Detail configuration for declarative rendering from item.meta.",
+      "type": "object",
+      "properties": {
+        "fields": {
+          "description": "List of detail fields to render.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DetailField"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "DetailField": {
+      "description": "A single detail field configuration.",
+      "type": "object",
+      "properties": {
+        "key": {
+          "description": "Dot-separated path into item.meta (e.g., \"meta.meaning\" or \"meta.readings.kanji\").",
+          "type": "string"
+        },
+        "label": {
+          "description": "Display label for the field.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "labelKey": {
+          "description": "i18n key for the label (used when `label` is absent).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "description": "Field type: \"text\" (default), \"list\", or \"objects\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fields": {
+          "description": "Nested fields for objects type.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/DetailField"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ]
+    },
+    "ItemType": {
+      "description": "Question types available in v1.",
+      "type": "string",
+      "enum": [
+        "choice",
+        "gap",
+        "card",
+        "multi",
+        "match",
+        "order",
+        "cloze",
+        "numeric"
+      ]
+    },
+    "ExamConfig": {
+      "description": "Mock exam settings; `pass_mark` is the passing fraction of correct answers in 0..=1.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Exam id. Required in exams[] (validator `bad_id` when missing); the legacy single exam (course.exam) is always id \"default\".",
+          "type": "string"
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "minutes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "passMark": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "timing": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/TimingGroup"
+          }
+        },
+        "scoring": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ScoringPart"
+          }
+        },
+        "passPoints": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pass": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PassRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "sections"
+      ]
+    },
+    "Section": {
+      "description": "One exam section: how many items to draw and from where. `None` filters match everything.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "units": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "types": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "count"
+      ]
+    },
+    "TimingGroup": {
+      "description": "One timing group that may span several sections.",
+      "type": "object",
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "minutes": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "sections",
+        "minutes"
+      ]
+    },
+    "ScoringPart": {
+      "description": "One scoring part: a set of sections contributing to a score bucket.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "points": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "minPoints": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "sections",
+        "points"
+      ]
+    },
+    "PassRule": {
+      "description": "Pass rule for exam scoring.",
+      "type": "object",
+      "properties": {
+        "mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PassMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "basis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PassBasis"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scaled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "PassMode": {
+      "description": "Pass mode: percent or points.",
+      "type": "string",
+      "enum": [
+        "percent",
+        "points"
+      ]
+    },
+    "PassBasis": {
+      "description": "Pass basis: official or author.",
+      "type": "string",
+      "enum": [
+        "official",
+        "author"
+      ]
+    },
+    "Plugins": {
+      "description": "Course plugin configuration: build-time JS/CSS to be inlined into the output.",
+      "type": "object",
+      "properties": {
+        "scripts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "styles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "RubyConfig": {
+      "description": "`course.ruby`: which kanji need no reading. The skip set = Han characters of `skip` plus the Han characters of the string at item path `skipKey` (default `meta.kanji`) of every item tagged `skipTag`. A `{base|reading}` whose Han characters are all in the set renders as bare `base`; other ruby keeps its reading.",
+      "type": "object",
+      "properties": {
+        "skip": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "skipTag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "skipKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Normalize": {
+      "description": "How typed answers are compared. Defaults: trim and collapse spaces, case-insensitive, keep punctuation.",
+      "type": "object",
+      "properties": {
+        "caseSensitive": {
+          "type": "boolean",
+          "default": false
+        },
+        "trim": {
+          "type": "boolean",
+          "default": true
+        },
+        "collapseSpaces": {
+          "type": "boolean",
+          "default": true
+        },
+        "stripPunctuation": {
+          "type": "boolean",
+          "default": false
+        },
+        "fold": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SpeechConfig": {
+      "description": "Speech configuration for the course.",
+      "type": "object",
+      "properties": {
+        "lang": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "voices": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/VoiceConfig"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "VoiceConfig": {
+      "description": "Voice configuration for speech synthesis.",
+      "type": "object",
+      "properties": {
+        "pitch": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "rate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "match": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prefer": {
+          "description": "Voice-name preferences (JavaScript regex source, case-insensitive), most preferred first; a matching voice ranks above the rest of the language pool.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PlacementConfig": {
+      "description": "Placement test configuration.",
+      "type": "object",
+      "properties": {
+        "perUnit": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "mode": {
+          "type": "string",
+          "default": "check"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Group": {
+      "description": "A group of units for daily new item caps.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "newPerDay": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "newOrder": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GroupNewOrder"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extraNew": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "extraTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "units"
+      ]
+    },
+    "GroupNewOrder": {
+      "description": "New order for groups: file order or random.",
+      "type": "string",
+      "enum": [
+        "file",
+        "random"
+      ]
+    },
+    "Bar": {
+      "description": "A progress bar configuration.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "learnedStage": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ]
+    },
+    "TagLabel": {
+      "description": "A tag's display metadata: a plain label string, or an object with an optional label and `kind` (`public` or `internal`).",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/TagLabelDetail"
+        }
+      ]
+    },
+    "TagLabelDetail": {
+      "description": "Object form of a tag label.",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "description": "`public` (default) or `internal` (hidden from the catalog tag chips).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

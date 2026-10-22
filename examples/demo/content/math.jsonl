@@ -1,0 +1,7 @@
+{"type":"choice","id":"math-1","unit":"math","tags":["arithmetic"],"prompt":"What is 7 times 8?","options":["54","56","58","64"],"answer":1}
+{"type":"choice","id":"math-2","unit":"math","tags":["geometry"],"prompt":"How many sides does a hexagon have?","options":["5","6","7","8"],"answer":1}
+{"type":"choice","id":"math-3","unit":"math","tags":["geometry"],"prompt":"The angles of a triangle add up to how many degrees?","options":["90","180","270","360"],"answer":1,"explanation":"This holds for every flat triangle."}
+{"type":"gap","id":"math-4","unit":"math","tags":["arithmetic"],"prompt":"12 + 15 = ___","answers":["27"]}
+{"type":"gap","id":"math-5","unit":"math","tags":["geometry"],"prompt":"A square has ___ equal sides.","answers":["4","four"]}
+{"type":"card","id":"math-6","unit":"math","tags":["arithmetic"],"prompt":"9 squared","back":"81"}
+{"type":"card","id":"math-7","unit":"math","tags":["geometry"],"prompt":"Sum of angles in a quadrilateral","back":"360 degrees"}

@@ -1,0 +1,18 @@
+.multi .opts { margin-bottom: var(--space-3); }
+.multi-opt .opt-text { flex: 1; }
+.multi-mark {
+  flex: none;
+  width: 1.75em;
+  height: 1.75em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+.multi-opt[aria-pressed="true"] { border-color: var(--accent); }
+.multi-opt[aria-pressed="true"] .multi-mark { background: var(--accent-soft); border-color: var(--accent); }
+.multi-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.multi-extra { margin-top: var(--space-3); }
+.multi-list ul { margin: var(--space-1) 0 var(--space-2); padding-left: var(--space-5); overflow-wrap: anywhere; }

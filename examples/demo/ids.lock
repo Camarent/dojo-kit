@@ -1,0 +1,44 @@
+{
+  "v": 1,
+  "ids": [
+    "geo-1",
+    "geo-2",
+    "geo-3",
+    "geo-4",
+    "geo-5",
+    "geo-6",
+    "geo-7",
+    "geo-8",
+    "geox-1",
+    "math-1",
+    "math-2",
+    "math-3",
+    "math-4",
+    "math-5",
+    "math-6",
+    "math-7",
+    "mathx-1"
+  ],
+  "retired": [
+    "geo-8"
+  ],
+  "types": {
+    "geo-1": "choice",
+    "geo-2": "choice",
+    "geo-3": "choice",
+    "geo-4": "gap",
+    "geo-5": "gap",
+    "geo-6": "card",
+    "geo-7": "card",
+    "geo-8": "card",
+    "geox-1": "choice",
+    "math-1": "choice",
+    "math-2": "choice",
+    "math-3": "choice",
+    "math-4": "gap",
+    "math-5": "gap",
+    "math-6": "card",
+    "math-7": "card",
+    "mathx-1": "choice"
+  }
+}

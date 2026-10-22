@@ -1,0 +1,16 @@
+{"type":"choice","id":"numbers-1","unit":"numbers","tags":["arithmetic"],"prompt":"What is 7 times 8?","options":["54","56","58","64"],"answer":1,"explanation":"7 times 8 is 56."}
+{"type":"choice","id":"numbers-2","unit":"numbers","tags":["primes"],"prompt":"Which of these numbers is prime?","options":["9","15","17","21"],"answer":2,"explanation":"17 is divisible only by 1 and itself."}
+{"type":"multi","id":"numbers-3","unit":"numbers","tags":["parity"],"prompt":"Select all even numbers.","options":["12","15","20","27"],"correct":[0,2],"explanation":"Even numbers are divisible by 2."}
+{"type":"multi","id":"numbers-4","unit":"numbers","tags":["primes"],"prompt":"Select all prime numbers.","options":["2","4","7","9"],"correct":[0,2],"explanation":"2 and 7 have no divisors besides 1 and themselves."}
+{"type":"gap","id":"numbers-5","unit":"numbers","tags":["arithmetic"],"prompt":"12 + 15 = ___","answers":["27"],"explanation":"12 plus 15 is 27."}
+{"type":"gap","id":"numbers-6","unit":"numbers","tags":["arithmetic"],"prompt":"The square root of 81 is ___.","answers":["9","nine"],"explanation":"9 times 9 is 81."}
+{"type":"cloze","id":"numbers-7","unit":"numbers","tags":["arithmetic"],"prompt":"Fill in the blanks","parts":["Half of 20 is ",["10","ten"]," and a quarter of 20 is ",["5","five"],"."],"explanation":"Divide 20 by 2 and by 4."}
+{"type":"cloze","id":"numbers-8","unit":"numbers","tags":["parity"],"prompt":"Fill in the blanks","parts":["Numbers divisible by 2 are called ",["even"],"."],"explanation":"The other whole numbers are odd."}
+{"type":"numeric","id":"numbers-9","unit":"numbers","tags":["physics"],"prompt":"About how fast does light travel in a vacuum, in millions of metres per second?","answer":300,"tolerance":1,"unitLabel":"million m/s","explanation":"The speed of light is about 3.0 x 10^8 m/s."}
+{"type":"numeric","id":"numbers-10","unit":"numbers","tags":["arithmetic"],"prompt":"What is 3 times 14?","answer":42,"explanation":"3 times 14 is 42."}
+{"type":"match","id":"numbers-11","unit":"numbers","tags":["roman"],"prompt":"Match each Roman numeral to its value.","pairs":[{"left":"V","right":"5"},{"left":"X","right":"10"},{"left":"L","right":"50"}],"explanation":"V is five, X is ten and L is fifty."}
+{"type":"match","id":"numbers-12","unit":"numbers","tags":["arithmetic"],"prompt":"Match each calculation to its result.","pairs":[{"left":"6 x 7","right":"42"},{"left":"9 x 9","right":"81"}],"explanation":"These are products from the multiplication table."}
+{"type":"order","id":"numbers-13","unit":"numbers","tags":["arithmetic"],"prompt":"Order these numbers from smallest to largest.","steps":["-3","0","2","11"],"explanation":"Negative numbers are smaller than zero."}
+{"type":"order","id":"numbers-14","unit":"numbers","tags":["arithmetic"],"prompt":"Order these powers of two, smallest first.","steps":["2","4","8","16"],"explanation":"Each power doubles the previous one."}
+{"type":"card","id":"numbers-15","unit":"numbers","tags":["arithmetic"],"prompt":"9 squared","back":"81","explanation":"9 times 9 is 81."}
+{"type":"card","id":"numbers-16","unit":"numbers","tags":["arithmetic"],"prompt":"Number of seconds in one minute","back":"60","explanation":"A minute has 60 seconds."}

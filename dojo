@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_DIR="${CARGO_TARGET_DIR:-$REPO_ROOT/target}"
+TARGET="$TARGET_DIR/release/dojo"
+WASM="$TARGET_DIR/wasm32-unknown-unknown/release/dojo_wasm.wasm"
+
+stale() {
+    local artifact="$1"
+    [ ! -e "$artifact" ] && return 0
+    find "$REPO_ROOT/crates" "$REPO_ROOT/Cargo.toml" "$REPO_ROOT/Cargo.lock" -type f -newer "$artifact" -print -quit | grep -q .
+}
+
+if ! command -v cargo >/dev/null 2>&1; then
+    if [ -x "$TARGET" ]; then
+        exec "$TARGET" "$@"
+    fi
+    echo "Rust toolchain not found: install it from https://rustup.rs" >&2
+    exit 2
+fi
+
+cd "$REPO_ROOT"
+if stale "$TARGET"; then
+    cargo build -q --release -p dojo-cli
+fi
+
+wasm_args=()
+if [ "${1:-}" = "build" ] && ! printf '%s\n' "$@" | grep -qx -- '--wasm'; then
+    if stale "$WASM"; then
+        "$REPO_ROOT/scripts/build-wasm.sh" -q
+    fi
+    wasm_args=(--wasm "$WASM")
+fi
+
+exec "$TARGET" "$@" ${wasm_args[@]+"${wasm_args[@]}"}

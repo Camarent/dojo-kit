@@ -1,0 +1,9 @@
+ruby {
+  color: var(--fg);
+}
+
+rt {
+  font-size: 0.55em;
+  color: var(--fg-muted);
+  line-height: 1.2;
+}

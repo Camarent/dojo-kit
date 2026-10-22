@@ -1,0 +1,20 @@
+{
+  "id": "demo",
+  "title": "Demo course",
+  "uiLanguage": "en",
+  "contentLanguage": "en",
+  "units": [
+    { "id": "geo", "title": "Geography" },
+    { "id": "geo-exam", "title": "Geography exam", "examOnly": true },
+    { "id": "math", "title": "Math" },
+    { "id": "math-exam", "title": "Math exam", "examOnly": true }
+  ],
+  "exam": {
+    "minutes": 10,
+    "passMark": 0.7,
+    "sections": [
+      { "title": "Geography", "count": 4, "units": ["geo", "geo-exam"] },
+      { "title": "Math", "count": 4, "units": ["math", "math-exam"], "types": ["choice", "gap"] }
+    ]
+  }
+}

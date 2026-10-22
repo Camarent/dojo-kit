@@ -1,0 +1,20 @@
+{
+  "id": "showcase",
+  "title": "Showcase",
+  "uiLanguage": "en",
+  "contentLanguage": "en",
+  "units": [
+    { "id": "shapes", "title": "Shapes" },
+    { "id": "shapes-exam", "title": "Shapes exam", "examOnly": true },
+    { "id": "numbers", "title": "Numbers" },
+    { "id": "numbers-exam", "title": "Numbers exam", "examOnly": true }
+  ],
+  "exam": {
+    "minutes": 10,
+    "passMark": 0.6,
+    "sections": [
+      { "title": "Shapes", "count": 4, "units": ["shapes", "shapes-exam"], "types": ["choice", "multi", "gap", "match", "order"] },
+      { "title": "Numbers", "count": 4, "units": ["numbers", "numbers-exam"], "types": ["gap", "cloze", "numeric", "order", "choice"] }
+    ]
+  }
+}
