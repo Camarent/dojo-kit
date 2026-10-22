@@ -46,7 +46,8 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `dojo` wrapper, `tests/wr
 - Exam resume: `node --test web/tests/exam-resume.test.js web/tests/app-resume.test.js`.
 - Groups: `node --test web/tests/groups.test.js web/tests/groups-ui.test.js web/tests/groups-build.test.js`.
 - Web unit test: `node --test web/tests/storage.test.js`; exam flow: `node --test web/tests/exams.test.js`; placement: `node --test web/tests/placement.test.js`; unit caps and unit ladders: `node --test web/tests/unit-settings.test.js`.
-- Full web test run: `node --test web/tests/*.test.js` (the directory form `node --test web/tests` fails on Node 22). Web test files live under `web/tests/`; `tests/` holds no `*.test.js` files.
+- Full web test run: the directory form `node --test web/tests` fails on Node 22; web test files live under `web/tests/`, Node test files also live in `tests/` (`tests/fw-root.test.js`, `tests/reference-no-n5.test.js`, `tests/build-wasm-paths.test.js`).
+- Full suite (from repo root, replaces the web-only run): `scripts/build-wasm.sh && cargo test --workspace && node --test web/tests/*.test.js tests/*.test.js && node tests/wasm-smoke.js && node tests/gen-vectors.js && git diff --exit-code -- tests/vectors && bash tests/hooks-test.sh`.
 - End-to-end wrapper check: `tests/wrapper.sh` (`bash tests/wrapper.sh`).
 - Build a course: `./dojo validate <course-dir>` then `./dojo build <course-dir>`.
 
@@ -55,6 +56,7 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `dojo` wrapper, `tests/wr
 - Item ids are opaque and append-only; `ids.lock` records them and their types; retired items stay in shipped data.
 - Output limits: 8 MiB warning, 16 MiB hard limit on the artifact build; WASM budget 512 KiB.
 - Artifact sandbox: no network at runtime; Preact and htm are vendored and inlined.
+- Privacy: app code makes no network calls except fetching its own `data/content.json` (`web/boot.js`), and progress is never sent anywhere. Spoken text goes to `window.speechSynthesis` (`web/speech.js`); browser speech voices may be provided by the browser vendor's cloud, in which case that spoken text leaves the device.
 - Course fields read by the browser without a plugin: `markup` (built-in `ruby` = `{base|reading}`), `normalize.fold`, `tagLabels`, `groups`, `bars`, `introNew`, `captions`, `ruby` (skip set), `contentLanguage` (page `lang`, speech voice language), `speech.voices[role].prefer`, `inputScript` (CONTRACT section 4). Plugin hooks: `registerMarkup`, `registerBeforeSubmit`, `registerDetail`, `registerIntro`, `registerVoiceRank`, `registerSetting`.
 - Course plugins are build-time only (CONTRACT section 4): never fetched or loaded at runtime; they may block submit with a message but never change graded input, scheduling or progress.
 - Plugin settings (`DojoExt.registerSetting`) are per-browser choices stored in `doc.settings["plugin:<key>"]`; hooks read them with `getSetting`. They never change grading, scheduling or progress. Example: `examples/plugins/ja-readings/`.

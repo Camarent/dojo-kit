@@ -4,7 +4,7 @@ summary: Pure Rust core (no I/O) - content model, answer checking, SRS schedulin
 ---
 # crates/dojo-core
 
-`learnedStage` (course.json, integer >= 1) is typed here and validated (`bad_learned_stage`), but the learned threshold is applied only in `web/session.js` (default `DEFAULT_LEARNED_STAGE` = 4, clamped to the unit ladder's last index). Core does not read it.
+`learnedStage` (course.json, integer >= 1) is typed here and validated (`bad_learned_stage`); core reads it in the groups logic: `group_counts` (`crates/dojo-core/src/groups.rs`) applies `DEFAULT_LEARNED_STAGE` = 4 when unset; `entity_stats` takes the stage as a parameter. The browser clamps the unit threshold to the unit ladder's last index in `web/session/overrides.js` (`getUnitThreshold`).
 
 ## Purpose
 Library crate holding every decision that must be correct: what an answer grades to, when an item is due, how two progress documents merge, how an exam is sampled and scored, and which course/content problems are reported. It has no clock and no I/O; callers pass `now` and `seed` in. Shared by `dojo-cli` (native) and `dojo-wasm` (browser).
