@@ -221,6 +221,7 @@ test('start() applies the saved theme before rendering', async () => {
   const win = fakeEnv();
   win.addEventListener = () => {};
   const doc = { settings: { theme: 'dark' } };
+  sb.DojoMigrate = { create: () => () => null };
   sb.DojoStorage = { createStore: () => ({ doc, load: () => Promise.resolve(), attachLifecycle() {} }) };
   sb.DojoSession = { createEngine: () => ({}) };
   sb.preact.render = () => {};

@@ -42,6 +42,7 @@
     var now = opts.now;
     var ls = opts.localStorage || null;
     var claude = opts.claude || null;
+    var migrate = opts.migrate || function () { return null; };
     var onStatus = opts.onStatus || function () {};
     var onRemoteChange = opts.onRemoteChange || function () {};
     var flushEvery = opts.flushEvery || 5;
@@ -153,6 +154,7 @@
         if (!e || e.kind !== 'read') throw e;
         safe = false;
       }
+      merged = migrate(merged) || merged;
       if (!safe || !writeLocal(merged)) failed();
       store.doc = merged;
       dirty = true;
@@ -288,8 +290,8 @@
         var m = withCourse(mergeDocs(store.doc, r));
         if (!same(m, r)) dirty = true;
         if (same(m, store.doc)) return;
-        commit(m);
-        dirty = !same(m, r);
+        var saved = commit(m);
+        dirty = !same(saved, r);
         notifyRemote();
       });
     }
@@ -352,7 +354,12 @@
         if (!e || e.kind !== 'read') return Promise.resolve();
         readFailed = true;
       }
-      if (local) store.doc = local;
+      if (local) {
+        var folded = null;
+        try { folded = migrate(local); } catch (e) { folded = null; }
+        store.doc = local;
+        if (folded) guarded(function () { commit(folded); });
+      }
       return connect(myGen).catch(failed).then(function () { if (readFailed) failed(); });
     };
 

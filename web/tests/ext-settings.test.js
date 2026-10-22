@@ -369,6 +369,7 @@ test('start() binds getSetting to the store', async () => {
   const sb = loadApp();
   sb.DojoExt.registerSetting(REG);
   const doc = { settings: { 'plugin:myplugin': 'opt2' } };
+  sb.DojoMigrate = { create: () => () => null };
   sb.DojoStorage = { createStore: () => ({ doc, load: () => Promise.resolve(), attachLifecycle() {} }) };
   sb.DojoSession = { createEngine: () => ({}) };
   sb.preact.render = () => {};

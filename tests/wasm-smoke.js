@@ -81,6 +81,8 @@ async function main() {
       if (!(e instanceof DojoError) || e.code !== code) failures.push(`${name}: wrong error ${e.code}`);
     }
   }
+  const mig = dojo.call('migrateProgress', { doc: { v: 1, t: 0, items: {}, stats: { days: {}, newByDay: {} } }, items: [] });
+  if (!mig || mig.error || mig.folded.length !== 0 || 'doc' in mig) failures.push('migrateProgress: empty links must fold nothing');
   const big = { items: {}, stats: {}, v: 1, pad: 'é'.repeat(200000) };
   if (dojo.call('sanitize', big).pad.length !== 200000) failures.push('large UTF-8 document did not round-trip');
   console.log(`wasm-smoke: ${total} vectors, ${bytes.length} bytes, ${failures.length} failures`);

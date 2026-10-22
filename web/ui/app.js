@@ -273,6 +273,7 @@
     var store = DojoStorage.createStore({
       courseId: course.id,
       dojo: opts.dojo,
+      migrate: DojoMigrate.create({ dojo: opts.dojo, items: content.items }),
       now: now,
       localStorage: opts.localStorage || null,
       claude: opts.claude || null,
