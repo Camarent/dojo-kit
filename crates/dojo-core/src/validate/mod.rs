@@ -45,7 +45,6 @@ mod course;
 mod quality;
 mod speech;
 use course::check_course;
-use items::item_tags;
 pub use codes::CODES;
 
 const MAX_PROMPT_CHARS: usize = 600;

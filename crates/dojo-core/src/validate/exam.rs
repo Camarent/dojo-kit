@@ -247,7 +247,7 @@ pub(super) fn check_exam_sizes(course: &Course, items: &[(&str, usize, &Item)], 
                 .iter()
                 .filter(|(_, _, item)| !item.is_retired())
                 .filter(|(_, _, item)| section.units.as_ref().is_none_or(|u| u.iter().any(|x| x == item.unit())))
-                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item_tags(item).iter().any(|x| t.contains(x))))
+                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item.tags().iter().any(|x| t.contains(x))))
                 .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == item.item_type().as_str())))
                 .count();
             if section.count > matching {
@@ -264,7 +264,7 @@ pub(super) fn check_exam_sizes(course: &Course, items: &[(&str, usize, &Item)], 
                 .iter()
                 .filter(|(_, _, item)| !item.is_retired())
                 .filter(|(_, _, item)| section.units.as_ref().is_none_or(|u| u.iter().any(|x| x == item.unit())))
-                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item_tags(item).iter().any(|x| t.contains(x))))
+                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item.tags().iter().any(|x| t.contains(x))))
                 .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == item.item_type().as_str())))
                 .filter(|(_, _, item)| {
                     course.units.iter().any(|u| u.id == item.unit() && u.exam_only == Some(true))

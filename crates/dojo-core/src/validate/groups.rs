@@ -150,7 +150,7 @@ pub(super) fn check_bar_matches(
     // Build item unit and tags lookup
     let mut item_meta: HashMap<String, (String, Vec<String>)> = HashMap::new();
     for (_file, _line, item) in items {
-        let tags = item.tags().cloned().unwrap_or_default();
+        let tags = item.tags().to_vec();
         item_meta.insert(item.id().to_string(), (item.unit().to_string(), tags));
     }
     
