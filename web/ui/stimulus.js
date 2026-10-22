@@ -39,12 +39,7 @@
       return list.indexOf(value) >= 0 ? list.filter(function (x) { return x !== value; }) : list.concat([value]);
     }
 
-    function tagInfo(course, tag) {
-      if (typeof DojoSession !== 'undefined' && DojoSession.tagInfo) return DojoSession.tagInfo(course, tag);
-      var e = course && course.tagLabels && Object.prototype.hasOwnProperty.call(course.tagLabels, tag) ? course.tagLabels[tag] : null;
-      var label = typeof e === 'string' ? e : e && typeof e.label === 'string' ? e.label : '';
-      return { label: label || String(tag).toUpperCase(), internal: !!(e && typeof e === 'object' && e.kind === 'internal') };
-    }
+    function tagInfo(course, tag) { return DojoSession.tagInfo(course, tag); }
 
     function captionFor(course, item, t) {
       var caps = course && course.captions && typeof course.captions === 'object' ? course.captions : null;
