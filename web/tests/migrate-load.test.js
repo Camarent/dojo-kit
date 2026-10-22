@@ -69,6 +69,14 @@ test('course without supersedes never calls migrateProgress', async () => {
   assert.strictEqual(ls.writes, 1);
 });
 
+test('retired item without any supersedes never calls migrateProgress', async () => {
+  const ls = mockLocal({ [KEY]: JSON.stringify(OLD()) });
+  const { store, spy } = mk(ls, [{ id: 'a-1', status: 'retired' }, { id: 'c-1' }]);
+  await store.load();
+  store.update((d) => { d.items['c-1'] = rec(3, NOW); });
+  assert.strictEqual(migrateCalls(spy), 0);
+});
+
 test('refused links: doc identical, one warn, saving still works', async () => {
   const bad = [{ id: 'a-1' }, { id: 'b-1', supersedes: ['a-1'] }];
   const ls = mockLocal({ [KEY]: JSON.stringify(OLD()) });

@@ -5,7 +5,7 @@ const { loadBundle } = require('./load-bundle.js');
 
 function load() {
   const sb = { console };
-  loadBundle(sb, { only: ['ext/registry.js', 'ext.js', 'speech.js'] });
+  loadBundle(sb, { only: ['ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js', 'speech.js'] });
   return sb;
 }
 const V = (name, lang, local) => ({ name, lang, localService: local });

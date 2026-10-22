@@ -1,7 +1,7 @@
 /*
  * migrate.js — folds retired predecessor progress into successor items.
  * DojoMigrate.create({ dojo, items }) -> function(doc) -> doc | null.
- * Returns the migrated document, or null when nothing folded. Without supersedes/retired links the
+ * Returns the migrated document, or null when nothing folded. Without any supersedes link the
  * wasm core is never called. A refusal or a thrown wasm error warns once and disables migration
  * for the session (returns null).
  */
@@ -13,7 +13,7 @@
     var links = (opts.items || []).filter(function (it) {
       return it && (it.supersedes || it.status === 'retired');
     }).map(function (it) { return { id: it.id, status: it.status, supersedes: it.supersedes }; });
-    var disabled = links.length === 0;
+    var disabled = !links.some(function (l) { return l.supersedes; });
 
     function disable(why) {
       disabled = true;
