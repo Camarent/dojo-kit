@@ -8,7 +8,6 @@
   var Component = preact.Component;
   var html = htm.bind(h);
   var DojoExt = root.DojoExt || {};
-  var DojoI18n = root.DojoI18n || (typeof require !== 'undefined' ? require('./i18n.js') : null) || {};
 
   // ---------- helpers ----------
 
