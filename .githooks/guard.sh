@@ -107,10 +107,11 @@ check_content_in_commit() {
         case "$line_content" in
           *workspace/\<*) ;;
           *)
+            # Check for forbidden workspace references
             if echo "$line_content" | grep -qE 'workspace/[A-Za-z0-9_/-]+'; then
               # Check if file is exempt
               case "$current_file" in
-                .githooks/*|tests/hooks-test.sh) ;;
+                .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
                 *)
                   if [ "$found_bad" = false ]; then
                     echo "refused: commit ${commit_short}: content references private workspace:" >&2
@@ -123,6 +124,45 @@ check_content_in_commit() {
                   ;;
               esac
             fi
+            # Check for non-allowed email addresses
+            if echo "$line_content" | grep -qE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'; then
+              bad_email=$(echo "$line_content" | grep -oE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' | while read -r m; do is_msg_email_ok "$m" || echo "$m"; done | head -1)
+              if [ -n "$bad_email" ]; then
+                # Check if file is exempt
+                case "$current_file" in
+                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  *)
+                    if [ "$found_bad" = false ]; then
+                      echo "refused: commit ${commit_short}: content contains email '$bad_email':" >&2
+                      found_bad=true
+                    fi
+                    if [ "$line_count" -lt 5 ]; then
+                      echo "  $line_content" >&2
+                      line_count=$((line_count + 1))
+                    fi
+                    ;;
+                esac
+              fi
+            fi
+            # Check for absolute local paths
+            case "$line_content" in
+              */root/*|*/home/*|*/Users/*)
+                # Check if file is exempt
+                case "$current_file" in
+                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  *)
+                    if [ "$found_bad" = false ]; then
+                      echo "refused: commit ${commit_short}: content contains absolute path:" >&2
+                      found_bad=true
+                    fi
+                    if [ "$line_count" -lt 5 ]; then
+                      echo "  $line_content" >&2
+                      line_count=$((line_count + 1))
+                    fi
+                    ;;
+                esac
+                ;;
+            esac
             ;;
         esac
         ;;
@@ -181,10 +221,11 @@ check_content_in_diff() {
         case "$line_content" in
           *workspace/\<*) ;;
           *)
+            # Check for forbidden workspace references
             if echo "$line_content" | grep -qE 'workspace/[A-Za-z0-9_/-]+'; then
               # Check if file is exempt
               case "$current_file" in
-                .githooks/*|tests/hooks-test.sh) ;;
+                .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
                 *)
                   if [ "$found_bad" = false ]; then
                     echo "refused: staged content references private workspace:" >&2
@@ -197,6 +238,45 @@ check_content_in_diff() {
                   ;;
               esac
             fi
+            # Check for non-allowed email addresses
+            if echo "$line_content" | grep -qE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'; then
+              bad_email=$(echo "$line_content" | grep -oE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' | while read -r m; do is_msg_email_ok "$m" || echo "$m"; done | head -1)
+              if [ -n "$bad_email" ]; then
+                # Check if file is exempt
+                case "$current_file" in
+                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  *)
+                    if [ "$found_bad" = false ]; then
+                      echo "refused: staged content contains email '$bad_email':" >&2
+                      found_bad=true
+                    fi
+                    if [ "$line_count" -lt 5 ]; then
+                      echo "  $line_content" >&2
+                      line_count=$((line_count + 1))
+                    fi
+                    ;;
+                esac
+              fi
+            fi
+            # Check for absolute local paths
+            case "$line_content" in
+              */root/*|*/home/*|*/Users/*)
+                # Check if file is exempt
+                case "$current_file" in
+                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  *)
+                    if [ "$found_bad" = false ]; then
+                      echo "refused: staged content contains absolute path:" >&2
+                      found_bad=true
+                    fi
+                    if [ "$line_count" -lt 5 ]; then
+                      echo "  $line_content" >&2
+                      line_count=$((line_count + 1))
+                    fi
+                    ;;
+                esac
+                ;;
+            esac
             ;;
         esac
         ;;

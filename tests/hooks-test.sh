@@ -316,6 +316,83 @@ out=$(printf 'refs/heads/main %s refs/heads/main %s\n' "$(git rev-parse HEAD)" 0
 if [ $? -ne 0 ]; then echo "PASS"; else echo "FAIL: pre-push passed message with email"; fail_count=$((fail_count + 1)); fi
 cd "$scratch"
 
+# Test 16: staged file with fake GitHub token is refused (skip if gitleaks missing)
+echo "Test 16: staged file with fake GitHub token is refused"
+new_repo
+# Generate exactly 36 alphanumeric characters for a realistic GitHub token
+fake_token=$(printf 'ghp_%s' "$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c36)")
+echo "token: $fake_token" > secret.txt
+git add secret.txt
+if command -v gitleaks >/dev/null 2>&1; then
+  if git commit --quiet --message "add secret" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+    echo "FAIL: fake GitHub token was accepted"
+    fail_count=$((fail_count + 1))
+  else
+    echo "PASS"
+  fi
+else
+  echo "SKIP"
+fi
+cd "$scratch"
+
+# Test 17: staged file with foreign email is refused
+echo "Test 17: staged file with foreign email is refused"
+new_repo
+echo "contact someone@gmail.com" > contact.txt
+git add contact.txt
+if git commit --quiet --message "add contact" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: foreign email was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+cd "$scratch"
+
+# Test 18: staged file with /root/ path is refused
+echo "Test 18: staged file with /root/ path is refused"
+new_repo
+echo "path: /root/x" > paths.txt
+git add paths.txt
+if git commit --quiet --message "add path" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: /root/ path was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+cd "$scratch"
+
+# Test 19: clean staged file passes
+echo "Test 19: clean staged file passes"
+new_repo
+echo "This is a clean file with no secrets or paths" > clean.txt
+git add clean.txt
+if git commit --quiet --message "add clean" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "PASS"
+else
+  echo "FAIL: clean file was refused"
+  fail_count=$((fail_count + 1))
+fi
+cd "$scratch"
+
+# Test 20: forbidden lines inside tests/hooks-test.sh itself are accepted (exempt path)
+echo "Test 20: forbidden lines in tests/hooks-test.sh are accepted"
+new_repo
+mkdir -p tests
+# Create a minimal hooks-test.sh with forbidden content
+cat > tests/hooks-test.sh << 'TESTEOF'
+#!/bin/sh
+# This file contains someone@gmail.com and /root/x which should be exempt
+echo "someone@gmail.com /root/x"
+TESTEOF
+git add tests/hooks-test.sh
+if git commit --quiet --message "add test script" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "PASS"
+else
+  echo "FAIL: exempt file tests/hooks-test.sh was refused"
+  fail_count=$((fail_count + 1))
+fi
+cd "$scratch"
+
 
 # Cleanup
 rm -rf "$remote"
@@ -326,5 +403,5 @@ if [ "$fail_count" -gt 0 ]; then
   exit 1
 fi
 
-echo "All tests passed"
+echo "20 passed"
 exit 0

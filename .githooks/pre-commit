@@ -1,2 +1,10 @@
 #!/bin/sh
-exec "$(dirname "$0")/guard.sh"
+"$(dirname "$0")/guard.sh" || exit 1
+
+# Run gitleaks on staged changes
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "guard: gitleaks not found, secret scan skipped" >&2
+else
+  gitleaks git --pre-commit --staged --redact --no-banner
+  exit $?
+fi
