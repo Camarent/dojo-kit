@@ -5,7 +5,7 @@ pub const MAX_FOLD_TARGET_LEN: usize = 16;
 pub const MAX_FOLD_PAIRS: usize = 256;
 
 /// Endpoints of a range key such as "A-Z" (exactly three chars with '-' in the middle).
-// Contract: `c.len() == 3` is tested before `c[0..=2]` is read.
+// Contract: `c.len() == 3` is tested before `c[0]`, `c[1]`, `c[2]` are read.
 #[allow(clippy::indexing_slicing)]
 fn fold_range(key: &str) -> Option<(char, char)> {
     let c: Vec<char> = key.chars().collect();

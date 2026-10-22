@@ -1,5 +1,5 @@
 // Snapshot tests for validate: byte-equal diagnostics over examples and fixtures.
-// Contract: discovers every course.json, runs `dojo validate <dir> --json`, compares stdout+exit code.
+// discovers every course.json, runs `dojo validate <dir> --json`, compares stdout+exit code.
 // UPDATE_SNAPSHOT=1 rewrites snapshots.
 
 use serde_json::Value;
