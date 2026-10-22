@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const Ext = require('../ext.js');
 const H = require('./app-harness.js');
+const { readSource } = require('./load-bundle.js');
 
 const items = [
   { id: 'vocab-741', type: 'gap', unit: 'u1', tags: ['vocab', 'n5'], prompt: '元気', answers: ['げんき'], explanation: '{元気|げんき}' },
@@ -76,23 +77,12 @@ test('(b) regression: choice item with same prompt still has ruby', async () => 
   assert.ok(types.includes('ruby'), 'choice item prompt should have ruby: types=' + types.join(',') + ', text=' + H.text(promptEl));
 });
 
-const fs = require('node:fs');
-const os = require('node:os');
-const path = require('node:path');
-
-// Loads a mutated COPY of ui/app.js from a temp dir; tracked files are never written.
+// Loads a mutated version of ui/app.js source via override; no temp files.
 async function withMutatedApp(mutationFn, testFn) {
-  const original = fs.readFileSync(path.join(__dirname, '..', 'ui', 'app.js'), 'utf8');
+  const original = readSource('ui/app.js');
   const mutated = mutationFn(original);
   assert.notStrictEqual(mutated, original, 'mutation must change app.js');
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dojo-mut-'));
-  try {
-    const copy = path.join(tmp, 'app.js');
-    fs.writeFileSync(copy, mutated, 'utf8');
-    await testFn(fs.readFileSync(copy, 'utf8'));
-  } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
-  }
+  await testFn(mutated);
 }
 
 test('(c) mutation check - verify hide option is used', async () => {
