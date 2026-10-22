@@ -83,7 +83,7 @@ Screens of the `examples/showcase` course (`./dojo build examples/showcase`).
 
 ## Contributing
 
-Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`. They refuse a commit whose author or committer email is not a `*@users.noreply.github.com` address, or that stages files under the private course folders under `workspace/`, `dist/` or `.work/`.
+Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`. They refuse a commit whose author or committer email is not the owner's `users.noreply.github.com` address (plain or `<id>+` form), or that stages files under the private course folders under `workspace/`, `dist/`, `.work/`, `target/`, `cargo-target/`, or any `*.wasm` file.
 
 ## Documentation
 

@@ -91,7 +91,7 @@ check_commit_range() {
     fi
 
     # Check for forbidden paths in this commit
-    bad_paths=$(git show --name-only --pretty=format: "$commit" | grep -E '^(workspace/[^.]|dist/|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$)' || true)
+    bad_paths=$(git show --name-only --pretty=format: "$commit" | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$)' || true)
     if [ -n "$bad_paths" ]; then
       echo "refused: commit ${commit_short}: stages private or generated paths:" >&2
       echo "$bad_paths" | head -10 | sed 's/^/  /' >&2
@@ -208,7 +208,7 @@ main_guard() {
   check_ident || fail=1
 
   # Check staged paths
-  bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(workspace/[^.]|dist/|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$)' || true)
+  bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$)' || true)
   if [ -n "$bad" ]; then
     echo "refused: private or generated paths are staged:" >&2
     echo "$bad" | head -10 >&2

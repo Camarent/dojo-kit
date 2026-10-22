@@ -159,6 +159,62 @@ expect_ok "Test 25b: delete-only push does not need gitleaks" sh -c "printf 'ref
 expect_ok "Test 26: override lets commit pass" git commit --quiet -m "withov" --author="$A"
 cd "$scratch"
 
+# Forbidden build artifact target/x is refused
+echo "Test: staging target/x is refused"
+mkdir -p "$(dirname target/x)"
+echo "x" > target/x
+git add -f target/x
+if git commit --quiet --message "add artifact" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: staging target/x was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+git reset --hard HEAD >/dev/null 2>&1
+git clean -fdq
+
+# Forbidden build artifact cargo-target/x is refused
+echo "Test: staging cargo-target/x is refused"
+mkdir -p "$(dirname cargo-target/x)"
+echo "x" > cargo-target/x
+git add -f cargo-target/x
+if git commit --quiet --message "add artifact" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: staging cargo-target/x was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+git reset --hard HEAD >/dev/null 2>&1
+git clean -fdq
+
+# Forbidden build artifact crates/x/a.wasm is refused
+echo "Test: staging crates/x/a.wasm is refused"
+mkdir -p "$(dirname crates/x/a.wasm)"
+echo "x" > crates/x/a.wasm
+git add -f crates/x/a.wasm
+if git commit --quiet --message "add artifact" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: staging crates/x/a.wasm was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+git reset --hard HEAD >/dev/null 2>&1
+git clean -fdq
+
+# Forbidden build artifact crates/x/cargo-target/y is refused
+echo "Test: staging crates/x/cargo-target/y is refused"
+mkdir -p "$(dirname crates/x/cargo-target/y)"
+echo "x" > crates/x/cargo-target/y
+git add -f crates/x/cargo-target/y
+if git commit --quiet --message "add artifact" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: staging crates/x/cargo-target/y was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+git reset --hard HEAD >/dev/null 2>&1
+git clean -fdq
+
 # Cleanup
 rm -rf "$remote"
 git remote remove origin >/dev/null 2>&1
