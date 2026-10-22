@@ -20,7 +20,7 @@ Machine-readable description of the authoring format, for editors and AI agents.
 - Regenerate after any change to `crates/dojo-core/src/content/`; commit the result. A stale file means editors accept content the validator rejects.
 - `$defs/Unit` sets `additionalProperties: false` (`course.schema.json`); only `id`, `title`, `newPerDay`, `srs`, `placement`, `newOrder` are valid unit keys. `newPerDay` is `integer` or `null` in the schema; negative values and bad ladders pass the schema and are rejected by `dojo validate` (`bad_unit_settings`).
 - The schemas describe structure only; semantic rules (ids, unit refs, answer ranges, leaks, speech ranges and voice labels, exam ids and timing/scoring section titles) live in `dojo validate`.
-- `speech.voices[role].prefer` is a string array and `inputScript` a string array in `course.schema.json`; their semantic checks are `bad_voice_pattern` and `unknown_input_script` (`validate.rs`).
+- `speech.voices[role].prefer` is a string array and `inputScript` a string array in `course.schema.json`; their semantic checks are `bad_voice_pattern` and `unknown_input_script` (`crates/dojo-core/src/validate/`).
 - `tagLabels` values are `string | {label?, kind?}` (`$defs/TagLabel`, `$defs/TagLabelDetail` in `course.schema.json`).
 - There is no JSON Schema file for `stimuli.jsonl` or `intros.jsonl`; their shape (including stimulus `speak.lines`) is in the Rust types and in `dojo schema --brief`.
 
