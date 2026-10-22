@@ -9,6 +9,7 @@
     "storage/body.js",
     "storage/store.js",
     "storage.js",
+    "session/util.js",
     "session.js",
     "types/registry.js",
     "ext/registry.js",

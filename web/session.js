@@ -36,87 +36,19 @@
   var WRITE_THROTTLE_MS = 1000;
   var TICK_INTERVAL_MS = 60000;
 
-  function hashString(str) {
-    var h = 2166136261;
-    for (var i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
-    return h >>> 0;
-  }
+  var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./session/util.js') : null);
+  var hashString = util.hashString;
+  var mulberry32 = util.mulberry32;
+  var shuffledIndexes = util.shuffledIndexes;
+  var isRetired = util.isRetired;
+  var ensureObject = util.ensureObject;
+  var expectedFor = util.expectedFor;
+  var isIdList = util.isIdList;
+  var orderPerm = util.orderPerm;
+  var clozeBlanks = util.clozeBlanks;
+  var correctIndexes = util.correctIndexes;
+  var optionText = util.optionText;
 
-  function mulberry32(seed) {
-    var a = seed >>> 0;
-    return function () {
-      a = (a + 0x6d2b79f5) >>> 0;
-      var t = a;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  function shuffledIndexes(count, seedText) {
-    var rand = mulberry32(hashString(seedText));
-    var order = [];
-    for (var i = 0; i < count; i++) order.push(i);
-    for (var j = count - 1; j > 0; j--) {
-      var k = Math.floor(rand() * (j + 1));
-      var tmp = order[j];
-      order[j] = order[k];
-      order[k] = tmp;
-    }
-    return order;
-  }
-  function isRetired(item) {
-    return item.status === 'retired';
-  }
-  function ensureObject(v) {
-    return v && typeof v === 'object' && !Array.isArray(v) ? v : {};
-  }
-  function expectedFor(item) {
-    if (item.type === 'choice') return optionText(item, correctIndexes(item)[0]);
-    if (item.type === 'gap') return item.answers[0];
-    if (item.type === 'multi') return item.correct.map(function (i) { return item.options[i]; }).join(', ');
-    if (item.type === 'match') return item.pairs.map(function (p) { return p.left + ' = ' + p.right; }).join('; ');
-    if (item.type === 'order') return item.steps.map(function (st, i) { return (i + 1) + '. ' + st; }).join('; ');
-    if (item.type === 'cloze') return item.parts.map(function (p) { return typeof p === 'string' ? p : p[0]; }).join('');
-    if (item.type === 'numeric') {
-      var out = String(item.answer);
-      if (item.unitLabel) out += ' ' + item.unitLabel;
-      if (item.tolerance > 0) out += ' (\u00b1' + item.tolerance + ')';
-      return out;
-    }
-    return item.back;
-  }
-
-  function isIdList(ids, size, unique) {
-    if (!Array.isArray(ids)) return false;
-    var seen = {};
-    for (var i = 0; i < ids.length; i++) {
-      var v = ids[i];
-      if (!Number.isInteger(v) || v < 0 || v >= size) return false;
-      if (unique && seen[v]) return false;
-      seen[v] = true;
-    }
-    return true;
-  }
-  function isIdentity(perm) {
-    return perm.every(function (v, i) { return v === i; });
-  }
-  function orderPerm(count, seedText) {
-    var perm = shuffledIndexes(count, seedText);
-    if (count >= 2 && isIdentity(perm)) perm = perm.slice(1).concat(perm[0]);
-    return perm;
-  }
-  function clozeBlanks(item) {
-    return item.parts.filter(function (p) { return typeof p !== 'string'; });
-  }
-  function correctIndexes(item) {
-    return Array.isArray(item.answer) ? item.answer : [item.answer];
-  }
-  function optionText(item, index) {
-    return item.options[index];
-  }
   function createEngine(deps) {
     var dojo = deps.dojo;
     var store = deps.store;
