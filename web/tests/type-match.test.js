@@ -1,28 +1,15 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
+const { loadBundle } = require('./load-bundle.js');
 
-const web = path.join(__dirname, '..');
-const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 
 // Load vendored preact and htm as globals
 function loadGlobals() {
   const sandbox = { console: console, document: {} };
   sandbox.self = sandbox;
   sandbox.global = sandbox;
-  vm.createContext(sandbox);
-  
-  // Load preact
-  vm.runInContext(read('vendor/preact.min.js'), sandbox, { filename: 'preact.min.js' });
-  // Load htm
-  vm.runInContext(read('vendor/htm.umd.js'), sandbox, { filename: 'htm.umd.js' });
-  // Load registry
-  vm.runInContext(read('types/registry.js'), sandbox, { filename: 'registry.js' });
-  // Load match
-  vm.runInContext(read('types/match.js'), sandbox, { filename: 'match.js' });
+  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/match.js'] });
   
   return sandbox;
 }

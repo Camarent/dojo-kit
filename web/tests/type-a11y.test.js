@@ -1,17 +1,11 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
+const { loadBundle } = require('./load-bundle.js');
 
-const web = path.join(__dirname, '..');
 const sb = { console };
 sb.self = sb;
-vm.createContext(sb);
-['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/choice.js', 'types/multi.js',
-  'types/match.js', 'types/order.js', 'types/card.js', 'types/gap.js', 'types/numeric.js', 'types/cloze.js']
-  .forEach((f) => vm.runInContext(fs.readFileSync(path.join(web, f), 'utf8'), sb, { filename: f }));
+loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/choice.js', 'types/multi.js', 'types/match.js', 'types/order.js', 'types/card.js', 'types/gap.js', 'types/numeric.js', 'types/cloze.js'] });
 
 const t = (k) => k;
 function walk(n, fn) {

@@ -7,9 +7,9 @@ const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
-const ROOT = path.join(__dirname, '..', '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, 'web', p), 'utf8');
+const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 
 function baseContent(extra) {
   const item = (id, stimulus) => Object.assign({ id, unit: 'u', type: 'gap', prompt: 'P ' + id, answers: ['a'], tags: [] }, stimulus ? { stimulus } : {});
@@ -65,9 +65,7 @@ test('stimulus available in exam mode', async () => {
 
 function loadApp() {
   const sandbox = { console };
-  sandbox.self = sandbox;
-  vm.createContext(sandbox);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js'].forEach((f) => vm.runInContext(read(f), sandbox, { filename: f }));
+  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext("self.DojoExt = { text: function (s) { return { marked: s }; } };", sandbox);
   vm.runInContext(read('ui/app.js'), sandbox, { filename: 'ui/app.js' });
   return sandbox.DojoApp._Stimulus;

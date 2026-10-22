@@ -3,10 +3,10 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
 const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const NOW = 1760000000000;
@@ -58,11 +58,7 @@ function loadSandbox() {
   const win = new Node_(1, 'WINDOW');
   win.document = doc;
   const sb = { console: { warn() {}, log() {}, error() {} }, document: doc, window: win, setTimeout, clearTimeout, setInterval, clearInterval, Promise };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  ['types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/app.js']
-    .forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/app.js'] });
   return { sb, win };
 }
 

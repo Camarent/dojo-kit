@@ -2,14 +2,11 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
-const ROOT = path.join(__dirname, '..', '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, 'web', p), 'utf8');
 const NOW = 1760000000000;
 const MIN = 60000;
 const TODAY = '2025-10-09';
@@ -60,14 +57,12 @@ const EXAM = { passMark: 0.5, minutes: 5, sections: [{ title: 'A', count: 4, tag
 
 function load(markup) {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'] });
   if (markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });
     sb.DojoExt.use('ruby');
   }
-  ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'] });
   return sb;
 }
 

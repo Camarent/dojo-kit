@@ -3,13 +3,12 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
 const { checkWasmFresh } = require('./loader.js');
+const { loadBundle } = require('./load-bundle.js');
 
-const ROOT = path.join(__dirname, '..', '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, 'web', p), 'utf8');
+const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const NOW = 1760000000000;
 const MIN = 60000;
 const DAY = 24 * 60 * MIN;
@@ -150,10 +149,7 @@ test('counts() includes learning and learned in totals', async () => {
 
 test('Home render: empty unit has no bar', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'session.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'session.js', 'speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'] });
   
   const DojoApp = sb.DojoApp;
   
@@ -196,10 +192,7 @@ test('Home render: empty unit has no bar', async () => {
 
 test('Home render: total bar aria-label shows exact numbers', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'session.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'session.js', 'speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'] });
   
   const DojoApp = sb.DojoApp;
   
@@ -303,10 +296,7 @@ test('ladder length 1 gives threshold 0', async () => {
 
 test('ProgressBar percentages sum to exactly 100', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  vm.runInContext(read('ui/app.js'), sb, { filename: 'ui/app.js' });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/app.js'] });
   
   const ProgressBar = sb.DojoApp._ProgressBar;
   
@@ -324,10 +314,7 @@ test('ProgressBar percentages sum to exactly 100', async () => {
 
 test('ProgressBar with learned > 0: learned segment width and aria-label', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
-  vm.runInContext(read('ui/app.js'), sb, { filename: 'ui/app.js' });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/app.js'] });
   
   const ProgressBar = sb.DojoApp._ProgressBar;
   

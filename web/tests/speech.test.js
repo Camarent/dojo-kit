@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
+const { loadBundle } = require('./load-bundle.js');
 
 const web = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
@@ -28,14 +28,12 @@ const V = (name, lang) => ({ name, lang });
 
 function load(markup) {
   const sb = { console };
-  sb.self = sb;
-  vm.createContext(sb);
-  ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js'] });
   if (markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });
     sb.DojoExt.use('ruby');
   }
-  ['speech.js', 'types/registry.js', 'types/gap.js', 'ui/app.js'].forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/gap.js', 'ui/app.js'] });
   return sb;
 }
 

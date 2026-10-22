@@ -3,17 +3,14 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
+const { loadBundle } = require('./load-bundle.js');
 
 const web = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 const en = JSON.parse(read('i18n/en.json'));
 
 const sandbox = { console };
-sandbox.self = sandbox;
-vm.createContext(sandbox);
-['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/cloze.js']
-  .forEach((f) => vm.runInContext(read(f), sandbox, { filename: f }));
+loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/cloze.js'] });
 const def = sandbox.DojoTypes.get('cloze');
 
 const same = (a, b) => assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), b);
