@@ -17,7 +17,7 @@ function loadApp() {
   const sb = { console };
   loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext('self.DojoExt = { text: function (s) { return s; } };', sb);
-  ['registry', 'card', 'choice', 'cloze', 'gap', 'match', 'multi', 'numeric', 'order'].map((n) => 'types/' + n + '.js').concat(['ui/common.js']).concat(['ui/detail.js']).concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/app.js']).forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
+  ['registry', 'card', 'choice', 'cloze', 'gap', 'match', 'multi', 'numeric', 'order'].map((n) => 'types/' + n + '.js').concat(['ui/common.js']).concat(['ui/detail.js']).concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/app.js']).forEach((f) => vm.runInContext(read(f), sb, { filename: f }));
   return sb;
 }
 function walk(n, id) {

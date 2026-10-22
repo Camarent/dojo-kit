@@ -62,7 +62,7 @@ function load(markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });
     sb.DojoExt.use('ruby');
   }
-  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/app.js']) });
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/app.js']) });
   return sb;
 }
 
@@ -604,7 +604,7 @@ test('placement: per-item seed derives from session.seed and the item id', async
   assert.notDeepStrictEqual(seeds, seeds1);
 });
 
-test('placement check: renderFeedbackCheck does not throw on right or wrong answers', async () => {
+test('placement check: renderFeedback does not throw on right or wrong answers', async () => {
   const t = await setup({ placement: { mode: 'self' } }, { n: 3 });
   const s = t.engine.start('placement', { seed: 'S1' });
   const ui = inst(load().DojoApp._PlacementSession, { t: tr, session: s, now: () => NOW, win: {}, course: t.content.course, content: t.content, onEnd() {}, onExit() {} });
@@ -612,7 +612,7 @@ test('placement check: renderFeedbackCheck does not throw on right or wrong answ
   [true, false].forEach((correct) => {
     const res = { correct, expected: 'x', given: 'y' };
     let v;
-    assert.doesNotThrow(() => { v = ui.renderFeedbackCheck(ui.props, { cur: { item }, result: res }, tr, {}); });
+    assert.doesNotThrow(() => { v = ui.renderFeedback(ui.props, { cur: { item }, result: res }); });
     assert.ok(find(v, 'feedback'));
     const str = JSON.stringify(v);
     assert.ok(!/undefined|\[object/.test(str), str);

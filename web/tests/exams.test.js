@@ -207,7 +207,7 @@ function loadApp() {
   const sb = { console };
   loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext('self.DojoExt = { text: function (s) { return s; } };', sb);
-  loadBundle(sb, { only: ['ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/app.js']) });
+  loadBundle(sb, { only: ['ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/app.js']) });
   return sb.DojoApp;
 }
 

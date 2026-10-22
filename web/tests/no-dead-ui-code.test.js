@@ -7,15 +7,9 @@ const path = require('path');
 const web = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 
-test('renderFeedbackCheck has no override button or retry branch', () => {
-  const src = read('ui/app.js');
-  const a = src.indexOf('renderFeedbackCheck(p, s, t, def) {');
-  const b = src.indexOf('renderDontKnowCheck(p, s, t, session) {');
-  assert.ok(a > 0 && b > a);
-  const body = src.slice(a, b);
-  assert.ok(!body.includes('btn-override'));
-  assert.ok(!body.includes('feedback-retry'));
-  assert.ok(!body.includes('showOverride'));
+test('placement.js keeps no Check-suffixed copies of the shared session methods', () => {
+  const src = read('ui/placement.js');
+  assert.ok(!/renderFeedbackCheck|renderDontKnowCheck|audioPropsCheck|answerCheck/.test(src));
 });
 
 test('DojoApp export has no _SessionBoundary', () => {
