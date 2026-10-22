@@ -1,6 +1,6 @@
 use crate::content::Item;
 use crate::lock::IdLock;
-use crate::validate::{Diagnostic, Severity};
+use crate::diagnostic::{Diagnostic, Severity};
 
 /// `(successor id, ids of the retired items it replaces)`, sorted by successor id.
 pub type Links = Vec<(String, Vec<String>)>;

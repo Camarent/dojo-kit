@@ -2,6 +2,7 @@ pub mod api;
 pub mod check;
 pub mod content;
 pub mod days;
+pub mod diagnostic;
 pub mod exam;
 pub mod groups;
 pub mod lock;
