@@ -56,10 +56,22 @@ test('renders text segments, hint and one attribute-complete input per blank', (
   assert.strictEqual(find(v, (n) => n.type === 'span' && n.props.children === 'A ').length, 1);
 });
 
-test('input width grows with content', () => {
-  const short = inputs(def.Question(props()))[0].props.style.width;
-  const long = inputs(def.Question(props({ state: { inputs: ['x'.repeat(30), ''] } })))[0].props.style.width;
-  assert.ok(parseInt(long, 10) > parseInt(short, 10));
+test('inline blank (single-blank sentence) width grows with content', () => {
+  const v1 = { segments: [{ text: 'A ' }, { blank: 0 }], blanks: 1 };
+  const w = (val) => inputs(def.Question(props({ view: v1, state: { inputs: [val] } })))[0].props.style.width;
+  assert.ok(parseInt(w('x'.repeat(30)), 10) > parseInt(w(''), 10));
+});
+
+test('reading-row inputs (multi-blank) carry no inline width so they fill their cell', () => {
+  const ins = inputs(def.Question(props()));
+  assert.strictEqual(ins.length, 2);
+  for (const i of ins) assert.ok(!i.props.style || i.props.style.width === undefined);
+});
+
+test('multi-blank rows live in ONE .cloze-groups container (shared label column)', () => {
+  const v = def.Question(props());
+  assert.strictEqual(find(v, (n) => n.props && n.props.class === 'cloze-groups').length, 1);
+  assert.strictEqual(find(v, (n) => n.props && n.props.class === 'cloze-label').length, 2);
 });
 
 test('typing updates only that blank through setState', () => {
@@ -131,13 +143,14 @@ test('one-blank cloze still renders one p.cloze-sentence with no .cloze-group ne
   assert.strictEqual(groups.length, 0);
 });
 
-test('CSS text contains max-width:100% for .cloze-field and flex-wrap on the group rule', () => {
+test('CSS text contains max-width:100% for .cloze-field and a grid label column on the group rule', () => {
   const css = read('styles/types-cloze.css');
   assert.ok(css.includes('.cloze-field {') || css.includes('\n.cloze-field {'));
   assert.ok(css.includes('max-width:100%') || css.includes('max-width: 100%'));
-  assert.ok(css.includes('min-width: 6ch') || css.includes('min-width:6ch'));
+  assert.ok(css.includes('min-width: 10ch') || css.includes('min-width:10ch'));
   assert.ok(css.includes('.cloze-group'));
-  assert.ok(css.includes('flex-wrap'));
+  assert.ok(/\.cloze-groups\s*\{[^}]*display: grid[^}]*grid-template-columns: max-content/.test(css));
+  assert.ok(/\.cloze-group\s*\{[^}]*display: contents/.test(css));
 });
 
 test('Enter moves focus from input 0 to input 1 (still works)', () => {

@@ -10,36 +10,35 @@ const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 const css = read('styles/types-cloze.css');
 const clozeJs = read('types/cloze.js');
 
-test('cloze-group rule declares gap: var(--space-3)', () => {
-  const groupMatch = css.match(/\.cloze-group\s*\{[^}]*\}/);
-  assert.ok(groupMatch, 'types-cloze.css should contain .cloze-group rule');
+test('cloze-groups rule declares gap: var(--space-3)', () => {
+  const groupMatch = css.match(/\.cloze-groups\s*\{[^}]*\}/);
+  assert.ok(groupMatch, 'types-cloze.css should contain .cloze-groups rule');
   const groupRule = groupMatch[0];
   assert.ok(groupRule.includes('gap: var(--space-3)'),
-    '.cloze-group rule should contain gap: var(--space-3)');
+    '.cloze-groups rule should contain gap: var(--space-3)');
 });
 
-test('@media (max-width: 500px) block contains flex-direction: column for cloze row', () => {
-  const mediaMatch = css.match(/@media \(max-width: 500px\)\s*\{[^}]*\}/);
+test('@media (max-width: 500px) stacks to one column and stretches .cloze-blank', () => {
+  const mediaMatch = css.match(/@media \(max-width: 500px\)\s*\{.*\}/);
   assert.ok(mediaMatch, 'types-cloze.css should contain @media (max-width: 500px) block');
-  const mediaBlock = mediaMatch[0];
-  assert.ok(mediaBlock.includes('flex-direction: column'),
-    '@media (max-width: 500px) block should contain flex-direction: column');
+  assert.ok(/\.cloze-groups\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/.test(mediaMatch[0]));
+  assert.ok(/\.cloze-blank\s*\{[^}]*align-self: stretch/.test(mediaMatch[0]));
 });
 
-test('input rule declares min-width: 6ch', () => {
+test('input rule declares min-width: 10ch', () => {
   const fieldMatch = css.match(/\.cloze-field\s*\{[^}]*\}/);
   assert.ok(fieldMatch, 'types-cloze.css should contain .cloze-field rule');
   const fieldRule = fieldMatch[0];
-  assert.ok(fieldRule.includes('min-width: 6ch'),
-    '.cloze-field rule should contain min-width: 6ch');
+  assert.ok(fieldRule.includes('min-width: 10ch'),
+    '.cloze-field rule should contain min-width: 10ch');
 });
 
-test('input rule declares flex: 1', () => {
+test('input rule has no flex: 1 shrink-to-content', () => {
   const fieldMatch = css.match(/\.cloze-field\s*\{[^}]*\}/);
   assert.ok(fieldMatch, 'types-cloze.css should contain .cloze-field rule');
   const fieldRule = fieldMatch[0];
-  assert.ok(fieldRule.includes('flex: 1'),
-    '.cloze-field rule should contain flex: 1');
+  assert.ok(!fieldRule.includes('flex: 1'),
+    '.cloze-field rule should not contain flex: 1');
 });
 
 test('hint element does not use .muted class', () => {
