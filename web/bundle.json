@@ -14,6 +14,8 @@
     "session/queues.js",
     "session/counts.js",
     "session/exam.js",
+    "session/grade.js",
+    "session/exam-run.js",
     "session.js",
     "types/registry.js",
     "ext/registry.js",

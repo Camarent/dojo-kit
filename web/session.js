@@ -29,29 +29,26 @@
 
   var examMod = root.DojoSessionExam || (typeof require === 'function' ? require('./session/exam.js') : null);
 
+  var gradeMod = root.DojoSessionGrade || (typeof require === 'function' ? require('./session/grade.js') : null);
+
+  var examRunMod = root.DojoSessionExamRun || (typeof require === 'function' ? require('./session/exam-run.js') : null);
+
   var overridesMod = root.DojoSessionOverrides || (typeof require === 'function' ? require('./session/overrides.js') : null);
 
-  var hashString = util.hashString;
   var mulberry32 = util.mulberry32;
   var shuffledIndexes = util.shuffledIndexes;
   var isRetired = util.isRetired;
   var ensureObject = util.ensureObject;
   var expectedFor = util.expectedFor;
-  var isIdList = util.isIdList;
   var orderPerm = util.orderPerm;
-  var clozeBlanks = util.clozeBlanks;
-  var correctIndexes = util.correctIndexes;
   var optionText = util.optionText;
 
-  var UNIT_NEW_PREFIX = util.K.UNIT_NEW_PREFIX;
-  var GROUP_NEW_PREFIX = util.K.GROUP_NEW_PREFIX;
   var DEFAULT_NEW_PER_DAY = util.K.DEFAULT_NEW_PER_DAY;
   var DEFAULT_PRACTICE_LIMIT = util.K.DEFAULT_PRACTICE_LIMIT;
   var DEFAULT_WEAK_LIMIT = util.K.DEFAULT_WEAK_LIMIT;
   var DEFAULT_LEARNED_STAGE = util.K.DEFAULT_LEARNED_STAGE;
   var TYPED = util.K.TYPED;
   var SELF_RATED = util.K.SELF_RATED;
-  var MAX_ANSWER_G = util.K.MAX_ANSWER_G;
   var WRITE_THROTTLE_MS = util.K.WRITE_THROTTLE_MS;
   var TICK_INTERVAL_MS = util.K.TICK_INTERVAL_MS;
 
@@ -327,95 +324,63 @@
         session.training = !!plan.training;
       }
       var groups = plan.groups || null;
-      var groupIdx = 0;
-      if (groups) {
-        groupIdx = resume ? resume.group : 0;
-        session.group = { index: groupIdx, count: groups.length };
-      }
+      if (groups) session.group = { index: resume ? resume.group : 0, count: groups.length };
       var lockHolder = mode === 'exam' && plan.deadline !== undefined ? ctx.fn.acquireWakeLock() : null;
 
       var queue = plan.ids.slice();
       var startedAt = resume ? now() - resume.elapsedMs : now();
-      var revealed = false;
       var answeredAt = {};
       var graded = {};
       var review = [];
       var requeued = {};
       var entityWrong = {}; // scoped entities that already dropped once in this session
       var skipped = []; // Track items skipped due to timer expiry
-      var summary = null;
-      var lastAnswer = null;
       var introduced = {}; // Track which items have shown their intro (for introNew feature)
       var introSeen = Object.create(null); // entities whose intro card was dismissed in this session
       var isTimedExam = mode === 'exam' && !plan.training && plan.deadline !== undefined;
       var draftAnswers = {};
-      var draftClosed = false;
-      var draftDirty = false;
-      var lastWriteAt = -Infinity;
-
-      function stableGiven(g) {
-        return typeof g === 'string' ? g.substring(0, MAX_ANSWER_G) : '';
-      }
+      // sx: shared session state for session/grade.js and session/exam-run.js; the reassigned fields live only here.
+      var sx = {
+        mode: mode, plan: plan, session: session, resume: resume, groups: groups, lockHolder: lockHolder, queue: queue,
+        startedAt: startedAt, answeredAt: answeredAt, graded: graded, review: review, requeued: requeued,
+        entityWrong: entityWrong, skipped: skipped, introduced: introduced, introSeen: introSeen,
+        isTimedExam: isTimedExam, draftAnswers: draftAnswers, fn: {},
+        groupIdx: groups ? session.group.index : 0, revealed: false, summary: null, lastAnswer: null,
+        draftClosed: false, draftDirty: false, lastWriteAt: -Infinity
+      };
+      sx.fn.rightsOf = rightsOf;
+      sx.fn.remainingList = remainingList;
+      sx.fn.result = result;
+      sx.fn.recordGrade = recordGrade;
+      var gradeApi = gradeMod.create(ctx, sx);
+      sx.fn.gradeInput = gradeApi.gradeInput;
+      sx.fn.nextRecord = gradeApi.nextRecord;
+      sx.fn.applyVerdict = gradeApi.applyVerdict;
+      var runApi = examRunMod.create(ctx, sx);
+      sx.fn.buildDraft = runApi.buildDraft;
+      sx.fn.saveDraft = runApi.saveDraft;
+      sx.fn.closeDraft = runApi.closeDraft;
+      sx.fn.enterGroup = runApi.enterGroup;
+      sx.fn.skipRange = runApi.skipRange;
+      sx.fn.examSummary = runApi.examSummary;
+      sx.fn.storeExam = runApi.storeExam;
 
       function remainingList() {
         var nowMs = now();
         if (!groups) return [Math.max(0, session.deadline - nowMs)];
         return groups.map(function (g, gi) {
-          if (gi < groupIdx) return 0;
-          if (gi === groupIdx) return Math.max(0, session.deadline - nowMs);
+          if (gi < sx.groupIdx) return 0;
+          if (gi === sx.groupIdx) return Math.max(0, session.deadline - nowMs);
           return g.minutes * 60000;
         });
       }
 
-      function buildDraft() {
-        var answers = Object.keys(draftAnswers).map(Number).sort(function (x, y) { return x - y; }).map(function (i) {
-          return draftAnswers[i];
-        });
-        var draft = {
-          sid: session.id,
-          examId: plan.exam.id,
-          ids: queue.slice(),
-          sections: plan.sections,
-          index: session.index,
-          group: groups ? groupIdx : 0,
-          remainingMs: remainingList(),
-          elapsedMs: Math.max(0, now() - startedAt),
-          answers: answers,
-          startedAt: resume ? resume.startedAt : startedAt,
-          updatedAt: now()
-        };
-        return draft;
-      }
-
-      function saveDraft(force) {
-        if (!isTimedExam || draftClosed) return;
-        var t = now();
-        if (!force && t - lastWriteAt < WRITE_THROTTLE_MS) { draftDirty = true; return; }
-        var draft = buildDraft();
-        lastWriteAt = t;
-        draftDirty = false;
-        store.update(function (doc) {
-          var prev = doc.examDraft;
-          if (prev && typeof prev === 'object' && prev.sid === session.id && prev.closed) return;
-          if (prev && Array.isArray(prev.closedSids)) {
-            if (prev.closedSids.some(function (c) { return c && c.sid === session.id; })) return;
-            draft.closedSids = prev.closedSids;
-          }
-          doc.examDraft = draft;
-        });
-      }
-
-      function closeDraft(doc, reason) {
-        draftClosed = true;
-        ctx.fn.closeSlot(doc, session.id, reason, now());
-      }
-
-      session.saveDraft = function () { saveDraft(true); };
+      session.saveDraft = function () { sx.fn.saveDraft(true); };
 
       session.tickDraft = function () {
-        if (!isTimedExam || draftClosed) return;
-        var since = now() - lastWriteAt;
-        if ((draftDirty && since >= WRITE_THROTTLE_MS) || since >= TICK_INTERVAL_MS) saveDraft(true);
+        if (!isTimedExam || sx.draftClosed) return;
+        var since = now() - sx.lastWriteAt;
+        if ((sx.draftDirty && since >= WRITE_THROTTLE_MS) || since >= TICK_INTERVAL_MS) sx.fn.saveDraft(true);
       };
 
       function currentId() {
@@ -507,7 +472,7 @@
           };
         }
         if (item.type === 'numeric') return { unitLabel: item.unitLabel || null };
-        if (item.type === 'card') return revealed ? { back: item.back } : {};
+        if (item.type === 'card') return sx.revealed ? { back: item.back } : {};
         return {};
       }
 
@@ -519,98 +484,8 @@
       };
 
       session.reveal = function () {
-        revealed = true;
+        sx.revealed = true;
       };
-
-      function gradeInput(item, input) {
-        if (!input || typeof input !== 'object') return null;
-        if (item.type === 'choice') {
-          if (!Number.isInteger(input.index) || input.index < 0 || input.index >= item.options.length) return null;
-          var ok = correctIndexes(item).some(function (a) {
-            return dojo.call('checkChoice', { answer: a, selected: input.index });
-          });
-          return { correct: ok, given: optionText(item, input.index) };
-        }
-        if (item.type === 'gap') {
-          if (typeof input.text !== 'string') return null;
-          var args = { answers: item.answers, input: input.text, opts: normalizeOpts(item) };
-          // Use gapVerdict if retry readings are defined
-          if (item.retry && item.retry.length > 0) {
-            args.retry = item.retry;
-            var verdict = dojo.call('gapVerdict', args);
-            if (verdict === 'retry') {
-              return { verdict: 'retry', correct: false, given: input.text };
-            }
-            return { correct: verdict === 'ok', given: input.text };
-          }
-          return { correct: dojo.call('checkGap', args), given: input.text };
-        }
-        if (item.type === 'multi' || item.type === 'match' || item.type === 'order' || item.type === 'cloze' || item.type === 'numeric') {
-          return gradeNew(item, input);
-        }
-        if (input.rating !== 'known' && input.rating !== 'again') return null;
-        return { correct: input.rating === 'known', given: input.rating };
-      }
-
-      function gradeNew(item, input) {
-        var seed = session.id + '|' + item.id;
-        var r;
-        if (item.type === 'multi') {
-          var perm = shuffledIndexes(item.options.length, seed);
-          if (!isIdList(input.ids, perm.length, true)) return null;
-          var sel = input.ids.map(function (id) { return perm[id]; });
-          var okM = dojo.call('checkMulti', { correct: item.correct, selected: sel });
-          var chosen = {};
-          sel.forEach(function (i) { chosen[i] = true; });
-          var isCorrect = {};
-          item.correct.forEach(function (i) { isCorrect[i] = true; });
-          var detail = { missing: [], extra: [] };
-          perm.forEach(function (orig) {
-            if (isCorrect[orig] && !chosen[orig]) detail.missing.push(item.options[orig]);
-            if (chosen[orig] && !isCorrect[orig]) detail.extra.push(item.options[orig]);
-          });
-          return { correct: okM, given: sel.map(function (i) { return item.options[i]; }).join(', '), detail: detail };
-        }
-        if (item.type === 'match') {
-          var lp = shuffledIndexes(item.pairs.length, seed + '|L');
-          var rights = rightsOf(item);
-          var rp = shuffledIndexes(rights.length, seed + '|R');
-          if (!isIdList(input.mapping, rights.length, false) || input.mapping.length !== lp.length) return null;
-          var mapping = [];
-          input.mapping.forEach(function (rid, pos) { mapping[lp[pos]] = rp[rid]; });
-          r = dojo.call('checkMatch', { pairCount: item.pairs.length, mapping: mapping });
-          var wrongSet = {};
-          r.wrong.forEach(function (i) { wrongSet[i] = true; });
-          var wrong = [];
-          lp.forEach(function (orig) { if (wrongSet[orig]) wrong.push(item.pairs[orig].left); });
-          return {
-            correct: r.correct,
-            given: lp.map(function (orig, pos) { return item.pairs[orig].left + ' = ' + rights[rp[input.mapping[pos]]]; }).join('; '),
-            detail: { wrong: wrong }
-          };
-        }
-        if (item.type === 'order') {
-          var op = orderPerm(item.steps.length, seed);
-          if (!isIdList(input.sequence, op.length, true) || input.sequence.length !== op.length) return null;
-          var seq = input.sequence.map(function (id) { return op[id]; });
-          r = dojo.call('checkOrder', { stepCount: op.length, sequence: seq });
-          return {
-            correct: r.correct,
-            given: seq.map(function (i, k) { return (k + 1) + '. ' + item.steps[i]; }).join('; '),
-            detail: { firstWrong: r.firstWrong === undefined ? null : r.firstWrong }
-          };
-        }
-        if (item.type === 'cloze') {
-          var blanks = clozeBlanks(item);
-          if (!Array.isArray(input.inputs) || input.inputs.length !== blanks.length) return null;
-          if (!input.inputs.every(function (x) { return typeof x === 'string'; })) return null;
-          r = dojo.call('checkCloze', { blanks: blanks, inputs: input.inputs, opts: normalizeOpts(item) });
-          return { correct: r.correct, given: input.inputs.join(' | '), detail: { results: r.results } };
-        }
-        if (typeof input.text !== 'string') return null;
-        r = dojo.call('checkNumeric', { answer: item.answer, tolerance: item.tolerance || 0, input: input.text });
-        return { correct: r.correct, given: input.text, detail: { parsed: r.parsed === undefined ? null : r.parsed } };
-      }
 
       function isNewFor(item) {
         var se = scopedEntityOf[item.id];
@@ -627,90 +502,6 @@
       function requeueKey(item) {
         var se = scopedEntityOf[item.id];
         return se !== undefined ? 'e:' + se : item.id;
-      }
-
-      // Writes for one scoped entity: {memberId: record} (possibly empty). A repeated wrong in the same session goes
-      // through relearn so the entity drops once.
-      function scopedWrites(item, e, correct, relearn) {
-        var unit = scopedUnit[e];
-        var args = {
-          members: scopedMemberList(e), records: scopedRecords(e), now: now(), correct: correct,
-          ladder: ladderForUnit(unit)
-        };
-        if (mode === 'placement') {
-          args.mode = 'placement';
-          args.known = correct;
-          args.seed = hashString(session.seed + '|' + e).toString();
-          return dojo.call('applyEntity', args);
-        }
-        var override = getUnitSettingsOverride(unit);
-        args.dropOnWrong = override.dropOnWrong !== undefined ? override.dropOnWrong : unitConfig(unit).dropOnWrong;
-        args.mode = relearn || entityWrong[e] ? 'relearn' : (mode === 'daily' ? 'answer' : 'practice');
-        if (args.mode === 'relearn' && !correct) return {};
-        return dojo.call('applyEntity', args);
-      }
-
-      // Records to store for one answer: {id: record} or null.
-      function nextRecord(item, correct, relearn) {
-        var se = scopedEntityOf[item.id];
-        if (se !== undefined) return scopedWrites(item, se, correct, relearn);
-        var one = nextItemRecord(item, correct, relearn);
-        if (!one) return null;
-        var out = {};
-        out[item.id] = one;
-        return out;
-      }
-
-      function nextItemRecord(item, correct, relearn) {
-        var rec = records()[item.id];
-        var ladder = itemLadderFor(item);
-        var base = { rec: rec === undefined ? null : rec, now: now(), ladder: ladder };
-        if (mode === 'placement') {
-          var known = correct;
-          var itemSeed = hashString(session.seed + '|' + item.id).toString();
-          return dojo.call('applyPlacement', { rec: rec === undefined ? null : rec, known: known, now: now(), ladder: ladder, seed: itemSeed });
-        }
-        if (relearn) {
-          if (!correct || !rec || rec.s !== 0) return null;
-          return dojo.call('applyRelearn', base);
-        }
-        base.correct = correct;
-        base.drop = dropForItem(item);
-        return dojo.call(mode === 'daily' ? 'applyAnswer' : 'applyPractice', base);
-      }
-
-      function commit(item, writes, countsNew) {
-        var day = today();
-        store.update(function (doc) {
-          if (writes) {
-            doc.items = doc.items || {};
-            Object.keys(writes).forEach(function (id) { doc.items[id] = writes[id]; });
-          }
-          if (mode === 'placement') return;
-          doc.stats = doc.stats || {};
-          doc.stats.days = doc.stats.days || {};
-          doc.stats.days[day] = (doc.stats.days[day] || 0) + 1;
-          if (countsNew) {
-            doc.stats.newByDay = ensureObject(doc.stats.newByDay);
-            doc.stats.newByDay[day] = (doc.stats.newByDay[day] || 0) + 1;
-            var gid = unitGroup[item.unit];
-            if (gid !== undefined) {
-              var mates = entityMembers[itemEntities[item.id]] || [];
-              var started = scopedEntityOf[item.id] === undefined && mates.some(function (m) { return m !== item.id && doc.items && doc.items[m] !== undefined; });
-              if (!started) {
-                var gKey = GROUP_NEW_PREFIX + gid;
-                doc.stats[gKey] = ensureObject(doc.stats[gKey]);
-                doc.stats[gKey][day] = (doc.stats[gKey][day] || 0) + 1;
-              }
-            }
-            if (item.unit) {
-              var unitKey = UNIT_NEW_PREFIX + item.unit;
-              doc.stats[unitKey] = ensureObject(doc.stats[unitKey]);
-              doc.stats[unitKey][day] = (doc.stats[unitKey][day] || 0) + 1;
-            }
-          }
-        });
-        if (mode !== 'placement') store.noteAnswer();
       }
 
       function result(item, graded_) {
@@ -750,25 +541,25 @@
             var placementModeVar = session.placementMode || placementMode();
             if (placementModeVar === 'check') {
               // Check mode: grade the answer like a normal session
-              verdict = gradeInput(item, input);
+              verdict = sx.fn.gradeInput(item, input);
               if (!verdict) return { error: 'bad_input' };
               // For gap retry: in placement check mode, treat retry as wrong (no retry allowed)
               if (verdict.verdict === 'retry') {
                 verdict = { correct: false, given: verdict.given };
               }
               var known = verdict.correct;
-              rec = nextRecord(item, known, relearn);
+              rec = sx.fn.nextRecord(item, known, relearn);
               verdict = Object.assign({}, verdict, { known: known });
             } else {
               // Self mode: original behavior
               var rating = input && input.rating;
               if (rating !== 'known' && rating !== 'again') return { error: 'bad_input' };
               var known = rating === 'known';
-              rec = nextRecord(item, known, relearn);
+              rec = sx.fn.nextRecord(item, known, relearn);
               verdict = { correct: known, given: known ? 'known' : 'unknown', known: known };
             }
           } else {
-            verdict = gradeInput(item, input);
+            verdict = sx.fn.gradeInput(item, input);
             if (!verdict) return { error: 'bad_input' };
             // For gap retry: don't record, don't advance, don't mark as answered
             if (verdict.verdict === 'retry' && mode === 'exam' && !session.training) {
@@ -776,12 +567,12 @@
             } else if (verdict.verdict === 'retry') {
               return { verdict: 'retry', retry: true, expected: expectedFor(item), explanation: item.explanation || null };
             }
-            rec = nextRecord(item, verdict.correct, relearn);
+            rec = sx.fn.nextRecord(item, verdict.correct, relearn);
           }
         } catch (e) {
           return { error: 'engine' };
         }
-        return applyVerdict(item, verdict, rec, prev, relearn, isNewRecord);
+        return sx.fn.applyVerdict(item, verdict, { rec: rec, prev: prev, relearn: relearn, isNewRecord: isNewRecord });
       };
 
       session.dontKnow = function () {
@@ -797,11 +588,11 @@
         var verdict = { correct: false, given: '-', dontKnow: true };
 
         try {
-          rec = nextRecord(item, false, relearn);
+          rec = sx.fn.nextRecord(item, false, relearn);
         } catch (e) {
           return { error: 'engine' };
         }
-        return applyVerdict(item, verdict, rec, prev, relearn, isNewRecord);
+        return sx.fn.applyVerdict(item, verdict, { rec: rec, prev: prev, relearn: relearn, isNewRecord: isNewRecord });
       };
 
       function prevOf(item) {
@@ -821,26 +612,6 @@
         return false;
       }
 
-      function applyVerdict(item, verdict, rec, prev, relearn, isNewRecord) {
-        commit(item, rec, mode === 'daily' && !relearn && isNewRecord);
-        var setWrong = false;
-        var se = scopedEntityOf[item.id];
-        if (se !== undefined && mode !== 'placement' && !verdict.correct && !entityWrong[se]) {
-          entityWrong[se] = true;
-          setWrong = true;
-        }
-        answeredAt[session.index] = true;
-        session.answered++;
-        var pushed = false;
-        if (!relearn && mode !== 'placement') pushed = recordGrade(item, verdict);
-        lastAnswer = mode === 'placement' ? null : { index: session.index, item: item, prev: prev, relearn: relearn, verdict: verdict, pushed: pushed, setWrong: setWrong };
-        if (isTimedExam) {
-          draftAnswers[session.index] = { i: session.index, c: !!verdict.correct, g: stableGiven(verdict.given) };
-          saveDraft(true);
-        }
-        return result(item, verdict);
-      }
-
       session.canDontKnow = function () {
         if (course.dontKnow !== true) return false;
         var placementModeVar = mode === 'placement' ? (session.placementMode || placementMode()) : null;
@@ -853,7 +624,7 @@
       };
 
       session.canOverride = function () {
-        var la = lastAnswer;
+        var la = sx.lastAnswer;
         if (!la || la.index !== session.index || la.verdict.correct) return false;
         if (mode === 'exam' || mode === 'placement' || course.allowOverride === false) return false;
         if (la.verdict.dontKnow) return false;
@@ -862,7 +633,7 @@
 
       session.overrideLast = function () {
         if (!session.canOverride()) return { error: 'no_override' };
-        var la = lastAnswer;
+        var la = sx.lastAnswer;
         var item = la.item;
         var rec;
         try {
@@ -876,7 +647,7 @@
             } else if (la.prev === undefined) delete doc.items[item.id]; else doc.items[item.id] = la.prev;
           });
           if (se !== undefined && la.setWrong) delete entityWrong[se];
-          rec = nextRecord(item, true, la.relearn);
+          rec = sx.fn.nextRecord(item, true, la.relearn);
         } catch (e) {
           return { error: 'engine' };
         }
@@ -891,57 +662,44 @@
           }
         }
         var verdict = Object.assign({}, la.verdict, { correct: true });
-        lastAnswer = null;
+        sx.lastAnswer = null;
         return result(item, verdict);
       };
 
-      function enterGroup(g) {
-        groupIdx = g;
-        session.group = { index: g, count: groups.length };
-        session.deadline = now() + groups[g].minutes * 60000;
-        saveDraft(true);
-      }
-
       session.next = function () {
         if (session.index < queue.length) session.index++;
-        revealed = false;
+        sx.revealed = false;
         session.done = session.index >= queue.length;
-        if (groups && !session.done && groupIdx + 1 < groups.length && session.index >= groups[groupIdx + 1].start) {
-          enterGroup(groupIdx + 1);
+        if (groups && !session.done && sx.groupIdx + 1 < groups.length && session.index >= groups[sx.groupIdx + 1].start) {
+          sx.fn.enterGroup(sx.groupIdx + 1);
         } else {
-          saveDraft(false);
+          sx.fn.saveDraft(false);
         }
         return session.current();
       };
-
-      function skipRange(from, to) {
-        for (var k = from; k < to; k++) {
-          if (!answeredAt[k]) skipped.push(queue[k]);
-        }
-      }
 
       session.expire = function () {
         var out = { jumped: false, finished: false };
         if (session.deadline === undefined || session.done || now() < session.deadline) return out;
         if (!groups) {
-          skipRange(session.index, queue.length);
+          sx.fn.skipRange(session.index, queue.length);
           session.index = queue.length;
           session.done = true;
           out.finished = true;
           return out;
         }
         while (now() >= session.deadline) {
-          if (groupIdx + 1 >= groups.length) {
-            skipRange(session.index, queue.length);
+          if (sx.groupIdx + 1 >= groups.length) {
+            sx.fn.skipRange(session.index, queue.length);
             session.index = queue.length;
             session.done = true;
             out.finished = true;
             return out;
           }
-          skipRange(session.index, Math.min(groups[groupIdx + 1].start, queue.length));
-          session.index = groups[groupIdx + 1].start;
-          revealed = false;
-          enterGroup(groupIdx + 1);
+          sx.fn.skipRange(session.index, Math.min(groups[sx.groupIdx + 1].start, queue.length));
+          session.index = groups[sx.groupIdx + 1].start;
+          sx.revealed = false;
+          sx.fn.enterGroup(sx.groupIdx + 1);
           out.jumped = true;
         }
         return out;
@@ -952,8 +710,8 @@
       };
 
       session.abandon = function () {
-        if (!isTimedExam || draftClosed) return;
-        store.update(function (doc) { closeDraft(doc, 'abandoned'); });
+        if (!isTimedExam || sx.draftClosed) return;
+        store.update(function (doc) { sx.fn.closeDraft(doc, 'abandoned'); });
       };
 
       function baseSummary() {
@@ -969,76 +727,18 @@
         };
       }
 
-      function examSummary(sum) {
-        var results = plan.ids.map(function (id) { return { id: id, correct: graded[id] === true }; });
-        var exam = plan.exam;
-        var args = { results: results, total: plan.ids.length };
-        if (typeof exam.passMark === 'number') args.passMark = exam.passMark;
-        if (exam.pass !== undefined) args.pass = exam.pass;
-        if (exam.scoring && exam.scoring.length) {
-          args.scoring = exam.scoring;
-          args.sections = plan.sections;
-          if (exam.passPoints !== undefined && exam.passPoints !== null) args.passPoints = exam.passPoints;
-        }
-        var scored = dojo.call('score', args);
-        sum.raw = scored.raw;
-        sum.fraction = scored.fraction;
-        sum.pass = scored.pass;
-        sum.short = plan.warnings || [];
-        if (scored.parts && scored.parts.length) {
-          sum.parts = scored.parts;
-          sum.totalPoints = scored.totalPoints;
-          if (args.passPoints !== undefined) sum.passPoints = args.passPoints;
-        }
-        if (exam.note) sum.note = exam.note;
-        if (plan.examId !== undefined) sum.examId = plan.examId;
-        if (session.training) sum.training = true;
-        if (scored.estimate === true) sum.estimate = true;
-        return scored;
-      }
-
-      function storeExam(scored, alsoClose) {
-        var entry = { date: today(), raw: scored.raw, total: scored.total, fraction: scored.fraction, pass: scored.pass, mode: 'exam' };
-        if (plan.examId !== undefined) entry.examId = plan.examId;
-        if (scored.parts && scored.parts.length) {
-          entry.parts = scored.parts;
-          entry.totalPoints = scored.totalPoints;
-        }
-        if (scored.estimate === true) entry.estimate = true;
-        var key = 'exam-' + now();
-        var sid = session.id;
-        var blocked = false;
-        store.update(function (doc) {
-          var slot = doc.examDraft;
-          if (slot && typeof slot === 'object') {
-            if (slot.sid === sid && slot.closed === 'finished') {
-              blocked = true;
-              return;
-            }
-            if (Array.isArray(slot.closedSids) && slot.closedSids.some(function (c) { return c && c.sid === sid; })) {
-              blocked = true;
-              return;
-            }
-          }
-          doc.exams = doc.exams || {};
-          doc.exams[key] = entry;
-          if (alsoClose) closeDraft(doc, 'finished');
-        });
-        if (blocked) return { error: 'finished_elsewhere' };
-      }
-
       session.finish = function () {
-        if (summary) return summary;
+        if (sx.summary) return sx.summary;
         var sum = baseSummary();
         if (mode === 'exam') {
           var scored;
           try {
-            scored = examSummary(sum);
+            scored = sx.fn.examSummary(sum);
           } catch (e) {
             return { error: 'engine' };
           }
           if (!session.training) {
-            var result = storeExam(scored, isTimedExam);
+            var result = sx.fn.storeExam(scored, isTimedExam);
             if (result && result.error) return result;
           }
           session.release();
@@ -1049,8 +749,8 @@
             doc.settings.placementDone = true;
           });
         }
-        summary = sum;
-        return summary;
+        sx.summary = sum;
+        return sx.summary;
       };
 
       if (resume) {
@@ -1061,16 +761,16 @@
           review.push({ id: rid, correct: ans.c, given: ans.g === undefined ? '' : ans.g, expected: expectedFor(byId[rid]) });
           draftAnswers[ans.i] = ans.g === undefined ? { i: ans.i, c: ans.c } : { i: ans.i, c: ans.c, g: ans.g };
         });
-        if (groups) skipRange(0, groups[groupIdx].start);
+        if (groups) sx.fn.skipRange(0, groups[sx.groupIdx].start);
         session.index = resume.index;
         while (session.index < queue.length && answeredAt[session.index]) session.index++;
         session.done = session.index >= queue.length;
-        if (groups && !session.done && groupIdx + 1 < groups.length && session.index >= groups[groupIdx + 1].start) {
-          enterGroup(groupIdx + 1);
+        if (groups && !session.done && sx.groupIdx + 1 < groups.length && session.index >= groups[sx.groupIdx + 1].start) {
+          sx.fn.enterGroup(sx.groupIdx + 1);
         }
         session.expire();
       }
-      saveDraft(true);
+      sx.fn.saveDraft(true);
 
       return session;
     }
