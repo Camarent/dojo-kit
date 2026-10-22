@@ -15,7 +15,7 @@ const TODAY = '2025-10-09';
 
 function loadAppWithAllTypes() {
   const sb = { console: { warn() {}, log: console.log } };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'speech.js', 'session.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/app.js'] });
+  loadBundle(sb, { skip: ['dojo-wasm.js', 'storage.js', 'boot.js'] });
   return sb;
 }
 

@@ -149,7 +149,7 @@ test('counts() includes learning and learned in totals', async () => {
 
 test('Home render: empty unit has no bar', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'session.js', 'speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'] });
+  loadBundle(sb, { skip: ['dojo-wasm.js', 'storage.js', 'boot.js'] });
   
   const DojoApp = sb.DojoApp;
   
@@ -192,7 +192,7 @@ test('Home render: empty unit has no bar', async () => {
 
 test('Home render: total bar aria-label shows exact numbers', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext.js', 'session.js', 'speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/app.js'] });
+  loadBundle(sb, { skip: ['dojo-wasm.js', 'storage.js', 'boot.js'] });
   
   const DojoApp = sb.DojoApp;
   
@@ -296,7 +296,7 @@ test('ladder length 1 gives threshold 0', async () => {
 
 test('ProgressBar percentages sum to exactly 100', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/app.js'] });
+  loadBundle(sb, { skip: ['dojo-wasm.js', 'storage.js', 'boot.js'] });
   
   const ProgressBar = sb.DojoApp._ProgressBar;
   
@@ -314,7 +314,7 @@ test('ProgressBar percentages sum to exactly 100', async () => {
 
 test('ProgressBar with learned > 0: learned segment width and aria-label', async () => {
   const sb = { console: { warn() {}, log: console.log } };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/app.js'] });
+  loadBundle(sb, { skip: ['dojo-wasm.js', 'storage.js', 'boot.js'] });
   
   const ProgressBar = sb.DojoApp._ProgressBar;
   
