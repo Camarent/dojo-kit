@@ -23,6 +23,12 @@
 
   var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./session/util.js') : null);
 
+  var queuesMod = root.DojoSessionQueues || (typeof require === 'function' ? require('./session/queues.js') : null);
+
+  var countsMod = root.DojoSessionCounts || (typeof require === 'function' ? require('./session/counts.js') : null);
+
+  var overridesMod = root.DojoSessionOverrides || (typeof require === 'function' ? require('./session/overrides.js') : null);
+
   var hashString = util.hashString;
   var mulberry32 = util.mulberry32;
   var shuffledIndexes = util.shuffledIndexes;
@@ -81,58 +87,9 @@
         stimulusOf: stimulusOf,
         hasAudioLines: hasAudioLines,
         normalizeOpts: normalizeOpts,
-        applyLadderScale: applyLadderScale,
-        ladderForUnit: ladderForUnit,
         learnedStage: learnedStage,
-        getUnitThreshold: getUnitThreshold,
-        itemLadderFor: itemLadderFor,
-        dropForItem: dropForItem,
-        unitFieldKey: unitFieldKey,
-        unitConfig: unitConfig,
-        validateUnitOverrideField: validateUnitOverrideField,
-        getUnitSettingsOverride: getUnitSettingsOverride,
-        unitSettings: unitSettings,
-        scaleLadder: scaleLadder,
-        setUnitSetting: setUnitSetting,
         activeItems: activeItems,
         records: records,
-        scopedArgs: scopedArgs,
-        scopedRecords: scopedRecords,
-        scopedMemberList: scopedMemberList,
-        entityViewOf: entityViewOf,
-        groupFieldKey: groupFieldKey,
-        validateGroupOverrideField: validateGroupOverrideField,
-        groupSettings: groupSettings,
-        setGroupSetting: setGroupSetting,
-        groupCap: groupCap,
-        groupOrder: groupOrder,
-        dayStat: dayStat,
-        extraNewToday: extraNewToday,
-        extraGroup: extraGroup,
-        groupUsed: groupUsed,
-        groupedItemsUsedToday: groupedItemsUsedToday,
-        groupQueueArgs: groupQueueArgs,
-        globalNewPerDay: globalNewPerDay,
-        newAllowance: newAllowance,
-        buildUnitNewCaps: buildUnitNewCaps,
-        buildItemUnits: buildItemUnits,
-        resolveNewOrder: resolveNewOrder,
-        preferShared: preferShared,
-        unitIsExamOnly: unitIsExamOnly,
-        builtQueue: builtQueue,
-        rawBuiltQueue: rawBuiltQueue,
-        dailyQueue: dailyQueue,
-        counts: counts,
-        summarize: summarize,
-        groupCounts: groupCounts,
-        entityStates: entityStates,
-        matches: matches,
-        practiceQueue: practiceQueue,
-        weakIds: weakIds,
-        weakValidIds: weakValidIds,
-        weakQueue: weakQueue,
-        weakList: weakList,
-        placementQueue: placementQueue,
         examList: examList,
         findExam: findExam,
         timingGroups: timingGroups,
@@ -156,6 +113,87 @@
         discardDraft: discardDraft
       }
     };
+    var overrides = overridesMod.create(ctx);
+    ctx.fn.unitFieldKey = overrides.unitFieldKey;
+    var unitFieldKey = overrides.unitFieldKey;
+    ctx.fn.unitConfig = overrides.unitConfig;
+    var unitConfig = overrides.unitConfig;
+    ctx.fn.validateUnitOverrideField = overrides.validateUnitOverrideField;
+    var validateUnitOverrideField = overrides.validateUnitOverrideField;
+    ctx.fn.getUnitSettingsOverride = overrides.getUnitSettingsOverride;
+    var getUnitSettingsOverride = overrides.getUnitSettingsOverride;
+    ctx.fn.unitSettings = overrides.unitSettings;
+    var unitSettings = overrides.unitSettings;
+    ctx.fn.scaleLadder = overrides.scaleLadder;
+    var scaleLadder = overrides.scaleLadder;
+    ctx.fn.setUnitSetting = overrides.setUnitSetting;
+    var setUnitSetting = overrides.setUnitSetting;
+    ctx.fn.applyLadderScale = overrides.applyLadderScale;
+    var applyLadderScale = overrides.applyLadderScale;
+    ctx.fn.ladderForUnit = overrides.ladderForUnit;
+    var ladderForUnit = overrides.ladderForUnit;
+    ctx.fn.getUnitThreshold = overrides.getUnitThreshold;
+    var getUnitThreshold = overrides.getUnitThreshold;
+    ctx.fn.itemLadderFor = overrides.itemLadderFor;
+    var itemLadderFor = overrides.itemLadderFor;
+    ctx.fn.dropForItem = overrides.dropForItem;
+    var dropForItem = overrides.dropForItem;
+    ctx.fn.groupFieldKey = overrides.groupFieldKey;
+    var groupFieldKey = overrides.groupFieldKey;
+    ctx.fn.validateGroupOverrideField = overrides.validateGroupOverrideField;
+    var validateGroupOverrideField = overrides.validateGroupOverrideField;
+    ctx.fn.groupSettings = overrides.groupSettings;
+    var groupSettings = overrides.groupSettings;
+    ctx.fn.setGroupSetting = overrides.setGroupSetting;
+    var setGroupSetting = overrides.setGroupSetting;
+    var queues = queuesMod.create(ctx);
+    ctx.fn.scopedArgs = queues.scopedArgs;
+    ctx.fn.scopedRecords = queues.scopedRecords;
+    var scopedRecords = queues.scopedRecords;
+    ctx.fn.scopedMemberList = queues.scopedMemberList;
+    var scopedMemberList = queues.scopedMemberList;
+    ctx.fn.entityViewOf = queues.entityViewOf;
+    var entityViewOf = queues.entityViewOf;
+    ctx.fn.groupCap = queues.groupCap;
+    ctx.fn.groupOrder = queues.groupOrder;
+    ctx.fn.dayStat = queues.dayStat;
+    ctx.fn.extraNewToday = queues.extraNewToday;
+    ctx.fn.extraGroup = queues.extraGroup;
+    ctx.fn.groupUsed = queues.groupUsed;
+    ctx.fn.groupedItemsUsedToday = queues.groupedItemsUsedToday;
+    ctx.fn.groupQueueArgs = queues.groupQueueArgs;
+    ctx.fn.globalNewPerDay = queues.globalNewPerDay;
+    var globalNewPerDay = queues.globalNewPerDay;
+    ctx.fn.newAllowance = queues.newAllowance;
+    ctx.fn.buildUnitNewCaps = queues.buildUnitNewCaps;
+    ctx.fn.buildItemUnits = queues.buildItemUnits;
+    ctx.fn.resolveNewOrder = queues.resolveNewOrder;
+    ctx.fn.preferShared = queues.preferShared;
+    var preferShared = queues.preferShared;
+    ctx.fn.unitIsExamOnly = queues.unitIsExamOnly;
+    var unitIsExamOnly = queues.unitIsExamOnly;
+    ctx.fn.builtQueue = queues.builtQueue;
+    ctx.fn.rawBuiltQueue = queues.rawBuiltQueue;
+    ctx.fn.dailyQueue = queues.dailyQueue;
+    var dailyQueue = queues.dailyQueue;
+    ctx.fn.matches = queues.matches;
+    ctx.fn.practiceQueue = queues.practiceQueue;
+    var practiceQueue = queues.practiceQueue;
+    ctx.fn.weakIds = queues.weakIds;
+    ctx.fn.weakValidIds = queues.weakValidIds;
+    ctx.fn.weakQueue = queues.weakQueue;
+    var weakQueue = queues.weakQueue;
+    ctx.fn.weakList = queues.weakList;
+    var weakList = queues.weakList;
+    ctx.fn.placementQueue = queues.placementQueue;
+    var placementQueue = queues.placementQueue;
+    var countsApi = countsMod.create(ctx);
+    ctx.fn.counts = countsApi.counts;
+    var counts = countsApi.counts;
+    ctx.fn.summarize = countsApi.summarize;
+    ctx.fn.groupCounts = countsApi.groupCounts;
+    ctx.fn.entityStates = countsApi.entityStates;
+    var entityStates = countsApi.entityStates;
 
     function placementPerUnit() {
       return (course.placement && course.placement.perUnit) || 5;
@@ -185,128 +223,10 @@
       return item.normalize || course.normalize || null;
     }
 
-    function applyLadderScale(ladder, unitId) {
-      var scale = getUnitSettingsOverride(unitId).ladderScale;
-      return scale !== undefined && scale !== 1 && ladder && ladder.length ? scaleLadder(ladder, scale) : ladder;
-    }
-
-    function ladderForUnit(unitId) {
-      return applyLadderScale(unitConfig(unitId).ladder, unitId);
-    }
-
     function learnedStage() {
       var custom = course.learnedStage;
       if (Number.isInteger(custom) && custom >= 1) return custom;
       return DEFAULT_LEARNED_STAGE;
-    }
-
-    function getUnitThreshold(unitId) {
-      var courseThreshold = learnedStage();
-      var ladder = ladderForUnit(unitId);
-      if (!ladder || ladder.length === 0) return courseThreshold;
-      var maxStage = ladder.length - 1;
-      if (maxStage < courseThreshold) return maxStage;
-      return courseThreshold;
-    }
-
-    function itemLadderFor(item) {
-      return applyLadderScale(dojo.call('ladderForUnit', { course: course, unitId: item.unit, itemType: item.type }), item.unit);
-    }
-
-    function dropForItem(item) {
-      var override = getUnitSettingsOverride(item.unit);
-      if (override.dropOnWrong !== undefined) return override.dropOnWrong;
-      return dojo.call('dropForUnit', { course: course, unitId: item.unit, itemType: item.type });
-    }
-
-    var UNIT_OVERRIDE_FIELDS = ['newPerDay', 'ladderScale', 'dropOnWrong', 'newOrder'];
-
-    function unitFieldKey(unitId, field) {
-      return 'unit:' + unitId + ':' + field;
-    }
-
-    // Course-resolved unit config from WASM (no user overrides); user overrides are layered on top in JS.
-    function unitConfig(unitId) {
-      return dojo.call('unitConfig', { course: course, unitId: unitId });
-    }
-
-    function validateUnitOverrideField(k, v) {
-      if (k === 'newPerDay') return Number.isInteger(v) && v >= 0 && v <= 50;
-      if (k === 'ladderScale') return typeof v === 'number' && isFinite(v) && v >= 0.25 && v <= 4;
-      if (k === 'dropOnWrong') return Number.isInteger(v) && v >= 0 && v <= 10;
-      if (k === 'newOrder') return v === 'file' || v === 'random';
-      return false;
-    }
-
-    // Per-field keys `unit:<id>:<field>`; null is a tombstone and reads as absent.
-    function getUnitSettingsOverride(unitId) {
-      var settings = store.doc.settings || {};
-      var result = {};
-      UNIT_OVERRIDE_FIELDS.forEach(function (field) {
-        var raw = settings[unitFieldKey(unitId, field)];
-        if (raw !== undefined && raw !== null && validateUnitOverrideField(field, raw)) result[field] = raw;
-      });
-      return result;
-    }
-
-    function unitSettings(unitId) {
-      return getUnitSettingsOverride(unitId);
-    }
-
-    function scaleLadder(ladder, scale) {
-      if (scale === 1) return ladder;
-      var out = ladder.map(function (v) { return v === 0 ? 0 : Math.round(v * scale); });
-      for (var i = 1; i < out.length; i++) {
-        if (out[i] < out[i - 1]) out[i] = out[i - 1];
-      }
-      return out;
-    }
-
-    function setUnitSetting(unitId, patch) {
-      var validUnit = false;
-      var units = course.units || [];
-      for (var i = 0; i < units.length; i++) {
-        if (units[i].id === unitId) {
-          validUnit = true;
-          break;
-        }
-      }
-      if (!validUnit) return { error: 'unknown_unit' };
-
-      // Validate all fields in the patch first
-      for (var k in patch) {
-        if (Object.prototype.hasOwnProperty.call(patch, k) && patch[k] !== null && !validateUnitOverrideField(k, patch[k])) {
-          return { error: 'bad_value' };
-        }
-      }
-      
-      var settings = store.doc.settings || {};
-      var hasChange = false;
-      for (var pk in patch) {
-        if (!Object.prototype.hasOwnProperty.call(patch, pk)) continue;
-        var current = settings[unitFieldKey(unitId, pk)];
-        if (patch[pk] === null ? (current !== undefined && current !== null) : current !== patch[pk]) hasChange = true;
-      }
-      if (!hasChange) return {};
-
-      // Apply changes per-field
-      store.update(function (doc) {
-        doc.settings = doc.settings || {};
-        doc.settings.ts = doc.settings.ts || {};
-        for (var pk in patch) {
-          if (!Object.prototype.hasOwnProperty.call(patch, pk)) continue;
-          var fieldKey = unitFieldKey(unitId, pk);
-          if (patch[pk] === null) {
-            // Tombstone: store null to mark deletion
-            doc.settings[fieldKey] = null;
-          } else {
-            doc.settings[fieldKey] = patch[pk];
-          }
-          // Update timestamp for this field key
-          doc.settings.ts[fieldKey] = now();
-        }
-      });
-      return {};
     }
 
     function activeItems() {
@@ -318,7 +238,6 @@
     }
 
     // ---- Groups (course.groups): entity-based daily caps decided in WASM; JS passes maps and records stats ----
-    var GROUP_OVERRIDE_FIELDS = ['newPerDay', 'newOrder', 'onlyTags', 'extraRandom'];
     var groupList = Array.isArray(course.groups) ? course.groups : [];
     var groupById = {};
     var unitGroup = {};
@@ -353,576 +272,6 @@
       });
     })();
     var hasScope = Object.keys(scopedMembers).length > 0;
-
-    function scopedArgs() {
-      return hasScope ? { scopedMembers: scopedMembers } : null;
-    }
-
-    function scopedRecords(e) {
-      var recs = records();
-      var out = {};
-      entityMembers[e].forEach(function (id) { if (recs[id] !== undefined) out[id] = recs[id]; });
-      return out;
-    }
-
-    function scopedMemberList(e) {
-      return entityMembers[e].map(function (id) { return { id: id, retired: isRetired(byId[id]) }; });
-    }
-
-    function entityViewOf(e) {
-      return dojo.call('entityView', { members: scopedMemberList(e), records: scopedRecords(e) });
-    }
-
-    function groupFieldKey(groupId, field) {
-      return 'group:' + groupId + ':' + field;
-    }
-
-    function validateGroupOverrideField(k, v) {
-      if (k === 'newPerDay') return Number.isInteger(v) && v >= 0 && v <= 50;
-      if (k === 'newOrder') return v === 'file' || v === 'random';
-      if (k === 'onlyTags' || k === 'extraRandom') return typeof v === 'boolean';
-      return false;
-    }
-
-    // Per-field keys `group:<id>:<field>`; null is a tombstone and reads as absent.
-    function groupSettings(groupId) {
-      var settings = store.doc.settings || {};
-      var result = {};
-      GROUP_OVERRIDE_FIELDS.forEach(function (field) {
-        var raw = settings[groupFieldKey(groupId, field)];
-        if (raw !== undefined && raw !== null && validateGroupOverrideField(field, raw)) result[field] = raw;
-      });
-      return result;
-    }
-
-    function setGroupSetting(groupId, patch) {
-      if (!groupById[groupId]) return { error: 'unknown_group' };
-      for (var k in patch) {
-        if (Object.prototype.hasOwnProperty.call(patch, k) && (GROUP_OVERRIDE_FIELDS.indexOf(k) < 0 || (patch[k] !== null && !validateGroupOverrideField(k, patch[k])))) {
-          return { error: 'bad_value' };
-        }
-      }
-      var settings = store.doc.settings || {};
-      var hasChange = false;
-      for (var pk in patch) {
-        if (!Object.prototype.hasOwnProperty.call(patch, pk)) continue;
-        var current = settings[groupFieldKey(groupId, pk)];
-        if (patch[pk] === null ? (current !== undefined && current !== null) : current !== patch[pk]) hasChange = true;
-      }
-      if (!hasChange) return {};
-      store.update(function (doc) {
-        doc.settings = doc.settings || {};
-        doc.settings.ts = doc.settings.ts || {};
-        for (var pk in patch) {
-          if (!Object.prototype.hasOwnProperty.call(patch, pk)) continue;
-          var fieldKey = groupFieldKey(groupId, pk);
-          doc.settings[fieldKey] = patch[pk];
-          doc.settings.ts[fieldKey] = now();
-        }
-      });
-      return {};
-    }
-
-    // Effective daily entity cap: user override > course group newPerDay > null (uncapped).
-    function groupCap(g) {
-      var o = groupSettings(g.id);
-      if (o.newPerDay !== undefined) return o.newPerDay;
-      return typeof g.newPerDay === 'number' ? g.newPerDay : null;
-    }
-
-    function groupOrder(g) {
-      var o = groupSettings(g.id);
-      return o.newOrder !== undefined ? o.newOrder : (g.newOrder || 'file');
-    }
-
-    function dayStat(key) {
-      return (((store.doc.stats || {})[key]) || {})[today()] || 0;
-    }
-
-    function extraNewToday() {
-      return dayStat('extraNewByDay');
-    }
-
-    function extraGroup() {
-      for (var i = 0; i < groupList.length; i++) if (groupList[i].extraNew === true) return groupList[i];
-      return null;
-    }
-
-    function groupUsed() {
-      var used = {};
-      groupList.forEach(function (g) { used[GROUP_NEW_PREFIX + g.id] = dayStat(GROUP_NEW_PREFIX + g.id); });
-      return used;
-    }
-
-    // Items introduced today in capped groups do not consume the allowance of ungrouped units.
-    function groupedItemsUsedToday() {
-      var n = 0;
-      groupList.forEach(function (g) {
-        if (groupCap(g) === null) return;
-        (g.units || []).forEach(function (u) { if (unitGroup[u] === g.id) n += dayStat(UNIT_NEW_PREFIX + u); });
-      });
-      return n;
-    }
-
-    function groupQueueArgs() {
-      var caps = {};
-      var units = {};
-      var random = [];
-      groupList.forEach(function (g) {
-        var cap = groupCap(g);
-        if (cap === null) return;
-        caps[g.id] = cap;
-        units[g.id] = (g.units || []).filter(function (u) { return unitGroup[u] === g.id; });
-        if (groupOrder(g) === 'random') random.push(g.id);
-      });
-      if (!Object.keys(caps).length) return null;
-      return { itemEntities: itemEntities, groupNewCaps: caps, groupUnits: units, randomGroups: random, used: groupUsed(), day: today(), courseId: course.id || '' };
-    }
-
-    // User-level daily new-item cap (applies to units whose course sets no cap).
-    function globalNewPerDay() {
-      var settings = store.doc.settings || {};
-      return typeof settings.newPerDay === 'number' ? settings.newPerDay : DEFAULT_NEW_PER_DAY;
-    }
-
-    function newAllowance() {
-      var doc = store.doc;
-      var perDay = globalNewPerDay();
-      var used = (doc.stats && doc.stats.newByDay && doc.stats.newByDay[today()]) || 0;
-      var extra = (doc.stats && doc.stats.extraNewByDay && doc.stats.extraNewByDay[today()]) || 0;
-      if (groupList.length) {
-        used = Math.max(0, used - groupedItemsUsedToday());
-        if (extraGroup() && groupCap(extraGroup()) !== null) extra = 0;
-      }
-      return Math.max(0, perDay + extra - used);
-    }
-
-    function buildUnitNewCaps() {
-      var caps = {};
-      var units = course.units || [];
-      units.forEach(function (unit) {
-        var effectiveCap = unitConfig(unit.id).newPerDay;
-        var override = getUnitSettingsOverride(unit.id);
-        if (override.newPerDay !== undefined) effectiveCap = override.newPerDay;
-        if (effectiveCap !== null) {
-          var usedToday = (((store.doc.stats || {})[UNIT_NEW_PREFIX + unit.id]) || {})[today()] || 0;
-          caps[unit.id] = Math.max(0, Math.floor(effectiveCap) - usedToday);
-        }
-      });
-      return caps;
-    }
-
-    function buildItemUnits() {
-      var map = {};
-      items.forEach(function (item) {
-        if (item.unit) {
-          map[item.id] = item.unit;
-        }
-      });
-      return map;
-    }
-
-    function resolveNewOrder(unit) {
-      if (!unit) return 'file';
-      var override = getUnitSettingsOverride(unit.id);
-      return override.newOrder !== undefined ? override.newOrder : unitConfig(unit.id).newOrder;
-    }
-
-    // Items of ids outside examOnly units; ids itself when that leaves nothing.
-    function preferShared(ids) {
-      var eo = {};
-      (course.units || []).forEach(function (u) { if (u.examOnly === true) eo[u.id] = true; });
-      var unitOf = {};
-      items.forEach(function (it) { unitOf[it.id] = it.unit; });
-      var shared = ids.filter(function (id) { return !eo[unitOf[id]]; });
-      return shared.length > 0 ? shared : ids;
-    }
-
-    function unitIsExamOnly(unitId) {
-      return (course.units || []).some(function (u) { return u.id === unitId && u.examOnly === true; });
-    }
-
-    // Queue without examOnly items unless that would leave the whole queue empty.
-    function builtQueue() {
-      var q = rawBuiltQueue(true);
-      if (q.due.length + q.fresh.length > 0) return q;
-      return rawBuiltQueue(false);
-    }
-
-    function rawBuiltQueue(sharedOnly) {
-      var order = activeItems().map(function (it) { return it.id; });
-      if (sharedOnly) order = preferShared(order);
-
-      // Shuffle items within each random-order unit's own slots
-      var unitLookup = {};
-      (course.units || []).forEach(function (u) { unitLookup[u.id] = u; });
-
-      var itemUnit = {};
-      items.forEach(function (it) { itemUnit[it.id] = it.unit; });
-
-      // Group positions by unit
-      var unitPositions = {};
-      order.forEach(function (id, idx) {
-        var unitId = itemUnit[id];
-        if (!unitPositions[unitId]) unitPositions[unitId] = [];
-        unitPositions[unitId].push(idx);
-      });
-      
-      // Shuffle positions within each random-order unit
-      var shuffledOrder = order.slice();
-      for (var unitId in unitPositions) {
-        var positions = unitPositions[unitId];
-        var unit = unitLookup[unitId];
-        var inCappedGroup = unitGroup[unitId] !== undefined && groupCap(groupById[unitGroup[unitId]]) !== null;
-        if (!inCappedGroup && resolveNewOrder(unit) === 'random' && positions.length > 1) {
-          var seed = course.id + '|' + today() + '|' + unitId;
-          var perm = shuffledIndexes(positions.length, seed);
-          positions.forEach(function (pos, i) {
-            shuffledOrder[pos] = order[positions[perm[i]]];
-          });
-        }
-      }
-      order = shuffledOrder;
-      
-      var args = { items: records(), order: order, now: now(), newAllowance: newAllowance(), unitNewCaps: buildUnitNewCaps(), itemUnits: buildItemUnits() };
-      var sa = scopedArgs();
-      if (sa) args.scopedMembers = sa.scopedMembers;
-      var ga = groupQueueArgs();
-      if (!ga) return dojo.call('buildQueue', args);
-      Object.keys(ga).forEach(function (k) { args[k] = ga[k]; });
-      var xg = extraGroup();
-      var extra = extraNewToday();
-      var base = xg ? groupCap(xg) : null;
-      if (!xg || base === null || !(extra > 0)) return dojo.call('buildQueue', args);
-      var tags = xg.extraTags || [];
-      var tagFilter = tags.length > 0 && groupSettings(xg.id).onlyTags === true;
-      var extraRandom = groupSettings(xg.id).extraRandom === true;
-      if (!tagFilter && !extraRandom) {
-        args.groupNewCaps[xg.id] = base + extra;
-        return dojo.call('buildQueue', args);
-      }
-      // Two passes: the base share is picked as usual; entities beyond it are filtered by extraTags and/or drawn at random.
-      var q0 = dojo.call('buildQueue', args);
-      var inQ0 = {};
-      q0.fresh.forEach(function (id) { inQ0[id] = true; });
-      var xUnits = args.groupUnits[xg.id];
-      var recs = records();
-      var tagged = {};
-      items.forEach(function (it) {
-        if ((it.tags || []).some(function (t) { return tags.indexOf(t) >= 0; })) tagged[itemEntities[it.id]] = true;
-      });
-      var inGroup = {};
-      items.forEach(function (it) { if (xUnits.indexOf(it.unit) >= 0) inGroup[it.id] = true; });
-      var order2 = order.filter(function (id) {
-        return !inGroup[id] || recs[id] !== undefined || inQ0[id] || !tagFilter || tagged[itemEntities[id]];
-      });
-      var args2 = Object.assign({}, args, { order: order2 });
-      if (extraRandom) {
-        var slots = [];
-        order2.forEach(function (id, i) { if (inGroup[id] && recs[id] === undefined) slots.push(i); });
-        var baseEnt = {};
-        q0.fresh.forEach(function (id) { baseEnt[itemEntities[id]] = true; });
-        var head = [];
-        var rest = [];
-        var restOf = {};
-        slots.forEach(function (i) {
-          var id = order2[i];
-          var e = itemEntities[id];
-          if (baseEnt[e]) { head.push(id); return; }
-          if (!restOf[e]) { restOf[e] = []; rest.push(e); }
-          restOf[e].push(id);
-        });
-        var perm2 = shuffledIndexes(rest.length, (course.id || '') + '|' + today() + '|' + xg.id + '|extra');
-        var seq = head.slice();
-        perm2.forEach(function (pi) { restOf[rest[pi]].forEach(function (id) { seq.push(id); }); });
-        order2 = order2.slice();
-        slots.forEach(function (pos, i) { order2[pos] = seq[i]; });
-        args2.order = order2;
-        args2.randomGroups = (args.randomGroups || []).filter(function (gid) { return gid !== xg.id; });
-      }
-      var used = args.used[GROUP_NEW_PREFIX + xg.id] || 0;
-      var extraLeft = Math.max(0, Math.min(extra, base + extra - used));
-      args2.groupNewCaps = Object.assign({}, args.groupNewCaps);
-      args2.groupNewCaps[xg.id] = Math.max(0, base - used) + extraLeft + used;
-      var q2 = dojo.call('buildQueue', args2);
-      var more = q2.fresh.filter(function (id) { return !inQ0[id] && inGroup[id]; });
-      var merged = { due: q0.due, fresh: q0.fresh.concat(more) };
-      if (q0.drills) merged.drills = Object.assign({}, q0.drills, q2.drills);
-      return merged;
-    }
-
-    function dailyQueue(groupId) {
-      var q = builtQueue();
-      var ids = q.due.concat(q.fresh);
-      if (groupId === undefined || groupId === null) return ids;
-      var unitOf = {};
-      items.forEach(function (it) { unitOf[it.id] = it.unit; });
-      function inGroup(id) { return unitGroup[unitOf[id]] === groupId; }
-      var got = ids.filter(inGroup);
-      if (got.length) return got;
-      var raw = rawBuiltQueue(false);
-      return raw.due.concat(raw.fresh).filter(inGroup);
-    }
-
-    function counts() {
-      var active = activeItems();
-      var recs = records();
-      var byUnit = {};
-      var due = 0;
-      var fresh = 0;
-      var learning = 0;
-      var learned = 0;
-      var thresholdCache = new Map();
-      var views = {};
-      var dueSeen = {};
-      active.forEach(function (it) {
-        var u = byUnit[it.unit] || (byUnit[it.unit] = { total: 0, due: 0, fresh: 0, learning: 0, learned: 0 });
-        u.total++;
-        var rec = recs[it.id];
-        var se = scopedEntityOf[it.id];
-        if (se !== undefined) {
-          if (!(se in views)) views[se] = entityViewOf(se);
-          rec = views[se] === null ? undefined : views[se];
-        }
-        if (dojo.call('isNew', { rec: rec })) {
-          u.fresh++; fresh++;
-        } else {
-          var stage = rec ? rec.s : undefined;
-          var unitThreshold = thresholdCache.get(it.unit);
-          if (unitThreshold === undefined) {
-            unitThreshold = getUnitThreshold(it.unit);
-            thresholdCache.set(it.unit, unitThreshold);
-          }
-          if (stage !== undefined && stage >= unitThreshold) {
-            u.learned++; learned++;
-          } else {
-            u.learning++; learning++;
-          }
-          if (dojo.call('isDue', { rec: rec, now: now() }) && (se === undefined || !dueSeen[se])) {
-            if (se !== undefined) dueSeen[se] = true;
-            u.due++; due++;
-          }
-        }
-      });
-      var bq = builtQueue();
-      var newToday = bq.fresh.length;
-      var totals = { total: active.length, fresh: fresh, learning: learning, learned: learned };
-      var out = { total: items.length, active: active.length, due: due, fresh: fresh, learning: learning, learned: learned, newToday: newToday, queue: bq.due.length + bq.fresh.length, byUnit: byUnit, totals: totals };
-      if (groupList.length || (course.bars && course.bars.length)) {
-        var gc = groupCounts();
-        out.groups = gc.groups;
-        out.bars = gc.bars;
-        if (groupList.length) out.summary = summarize(gc.groups, byUnit, bq);
-      }
-      return out;
-    }
-
-    // Home summary of a course with groups, consistent with the group cards: due = group due (entities) + due items of
-    // ungrouped units; newToday = group newToday (entities) + fresh items of ungrouped units in today's queue.
-    function summarize(groups, byUnit, bq) {
-      var due = 0;
-      var newToday = 0;
-      Object.keys(groups).forEach(function (id) { due += groups[id].due; newToday += groups[id].newToday; });
-      var unitOf = {};
-      items.forEach(function (it) { unitOf[it.id] = it.unit; });
-      Object.keys(byUnit).forEach(function (u) { if (!(u in unitGroup)) due += byUnit[u].due; });
-      bq.fresh.forEach(function (id) { if (!(unitOf[id] in unitGroup)) newToday++; });
-      return { due: due, newToday: newToday, queue: bq.due.length + bq.fresh.length };
-    }
-
-    // Entity-level counts from WASM; the course copy carries the user's per-group newPerDay override.
-    function groupCounts() {
-      var c = Object.assign({}, course, {
-        groups: groupList.map(function (g) {
-          var cap = groupCap(g);
-          var copy = Object.assign({}, g);
-          if (cap === null) delete copy.newPerDay; else copy.newPerDay = cap;
-          return copy;
-        })
-      });
-      var meta = items.map(function (it) {
-        return { id: it.id, unit: it.unit, entity: itemEntities[it.id], tags: it.tags || [], retired: isRetired(it) };
-      });
-      var gargs = { course: c, items: meta, records: records(), now: now(), used: groupUsed(), extraNew: extraNewToday() };
-      if (hasScope) gargs.scopedEntities = Object.keys(scopedMembers);
-      return dojo.call('groupCounts', gargs);
-    }
-
-    // Per-entity catalog summary from WASM `entityStates`: [{id, members, started, minStage, due, learned, atLearned}].
-    function entityStates() {
-      var meta = items.map(function (it) { return { id: it.id, entity: itemEntities[it.id], retired: isRetired(it) }; });
-      var eargs = { items: meta, records: records(), now: now(), learnedStage: learnedStage() };
-      if (hasScope) eargs.scopedEntities = Object.keys(scopedMembers);
-      return dojo.call('entityStates', eargs);
-    }
-
-    function matches(item, opts) {
-      if (opts.units && opts.units.indexOf(item.unit) < 0) return false;
-      if (opts.types && opts.types.indexOf(item.type) < 0) return false;
-      if (opts.tags && !(item.tags || []).some(function (t) { return opts.tags.indexOf(t) >= 0; })) return false;
-      return true;
-    }
-
-    function practiceQueue(opts) {
-      var recs = records();
-      var t = now();
-      var rows = activeItems().filter(function (it) { return matches(it, opts); }).map(function (it, i) {
-        var rec = recs[it.id];
-        var due = dojo.call('isDue', { rec: rec, now: t });
-        return { id: it.id, due: due ? 0 : 1, last: (rec && rec.last) || 0, i: i };
-      });
-      rows.sort(function (a, b) { return a.due - b.due || a.last - b.last || a.i - b.i; });
-      var all = rows.map(function (r) { return r.id; });
-      var shared = preferShared(all);
-      return shared.slice(0, opts.limit || DEFAULT_PRACTICE_LIMIT);
-    }
-
-    // Weakest ids among shared items; among all valid ones when no shared item is weak.
-    function weakIds(valid, limit) {
-      var all = Object.keys(valid);
-      var shared = preferShared(all);
-      if (shared.length < all.length) {
-        var sv = {};
-        shared.forEach(function (id) { sv[id] = true; });
-        var ids = dojo.call('weakest', { items: records(), limit: limit, validIds: sv });
-        if (ids.length > 0) return ids;
-      }
-      return dojo.call('weakest', { items: records(), limit: limit, validIds: valid });
-    }
-    function weakValidIds() {
-      var valid = {}, recs = records(), seenEntity = {};
-      activeItems().forEach(function (it) {
-        var se = scopedEntityOf[it.id];
-        if (se !== undefined) {
-          var r = recs[it.id];
-          if (seenEntity[se] || !r || !(r.bad > 0)) return;
-          seenEntity[se] = true;
-        }
-        valid[it.id] = true;
-      });
-      return valid;
-    }
-    function weakQueue(opts) {
-      var valid = weakValidIds();
-      return weakIds(valid, opts.limit || DEFAULT_WEAK_LIMIT);
-    }
-    function weakList(limit) {
-      var valid = weakValidIds();
-      var ids = weakIds(valid, limit);
-      return ids.map(function (id) { return { id: id, prompt: byId[id] ? byId[id].prompt : '' }; });
-    }
-    function placementQueue(opts) {
-      var mode = placementMode();
-      var perUnit = opts.perUnit || placementPerUnit();
-      var sessionSeed = opts.seed;
-      
-      if (mode === 'self') {
-        var sampled = [];
-        var units = course.units || [];
-        units.forEach(function (unit) {
-          if (unit.placement === false) return;
-          var unitItems = activeItems().filter(function (it) { return it.unit === unit.id; });
-          if (unitItems.length === 0) return;
-          var count = Math.min(perUnit, unitItems.length);
-          var indices = shuffledIndexes(unitItems.length, sessionSeed + '|' + unit.id).slice(0, count);
-          indices.forEach(function (idx) { sampled.push(unitItems[idx].id); });
-        });
-        return sampled;
-      }
-      
-      // Check mode: skip card items, mix types, interleave units
-      var SELF_RATED_TYPES = ['card'];
-      var units = course.units || [];
-      var includedUnits = units.filter(function (unit) { return unit.placement !== false; });
-      
-      // Filter items: active, not self-rated, in included units
-      var allItems = activeItems().filter(function (it) {
-        return SELF_RATED_TYPES.indexOf(it.type) < 0 && 
-               includedUnits.some(function (u) { return u.id === it.unit; });
-      });
-      
-      if (allItems.length === 0) return [];
-      
-      // Group by unit
-      var itemsByUnit = {};
-      allItems.forEach(function (item) {
-        if (!itemsByUnit[item.unit]) itemsByUnit[item.unit] = [];
-        itemsByUnit[item.unit].push(item);
-      });
-      
-      // For each unit, group by type
-      var byUnitAndType = {};
-      Object.keys(itemsByUnit).forEach(function (unitId) {
-        byUnitAndType[unitId] = {};
-        itemsByUnit[unitId].forEach(function (item) {
-          if (!byUnitAndType[unitId][item.type]) byUnitAndType[unitId][item.type] = [];
-          byUnitAndType[unitId][item.type].push(item);
-        });
-      });
-      
-      // Sample per unit with mixed types via round-robin
-      var sampledByUnit = {};
-      var unitIds = Object.keys(byUnitAndType);
-      
-      unitIds.forEach(function (unitId) {
-        var types = Object.keys(byUnitAndType[unitId]);
-        var maxForUnit = Math.min(perUnit, itemsByUnit[unitId].length);
-        
-        // Deterministic type order from seed
-        var typeOrder = types.slice();
-        var typeSeed = hashString(sessionSeed + '|' + unitId);
-        var typeRand = mulberry32(typeSeed);
-        typeOrder.sort(function (a, b) {
-          var ra = typeRand();
-          var rb = typeRand();
-          return ra < rb ? -1 : ra > rb ? 1 : 0;
-        });
-        
-        // Collect items round-robin by type
-        var collected = [];
-        var typePos = {};
-        types.forEach(function (t) { typePos[t] = 0; });
-        
-        var typeIndex = 0;
-        while (collected.length < maxForUnit) {
-          var typeKey = typeOrder[typeIndex % typeOrder.length];
-          var items = byUnitAndType[unitId][typeKey];
-          var pos = typePos[typeKey];
-          
-          if (pos < items.length) {
-            collected.push(items[pos]);
-            typePos[typeKey] = pos + 1;
-          }
-          
-          typeIndex++;
-          // If we've looped through all types and none had items, break
-          if (typeIndex >= typeOrder.length * 2) break;
-        }
-        
-        sampledByUnit[unitId] = collected;
-      });
-      
-      // Interleave units using round-robin
-      var result = [];
-      var unitPos = {};
-      unitIds.forEach(function (uid) { unitPos[uid] = 0; });
-      
-      var anyRemaining = true;
-      while (anyRemaining) {
-        anyRemaining = false;
-        unitIds.forEach(function (uid) {
-          var samples = sampledByUnit[uid];
-          var pos = unitPos[uid];
-          if (pos < samples.length) {
-            result.push(samples[pos].id);
-            unitPos[uid] = pos + 1;
-            anyRemaining = true;
-          }
-        });
-      }
-      
-      return result;
-    }
 
     function examList() {
       var list = [];
