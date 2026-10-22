@@ -33,7 +33,7 @@ Not installed: cargo-udeps (needs nightly; only stable present; cargo-machete co
 | Licenses/bans/sources | `cargo deny check` (deny.toml in repo; at setup fails only on foldhash = Zlib, flagged) |
 | Unused deps | `cargo machete --with-metadata` (exit 1 = found) |
 | Binary size | `cargo bloat --release -n 20 -p dojo-cli` ; `--crates` (no WASM support) |
-| Secrets | `gitleaks detect --no-banner -s . --redact` (clean at setup); fallback `git grep -nEi "(api[_-]?key\|secret\|token\|password)\s*[:=]"` |
+| Secrets | `gitleaks git --redact --no-banner .; gitleaks dir --redact --no-banner .` (clean at setup); fallback `git grep -nEi "(api[_-]?key\|secret\|token\|password)\s*[:=]"` |
 | ESLint | copy of flat config from js.md into /tmp/audit-tools/proj/eslint.config.js; `cd /tmp/audit-tools/proj && $B/eslint -c eslint.config.js web tools` (proj has symlinks web, tools) |
 | Dead code JS | `cd /tmp/audit-tools/proj && $B/knip --no-config-hints` (needs the package.json there; ran, exit 0) |
 | Duplicates JS | `$B/jscpd web --min-lines 10 --min-tokens 70 --threshold 5 --ignore "**/vendor/**,**/tests/**,**/n5/**"` |
@@ -44,6 +44,7 @@ target/, cargo-target/, dist/, node_modules/, the private-courses directory, tes
 
 ## Licenses
 Allowed: MIT, Apache-2.0, BSD-2/3-Clause, ISC, Unicode-3.0 (deny.toml). Anything else (Zlib, MPL, GPL, ...) = flag for owner decision.
+Zlib allowed only for foldhash (serde_json preserve_order dependency, required by CONTRACT); any other Zlib crate is flagged.
 
 ## Install missing
 Rust tools: `cargo install cargo-audit cargo-deny cargo-machete cargo-bloat --locked`; `rustup component add clippy`. JS: `mkdir -p /tmp/audit-tools && cd /tmp/audit-tools && npm init -y && npm i knip jscpd madge eslint`. gitleaks: download release tarball from github.com/gitleaks/gitleaks/releases, verify against checksums.txt, put binary in PATH.
