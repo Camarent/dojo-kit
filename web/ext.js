@@ -367,7 +367,7 @@
     var useConfig = typeof cfgOrLang === 'object' && cfgOrLang !== null;
     var keyPath = useConfig && cfgOrLang.key ? cfgOrLang.key : 'meta.kanji';
     var meaningPath = useConfig && cfgOrLang.meaning ? cfgOrLang.meaning : null;
-    var readingsPaths = useConfig && Array.isArray(cfgOrLang.readings) ? cfgOrLang.readings : ['meta.on', 'meta.kun'];
+    var readingsPaths = useConfig && Array.isArray(cfgOrLang.readings) ? cfgOrLang.readings : [];
     items.forEach(function (it) {
       if (!it || typeof it !== 'object') return;
       var kanjiChar = pathValue(it, keyPath);
@@ -376,10 +376,10 @@
       var meaning;
       if (useConfig && meaningPath) {
         meaning = pathValue(it, meaningPath);
+      } else if (typeof cfgOrLang === 'string') {
+        meaning = it.meta ? it.meta[cfgOrLang] : undefined;
       } else {
-        var lang = typeof cfgOrLang === 'string' ? cfgOrLang : null;
-        meaning = lang && it.meta ? it.meta[lang] : undefined;
-        if (typeof meaning !== 'string' || meaning.length === 0) meaning = it.meta && it.meta.meaning;
+        meaning = undefined;
       }
       if (typeof meaning !== 'string' || meaning.length === 0) return;  // skip items without a string meaning
       var on = undefined;

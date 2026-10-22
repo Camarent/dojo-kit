@@ -15,7 +15,7 @@ const kanjiItems = [
 ];
 
 const allItems = [wordItem].concat(kanjiItems);
-const course = { contentLanguage: 'en', tagLabels: { t1: 'Tag One' } };
+const course = { contentLanguage: 'en', breakdown: { key: 'meta.kanji', meaning: 'meta.en', readings: ['meta.on', 'meta.kun'] }, tagLabels: { t1: 'Tag One' } };
 
 async function start(o) {
   const items = o && o.items ? o.items : allItems;

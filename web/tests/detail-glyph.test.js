@@ -59,7 +59,7 @@ test('glyph path set but resolves to empty/missing -> no detail-glyph element ev
   assert.strictEqual(H.find(v, 'detail-glyph'), null, 'no detail-glyph when glyph path resolves to missing');
 });
 
-test('glyph unset -> old behaviour: meta.kanji shown', async () => {
+test('glyph unset -> no detail-glyph', async () => {
   const course = courseWithGlyph(undefined);
   const items = [
     choice('a', 'u1', { meta: { kanji: '旧' } })
@@ -71,10 +71,8 @@ test('glyph unset -> old behaviour: meta.kanji shown', async () => {
   cat.setState({ detailItem: items[0] });
   const v = cat.view();
   
-  // Check that detail-glyph is rendered with meta.kanji (old behavior)
-  const glyphEl = H.find(v, 'detail-glyph');
-  assert.ok(glyphEl, 'detail-glyph element exists');
-  assert.strictEqual(H.text(glyphEl), '旧', 'glyph shows meta.kanji value (fallback)');
+  // With no glyph config, no detail-glyph is shown
+  assert.strictEqual(H.find(v, 'detail-glyph'), null, 'no detail-glyph when glyph config unset');
 });
 
 test('glyph path with nested property works', async () => {

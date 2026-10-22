@@ -16,7 +16,7 @@ const items = [
   kj('月', 'месяц; луна', ['ゲツ'], ['つき'], [{ w: '三月', r: 'さんがつ', ru: 'март' }]),
   kj('雪', 'снег', ['セツ'], ['ゆき'], [])
 ];
-const course = { id: 'c', title: 'C', uiLanguage: 'en', contentLanguage: 'ru', markup: 'ruby', ruby: { skipTag: 'n5' }, units: [{ id: 'sd', title: 'S' }, { id: 'k', title: 'K' }] };
+const course = { id: 'c', title: 'C', uiLanguage: 'en', contentLanguage: 'ru', markup: 'ruby', ruby: { skipTag: 'n5' }, breakdown: { key: 'meta.kanji', meaning: 'meta.ru', readings: ['meta.on', 'meta.kun'] }, units: [{ id: 'sd', title: 'S' }, { id: 'k', title: 'K' }] };
 
 async function fb() {
   const m = await H.mount({ items: [items[0]].concat(items.slice(1)), course });

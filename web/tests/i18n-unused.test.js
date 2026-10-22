@@ -6,7 +6,7 @@ const path = require('path');
 
 const web = path.join(__dirname, '..');
 // Keys read only by course plugins (ctx.t); listed in the reference so courses can translate them.
-const PLUGIN_KEYS = new Set(['ja.part.phonetic', 'ja.part.meaning']);
+const PLUGIN_KEYS = new Set([]);
 const PLURAL = /\.(one|few|many|other)$/;
 
 function sources() {

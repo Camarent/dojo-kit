@@ -681,17 +681,14 @@
               ${(function () {
                 var course = p.course;
                 var detailConfig = (self.unitById[d.unit] && self.unitById[d.unit].detail) || course.detail;
-                var glyphValue = null;
-                if (detailConfig && detailConfig.glyph && typeof detailConfig.glyph === 'string' && detailConfig.glyph !== '') {
-                  glyphValue = resolvePath(d, detailConfig.glyph);
+                if (!detailConfig || !detailConfig.glyph || typeof detailConfig.glyph !== 'string' || detailConfig.glyph === '') {
+                  return null;
                 }
+                var glyphValue = resolvePath(d, detailConfig.glyph);
                 if (glyphValue !== null && typeof glyphValue === 'string' && glyphValue !== '') {
                   return html`<span class="kanji-ch" data-testid="detail-glyph">${glyphValue}</span>`;
                 }
-                if (detailConfig && detailConfig.glyph) {
-                  return null;
-                }
-                return d.meta && typeof d.meta.kanji === 'string' && d.meta.kanji ? html`<span class="kanji-ch" data-testid="detail-glyph">${d.meta.kanji}</span>` : null;
+                return null;
               })()}
               <h2>${t('catalog.detail')}</h2>
             </div>
@@ -1041,7 +1038,8 @@
   function kanjiRows(p, s, examMode) {
     var item = s.cur && s.cur.item;
     if (!item || !s.result || examMode || !DojoExt.kanjiBreakdown || !p.content || !p.content.items) return null;
-    var cfgOrLang = p.course.breakdown ? p.course.breakdown : p.course.contentLanguage;
+    var cfgOrLang = p.course.breakdown;
+    if (cfgOrLang === undefined) return null;
     var breakdown = DojoExt.kanjiBreakdown(item, p.content.items, cfgOrLang);
     if (!breakdown || !breakdown.length) return null;
     var t = p.t;
