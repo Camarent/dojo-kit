@@ -95,6 +95,18 @@ pub enum ItemType {
 }
 
 impl ItemType {
+    /// All item types in canonical stats order.
+    pub const ALL: [ItemType; 8] = [
+        ItemType::Choice,
+        ItemType::Gap,
+        ItemType::Card,
+        ItemType::Multi,
+        ItemType::Match,
+        ItemType::Order,
+        ItemType::Cloze,
+        ItemType::Numeric,
+    ];
+
     /// True for types the learner rates themselves (only `card`); all others grade to a boolean.
     pub fn is_self_rated(self) -> bool {
         self == ItemType::Card
@@ -1074,4 +1086,15 @@ fn parse_jsonl<T: serde::de::DeserializeOwned>(text: &str) -> ParsedJsonl<T> {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod all_tests {
+    use super::ItemType;
+
+    #[test]
+    fn all_is_canonical_order() {
+        let names: Vec<&str> = ItemType::ALL.iter().map(|t| t.as_str()).collect();
+        assert_eq!(names, ["choice", "gap", "card", "multi", "match", "order", "cloze", "numeric"]);
+    }
 }

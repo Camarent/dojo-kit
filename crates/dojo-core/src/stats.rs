@@ -2,32 +2,6 @@ use crate::content::{Course, Item, ItemType, Status};
 use serde::{Serialize, Deserialize};
 use std::collections::{BTreeMap, HashMap};
 
-/// Fixed order for item types in stats output.
-const TYPE_ORDER: [ItemType; 8] = [
-    ItemType::Choice,
-    ItemType::Gap,
-    ItemType::Card,
-    ItemType::Multi,
-    ItemType::Match,
-    ItemType::Order,
-    ItemType::Cloze,
-    ItemType::Numeric,
-];
-
-/// Type name for a given ItemType.
-fn type_name(t: ItemType) -> &'static str {
-    match t {
-        ItemType::Choice => "choice",
-        ItemType::Gap => "gap",
-        ItemType::Card => "card",
-        ItemType::Multi => "multi",
-        ItemType::Match => "match",
-        ItemType::Order => "order",
-        ItemType::Cloze => "cloze",
-        ItemType::Numeric => "numeric",
-    }
-}
-
 /// Per-unit statistics.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UnitStats {
@@ -168,7 +142,7 @@ pub fn compute(course: &Course, items: &[Item]) -> Stats {
     }).collect();
 
     // Initialize totals
-    let mut total_active: BTreeMap<String, usize> = TYPE_ORDER.iter().map(|t| (type_name(*t).to_string(), 0)).collect();
+    let mut total_active: BTreeMap<String, usize> = ItemType::ALL.iter().map(|t| (t.as_str().to_string(), 0)).collect();
     let mut total_retired = 0;
     let mut tag_counts: HashMap<String, usize> = HashMap::new();
     let mut unit_item_count: HashMap<usize, usize> = HashMap::new();
@@ -182,14 +156,13 @@ pub fn compute(course: &Course, items: &[Item]) -> Stats {
         };
 
         let it = item_type(item);
-        let type_name = type_name(it);
 
         if is_retired(item) {
             unit_stats[unit_idx].retired += 1;
             total_retired += 1;
         } else {
-            *unit_stats[unit_idx].active.entry(type_name.to_string()).or_insert(0) += 1;
-            *total_active.entry(type_name.to_string()).or_insert(0) += 1;
+            *unit_stats[unit_idx].active.entry(it.as_str().to_string()).or_insert(0) += 1;
+            *total_active.entry(it.as_str().to_string()).or_insert(0) += 1;
             
             // Count tags
             for tag in item_tags(item) {
@@ -216,7 +189,7 @@ pub fn compute(course: &Course, items: &[Item]) -> Stats {
                     .filter(|item| !is_self_rated(item)) // due-for-exam-eligible
                     .filter(|item| section.units.as_ref().is_none_or(|units| units.iter().any(|u| u == item_unit(item))))
                     .filter(|item| section.tags.as_ref().is_none_or(|tags| item_tags(item).iter().any(|t| tags.contains(t))))
-                    .filter(|item| section.types.as_ref().is_none_or(|types| types.iter().any(|t| t == type_name(item_type(item)))))
+                    .filter(|item| section.types.as_ref().is_none_or(|types| types.iter().any(|t| t == item_type(item).as_str())))
                     .count();
                 sections.push(ExamSectionStats {
                     title: section.title.clone(),

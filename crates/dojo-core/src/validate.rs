@@ -139,15 +139,8 @@ const MIN_LEAK_CHARS: usize = 3;
 const COURSE_FILE: &str = "course.json";
 const LOCK_FILE: &str = "ids.lock";
 
-const ALL_TYPES: [ItemType; 8] =
-    [ItemType::Choice, ItemType::Gap, ItemType::Card, ItemType::Multi, ItemType::Match, ItemType::Order, ItemType::Cloze, ItemType::Numeric];
-
-fn type_name(t: ItemType) -> &'static str {
-    t.as_str()
-}
-
 fn parse_type(name: &str) -> Option<ItemType> {
-    ALL_TYPES.into_iter().find(|t| t.as_str() == name)
+    ItemType::ALL.into_iter().find(|t| t.as_str() == name)
 }
 
 fn is_valid_id(id: &str) -> bool {
@@ -181,16 +174,7 @@ fn validate_fold(fold: &[(String, String)], file: &str, line: usize, sink: &mut 
     }
 }
 
-/// True when `id` matches `^[a-z0-9][a-z0-9_-]{0,47}$` (course and unit ids).
-pub fn is_valid_course_id(id: &str) -> bool {
-    let len = id.len();
-    if len == 0 || len > 48 {
-        return false;
-    }
-    let mut chars = id.chars();
-    let first_ok = chars.next().is_some_and(|c| c.is_ascii_lowercase() || c.is_ascii_digit());
-    first_ok && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_')
-}
+pub use crate::slug::is_valid_course_id;
 
 fn check_plugin_path(path: &str, kind: &str, sink: &mut Sink) {
     let absolute = path.starts_with('/') || path.starts_with('\\') || path.as_bytes().get(1) == Some(&b':');
@@ -316,7 +300,7 @@ fn check_prompt_type_mismatch(prompt: &str, item_type: ItemType, sink: &mut Sink
     
     for (trigger_word, incompatible_types) in mismatch_data {
         if prompt_lower.contains(trigger_word) && incompatible_types.contains(&item_type) {
-            sink.warning("prompt_type_mismatch", file, line, format!("item '{id}' prompt contains '{trigger_word}' but type '{}' has no text input", type_name(item_type)));
+            sink.warning("prompt_type_mismatch", file, line, format!("item '{id}' prompt contains '{trigger_word}' but type '{}' has no text input", item_type.as_str()));
             return; // Only report one mismatch per item
         }
     }
@@ -910,7 +894,7 @@ fn check_exam_sizes(course: &Course, items: &[(&str, usize, &Item)], sink: &mut 
                 .filter(|(_, _, item)| !item.is_retired())
                 .filter(|(_, _, item)| section.units.as_ref().is_none_or(|u| u.iter().any(|x| x == item.unit())))
                 .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item_tags(item).iter().any(|x| t.contains(x))))
-                .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == type_name(item.item_type()))))
+                .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == item.item_type().as_str())))
                 .count();
             if section.count > matching {
                 sink.warning(
@@ -927,7 +911,7 @@ fn check_exam_sizes(course: &Course, items: &[(&str, usize, &Item)], sink: &mut 
                 .filter(|(_, _, item)| !item.is_retired())
                 .filter(|(_, _, item)| section.units.as_ref().is_none_or(|u| u.iter().any(|x| x == item.unit())))
                 .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item_tags(item).iter().any(|x| t.contains(x))))
-                .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == type_name(item.item_type()))))
+                .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == item.item_type().as_str())))
                 .filter(|(_, _, item)| {
                     course.units.iter().any(|u| u.id == item.unit() && u.exam_only == Some(true))
                 })
@@ -1678,7 +1662,7 @@ pub fn validate_all(
                         "type_not_enabled",
                         name,
                         line,
-                        format!("item '{id}' has type '{}' which is not in course.types", type_name(item.item_type())),
+                        format!("item '{id}' has type '{}' which is not in course.types", item.item_type().as_str()),
                     );
                 }
             }
@@ -1815,7 +1799,7 @@ pub fn validate_all(
                 let course_norm = course.as_ref().and_then(|c| c.normalize.as_ref());
                 let default_norm = Normalize::default();
                 let norm_opts = fold_norm(item_norm, course_norm).unwrap_or(&default_norm);
-                let key = (type_name(item.item_type()), normalize(item_prompt(item), norm_opts), item_body(item));
+                let key = (item.item_type().as_str(), normalize(item_prompt(item), norm_opts), item_body(item));
                 match first_prompt.get(&key) {
                     Some((f, l)) => sink.warning("duplicate_prompt", name, line, format!("item '{id}' repeats the prompt at {f}:{l}")),
                     None => {
@@ -1879,7 +1863,7 @@ pub fn validate_all(
             }
             if !item.is_retired() {
                 if let Some(locked_type) = lock.types.get(item.id()) {
-                    let current_type = type_name(item.item_type());
+                    let current_type = item.item_type().as_str();
                     if locked_type.as_str() != current_type {
                         let message = format!(
                             "id '{}' type changed from '{}' to '{}'",

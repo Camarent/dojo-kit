@@ -615,39 +615,13 @@ fn run_build(args: &[String]) -> Result<u8, String> {
     Ok(0)
 }
 
-/// Type name for a given ItemType.
-fn type_name(t: ItemType) -> &'static str {
-    match t {
-        ItemType::Choice => "choice",
-        ItemType::Gap => "gap",
-        ItemType::Card => "card",
-        ItemType::Multi => "multi",
-        ItemType::Match => "match",
-        ItemType::Order => "order",
-        ItemType::Cloze => "cloze",
-        ItemType::Numeric => "numeric",
-    }
-}
-
-/// Fixed order for item types in stats output.
-const TYPE_ORDER: [ItemType; 8] = [
-    ItemType::Choice,
-    ItemType::Gap,
-    ItemType::Card,
-    ItemType::Multi,
-    ItemType::Match,
-    ItemType::Order,
-    ItemType::Cloze,
-    ItemType::Numeric,
-];
-
 fn print_stats_text(stats: &Stats) {
     for unit in &stats.units {
         let mut active_counts: Vec<(&str, usize)> = Vec::new();
-        for t in &TYPE_ORDER {
-            if let Some(&count) = unit.active.get(type_name(*t)) {
+        for t in &ItemType::ALL {
+            if let Some(&count) = unit.active.get(t.as_str()) {
                 if count > 0 {
-                    active_counts.push((type_name(*t), count));
+                    active_counts.push((t.as_str(), count));
                 }
             }
         }
@@ -661,10 +635,10 @@ fn print_stats_text(stats: &Stats) {
     }
 
     let mut total_active_counts: Vec<(&str, usize)> = Vec::new();
-    for t in &TYPE_ORDER {
-        if let Some(&count) = stats.totals.active.get(type_name(*t)) {
+    for t in &ItemType::ALL {
+        if let Some(&count) = stats.totals.active.get(t.as_str()) {
             if count > 0 {
-                total_active_counts.push((type_name(*t), count));
+                total_active_counts.push((t.as_str(), count));
             }
         }
     }
