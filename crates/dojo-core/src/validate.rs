@@ -40,7 +40,7 @@ pub struct SourceFile {
 }
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 89] = [
+pub const CODES: [(&str, Severity, &str); 90] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -125,7 +125,8 @@ pub const CODES: [(&str, Severity, &str); 89] = [
     ("bar_matches_zero", Severity::Warning, "bar/extraTags match 0 items"),
     ("empty_detail_key", Severity::Error, "detail field has an empty key"),
     ("empty_detail_glyph", Severity::Error, "detail glyph path must not be empty"),
-    ("unknown_detail_type", Severity::Error, "detail field has an unknown type (must be text, list, or objects)"),
+    ("unknown_detail_type", Severity::Error, "detail field has an unknown type (must be text, list, objects, table, or pairs)"),
+    ("bad_detail_keys", Severity::Error, "detail field keys must be two non-empty strings and only on type pairs"),
     ("bad_pass_rule", Severity::Error, "pass.mode is points but scoring is empty"),
     ("pass_mark_ignored", Severity::Warning, "pass.mode resolves to points but passMark is set"),
     ("pass_rule_no_source", Severity::Warning, "pass.basis is official but source is missing"),
@@ -1039,8 +1040,16 @@ fn check_detail_fields(fields: &[DetailField], file: &str, sink: &mut Sink) {
         }
         
         if let Some(ref typ) = field.r#type {
-            if !matches!(typ.as_str(), "text" | "list" | "objects") {
+            if !matches!(typ.as_str(), "text" | "list" | "objects" | "table" | "pairs") {
                 sink.error("unknown_detail_type", file, 0, format!("detail field `{}` has unknown type `{}`", field.key, typ));
+            }
+        }
+
+        if let Some(ref keys) = field.keys {
+            if field.r#type.as_deref() != Some("pairs") {
+                sink.error("bad_detail_keys", file, 0, format!("detail field `{}` has `keys` but is not type `pairs`", field.key));
+            } else if keys.len() != 2 || keys.iter().any(|k| k.is_empty()) {
+                sink.error("bad_detail_keys", file, 0, format!("detail field `{}` keys must be two non-empty strings", field.key));
             }
         }
 

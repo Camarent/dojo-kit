@@ -420,7 +420,7 @@
           ]
         },
         "type": {
-          "description": "Field type: \"text\" (default), \"list\", or \"objects\".",
+          "description": "Field type: \"text\" (default), \"list\", \"objects\", \"table\", or \"pairs\".",
           "type": [
             "string",
             "null"
@@ -434,6 +434,16 @@
           ],
           "items": {
             "$ref": "#/$defs/DetailField"
+          }
+        },
+        "keys": {
+          "description": "Two entry keys (left, right) for the \"pairs\" type; defaults to `a` and `b`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
           }
         }
       },

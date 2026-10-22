@@ -448,6 +448,35 @@
             content = html`<table class="detail-objects" data-testid=${'detail-' + field.key + '-table'}>${rows}</table>`;
           }
         }
+      } else if (type === 'table') {
+        // Render as table with title, head, and rows
+        if (value && typeof value === 'object' && Array.isArray(value.head) && Array.isArray(value.rows) && value.rows.length > 0) {
+          var headCells = value.head.map(function (h, hi) {
+            return html`<th data-testid=${'detail-' + field.key + '-head-' + hi}>${typeof h === 'string' ? r(h) : String(h)}</th>`;
+          });
+          var bodyRows = value.rows.map(function (row, ri) {
+            var cells = (Array.isArray(row) ? row : []).map(function (c, ci) {
+              return html`<td data-testid=${'detail-' + field.key + '-row-' + ri + '-col-' + ci}>${typeof c === 'string' ? r(c) : String(c)}</td>`;
+            });
+            return html`<tr data-testid=${'detail-' + field.key + '-row-' + ri}>${cells}</tr>`;
+          });
+          content = html`<table class="detail-table" data-testid=${'detail-' + field.key + '-table'}>${value.title ? html`<caption data-testid=${'detail-' + field.key + '-title'}>${r(value.title)}</caption>` : null}<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+        }
+      } else if (type === 'pairs') {
+        // Render as pairs: value is array of {a, b} or with configurable keys
+        if (Array.isArray(value) && value.length > 0) {
+          var leftKey = field.keys && field.keys[0] ? field.keys[0] : 'a';
+          var rightKey = field.keys && field.keys[1] ? field.keys[1] : 'b';
+          var items = value.map(function (entry, i) {
+            var left = entry[leftKey];
+            var right = entry[rightKey];
+            if (left === undefined || right === undefined) return null;
+            return html`<tr data-testid=${'detail-' + field.key + '-pair-' + i}><td data-testid=${'detail-' + field.key + '-pair-' + i + '-a'}>${typeof left === 'string' ? r(left) : String(left)}</td><td data-testid=${'detail-' + field.key + '-pair-' + i + '-b'}>${typeof right === 'string' ? r(right) : String(right)}</td></tr>`;
+          }).filter(Boolean);
+          if (items.length > 0) {
+            content = html`<table class="detail-pairs" data-testid=${'detail-' + field.key + '-pairs'}>${items}</table>`;
+          }
+        }
       }
       
       if (content) {

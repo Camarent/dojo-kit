@@ -1399,7 +1399,7 @@ fn mixed_entity_scope() {
 
 #[test]
 fn unknown_detail_type_is_an_error() {
-    fires(&with_course(r#""detail":{"fields":[{"key":"meta.a","type":"table"}]}"#), &[CHOICE], "unknown_detail_type");
+    fires(&with_course(r#""detail":{"fields":[{"key":"meta.a","type":"unknown"}]}"#), &[CHOICE], "unknown_detail_type");
 }
 
 #[test]
@@ -1407,6 +1407,26 @@ fn known_detail_types_pass() {
     let c = with_course(r#""detail":{"fields":[{"key":"meta.a","type":"objects","fields":[{"key":"x","type":"list"}]},{"key":"meta.b"}]}"#);
     let d = run(&c, &[CHOICE]);
     assert!(!d.iter().any(|d| d.code.contains("detail")), "{d:?}");
+}
+
+#[test]
+fn table_and_pairs_with_keys_pass() {
+    let c = with_course(r#""detail":{"fields":[{"key":"meta.t","type":"table"},{"key":"meta.p","type":"pairs","keys":["jp","ru"]},{"key":"meta.q","type":"pairs"}]}"#);
+    let d = run(&c, &[CHOICE]);
+    assert!(!d.iter().any(|d| d.code.contains("detail")), "{d:?}");
+}
+
+#[test]
+fn unknown_detail_type_rejected_alongside_valid_ones() {
+    let c = with_course(r#""detail":{"fields":[{"key":"meta.t","type":"table"},{"key":"meta.x","type":"grid"}]}"#);
+    let d = run(&c, &[CHOICE]);
+    assert_eq!(d.iter().filter(|d| d.code == "unknown_detail_type").count(), 1, "{d:?}");
+}
+
+#[test]
+fn detail_keys_wrong_length_or_wrong_type_rejected() {
+    fires(&with_course(r#""detail":{"fields":[{"key":"meta.p","type":"pairs","keys":["jp"]}]}"#), &[CHOICE], "bad_detail_keys");
+    fires(&with_course(r#""detail":{"fields":[{"key":"meta.p","type":"list","keys":["a","b"]}]}"#), &[CHOICE], "bad_detail_keys");
 }
 
 #[test]

@@ -468,12 +468,15 @@ pub struct DetailField {
     /// i18n key for the label (used when `label` is absent).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub label_key: Option<String>,
-    /// Field type: "text" (default), "list", or "objects".
+    /// Field type: "text" (default), "list", "objects", "table", or "pairs".
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "type")]
     pub r#type: Option<String>,
     /// Nested fields for objects type.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fields: Option<Vec<DetailField>>,
+    /// Two entry keys (left, right) for the "pairs" type; defaults to `a` and `b`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub keys: Option<Vec<String>>,
 }
 
 /// Detail configuration for declarative rendering from item.meta.

@@ -357,3 +357,5 @@ html.dojo-no-scroll { overflow: hidden !important; }
 }
 .session .feedback-detail { max-height: 18rem; overflow-y: auto; }
 [data-nofocusring]:focus-visible { outline: none; }
+.detail-table, .detail-pairs { border-collapse: collapse; width: 100%; }
+.detail-table th, .detail-table td, .detail-pairs td { border: 1px solid var(--border); padding: var(--space-1) var(--space-2); }
