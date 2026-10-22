@@ -1,229 +1,41 @@
 /*
  * ui/app.js — Preact + htm UI. Defines window.DojoApp = { start(opts), fail(root, err) }.
  * Globals expected: preact, htm, DojoStorage, DojoSession, DojoTypes, DojoExt (question UIs live in types/*.js). Course text is rendered through DojoExt.text.
- * Sections: helpers, small components, Home, PracticeSetup, Session, Results, Settings, App, start/fail.
  */
 (function (root) {
   'use strict';
 
   var h = preact.h;
   var Component = preact.Component;
-  var Fragment = preact.Fragment;
   var html = htm.bind(h);
   var DojoExt = root.DojoExt || {};
   var DojoI18n = root.DojoI18n || (typeof require !== 'undefined' ? require('./i18n.js') : null) || {};
 
-  // ---------- helpers ----------
-
-
-  // Load common UI helpers from common.js
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
 
-  // Load detail rendering helpers
-  var DojoDetail = root.DojoDetail || (typeof require !== 'undefined' ? require('./detail.js') : null) || {};
-
-  // Load catalog and home modules
   var DojoCatalog = root.DojoCatalog || (typeof require !== 'undefined' ? require('./catalog.js') : null) || {};
-  var DojoHome = root.DojoHome || (typeof require !== 'undefined' ? require('./home.js') : null) || {};
 
-  // Alias from catalog and home
   var CatalogScreen = DojoCatalog.CatalogScreen;
-  var GroupCard = DojoHome.GroupCard;
-  var Home = DojoHome.Home;
+  var Home = (root.DojoHome || (typeof require !== "undefined" ? require("./home.js") : null) || {}).Home;
 
-  // Alias moved functions to preserve existing references
-  var renderText = DojoCommon.renderText;
-  var answerReadings = DojoCommon.answerReadings;
-  var renderPrompt = DojoCommon.renderPrompt;
-  var renderTextAll = DojoCommon.renderTextAll;
-  var renderPromptEl = DojoCommon.renderPromptEl;
-  var renderPromptLine = DojoCommon.renderPromptLine;
-  var speechLines = DojoCommon.speechLines;
-  var speechCfg = DojoCommon.speechCfg;
-  var PlayButton = DojoCommon.PlayButton;
-  var Playback = DojoCommon.Playback;
-  var cls = DojoCommon.cls;
-  var Chip = DojoCommon.Chip;
-  var Stepper = DojoCommon.Stepper;
   var Dialog = DojoCommon.Dialog;
-  var StatusChip = DojoCommon.StatusChip;
   var ProgressBar = DojoCommon.ProgressBar;
-  var ProgressMeter = DojoCommon.ProgressMeter;
-  var Notice = DojoCommon.Notice;
   var Loading = DojoCommon.Loading;
   var daysLeft = DojoCommon.daysLeft;
   var applyTheme = DojoCommon.applyTheme;
-  var Speech = root.DojoSpeech || null;
 
-  // Alias from DojoDetail, or use local definitions if not available
-  var renderDeclarativeDetail = DojoDetail.renderDeclarativeDetail;
-  var renderIntroBody = DojoDetail.renderIntroBody;
-  var getMetaValue = DojoDetail.getMetaValue || function(item, key) {
-    if (!item || !item.meta || typeof item.meta !== 'object') return null;
-    var parts = key.replace(/^meta\./, "").split('.');
-    var value = item.meta;
-    for (var i = 0; i < parts.length; i++) {
-      var part = parts[i];
-      if (value === null || typeof value !== 'object') return null;
-      if (!Object.prototype.hasOwnProperty.call(value, part)) return null;
-      value = value[part];
-    }
-    return value;
-  };
-  var resolvePath = DojoDetail.resolvePath || function(obj, path) {
-    if (!obj || typeof obj !== 'object' || !path || typeof path !== 'string') return null;
-    var parts = path.split('.');
-    var value = obj;
-    for (var i = 0; i < parts.length; i++) {
-      var part = parts[i];
-      if (value === null || typeof value !== 'object') return null;
-      if (!Object.prototype.hasOwnProperty.call(value, part)) return null;
-      value = value[part];
-    }
-    return value;
-  };
-  var topicStage = DojoDetail.topicStage || function(es) {
-    if (!es || !es.started) return 'new';
-    return es.minStage >= 2 ? 'review' : 'learning';
-  };
-  var topicState = DojoDetail.topicState || function(es) {
-    if (!es || !es.started) return 'new';
-    if (es.due) return 'due';
-    return es.learned ? 'learned' : 'learning';
-  };
-  var topicMastery = DojoDetail.topicMastery || function(es) {
-    return es && es.members ? Math.round(100 * es.atLearned / es.members) : 0;
-  };
-  var topicTitle = DojoDetail.topicTitle || function(item, intro) {
-    var m = item.meta || {};
-    if (m.title) return m.title;
-    if (intro && typeof intro.title === 'string' && intro.title) return intro.title;
-    if (typeof item.prompt === 'string' && item.prompt) return item.prompt;
-    return item.entity || item.id;
-  };
-
-  function pad2(n) { return (n < 10 ? '0' : '') + n; }
-
-  function localDay(ms) {
-    var d = new Date(ms);
-    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
-  }
-
-  function fmtClock(ms) {
-    var s = Math.max(0, Math.round(ms / 1000));
-    return Math.floor(s / 60) + ':' + pad2(s % 60);
-  }
-
-  function percent(fraction) { return Math.round((fraction || 0) * 100); }
-
-  function uniqueSorted(list) {
-    var seen = {};
-    list.forEach(function (x) { seen[x] = true; });
-    return Object.keys(seen).sort();
-  }
-
-  function toggle(list, value) {
-    return list.indexOf(value) >= 0 ? list.filter(function (x) { return x !== value; }) : list.concat([value]);
-  }
-
-  function fmtExamDate(lang, key) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key || '');
-    if (!m) return '';
-    try {
-      return new Intl.DateTimeFormat(lang || 'en', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])));
-    } catch (e) { return key; }
-  }
-
-  function tagInfo(course, tag) {
-    if (typeof DojoSession !== 'undefined' && DojoSession.tagInfo) return DojoSession.tagInfo(course, tag);
-    var e = course && course.tagLabels && Object.prototype.hasOwnProperty.call(course.tagLabels, tag) ? course.tagLabels[tag] : null;
-    var label = typeof e === 'string' ? e : e && typeof e.label === 'string' ? e.label : '';
-    return { label: label || String(tag).toUpperCase(), internal: !!(e && typeof e === 'object' && e.kind === 'internal') };
-  }
-
-  function collectStrings(v, out, depth) {
-    if (typeof v === 'string') out.push(v);
-    else if (depth < 6 && Array.isArray(v)) v.forEach(function (x) { collectStrings(x, out, depth + 1); });
-    else if (depth < 6 && v && typeof v === 'object') Object.keys(v).forEach(function (k) { collectStrings(v[k], out, depth + 1); });
-    return out;
-  }
-
-  function captionFor(course, item, t) {
-    var caps = course && course.captions && typeof course.captions === 'object' ? course.captions : null;
-    var has = function (k) { return caps && Object.prototype.hasOwnProperty.call(caps, k) && typeof caps[k] === 'string' && caps[k]; };
-    var tags = item.tags || [];
-    for (var i = 0; i < tags.length; i++) if (has(tags[i])) return caps[tags[i]];
-    if (has(item.type)) return caps[item.type];
-    var key = 'session.caption.' + item.type;
-    var out = t(key);
-    return out === key ? '' : out;
-  }
-
-  function orderedGroupIds(course, groups) {
-    var ids = (course.groups || []).map(function (g) { return g.id; }).filter(function (id) { return groups[id] !== undefined; });
-    Object.keys(groups).forEach(function (id) { if (ids.indexOf(id) < 0) ids.push(id); });
-    return ids;
-  }
-
-  function Stimulus(p) {
-    var st = p.stimulus;
-    if (!st) return null;
-    var audio = p.audio;
-    var lines = audio ? speechLines(st) : [];
-    var speakable = lines.length > 0;
-    var showText = !st.hideText || (speakable && audio.status !== 'ok');
-    return html`<section class="stimulus" data-testid="stimulus">
-      ${st.title ? html`<h2 class="stimulus-title" data-testid="stimulus-title">${renderText(st.title)}</h2>` : null}
-      ${speakable && showText ? html`
-        <div class="qline">
-          <p class="qbody stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>
-          <${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />
-        </div>
-      ` : null}
-      ${showText && !speakable ? html`<p class="stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>` : null}
-      ${speakable && !showText ? html`<${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />` : null}
-    </section>`;
-  }
-
-
-  // ---------- Home ----------
-
-  
-
-  function kanjiRows(p, s, examMode) {
-    var item = s.cur && s.cur.item;
-    if (!item || !s.result || examMode || !DojoExt.kanjiBreakdown || !p.content || !p.content.items) return null;
-    var cfgOrLang = p.course.breakdown;
-    if (cfgOrLang === undefined) return null;
-    var breakdown = DojoExt.kanjiBreakdown(item, p.content.items, cfgOrLang);
-    if (!breakdown || !breakdown.length) return null;
-    var t = p.t;
-    return html`<ul class="kanji-rows" data-testid="kanji-rows">
-      <li class="muted" data-testid="kanji-label">${t('session.kanji')}</li>
-      ${breakdown.map(function (k) {
-        var onRead = (Array.isArray(k.on) && k.on.length > 0) ? k.on.join(' / ') : null;
-        var kunRead = (Array.isArray(k.kun) && k.kun.length > 0) ? k.kun.join(' / ') : null;
-        return html`<li class="kanji-row-grid" data-testid="kanji-row">
-          <span class="kanji-ch" data-testid="kanji-ch">${k.kanji}</span>
-          <span class="kanji-mean" data-testid="kanji-mean">${k.meaning}</span>
-          ${onRead || kunRead ? html`<span class="kanji-read muted" data-testid="kanji-read">
-            ${onRead ? html`<span data-testid="kanji-on">${onRead}</span>` : null}
-            ${onRead && kunRead ? ' / ' : ''}
-            ${kunRead ? html`<span data-testid="kanji-kun">${kunRead}</span>` : null}
-          </span>` : null}
-        </li>`;
-      })}
-    </ul>`;
-  }
+  var DojoStimulus = root.DojoStimulus || (typeof require !== 'undefined' ? require('./stimulus.js') : null) || {};
+  var shared = DojoStimulus.create();
+  var Stimulus = shared.Stimulus;
 
   var DojoSessionScreen = root.DojoSessionScreen || (typeof require !== 'undefined' ? require('./session-screen.js') : null) || {};
   var DojoResults = root.DojoResults || (typeof require !== 'undefined' ? require('./results.js') : null) || {};
-  var sessionParts = DojoSessionScreen.create({ Stimulus: Stimulus, kanjiRows: kanjiRows, tagInfo: tagInfo, captionFor: captionFor, fmtClock: fmtClock });
+  var sessionParts = DojoSessionScreen.create({ Stimulus: Stimulus, kanjiRows: shared.kanjiRows, tagInfo: shared.tagInfo, captionFor: shared.captionFor, fmtClock: shared.fmtClock });
   var SessionBoundary = sessionParts.SessionBoundary;
   var SessionScreen = sessionParts.SessionScreen;
-  var Results = DojoResults.create({ percent: percent, fmtClock: fmtClock }).Results;
+  var Results = DojoResults.create({ percent: shared.percent, fmtClock: shared.fmtClock }).Results;
   var DojoPlacement = root.DojoPlacement || (typeof require !== 'undefined' ? require('./placement.js') : null) || {};
-  var placementParts = DojoPlacement.create({ uniqueSorted: uniqueSorted, tagInfo: tagInfo, toggle: toggle, Stimulus: Stimulus, kanjiRows: kanjiRows });
+  var placementParts = DojoPlacement.create({ uniqueSorted: shared.uniqueSorted, tagInfo: shared.tagInfo, toggle: shared.toggle, Stimulus: Stimulus, kanjiRows: shared.kanjiRows });
   var PracticeSetup = placementParts.PracticeSetup;
   var PlacementScreen = placementParts.PlacementScreen;
   var PlacementSession = placementParts.PlacementSession;
@@ -457,7 +269,7 @@
     var holder = { app: null };
     try { if (rootEl && rootEl.setAttribute && (course.contentLanguage || course.uiLanguage)) rootEl.setAttribute('lang', course.contentLanguage || course.uiLanguage); } catch (e) { /* no DOM */ }
     preact.render(h(Loading, { t: t }), rootEl);
-    function today() { return localDay(now()); }
+    function today() { return shared.localDay(now()); }
     var store = DojoStorage.createStore({
       courseId: course.id,
       dojo: opts.dojo,
