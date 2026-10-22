@@ -1,7 +1,7 @@
 'use strict';
 
-const { examSplitmix64Part1, examSamplePart1, examSamplePart2, examSamplePart3, examSamplePart4 } = require('./makeExamCasesA.js');
-const { examScorePart1, examScorePart2, examScorePart3, examScorePart4, examScorePart5, examScorePart6 } = require('./makeExamCasesB.js');
+const { examSplitmix64Part1, examSamplePart1, examSamplePart2, examSamplePart3, examSamplePart4 } = require('./examA.js');
+const { examScorePart1, examScorePart2, examScorePart3, examScorePart4, examScorePart5, examScorePart6 } = require('./examB.js');
 
 function makeExamCases() {
   const kit = {};

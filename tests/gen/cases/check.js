@@ -1,8 +1,8 @@
 'use strict';
 
-const { checkNormalizePart1, checkNormalizePart2, checkCheckGapPart1, checkGapVerdictPart1, checkGapVerdictPart2 } = require('./makeCheckCasesA.js');
-const { checkCheckChoicePart1, checkCheckMatchPart1, checkCheckOrderPart1, checkCheckClozePart1, checkCheckClozePart2 } = require('./makeCheckCasesB.js');
-const { checkCheckNumericPart1, checkCheckNumericPart2 } = require('./makeCheckCasesC.js');
+const { checkNormalizePart1, checkNormalizePart2, checkCheckGapPart1, checkGapVerdictPart1, checkGapVerdictPart2 } = require('./checkA.js');
+const { checkCheckChoicePart1, checkCheckMatchPart1, checkCheckOrderPart1, checkCheckClozePart1, checkCheckClozePart2 } = require('./checkB.js');
+const { checkCheckNumericPart1, checkCheckNumericPart2 } = require('./checkC.js');
 
 function makeCheckCases() {
   const kit = {};

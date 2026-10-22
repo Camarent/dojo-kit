@@ -1,6 +1,6 @@
 'use strict';
 
-const { sampleJs, scoreJs } = require('./utils.js');
+const { sampleJs, scoreJs } = require('../utils.js');
 
 function examScorePart1(kit) {
   // stimulus-free section next to a group: unchanged greedy

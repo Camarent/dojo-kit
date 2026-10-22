@@ -1,6 +1,6 @@
 'use strict';
 
-const { splitmix64Js, sampleJs } = require('./utils.js');
+const { splitmix64Js, sampleJs } = require('../utils.js');
 
 function examSplitmix64Part1(kit) {
   kit.groups = [];
