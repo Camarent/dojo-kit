@@ -69,6 +69,7 @@ function loadApp() {
   vm.runInContext("self.DojoExt = { text: function (s) { return { marked: s }; } };", sandbox);
   vm.runInContext(read('ui/common.js'), sandbox, { filename: 'ui/common.js' });
   vm.runInContext(read('ui/stimulus.js'), sandbox, { filename: 'ui/stimulus.js' });
+  vm.runInContext(read('ui/session-feedback.js'), sandbox, { filename: 'ui/session-feedback.js' });
   vm.runInContext(read('ui/session-screen.js'), sandbox, { filename: 'ui/session-screen.js' });
   vm.runInContext(read('ui/results.js'), sandbox, { filename: 'ui/results.js' });
   vm.runInContext(read('ui/placement.js'), sandbox, { filename: 'ui/placement.js' });

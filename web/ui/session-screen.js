@@ -1,6 +1,6 @@
 /*
  * ui/session-screen.js — SessionBoundary and SessionScreen components
- * Globals expected: preact, htm, DojoTypes, DojoExt, DojoSpeech, DojoCommon, DojoDetail.
+ * Globals expected: preact, htm, DojoTypes, DojoExt, DojoSpeech, DojoCommon, DojoDetail, DojoSessionFeedback.
  * create(deps) takes { Stimulus, kanjiRows, tagInfo, captionFor, fmtClock } and returns { SessionBoundary, SessionScreen }.
  */
 (function (root) {
@@ -18,116 +18,19 @@
   var Speech = root.DojoSpeech || null;
 
   var renderText = DojoCommon.renderText;
-  var renderTextAll = DojoCommon.renderTextAll;
   var renderPromptEl = DojoCommon.renderPromptEl;
   var renderPromptLine = DojoCommon.renderPromptLine;
   var speechLines = DojoCommon.speechLines;
-  var speechCfg = DojoCommon.speechCfg;
   var Playback = DojoCommon.Playback;
   var cls = DojoCommon.cls;
   var Dialog = DojoCommon.Dialog;
   var renderDeclarativeDetail = DojoDetail.renderDeclarativeDetail;
   var renderIntroBody = DojoDetail.renderIntroBody;
 
-
-  // Methods shared by SessionScreen and PlacementSession; `this` is the host component
-  // (needs props, state, setState, isExam(), isExamMode(), overrideAnswer()).
-  function createShared(deps) {
-    var kanjiRows = deps.kanjiRows;
-    var tagInfo = deps.tagInfo;
-    return {
-    answer: function (input, picked) {
-      if (this.state.result || this.answeredOn === this.state.cur) return;
-      var guard = DojoExt.beforeSubmit ? DojoExt.beforeSubmit(this.state.cur.item, input) : null;
-      if (guard && typeof guard.message === 'string') { this.setState({ guard: guard.message }); return; }
-      var r = this.props.session.answer(input);
-      if (r.error) { this.setState({ error: r.error }); return; }
-      if (r.verdict === 'retry') { this.setState({ retry: true, error: null, guard: null }); return; }
-      this.answeredOn = this.state.cur;
-      this.setState({ result: r, picked: picked, error: null, guard: null, answered: this.state.answered + 1 });
-    },
-    dontKnowAnswer: function () {
-      if (this.state.result || this.answeredOn === this.state.cur) return;
-      var r = this.props.session.dontKnow();
-      if (r.error) { this.setState({ error: r.error }); return; }
-      this.answeredOn = this.state.cur;
-      this.setState({ result: r, error: null, guard: null, answered: this.state.answered + 1 });
-    },
-    audioProps: function (p, s) {
-      var self = this;
-      if (!Speech) return null;
-      var cfg = speechCfg(p.course, p.store);
-      return { t: p.t, win: p.win, cfg: cfg, exam: this.isExam(), uiLang: p.lang, played: this.played || (this.played = {}),
-        status: s.speechFail ? 'unavailable' : Speech.status(cfg, p.win),
-        onFail: function () { self.setState({ speechFail: true }); } };
-    },
-    renderDontKnow: function (p, s) {
-      var t = p.t;
-      var session = p.session;
-      var item = s.cur && s.cur.item;
-      if (!item || s.result || s.retry) return null;
-      if (!session.canDontKnow || !session.canDontKnow()) return null;
-      var self = this;
-      return html`<div class="row end">
-        <button type="button" class="btn secondary" data-testid="btn-dont-know" onClick=${function () { self.dontKnowAnswer(); }}>${t('session.dontKnow')}</button>
-      </div>`;
-    },
-    // Wrong-answer extras: entity intro body (plugin intro hook or title + text), else plugin detail hook and the declarative
-    // detail, then the item's tags. Null for correct answers and when there is nothing to show.
-    feedbackDetail: function (p, s) {
-      var item = s.cur && s.cur.item;
-      var session = p.session;
-      if (!item || (s.result && s.result.correct)) return null;
-      var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h };
-      var unit = (p.course.units || []).filter(function (u) { return u.id === item.unit; })[0] || null;
-      var decl = renderDeclarativeDetail(p.course, unit, item, p.t, true);
-      var intro = session.entityIntro ? session.entityIntro(item) : null;
-      var body = null;
-      if (intro) {
-        body = renderIntroBody({ intro: intro, item: item, ctx: ctx, decl: decl, all: true });
-      } else {
-        var hook = DojoExt.detail ? DojoExt.detail(item, ctx) : null;
-        body = hook ? html`<div data-testid="detail-hook">${hook}</div>` : decl;
-      }
-      var tags = (item.tags || []).filter(function (tg) { return typeof tg === 'string' && !tagInfo({ tagLabels: p.course.tagLabels }, tg).internal; });
-      if (!body && !tags.length) return null;
-      return html`<section class="feedback-detail" data-testid="feedback-detail">
-        ${body}
-        ${tags.length ? html`<p class="tags" data-testid="feedback-tags">${tags.map(function (tg) { return html`<span class="chip tag" key=${tg}>${tagInfo({ tagLabels: p.course.tagLabels }, tg).label}</span>`; })}</p>` : null}
-      </section>`;
-    },
-    renderFeedback: function (p, s) {
-      var t = p.t;
-      var res = s.result;
-      var exam = this.isExam();
-      var body = null;
-      if (res && exam) {
-        body = html`<p class="muted" data-testid="recorded">${t('session.recorded')}</p>`;
-      } else if (res) {
-        var def = DojoTypes.get(s.cur.item.type) || {};
-        var self = this;
-        var showOverride = !res.correct && this.props.session.canOverride && this.props.session.canOverride();
-        body = html`<div class=${cls('feedback', res.correct ? 'right' : 'wrong')} data-testid="feedback" role="status">
-          <b data-testid="verdict">${def.verdict ? def.verdict(res, t) : (res.correct ? t('session.correct') : t('session.wrong'))}</b>
-          ${!def.hideExpected && !res.correct ? html`<p data-testid="expected">${t('session.expected')} <span class="pre">${renderTextAll(res.expected)}</span></p>` : null}
-          ${def.Extra ? h(def.Extra, { result: res, t: t }) : null}
-          ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}
-          ${this.feedbackDetail(p, s)}
-          ${kanjiRows(p, s, this.isExamMode())}
-          ${showOverride ? html`<button type="button" class="btn" data-testid="btn-override" onClick=${function () { self.overrideAnswer(); }}>${t('session.override')}</button>` : null}
-        </div>`;
-      } else if (s.retry) {
-        body = html`<div class="feedback retry" data-testid="feedback-retry" role="status"><b>${t('session.retry')}</b> <span data-testid="retry-message">${t('session.retry.message')}</span></div>`;
-      }
-      return html`<div class="feedback-slot">${body}</div>`;
-    }
-    };
-  }
+  var createShared = (root.DojoSessionFeedback || (typeof require !== 'undefined' ? require('./session-feedback.js') : {})).createShared;
 
   function create(deps) {
     var Stimulus = deps.Stimulus;
-    var kanjiRows = deps.kanjiRows;
-    var tagInfo = deps.tagInfo;
     var captionFor = deps.captionFor;
     var fmtClock = deps.fmtClock;
     var shared = createShared(deps);
@@ -245,33 +148,39 @@
     }
     focusSoon() {
       var self = this;
-      setTimeout(function () {
-        var s = self.state;
-        if (s.confirm) return;
-        var last = self.lastFocus;
-        var box = self.qbox;
-        var doc = self.props.win && self.props.win.document;
-        var active = doc && doc.activeElement;
-        var inBox = !!(box && active && box.contains && box.contains(active));
-        var had = self.hadFocus;
-        self.hadFocus = inBox;
-        if (last && last.cur === s.cur && last.answered === !!s.result && last.intro === !!s.introCard) {
-          var lost = doc && (!active || active === doc.body);
-          if (had && lost && !s.result && box && box.querySelector) {
-            var re = box.querySelector('[data-refocus]');
-            if (re && re.focus) { re.focus(); self.hadFocus = true; }
-          }
-          return;
-        }
-        self.lastFocus = { cur: s.cur, answered: !!s.result, intro: !!s.introCard };
-        var el = s.introCard ? self.introBtn : s.result ? self.nextBtn : self.input;
-        if (!el && !s.result && box && box.querySelector) el = box.querySelector('[data-autofocus]');
-        if (el && el.focus) {
-          if (!self.kbd && el.setAttribute) el.setAttribute('data-nofocusring', '');
-          el.focus();
-          self.hadFocus = !s.result;
-        }
-      }, 0);
+      setTimeout(function () { self.applyFocus(); }, 0);
+    }
+    refocusLost(s, box, doc, active, had) {
+      var lost = doc && (!active || active === doc.body);
+      if (!(had && lost && !s.result && box && box.querySelector)) return;
+      var re = box.querySelector('[data-refocus]');
+      if (re && re.focus) { re.focus(); this.hadFocus = true; }
+    }
+    focusTarget(s, box) {
+      var el = s.introCard ? this.introBtn : s.result ? this.nextBtn : this.input;
+      if (!el && !s.result && box && box.querySelector) el = box.querySelector('[data-autofocus]');
+      return el;
+    }
+    applyFocus() {
+      var s = this.state;
+      if (s.confirm) return;
+      var last = this.lastFocus;
+      var box = this.qbox;
+      var doc = this.props.win && this.props.win.document;
+      var active = doc && doc.activeElement;
+      var had = this.hadFocus;
+      this.hadFocus = !!(box && active && box.contains && box.contains(active));
+      if (last && last.cur === s.cur && last.answered === !!s.result && last.intro === !!s.introCard) {
+        this.refocusLost(s, box, doc, active, had);
+        return;
+      }
+      this.lastFocus = { cur: s.cur, answered: !!s.result, intro: !!s.introCard };
+      var el = this.focusTarget(s, box);
+      if (el && el.focus) {
+        if (!this.kbd && el.setAttribute) el.setAttribute('data-nofocusring', '');
+        el.focus();
+        this.hadFocus = !s.result;
+      }
     }
     tick() {
       var session = this.props.session;
@@ -329,13 +238,6 @@
       this.props.session.markIntroSeen(card.id);
       this.setState({ introCard: null });
     }
-    overrideAnswer() {
-      if (this.overriddenOn === this.state.result) return;
-      this.overriddenOn = this.state.result;
-      var r = this.props.session.overrideLast();
-      if (r.error) { this.setState({ error: r.error }); return; }
-      this.setState({ result: r, error: null, guard: null });
-    }
     reveal() {
       this.props.session.reveal();
       this.setState({ cur: this.props.session.current() });
@@ -374,27 +276,12 @@
       if (!def) return html`<p class="notice bad" role="alert" data-testid="unsupported-type">${p.t('session.unsupported')}</p>`;
       return h(def.Question, this.questionProps(p, s));
     }
-    render(p, s) {
+    renderTopbar(p, s) {
       var self = this;
       var t = p.t;
       var session = p.session;
       var cur = s.cur;
-      if (!cur) return null;
-      var exam = this.isExam();
-      var examMode = this.isExamMode();
-      var last = cur.position >= cur.total;
-      var unanswered = session.total - session.answered;
-      var audio = this.audioProps(p, s);
-      var itemLines = audio ? speechLines(cur.item) : [];
-      
-      var showIntro = s.showIntro;
-      var card = s.introCard;
-      var caption = captionFor(p.course, cur.item, t);
-      var plainPrompt = typeof cur.item.prompt === 'string' ? (DojoExt.plain ? DojoExt.plain(cur.item.prompt) : cur.item.prompt) : '';
-      var bigPrompt = plainPrompt.length > 0 && plainPrompt.length <= 6 && plainPrompt.indexOf('\n') < 0;
-
-      return html`<main class="screen session" data-testid="session" data-mode=${session.mode}>
-        <div class="topbar">
+      return html`<div class="topbar">
           <button type="button" class="btn icon-btn" data-testid="btn-exit" aria-label=${t('session.exit')} title=${t('session.exit')} onClick=${function () { self.setState({ confirm: 'exit' }); }}><span aria-hidden="true">\u00d7</span></button>
           <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax=${cur.total} aria-valuenow=${cur.position}>
             <span style=${{ width: Math.round(100 * (cur.position - (s.result ? 0 : 1)) / cur.total) + '%' }}></span>
@@ -403,54 +290,94 @@
           ${session.retryCount() > 0 ? html`<span class="badge retry" data-testid="retry-badge">${t('session.retries', { n: session.retryCount() })}</span>` : null}
           ${session.group && session.group.count > 1 ? html`<span class="count" data-testid="group">${t('session.group', { n: session.group.index + 1, total: session.group.count })}</span>` : null}
           ${s.remaining !== null ? html`<span class=${cls('timer', s.remaining < 60000 && 'low')} data-testid="timer">${fmtClock(s.remaining)}</span>` : null}
-        </div>
-        ${session.warnings ? html`<p class="notice" data-testid="exam-short">${t('session.short')}</p>` : null}
-        ${card ? html`<article class="qcard intro-card" data-testid="intro-card">
-          <span class="badge" data-testid="intro-label">${t('intro.label')}</span>
-          ${(function () {
-            var introBody = renderIntroBody({ intro: card, item: cur.item, ctx: { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: t, h: h }, decl: renderDeclarativeDetail(p.course, (p.course.units || []).find(function (u) { return u.id === cur.item.unit; }) || null, cur.item, p.t) });
-            var speakable = audio && card.speak;
-            if (speakable) {
-              return html`<div class="qline">
+        </div>`;
+    }
+    renderIntroCard(p, s, audio) {
+      var self = this;
+      var t = p.t;
+      var cur = s.cur;
+      var card = s.introCard;
+      var introBody = renderIntroBody({ intro: card, item: cur.item, ctx: { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: t, h: h }, decl: renderDeclarativeDetail(p.course, (p.course.units || []).find(function (u) { return u.id === cur.item.unit; }) || null, cur.item, p.t) });
+      var body = introBody;
+      if (audio && card.speak) {
+        body = html`<div class="qline">
                 <div class="qbody">${introBody}</div>
                 <${Playback} audio=${audio} lines=${speechLines(card)} testid="play-intro" pid=${'n:' + card.id} />
               </div>`;
-            }
-            return introBody;
-          })()}
+      }
+      return html`<article class="qcard intro-card" data-testid="intro-card">
+          <span class="badge" data-testid="intro-label">${t('intro.label')}</span>
+          ${body}
         </article>
         <div class="row end">
           <button type="button" class="btn primary" data-testid="btn-intro-done" ref=${function (el) { self.introBtn = el; }}
             onClick=${function () { self.introDone(); }}>${t('intro.gotit')}</button>
-        </div>` : html`<article class="qcard">
-          ${showIntro ? html`<div class="intro" data-testid="intro">${renderText(cur.item.explanation)}</div>` : null}
+        </div>`;
+    }
+    renderQuestionCard(p, s, audio) {
+      var self = this;
+      var cur = s.cur;
+      var itemLines = audio ? speechLines(cur.item) : [];
+      var caption = captionFor(p.course, cur.item, p.t);
+      var plainPrompt = typeof cur.item.prompt === 'string' ? (DojoExt.plain ? DojoExt.plain(cur.item.prompt) : cur.item.prompt) : '';
+      var bigPrompt = plainPrompt.length > 0 && plainPrompt.length <= 6 && plainPrompt.indexOf('\n') < 0;
+      return html`<article class="qcard">
+          ${s.showIntro ? html`<div class="intro" data-testid="intro">${renderText(cur.item.explanation)}</div>` : null}
           <${Stimulus} stimulus=${cur.stimulus} audio=${audio} />
           ${caption ? html`<p class="qcaption" data-testid="caption">${caption}</p>` : null}
           ${renderPromptLine(renderPromptEl(cur.item, bigPrompt), cur.item, audio, itemLines)}
           <div style="display: contents" ref=${function (el) { self.qbox = el; }}>${this.renderQuestion(p, s)}</div>
-        </article>`}
-        ${card ? null : this.renderFeedback(p, s)}
-        ${s.guard ? html`<p class="notice bad" role="alert" data-testid="guard-message">${s.guard}</p>` : null}
-        ${s.error ? html`<p class="notice bad" role="alert" data-testid="session-error">${t('session.error', { code: s.error })}</p>` : null}
-        ${card ? null : html`<div class="row actions-row">
+        </article>`;
+    }
+    renderActions(p, s) {
+      var self = this;
+      var t = p.t;
+      var exam = this.isExam();
+      var examMode = this.isExamMode();
+      var last = s.cur.position >= s.cur.total;
+      return html`<div class="row actions-row">
           ${this.renderDontKnow(p, s)}
           ${examMode ? html`<button type="button" class="btn" data-testid="btn-finish" onClick=${function () { self.setState({ confirm: 'finish' }); }}>${t('session.finish')}</button>` : null}
           <button type="button" class="btn primary" disabled=${!exam && !s.result} data-testid="btn-next"
             ref=${function (el) { self.nextBtn = el; }}
             title=${t('session.next.withArrow')} aria-label=${t('session.next.withArrow')}
             onClick=${function () { if (examMode && last) self.setState({ confirm: 'finish' }); else self.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>
-        </div>`}
-        ${s.confirm === 'exit' ? html`<${Dialog} testid="dlg-exit" title=${t('session.exit.title')} body=${t('session.exit.body')}
+        </div>`;
+    }
+    renderDialogs(p, s) {
+      var self = this;
+      var t = p.t;
+      var unanswered = p.session.total - p.session.answered;
+      if (s.confirm === 'exit') {
+        return html`<${Dialog} testid="dlg-exit" title=${t('session.exit.title')} body=${t('session.exit.body')}
           cancelLabel=${t('session.stay')} confirmLabel=${t('session.exit')} danger=${true}
-          onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { p.onExit(); }} />` : null}
-        ${s.confirm === 'finish' ? html`<${Dialog} testid="dlg-finish" title=${t('session.finish.title')}
+          onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { p.onExit(); }} />`;
+      }
+      if (s.confirm === 'finish') {
+        return html`<${Dialog} testid="dlg-finish" title=${t('session.finish.title')}
           body=${unanswered > 0 ? t('session.finish.unanswered', { n: unanswered }) : t('session.finish.all')}
           cancelLabel=${t('session.stay')} confirmLabel=${t('session.finish')}
-          onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { self.setState({ confirm: null }); self.finish(); }} />` : null}
+          onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { self.setState({ confirm: null }); self.finish(); }} />`;
+      }
+      return null;
+    }
+    render(p, s) {
+      if (!s.cur) return null;
+      var card = s.introCard;
+      var audio = this.audioProps(p, s);
+      return html`<main class="screen session" data-testid="session" data-mode=${p.session.mode}>
+        ${this.renderTopbar(p, s)}
+        ${p.session.warnings ? html`<p class="notice" data-testid="exam-short">${p.t('session.short')}</p>` : null}
+        ${card ? this.renderIntroCard(p, s, audio) : this.renderQuestionCard(p, s, audio)}
+        ${card ? null : this.renderFeedback(p, s)}
+        ${s.guard ? html`<p class="notice bad" role="alert" data-testid="guard-message">${s.guard}</p>` : null}
+        ${s.error ? html`<p class="notice bad" role="alert" data-testid="session-error">${p.t('session.error', { code: s.error })}</p>` : null}
+        ${card ? null : this.renderActions(p, s)}
+        ${this.renderDialogs(p, s)}
       </main>`;
     }
   }
-    ['answer', 'dontKnowAnswer', 'audioProps', 'renderDontKnow', 'feedbackDetail', 'renderFeedback'].forEach(function (k) { SessionScreen.prototype[k] = shared[k]; });
+    ['answer', 'dontKnowAnswer', 'overrideAnswer', 'audioProps', 'renderDontKnow', 'feedbackDetail', 'renderFeedback'].forEach(function (k) { SessionScreen.prototype[k] = shared[k]; });
 
     return { SessionBoundary: SessionBoundary, SessionScreen: SessionScreen };
   }
