@@ -802,17 +802,6 @@
     var weakList = p.engine && p.engine.weakList && p.engine.weakList(8) || [];
     var hasWeak = weakList.length > 0;
     
-    // For backward compatibility: find the extraNew group if it exists
-    var extraNewGroup = null;
-    if (course.groups) {
-      for (var i = 0; i < course.groups.length; i++) {
-        if (course.groups[i].extraNew === true) {
-          extraNewGroup = course.groups[i].id;
-          break;
-        }
-      }
-    }
-    
     return html`<main class="screen" data-testid="home">
       <header class="head">
         <h1>${course.title}</h1>
@@ -1048,10 +1037,6 @@
       ${breakdown.map(function (k) {
         var onRead = (Array.isArray(k.on) && k.on.length > 0) ? k.on.join(' / ') : null;
         var kunRead = (Array.isArray(k.kun) && k.kun.length > 0) ? k.kun.join(' / ') : null;
-        var readings = [];
-        if (onRead) readings.push(onRead);
-        if (kunRead) readings.push(kunRead);
-        var readStr = readings.join(' / ');
         return html`<li class="kanji-row-grid" data-testid="kanji-row">
           <span class="kanji-ch" data-testid="kanji-ch">${k.kanji}</span>
           <span class="kanji-mean" data-testid="kanji-mean">${k.meaning}</span>
@@ -1112,7 +1097,6 @@
         var s = self.state;
         if (s.confirm) return;
         if (self.isCheckMode()) {
-          var def = DojoTypes.get(s.cur.item.type);
           var last = self.lastFocus;
           var box = self.qbox;
           var doc = self.props.win && self.props.win.document;
@@ -1174,7 +1158,6 @@
       this.props.onEnd(sum);
     }
     render(p, s) {
-      var self = this;
       var t = p.t;
       var session = p.session;
       var cur = s.cur;
@@ -1304,22 +1287,13 @@
     renderFeedbackCheck(p, s, t, def) {
       var res = s.result;
       if (!res) return null;
-      var exam = false;
-      var body = null;
-      if (res) {
-        var self = this;
-        var showOverride = false;
-        body = html`<div class=${cls('feedback', res.correct ? 'right' : 'wrong')} data-testid="feedback" role="status">
-          <b data-testid="verdict">${def && def.verdict ? def.verdict(res, t) : (res.correct ? t('session.correct') : t('session.wrong'))}</b>
-          ${!def || !def.hideExpected ? html`<p data-testid="expected">${t('session.expected')} <span class="pre">${renderTextAll(res.expected)}</span></p>` : null}
-          ${def && def.Extra ? h(def.Extra, { result: res, t: t }) : null}
-          ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}
-          ${kanjiRows(p, s, false)}
-          ${showOverride ? html`<button type="button" class="btn" data-testid="btn-override" onClick=${function () { self.overrideAnswer(); }}>${t('session.override')}</button>` : null}
-        </div>`;
-      } else if (s.retry) {
-        body = html`<div class="feedback retry" data-testid="feedback-retry" role="status"><b>${t('session.retry')}</b> <span data-testid="retry-message">${t('session.retry.message')}</span></div>`;
-      }
+      var body = html`<div class=${cls('feedback', res.correct ? 'right' : 'wrong')} data-testid="feedback" role="status">
+        <b data-testid="verdict">${def && def.verdict ? def.verdict(res, t) : (res.correct ? t('session.correct') : t('session.wrong'))}</b>
+        ${!def || !def.hideExpected ? html`<p data-testid="expected">${t('session.expected')} <span class="pre">${renderTextAll(res.expected)}</span></p>` : null}
+        ${def && def.Extra ? h(def.Extra, { result: res, t: t }) : null}
+        ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}
+        ${kanjiRows(p, s, false)}
+      </div>`;
       return html`<div class="feedback-slot">${body}</div>`;
     }
     
@@ -2088,13 +2062,11 @@
       return this.formatLadderPreview(p.engine.unitLadder(unitId), p.t);
     }
     openUnitDialog(unitId) {
-      var self = this;
       var result = this.getEffectiveUnitSettings(unitId);
       var effective = result.effective;
       var override = result.override;
       var courseUnit = result.courseUnit;
       var unit = courseUnit || { id: unitId, title: unitId };
-      var p = this.props;
       var courseDefaults = {
         newPerDay: this.getCourseUnitValue(unitId, 'newPerDay'),
         ladderScale: this.getCourseUnitValue(unitId, 'ladderScale'),
@@ -2206,7 +2178,6 @@
       var effective = result.effective;
       var override = result.override;
       var courseGroup = result.courseGroup || { id: groupId, title: groupId };
-      var p = this.props;
       var courseDefaults = {
         newPerDay: courseGroup.newPerDay !== undefined ? courseGroup.newPerDay : undefined,
         newOrder: courseGroup.newOrder !== undefined ? courseGroup.newOrder : 'file',
@@ -2323,7 +2294,6 @@
             ${(p.course.units || []).map(function (unit) {
               var override = p.engine.unitSettings(unit.id);
               var hasOverride = Object.keys(override).length > 0;
-              var settings = self.getEffectiveUnitSettings(unit.id).effective;
               var summary = self.unitSettingsSummary(unit.id);
               return html`<li key=${unit.id} class="unit-settings-row" data-testid=${'unit-settings-row-' + unit.id}>
                 <button type="button" class="btn unit-settings-btn" data-testid=${'btn-unit-settings-' + unit.id}
@@ -2786,5 +2756,5 @@
     }).catch(function (e) { fail(rootEl, e); });
   }
 
-  root.DojoApp = { start: start, fail: fail, _makeT: makeT, _pickLang: pickLang, _Stimulus: Stimulus, _SessionScreen: SessionScreen, _SessionBoundary: SessionBoundary, _Results: Results, _Home: Home, _App: App, _CatalogScreen: CatalogScreen, _SettingsScreen: SettingsScreen, _PlacementSession: PlacementSession, _PracticeSetup: PracticeSetup, _ProgressBar: ProgressBar, _daysLeft: daysLeft, _applyTheme: applyTheme, _pluralForm: pluralForm, _renderPluginSettings: renderPluginSettings };
+  root.DojoApp = { start: start, fail: fail, _makeT: makeT, _pickLang: pickLang, _Stimulus: Stimulus, _SessionScreen: SessionScreen, _Results: Results, _Home: Home, _App: App, _CatalogScreen: CatalogScreen, _SettingsScreen: SettingsScreen, _PlacementSession: PlacementSession, _PracticeSetup: PracticeSetup, _ProgressBar: ProgressBar, _daysLeft: daysLeft, _applyTheme: applyTheme, _pluralForm: pluralForm, _renderPluginSettings: renderPluginSettings };
 })(typeof self !== 'undefined' ? self : this);
