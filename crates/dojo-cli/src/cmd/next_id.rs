@@ -5,11 +5,10 @@ use crate::course_files::*;
 use crate::USAGE;
 
 fn parse_prefix(s: &str) -> Result<(), String> {
-    if s.is_empty() {
-        return Err("prefix must not be empty".to_string());
-    }
     let mut chars = s.chars();
-    let first = chars.next().unwrap();
+    let Some(first) = chars.next() else {
+        return Err("prefix must not be empty".to_string());
+    };
     if !first.is_ascii_lowercase() {
         return Err(format!("prefix '{}' must start with a lowercase letter", s));
     }
