@@ -1,6 +1,4 @@
-use dojo_core::validate::{Diagnostic, SourceFile, validate};
-
-const COURSE: &str = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"}]}"#;
+use dojo_core::validate::{CODES, Diagnostic, SourceFile, validate};
 
 fn file(name: &str, text: &str) -> SourceFile {
     SourceFile { name: name.to_string(), text: text.to_string() }
@@ -8,10 +6,6 @@ fn file(name: &str, text: &str) -> SourceFile {
 
 fn run(course: &str, lines: &[&str]) -> Vec<Diagnostic> {
     validate(course, &[file("content/u.jsonl", &lines.join("\n"))], None)
-}
-
-fn codes(d: &[Diagnostic]) -> Vec<&'static str> {
-    d.iter().map(|d| d.code).collect()
 }
 
 fn fires(course: &str, lines: &[&str], code: &str) {
@@ -99,4 +93,35 @@ fn fires_unit_in_two_groups() {
     let c = with_course(r#""groups":[{"id":"g1","title":"G1","units":["u"]}]"#);
     let d = run(&c, &[CHOICE]);
     assert!(!d.iter().any(|d| d.code == "unit_in_two_groups"));
+}
+
+#[test]
+fn fires_empty_detail_glyph() {
+    let c = with_course(r#""detail":{"fields":[{"key":"k"}],"glyph":""}"#);
+    fires(&c, &[CHOICE], "empty_detail_glyph");
+}
+
+#[test]
+fn every_code_has_a_firing_test() {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests");
+    let mut texts = Vec::new();
+    for entry in std::fs::read_dir(&dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.extension().is_some_and(|e| e == "rs") {
+            texts.push(std::fs::read_to_string(&path).unwrap());
+        }
+    }
+    let missing: Vec<&str> = CODES
+        .iter()
+        .map(|c| c.0)
+        .filter(|code| {
+            let quoted = format!("\"{code}\"");
+            let escaped = format!("\\\"{code}\\\"");
+            !texts.iter().any(|t| t.lines().any(|l| {
+                let l = l.trim_start();
+                !l.starts_with("//") && (l.contains(&quoted) || l.contains(&escaped)) && !l.contains("CODES")
+            }))
+        })
+        .collect();
+    assert!(missing.is_empty(), "codes without a test: {missing:?}");
 }
