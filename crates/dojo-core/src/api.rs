@@ -507,6 +507,17 @@ fn score(a: &Value) -> Result<Value, CallError> {
     };
     let has_scoring = !scoring.is_empty();
     let mode = exam::resolve_mode(pass_rule.as_ref(), has_scoring);
-    let s = exam::score_with_parts(&results, total, pass_mark, &section_ranges, &parts, pass_points, mode, pass_rule.as_ref().and_then(|r| r.scaled) == Some(true)).map_err(bad)?;
+    let s = exam::score_with_parts(
+        &results,
+        total,
+        pass_mark,
+        exam::PartsInput {
+            section_ranges: &section_ranges,
+            scoring_parts: &parts,
+            pass_points,
+            pass_mode: mode,
+            scaled: pass_rule.as_ref().and_then(|r| r.scaled) == Some(true),
+        },
+    ).map_err(bad)?;
     Ok(serde_json::to_value(s).unwrap())
 }
