@@ -54,6 +54,7 @@ fn create_minimal_course(dir: &PathBuf) {
         "type": "gap",
         "prompt": "Q1",
         "answers": ["a"],
+        "unit": "u1",
         "id": "i1"
     })];
     let content_text: String = items

@@ -2,25 +2,18 @@
 
 use super::legacy::{Aggregate, IdMapConfig, OldProgress, OldRecord};
 use dojo_core::progress::{empty_progress, sanitize};
-use dojo_core::srs::entity_view;
+use dojo_core::content::Item;
+use dojo_core::srs::{entity_view, ladder_for_unit_json, unit_config, DEFAULT_LADDER};
 use serde_json::{Map, Value};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
-/// Get the max stage from a ladder.
-fn get_max_stage(ladder: &[i64]) -> i64 {
-    i64::try_from(ladder.len().saturating_sub(1)).unwrap_or(i64::MAX)
+/// Max stage of a ladder of `len` entries.
+fn max_stage_of(len: usize) -> i64 {
+    i64::try_from(len.saturating_sub(1)).unwrap_or(i64::MAX)
 }
 
-/// Get the max stage from a course.
-fn get_max_stage_from_course(course: &Value) -> i64 {
-    let ladder = course.get("srs").and_then(|s| s.get("ladder")).and_then(|l| l.as_array());
-    if let Some(arr) = ladder {
-        let stages: Vec<i64> = arr.iter().filter_map(|v| v.as_i64()).collect();
-        get_max_stage(&stages)
-    } else {
-        // Default ladder has 7 stages (0..6)
-        6
-    }
+fn entity_of(item: &Item) -> &str {
+    item.entity().unwrap_or_else(|| item.id())
 }
 
 /// Aggregate multiple old records into one new record.
@@ -81,34 +74,31 @@ pub fn import_progress(
     id_map: &IdMapConfig,
     course: &Value,
     now: Option<i64>,
-    course_items: &[Value],
+    course_items: &[Item],
 ) -> (Value, Vec<String>, ImportStats) {
     let mut new_items: Map<String, Value> = Map::new();
     let mut unmapped_ids: Vec<String> = Vec::new();
     let mut stats = ImportStats::default();
     
-    // Determine max stage for clamping
-    let max_stage_val = id_map.ladder_len.map(|n| n.saturating_sub(1) as i64)
-        .unwrap_or_else(|| get_max_stage_from_course(course));
-    
-    // Check if course uses entity scope
-    let scope_is_entity = course.get("srs").and_then(|s| s.get("scope")).and_then(|v| v.as_str()) == Some("entity");
-    
-    // Build entity membership: item ID -> entity ID from course items
-    let mut entity_members: HashMap<String, Vec<String>> = HashMap::new();
-    let mut item_to_entity: HashMap<String, String> = HashMap::new();
-    
-    for item_value in course_items {
-        let item_id = item_value.get("id").and_then(|v| v.as_str()).map(|s| s.to_string()).unwrap_or_default();
-        if item_id.is_empty() {
-            continue;
-        }
-        let entity_id_str = item_value.get("entity").and_then(|v| v.as_str()).map(|s| s.to_string());
-        let entity_id = entity_id_str.as_ref().map(|s| s.as_str()).unwrap_or(item_id.as_str());
-        entity_members.entry(entity_id.to_string()).or_default().push(item_id.clone());
-        item_to_entity.insert(item_id.clone(), entity_id.to_string());
+    // Active items only: id -> (unit, type, entity); entity -> active members
+    let mut by_id: BTreeMap<&str, &Item> = BTreeMap::new();
+    let mut entity_members: BTreeMap<String, Vec<&str>> = BTreeMap::new();
+    for item in course_items.iter().filter(|i| !i.is_retired()) {
+        by_id.insert(item.id(), item);
+        entity_members.entry(entity_of(item).to_string()).or_default().push(item.id());
     }
-    
+    let retired: BTreeSet<&str> = course_items.iter().filter(|i| i.is_retired()).map(Item::id).collect();
+    let default_max = max_stage_of(DEFAULT_LADDER.len());
+    let max_stage_for = |new_id: &str| -> i64 {
+        if let Some(n) = id_map.ladder_len {
+            return n.saturating_sub(1) as i64;
+        }
+        by_id.get(new_id).map_or(default_max, |i| {
+            max_stage_of(ladder_for_unit_json(course, i.unit(), Some(i.item_type().as_str())).len())
+        })
+    };
+    let scope_is_entity = |item: &Item| unit_config(course, item.unit()).get("scope").and_then(Value::as_str) == Some("entity");
+
     // Group old records by new ID
     let mut new_id_records: Vec<(String, Vec<OldRecord>)> = Vec::new();
     let mut new_id_pos: HashMap<String, usize> = HashMap::new();
@@ -131,10 +121,13 @@ pub fn import_progress(
     
     // Aggregate records for each new ID
     for (new_id, records) in &new_id_records {
+        if retired.contains(new_id.as_str()) {
+            continue;
+        }
         let aggregated = aggregate_records(records, id_map.aggregate);
         
         // Clamp stage to max_stage
-        let clamped_s = aggregated.s.clamp(0, max_stage_val);
+        let clamped_s = aggregated.s.clamp(0, max_stage_for(new_id));
         
         let mut record_value = aggregated.to_value();
         if let Some(obj) = record_value.as_object_mut() {
@@ -149,45 +142,30 @@ pub fn import_progress(
         new_items.insert(new_id.clone(), record_value);
     }
     
-    // Handle entity scope: if scope is entity, write identical records to all members
-    if scope_is_entity {
-        // For entities that have at least one record, write the entity_view to all members
-        // Find which entities have records
-        let mut entities_with_records: HashSet<String> = HashSet::new();
-        for (item_id, _) in &new_items {
-            if let Some(entity_id) = item_to_entity.get(item_id) {
-                entities_with_records.insert(entity_id.clone());
+    // Entity scope: write the entity view to every active member
+    let mut final_items = new_items.clone();
+    let entities: BTreeSet<&str> = new_items
+        .keys()
+        .filter_map(|id| by_id.get(id.as_str()))
+        .filter(|i| scope_is_entity(i))
+        .map(|i| entity_of(i))
+        .collect();
+    for entity_id in entities {
+        let members = &entity_members[entity_id];
+        if let Some(view) = entity_view(members, &new_items) {
+            for id in members {
+                final_items.insert((*id).to_string(), view.clone());
             }
         }
-        
-        // For each entity with records, write to all its members
-        let mut final_items = new_items.clone();
-        for entity_id in &entities_with_records {
-            if let Some(members) = entity_members.get(entity_id) {
-                // Get records for these members
-                let member_refs: Vec<&str> = members.iter().map(|s| s.as_str()).collect();
-                let mut records_map: Map<String, Value> = Map::new();
-                for id in members {
-                    if let Some(rec) = new_items.get(id) {
-                        records_map.insert(id.clone(), rec.clone());
-                    }
-                }
-                
-                // Create entity view
-                if let Some(view) = entity_view(&member_refs, &records_map) {
-                    // Write the view to all members
-                    for id in members {
-                        final_items.insert(id.clone(), view.clone());
-                    }
-                }
-            }
-        }
-        new_items = final_items;
     }
-    
+    new_items = final_items;
+
     // Build the new progress document
     let mut new_progress = empty_progress();
     if let Some(obj) = new_progress.as_object_mut() {
+        if let Some(id) = course.get("id").and_then(Value::as_str) {
+            obj.insert("course".to_string(), Value::from(id));
+        }
         // Set timestamp
         if let Some(n) = now {
             obj.insert("t".to_string(), Value::from(n));
@@ -267,7 +245,6 @@ pub fn generate_report(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
 
     #[test]
     fn test_aggregation_min() {
@@ -322,16 +299,4 @@ mod tests {
         assert_eq!(agg.s, 1);
         assert_eq!(agg.due, 100);
     }
-
-    #[test]
-    fn test_stage_clamping() {
-        let course = json!({
-            "srs": {
-                "ladder": [0, 1000, 2000, 3000]
-            }
-        });
-        let max = get_max_stage_from_course(&course);
-        assert_eq!(max, 3); // ladder has 4 elements, max stage is 3
-    }
-
 }
