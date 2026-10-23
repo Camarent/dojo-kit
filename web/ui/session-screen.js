@@ -317,7 +317,7 @@
       var bigPrompt = plainPrompt.length > 0 && plainPrompt.length <= 6 && plainPrompt.indexOf('\n') < 0;
       return html`<article class="qcard">
           ${s.showIntro && introText(cur.item) ? html`<div class="intro" data-testid="intro">${renderText(introText(cur.item))}</div>` : null}
-          <${Stimulus} stimulus=${cur.stimulus} audio=${audio} />
+          <${Stimulus} stimulus=${cur.stimulus} audio=${audio} dict=${this.dict} />
           ${caption ? html`<p class="qcaption" data-testid="caption">${caption}</p>` : null}
           ${showPlainPrompt ? renderPromptLine(renderPromptEl(cur.item, bigPrompt), cur.item, audio, itemLines)
             : renderPromptLine(null, cur.item, audio, itemLines)}

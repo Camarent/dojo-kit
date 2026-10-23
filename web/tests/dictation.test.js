@@ -6,6 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const H = require('./app-harness.js');
+const loadApp = H.loadApp;
 const { loadBundle } = require('./load-bundle.js');
 const Dictation = require('../ui/dictation.js');
 
@@ -142,4 +143,79 @@ test('a key press counts as the first gesture and no keydown listener is added',
   ctl.onKey({ key: 'x' });
   ctl.open({ stimulus: LISTEN, timer: T1 });
   assert.deepStrictEqual(a.plays, ['c1']);
+});
+
+test('a timeout with an empty field shows no invalid-number error', async () => {
+  const items = [{ id: 'n1', unit: 'u1', type: 'numeric', prompt: 'How many?', answer: 87, stimulus: 's1' }];
+  const m = await H.mount({ items, stimuli: [LISTEN], course: { units: [{ id: 'u1', title: 'U1' }], timer: T1 } });
+  m.app.startMode('practice', { types: ['numeric'] });
+  const ss = m.screen(m.sb.DojoApp._SessionScreen);
+  ss.state.qstate = { text: '' };
+  ss.timeout();
+  const v = ss.view();
+  assert.ok(H.find(v, 'timed-out'));
+  assert.strictEqual(H.find(v, 'numeric-invalid'), null);
+});
+
+test('the play button shares the replay budget with key r', async () => {
+  const a = fakeAudio();
+  const d = Dictation.create({ win: gestureWin(true), audio: a });
+  d.open({ stimulus: LISTEN, timer: T1 });
+  assert.strictEqual(d.exhausted(), false);
+  assert.strictEqual(d.take(), true);
+  assert.strictEqual(d.exhausted(), true);
+  assert.strictEqual(d.take(), false);
+  assert.strictEqual(d.replay(), false);
+  const u = Dictation.create({ win: gestureWin(true), audio: a });
+  u.open({ stimulus: LISTEN, timer: null });
+  assert.strictEqual(u.take(), true);
+  assert.strictEqual(u.take(), true);
+  assert.strictEqual(u.exhausted(), false);
+});
+
+test('examples/listening explanations are grammatical for 1', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'examples', 'listening', 'content', 'beeps.jsonl'), 'utf8');
+  assert.ok(!/\b1 beeps/.test(t));
+});
+
+test('the first play is free: replays 0 still allows one play, button enabled before it', () => {
+  const a = fakeAudio();
+  const d = Dictation.create({ win: gestureWin(false), audio: a });
+  d.open({ stimulus: LISTEN, timer: { replays: 0 } });
+  assert.strictEqual(d.exhausted(), false, 'enabled before the first play');
+  assert.strictEqual(d.take(), true, 'first manual play');
+  assert.strictEqual(d.exhausted(), true);
+  assert.strictEqual(d.take(), false);
+  const b = Dictation.create({ win: gestureWin(true), audio: fakeAudio() });
+  b.open({ stimulus: LISTEN, timer: T1 });
+  assert.strictEqual(b.take(), true, 'autoplay was the first play; one replay left');
+  assert.strictEqual(b.take(), false);
+});
+
+test('PlayButton click asks the dictation controller before playing', () => {
+  const C = loadApp().DojoCommon;
+  let takes = 0;
+  const audio = { t: (k) => k, played: {}, win: {}, cfg: {}, onFail() { fails++; } };
+  let fails = 0;
+  const btn = new C.PlayButton({ lines: ['x'], pid: 'p', audio, testid: 'p', dict: { take() { takes++; return false; }, exhausted: () => false } });
+  btn.setState = function (s) { this.state = Object.assign({}, this.state, s); };
+  btn.click();
+  assert.strictEqual(takes, 1);
+  assert.strictEqual(btn.state.playing, false);
+  assert.strictEqual(fails, 0, 'refused play does not reach speech');
+});
+
+test('the session screen passes its controller to the stimulus play button', async () => {
+  const items = [{ id: 'n1', unit: 'u1', type: 'numeric', prompt: 'How many?', answer: 3, stimulus: 's1' }];
+  const stimuli = [{ id: 's1', text: 'x', hideText: true, audio: ['c1'] }];
+  const m = await H.mount({ items, stimuli, course: { units: [{ id: 'u1', title: 'U1' }] } });
+  m.sb.DojoAudio = { ready: () => true, unlock() {}, stop() {}, pick: (s, ids) => ids[0], play: () => Promise.resolve({}) };
+  m.app.startMode('practice', { types: ['numeric'] });
+  const ss = m.screen(m.sb.DojoApp._SessionScreen);
+  ss.audioProps = () => ({ status: 'ok', t: (k) => k, played: {}, win: {}, cfg: {}, exam: false, onFail() {} });
+  ss.dict = { take: () => true, exhausted: () => false, stop() {}, onKey: () => false };
+  let btn = null;
+  H.walk(ss.view(), (n) => { if (n.props.pid === 's:s1') btn = n; });
+  assert.ok(btn, 'play button rendered');
+  assert.strictEqual(btn.props.dict, ss.dict);
 });

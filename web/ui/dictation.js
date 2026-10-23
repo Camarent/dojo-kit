@@ -5,7 +5,7 @@
  *   create({ win, audio, random }) -> controller
  *     open({ stimulus, timer, onEnd }): resets the replay count; plays the clip once when the stimulus is a listening
  *       stimulus, audio is ready and the user has made a gesture
- *     replay() -> bool: plays again while uses < replayBudget, else false
+ *     replay() -> bool: plays again while replays < replayBudget; the first play (autoplay or manual) is free, else false
  *     onKey(event) -> bool: any key counts as a gesture; "r" without modifiers replays (true when handled)
  *   sync(screen[, audio]): opens/closes the controller kept on a session screen as screen.dict when screen.state.cur changes
  *     stop(): removes the gesture listeners and stops playback
@@ -33,6 +33,7 @@
     var gesture = !!(win && win.navigator && win.navigator.userActivation && win.navigator.userActivation.hasBeenActive);
     var cur = null;
     var uses = 0;
+    var started = false;
     var events = ['pointerdown'];
     function mark() { gesture = true; }
     if (win && win.addEventListener) events.forEach(function (n) { win.addEventListener(n, mark, true); });
@@ -46,16 +47,30 @@
     function open(q) {
       cur = null;
       uses = 0;
+      started = false;
       if (!isListening(q.stimulus) || !audio || !audio.ready()) return;
       cur = { stimulus: q.stimulus, budget: replayBudget(q.timer), onEnd: q.onEnd || function () {} };
-      if (gesture) play();
+      if (gesture) { started = true; play(); }
+    }
+
+    function claim() {
+      if (!started) { started = true; return true; }
+      if (uses >= cur.budget) return false;
+      uses++;
+      return true;
     }
 
     function replay() {
-      if (!cur || !audio.ready() || uses >= cur.budget) return false;
-      uses++;
+      if (!cur || !audio.ready() || !claim()) return false;
       play();
       return true;
+    }
+
+    function exhausted() { return !!cur && started && uses >= cur.budget; }
+
+    function take() {
+      if (!cur) return true;
+      return claim();
     }
 
     function onKey(e) {
@@ -72,7 +87,7 @@
       if (audio && audio.stop) audio.stop();
     }
 
-    return { open: open, replay: replay, onKey: onKey, stop: stop };
+    return { open: open, replay: replay, onKey: onKey, stop: stop, take: take, exhausted: exhausted };
   }
 
   function timerOf(course, item) {

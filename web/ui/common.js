@@ -76,6 +76,7 @@
         this.setState({ playing: false });
         return;
       }
+      if (p.dict && !p.dict.take()) return;
       if (p.clip) { playClip(this, p); return; }
       var r = Speech.play(p.lines, p.audio.cfg, {
         onEnd: function () { p.audio.played[p.pid] = true; if (!self.gone) self.setState({ playing: false, played: true }); },
@@ -92,7 +93,7 @@
       if (p.clip && s.playing && !exam) label = t('audio.loading');
       var self = this;
       var btn = html`<button type="button" class="btn icon play" data-testid=${p.testid} aria-label=${label} title=${label}
-        disabled=${once || (exam && s.playing)} onClick=${function () { self.click(); }}><span aria-hidden="true">${s.playing && !exam ? '\u25A0' : '\u25B6'}</span></button>`;
+        disabled=${once || (exam && s.playing) || (!s.playing && !!p.dict && p.dict.exhausted())} onClick=${function () { self.click(); }}><span aria-hidden="true">${s.playing && !exam ? '\u25A0' : '\u25B6'}</span></button>`;
       if (!s.failed) return btn;
       return [btn, html`<span class="notice" role="status" data-testid=${p.testid + '-failed'}>${t('audio.failed')}</span>`];
     }
@@ -118,7 +119,7 @@
       }
       return html`<p class="notice" role="status" data-testid=${p.testid + '-notice'}>${a.t('speech.novoice', { lang: displayLang })}</p>`;
     }
-    return h(PlayButton, { key: p.pid, pid: p.pid, lines: p.lines, clip: p.clip, audio: a, testid: p.testid });
+    return h(PlayButton, { key: p.pid, pid: p.pid, lines: p.lines, clip: p.clip, audio: a, testid: p.testid, dict: p.dict });
   }
 
   function cls() {

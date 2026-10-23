@@ -49,6 +49,7 @@
     if (detail.parsed !== null) {
       return html`<p data-testid="numeric-readAs">${t('q.numeric.readAs', { value: String(detail.parsed) })}</p>`;
     }
+    if (res.timedOut) return null;
     return html`<p data-testid="numeric-invalid">${t('q.numeric.invalid')}</p>`;
   }
 

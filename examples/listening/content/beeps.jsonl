@@ -1,5 +1,5 @@
 {"type":"numeric","id":"beeps-0","unit":"beeps","stimulus":"s0","prompt":"How many beeps? (a low tone means 0)","answer":0,"explanation":"There were 0 beeps."}
-{"type":"numeric","id":"beeps-1","unit":"beeps","stimulus":"s1","prompt":"How many beeps? (a low tone means 0)","answer":1,"explanation":"There were 1 beeps."}
+{"type":"numeric","id":"beeps-1","unit":"beeps","stimulus":"s1","prompt":"How many beeps? (a low tone means 0)","answer":1,"explanation":"There was 1 beep."}
 {"type":"numeric","id":"beeps-2","unit":"beeps","stimulus":"s2","prompt":"How many beeps? (a low tone means 0)","answer":2,"explanation":"There were 2 beeps."}
 {"type":"numeric","id":"beeps-3","unit":"beeps","stimulus":"s3","prompt":"How many beeps? (a low tone means 0)","answer":3,"explanation":"There were 3 beeps."}
 {"type":"numeric","id":"beeps-4","unit":"beeps","stimulus":"s4","prompt":"How many beeps? (a low tone means 0)","answer":4,"explanation":"There were 4 beeps."}
