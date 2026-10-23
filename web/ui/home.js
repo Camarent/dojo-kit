@@ -201,7 +201,7 @@
           ${weakList.map(function (item) {
             var plain = DojoExt.plain(item.prompt || '');
             var truncated = plain.length > 24 ? plain.slice(0, 24) + '\u2026' : plain;
-            return html`<li><span class="chip" title=${plain}>${truncated}</span></li>`;
+            return html`<li><span class="chip" title=${plain}><span class="chip-text">${truncated}</span></span></li>`;
           })}
         </ul>
       </div>` : null}

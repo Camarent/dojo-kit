@@ -128,7 +128,7 @@ test('CSS: @media (max-width: 600px) contains line-clamp for weak-chips', () => 
   const css = read('styles/app.css');
   const block600 = extractMediaBlock(css);
   assert.ok(block600, 'app.css should contain @media (max-width: 600px) block');
-  assert.ok(block600.includes('.weak-chips .chip'), 'Block should mention .weak-chips .chip');
+  assert.ok(block600.includes('.weak-chips .chip-text'), 'Block should mention .weak-chips .chip-text');
   assert.ok(block600.includes('-webkit-line-clamp: 2'), 'Block should contain -webkit-line-clamp: 2');
   assert.ok(block600.includes('-webkit-box-orient: vertical'), 'Block should contain -webkit-box-orient: vertical');
   assert.ok(block600.includes('overflow: hidden'), 'Block should contain overflow: hidden');
