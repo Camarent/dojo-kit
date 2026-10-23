@@ -253,7 +253,7 @@ test('requeue counter UI: shows position / initial total and a +N badge', async 
   const sb = load();
   const t = await setup(null, { n: 3 });
   const ui = sessionScreen(sb, t.engine.start('daily'));
-  assert.strictEqual(find(ui.view(), 'retry-badge'), null);
+  assert.match(find(ui.view(), 'retry-badge').props.class, /\bempty\b/);
   assert.strictEqual(texts(find(ui.view(), 'progress')).join('').replace(/\s+/g, ''), '1/3');
   ui.answer({ text: 'zzz' });
   ui.next(); ui.answer({ text: 'x' });

@@ -5088,6 +5088,16 @@
                     6
                   ]
                 }
+              },
+              {
+                "type": "span",
+                "props": {
+                  "data-testid": "retry-badge",
+                  "class": "badge retry empty",
+                  "children": [
+                    "+0 retries"
+                  ]
+                }
               }
             ]
           }
@@ -5189,7 +5199,7 @@
                 "type": "button",
                 "props": {
                   "data-testid": "btn-next",
-                  "class": "btn primary",
+                  "class": "btn primary big",
                   "title": "Next (→)",
                   "aria-label": "Next (→)",
                   "disabled": true,
@@ -5263,6 +5273,16 @@
                     1,
                     " / ",
                     6
+                  ]
+                }
+              },
+              {
+                "type": "span",
+                "props": {
+                  "data-testid": "retry-badge",
+                  "class": "badge retry empty",
+                  "children": [
+                    "+0 retries"
                   ]
                 }
               }
@@ -5367,7 +5387,7 @@
                 "type": "button",
                 "props": {
                   "data-testid": "btn-next",
-                  "class": "btn primary",
+                  "class": "btn primary big",
                   "title": "Next (→)",
                   "aria-label": "Next (→)",
                   "disabled": true,
@@ -5631,7 +5651,7 @@
                 "type": "button",
                 "props": {
                   "data-testid": "btn-next",
-                  "class": "btn primary",
+                  "class": "btn primary big",
                   "title": "Next (→)",
                   "aria-label": "Next (→)",
                   "disabled": false,

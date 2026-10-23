@@ -278,7 +278,7 @@
             <span style=${{ width: Math.round(100 * (cur.position - (s.result ? 0 : 1)) / cur.total) + '%' }}></span>
           </div>
           <span class="count" data-testid="progress">${Math.min(cur.position, session.initialTotal)} / ${session.initialTotal}</span>
-          ${session.retryCount() > 0 ? html`<span class="badge retry" data-testid="retry-badge">${t('session.retries', { n: session.retryCount() })}</span>` : null}
+          <span class=${cls('badge retry', session.retryCount() === 0 && 'empty')} data-testid="retry-badge">${t('session.retries', { n: session.retryCount() })}</span>
           ${session.group && session.group.count > 1 ? html`<span class="count" data-testid="group">${t('session.group', { n: session.group.index + 1, total: session.group.count })}</span>` : null}
           ${s.remaining !== null ? html`<span class=${cls('timer', s.remaining < 60000 && 'low')} data-testid="timer">${fmtClock(s.remaining)}</span>` : null}
         </div>`;
@@ -334,7 +334,7 @@
       return html`<div class="row actions-row">
           ${this.renderDontKnow(p, s)}
           ${examMode ? html`<button type="button" class="btn" data-testid="btn-finish" onClick=${function () { self.setState({ confirm: 'finish' }); }}>${t('session.finish')}</button>` : null}
-          <button type="button" class="btn primary" disabled=${!exam && !s.result} data-testid="btn-next"
+          <button type="button" class="btn primary big" disabled=${!exam && !s.result} data-testid="btn-next"
             ref=${function (el) { self.nextBtn = el; }}
             title=${t('session.next.withArrow')} aria-label=${t('session.next.withArrow')}
             onClick=${function () { if (examMode && last) self.setState({ confirm: 'finish' }); else self.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>

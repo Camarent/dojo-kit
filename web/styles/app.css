@@ -37,6 +37,7 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .btn.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
 .btn.primary:disabled { background: transparent; border: 1px solid var(--control-border); color: var(--fg-muted); }
+.badge.retry.empty { visibility: hidden; }
 .btn.big { min-height: 52px; font-size: var(--fs-lg); width: 100%; }
 .btn.icon { padding: 0; font-size: var(--fs-lg); }
 .btn.play { flex: none; order: 2; width: 2.25rem; height: 2.25rem; min-width: var(--tap); min-height: var(--tap); padding: 0; }
@@ -198,7 +199,7 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .catalog-detail-header { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; background: var(--surface); z-index: 1; }
 .catalog-detail-header .kanji-ch { font-size: 2.5rem; }
 .catalog-detail-header .btn.icon { padding: 0 var(--space-3); min-width: var(--tap); white-space: nowrap; flex: none; }
-.badge.retry { background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 999px; font-size: var(--fs-sm); margin-left: var(--space-2); }
+.badge.retry { min-width: 5.5rem; text-align: center; flex: none; background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 999px; font-size: var(--fs-sm); margin-left: var(--space-2); }
 .feedback.retry { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .resume-box {
   border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -343,7 +344,7 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .session .opt .key { display: none; }
 .session .gap .field { font-size: var(--fs-lg); text-align: center; min-height: var(--tap); flex-basis: 100%; }
 .actions-row { align-items: stretch; }
-.actions-row .btn:disabled { flex: 0 0 auto; }
+.actions-row .btn:disabled { flex: 1 1 0; }
 .actions-row .btn { flex: 1 1 0; min-height: 3.25rem; font-size: var(--fs-lg); justify-content: center; }
 .session .feedback { border-left-width: 5px; }
 .session .feedback-detail { border-top: 1px solid var(--border); padding-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
