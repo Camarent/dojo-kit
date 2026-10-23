@@ -51,7 +51,7 @@ function scanNameSection(buf, failures) {
 
 function runVectors(dojo, failures) {
   let total = 0;
-  for (const file of ['sanitize', 'merge', 'srs', 'days', 'check', 'exam']) {
+  for (const file of ['sanitize', 'merge', 'srs', 'days', 'check', 'exam', 'timer', 'extras']) {
     const doc = JSON.parse(fs.readFileSync(path.join(__dirname, 'vectors', file + '.json'), 'utf8'));
     for (const group of doc.groups || [doc]) {
       for (const c of group.cases) {

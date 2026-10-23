@@ -1,7 +1,14 @@
 use super::*;
 use crate::srs;
 
+fn num(a: &Value, key: &str) -> Option<f64> {
+    a.get(key).and_then(Value::as_f64)
+}
+
 pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
+    if !a.is_object() && matches!(name, "timerNext" | "timerLimit" | "applyExtras") {
+        return Err(bad("arguments must be an object"));
+    }
     match name {
         "applyAnswer" => Ok(srs::apply_answer_drop(rec(a), flag(a, "correct"), int(a, "now")?, &ladder(a)?, drop(a)?)),
         "applyPractice" => Ok(srs::apply_practice_drop(rec(a), flag(a, "correct"), int(a, "now")?, &ladder(a)?, drop(a)?)),
@@ -56,6 +63,21 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
             let unit_id = text(a, "unitId")?;
             Ok(srs::unit_config(course_json, unit_id))
         },
+        "timerNext" => {
+            let input = srs::TimerIn { scale: num(a, "scale"), streak: num(a, "streak"), answer_ms: num(a, "answerMs"), limit_ms: num(a, "limitMs") };
+            let (scale, streak) = srs::timer_next(&input, a.get("outcome").and_then(Value::as_str) == Some("correct"));
+            Ok(json!({"scale": scale, "streak": streak as u64}))
+        }
+        "timerLimit" => Ok(Value::from(srs::timer_limit(num(a, "baseMs"), num(a, "scale")) as u64)),
+        "applyExtras" => {
+            let o = srs::Outcome {
+                correct: a.get("correct") == Some(&Value::Bool(true)),
+                given: a.get("given").and_then(Value::as_str),
+                timed_out: a.get("timedOut") == Some(&Value::Bool(true)),
+                weighted: a.get("weighted") == Some(&Value::Bool(true)),
+            };
+            Ok(srs::apply_extras(rec(a), &o))
+        }
         other => Err(CallError { code: "unknown_function", message: format!("unknown function `{other}`") }),
     }
 }
