@@ -8,9 +8,9 @@ const { execFileSync } = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..');
 const SELF = path.relative(ROOT, __filename).split(path.sep).join('/');
-const MARKERS = ['fr-numbers', 'soixante', 'quatre-vingt', 'Lingua Libre', 'youtube.com/watch'];
+const MARKERS = ['fr-numbers', 'soixante', 'quatre-vingt', 'sept', 'cents', 'Lingua Libre', 'youtube.com/watch'];
 // Exempt (path -> markers) until the contract example is reworded.
-const EXEMPT = { 'CONTRACT.md': ['quatre-vingt'] };
+const EXEMPT = {};
 
 function trackedFiles() {
   const out = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, maxBuffer: 1 << 26 }).toString('utf8');
