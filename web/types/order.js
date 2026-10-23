@@ -42,7 +42,7 @@
         if (piece === null) {
           var k = slots[idx];
           var id = placed[k];
-          if (id !== undefined) {
+          if (id !== undefined && byId[id]) {
             var label = t('q.order.position', { n: k + 1 });
             return html`<button type="button" class=${cls('order-slot', mark(k))}
               data-testid=${'order-slot-' + k} aria-label=${label + ': ' + byId[id].label}
@@ -63,6 +63,7 @@
     var placed = ctx.placed, byId = ctx.byId, res = ctx.res, mark = ctx.mark;
     return html`<ol class="order-placed-list" data-testid="order-placed-list">
       ${placed.map(function (id, k) {
+        if (!byId[id]) return null;
         var label = ctx.t('q.order.position', { n: k + 1 });
         return html`<li key=${id}><button type="button" class=${cls('order-step', 'order-placed', mark(k))}
           data-testid=${'order-placed-' + k} data-refocus=${ctx.flag(ctx.focusOn === 'placed' && k === 0)} aria-label=${label + ': ' + byId[id].label} disabled=${!!res}

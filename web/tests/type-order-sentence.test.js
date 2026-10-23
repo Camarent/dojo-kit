@@ -279,3 +279,11 @@ test('arrow navigation visits slots, pool, reset, check in order', () => {
   press(els[3]);
   assert.strictEqual(cur.v.id, 'order-slot-0', 'wraps past disabled check');
 });
+
+test('unknown placed id renders an empty slot in sentence mode without throwing', () => {
+  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
+  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const r = render(['zzz'], item, view);
+  assert.strictEqual(find(r.vnode, 'order-slot-0').length, 1);
+  assert.ok(/empty/.test(find(r.vnode, 'order-slot-0')[0].props.class));
+});
