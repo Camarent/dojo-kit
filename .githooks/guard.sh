@@ -18,7 +18,16 @@ is_msg_email_ok() {
 
 # Message must not name jobs (stdin); returns 1 if it does
 msg_names_job() {
-  grep -qiE 'vibe job|squash of job|(^|[^A-Za-z0-9])job/[A-Za-z0-9._]+(-[A-Za-z0-9._]+)*-task-[0-9]+'
+  grep -qiE 'vibe job|squash of job|(^|[^A-Za-z0-9])job/[A-Za-z0-9._]+(-[A-Za-z0-9._]+)*-task-[0-9]+|^Merge (branch .?)?job/|(^|[^A-Za-z0-9])job/[A-Za-z0-9._-]+-t[0-9]+(-r[0-9]+)?([^A-Za-z0-9]|$)'
+}
+
+# First line of a commit message (stdin) must be '<type>(<area>): <what>';
+# only the dev->master '--no-ff' merge subject is exempt
+subject_ok() {
+  first=$(grep -v '^#' | head -n 1)
+  echo "$first" | grep -qE '^(feat|fix|refactor|test|docs|chore|perf|build|style)\([^()[:space:]]+\): [^[:space:]]' && return 0
+  echo "$first" | grep -qE "^Merge branch 'dev'( into master)?$" && return 0
+  return 1
 }
 
 # Secret scanner must exist; DOJO_ALLOW_NO_GITLEAKS=1 overrides explicitly
@@ -91,7 +100,7 @@ check_commit_range() {
     fi
 
     # Check for forbidden paths in this commit
-    bad_paths=$(git show --name-only --pretty=format: "$commit" | grep -E '^(workspace/[^.]|dist/|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$)' || true)
+    bad_paths=$(git show --name-only --pretty=format: "$commit" | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$|(.*/)?progress[^/]*\.json$)' || true)
     if [ -n "$bad_paths" ]; then
       echo "refused: commit ${commit_short}: stages private or generated paths:" >&2
       echo "$bad_paths" | head -10 | sed 's/^/  /' >&2
@@ -208,7 +217,7 @@ main_guard() {
   check_ident || fail=1
 
   # Check staged paths
-  bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(workspace/[^.]|dist/|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$)' || true)
+  bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$|(.*/)?progress[^/]*\.json$)' || true)
   if [ -n "$bad" ]; then
     echo "refused: private or generated paths are staged:" >&2
     echo "$bad" | head -10 >&2

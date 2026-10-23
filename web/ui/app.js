@@ -5,18 +5,20 @@
 (function (root) {
   'use strict';
 
+  function dep(name, file) { return root[name] || (typeof require !== 'undefined' ? require(file) : null) || {}; }
+
   var h = preact.h;
   var Component = preact.Component;
   var html = htm.bind(h);
   var DojoExt = root.DojoExt || {};
-  var DojoI18n = root.DojoI18n || (typeof require !== 'undefined' ? require('./i18n.js') : null) || {};
+  var DojoI18n = dep('DojoI18n', './i18n.js');
 
-  var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
+  var DojoCommon = dep('DojoCommon', './common.js');
 
-  var DojoCatalog = root.DojoCatalog || (typeof require !== 'undefined' ? require('./catalog.js') : null) || {};
+  var DojoCatalog = dep('DojoCatalog', './catalog.js');
 
   var CatalogScreen = DojoCatalog.CatalogScreen;
-  var Home = (root.DojoHome || (typeof require !== "undefined" ? require("./home.js") : null) || {}).Home;
+  var Home = (dep('DojoHome', './home.js')).Home;
 
   var Dialog = DojoCommon.Dialog;
   var ProgressBar = DojoCommon.ProgressBar;
@@ -24,27 +26,64 @@
   var daysLeft = DojoCommon.daysLeft;
   var applyTheme = DojoCommon.applyTheme;
 
-  var DojoStimulus = root.DojoStimulus || (typeof require !== 'undefined' ? require('./stimulus.js') : null) || {};
+  var DojoStimulus = dep('DojoStimulus', './stimulus.js');
   var shared = DojoStimulus.create();
   var Stimulus = shared.Stimulus;
 
-  var DojoSessionScreen = root.DojoSessionScreen || (typeof require !== 'undefined' ? require('./session-screen.js') : null) || {};
-  var DojoResults = root.DojoResults || (typeof require !== 'undefined' ? require('./results.js') : null) || {};
+  var DojoSessionScreen = dep('DojoSessionScreen', './session-screen.js');
+  var DojoResults = dep('DojoResults', './results.js');
   var sessionParts = DojoSessionScreen.create({ Stimulus: Stimulus, kanjiRows: shared.kanjiRows, tagInfo: shared.tagInfo, captionFor: shared.captionFor, fmtClock: shared.fmtClock });
   var SessionBoundary = sessionParts.SessionBoundary;
   var SessionScreen = sessionParts.SessionScreen;
   var Results = DojoResults.create({ percent: shared.percent, fmtClock: shared.fmtClock }).Results;
-  var DojoPlacement = root.DojoPlacement || (typeof require !== 'undefined' ? require('./placement.js') : null) || {};
+  var DojoPlacement = dep('DojoPlacement', './placement.js');
   var placementParts = DojoPlacement.create({ uniqueSorted: shared.uniqueSorted, tagInfo: shared.tagInfo, toggle: shared.toggle, Stimulus: Stimulus, kanjiRows: shared.kanjiRows });
   var PracticeSetup = placementParts.PracticeSetup;
   var PlacementScreen = placementParts.PlacementScreen;
   var PlacementSession = placementParts.PlacementSession;
 
-  var DojoSettingsSpeech = root.DojoSettingsSpeech || (typeof require !== 'undefined' ? require('./settings-speech.js') : null) || {};
-  var DojoSettings = root.DojoSettings || (typeof require !== 'undefined' ? require('./settings.js') : null) || {};
+  var DojoSettingsSpeech = dep('DojoSettingsSpeech', './settings-speech.js');
+  var DojoSettings = dep('DojoSettings', './settings.js');
   var settingsParts = DojoSettings.create({ renderSpeechSettings: DojoSettingsSpeech.create().renderSpeechSettings });
   var SettingsScreen = settingsParts.SettingsScreen;
   var renderPluginSettings = settingsParts.renderPluginSettings;
+
+  // ---------- screen routing ----------
+
+  function sessionProps(self, p, s) {
+    return { t: p.t, lang: p.lang, session: s.session, now: p.now, win: p.win, course: p.course, store: p.store,
+      onEnd: function (sum) { self.endSession(sum); }, onExit: function () { self.exitSession(); } };
+  }
+  function sessionScreen(self, p, s) {
+    var placement = s.session && s.session.mode === 'placement';
+    var props = sessionProps(self, p, s);
+    if (!placement) props.content = p.content;
+    return h(SessionBoundary, { key: s.session.id, t: p.t, session: s.session, onExit: props.onExit, onFinish: function () { self.finishBroken(s.session); } },
+      h(placement ? PlacementSession : SessionScreen, props));
+  }
+  function practiceScreen(self, p, s, common) {
+    return h(PracticeSetup, Object.assign({ content: p.content, onStart: function (m, o) { self.startMode(m, o); } }, common));
+  }
+  function resultsScreen(self, p, s, common) {
+    var isPlacement = s.summary && s.summary.mode === 'placement';
+    return h(Results, Object.assign({ summary: s.summary, byId: p.byId, onAgain: function () { self.again(); }, isPlacement: isPlacement }, common));
+  }
+  function settingsScreen(self, p, s, common) {
+    return h(SettingsScreen, Object.assign({ lang: p.lang, store: p.store, content: p.content, engine: p.engine, now: p.now, win: p.win,
+      onDataChanged: function () { self.refresh(); }, onPlacement: function () { self.showPlacementIntro(); },
+      onNotice: function (n) { self.setState({ notice: n.text }); } }, common));
+  }
+  function catalogScreen(self, p, s, common) {
+    return h(CatalogScreen, Object.assign({ content: p.content, store: p.store, engine: p.engine, now: p.now, win: p.win }, common));
+  }
+  function homeScreen(self, p, s, common) {
+    var home = s.home || {};
+    var doc = p.store.doc;
+    var examDate = doc.settings && doc.settings.examDate ? doc.settings.examDate : null;
+    var examDaysLeft = daysLeft(examDate, p.today());
+    return h(Home, Object.assign({ home: home, engine: p.engine, exams: p.engine.exams ? p.engine.exams() : [], onStart: function (m, o) { self.startMode(m, o); }, onPlacement: function () { self.showPlacementIntro(); }, onMoreNew: function (n) { self.addMoreNew(n); }, onGroupSetting: function (gid, field, value) { self.setGroupSetting(gid, field, value); }, examDate: examDate, examDaysLeft: examDaysLeft, lang: p.lang, resume: home.resume, onResume: function () { self.resumeExam(); }, onStartOver: function () { self.startOver(); }, onDiscard: function () { self.discardDraft(); } }, common));
+  }
+  var SCREENS = { practice: practiceScreen, session: sessionScreen, results: resultsScreen, settings: settingsScreen, catalog: catalogScreen, home: homeScreen };
 
   // ---------- App ----------
 
@@ -184,13 +223,10 @@
       if (draft) this.props.engine.discardDraft(draft.sid);
       this.startMode(c.mode, c.opts, true);
     }
-    render(p, s) {
+    overlayBody(p, s, common) {
       var self = this;
-      var common = { t: p.t, course: p.course, status: s.status, notice: s.notice, dojo: p.dojo, go: function (x) { self.go(x); } };
-      var body;
-      var home = s.home || {};
       if (s.confirmNew) {
-        body = h(Dialog, {
+        return h(Dialog, {
           testid: 'confirm-new-exam',
           title: p.t('home.resume.confirm.title'),
           body: p.t('home.resume.confirm.body'),
@@ -200,33 +236,14 @@
           onConfirm: function () { self.confirmNewProceed(); },
           onCancel: function () { self.confirmNewCancel(); }
         });
-      } else if (s.placementIntro) {
-        body = h(PlacementScreen, Object.assign({ onStart: function () { self.startPlacement(); } }, common));
-      } else if (s.screen === 'practice') {
-        body = h(PracticeSetup, Object.assign({ content: p.content, onStart: function (m, o) { self.startMode(m, o); } }, common));
-      } else if (s.screen === 'session' && s.session && s.session.mode === 'placement') {
-        body = h(SessionBoundary, { key: s.session.id, t: p.t, session: s.session, onExit: function () { self.exitSession(); }, onFinish: function () { self.finishBroken(s.session); } },
-          h(PlacementSession, { t: p.t, lang: p.lang, session: s.session, now: p.now, win: p.win, course: p.course, store: p.store,
-            onEnd: function (sum) { self.endSession(sum); }, onExit: function () { self.exitSession(); } }));
-      } else if (s.screen === 'session') {
-        body = h(SessionBoundary, { key: s.session.id, t: p.t, session: s.session, onExit: function () { self.exitSession(); }, onFinish: function () { self.finishBroken(s.session); } },
-          h(SessionScreen, { t: p.t, lang: p.lang, session: s.session, now: p.now, win: p.win, course: p.course, content: p.content, store: p.store,
-            onEnd: function (sum) { self.endSession(sum); }, onExit: function () { self.exitSession(); } }));
-      } else if (s.screen === 'results') {
-        var isPlacement = s.summary && s.summary.mode === 'placement';
-        body = h(Results, Object.assign({ summary: s.summary, byId: p.byId, onAgain: function () { self.again(); }, isPlacement: isPlacement }, common));
-      } else if (s.screen === 'settings') {
-        body = h(SettingsScreen, Object.assign({ lang: p.lang, store: p.store, content: p.content, engine: p.engine, now: p.now, win: p.win,
-          onDataChanged: function () { self.refresh(); }, onPlacement: function () { self.showPlacementIntro(); },
-          onNotice: function (n) { self.setState({ notice: n.text }); } }, common));
-      } else if (s.screen === 'catalog') {
-        body = h(CatalogScreen, Object.assign({ content: p.content, store: p.store, engine: p.engine, now: p.now, win: p.win }, common));
-      } else {
-        var doc = p.store.doc;
-        var examDate = doc.settings && doc.settings.examDate ? doc.settings.examDate : null;
-        var examDaysLeft = daysLeft(examDate, p.today());
-        body = h(Home, Object.assign({ home: home, engine: p.engine, exams: p.engine.exams ? p.engine.exams() : [], onStart: function (m, o) { self.startMode(m, o); }, onPlacement: function () { self.showPlacementIntro(); }, onMoreNew: function (n) { self.addMoreNew(n); }, onGroupSetting: function (gid, field, value) { self.setGroupSetting(gid, field, value); }, examDate: examDate, examDaysLeft: examDaysLeft, lang: p.lang, resume: home.resume, onResume: function () { self.resumeExam(); }, onStartOver: function () { self.startOver(); }, onDiscard: function () { self.discardDraft(); } }, common));
       }
+      if (s.placementIntro) return h(PlacementScreen, Object.assign({ onStart: function () { self.startPlacement(); } }, common));
+      return null;
+    }
+    render(p, s) {
+      var self = this;
+      var common = { t: p.t, course: p.course, status: s.status, notice: s.notice, dojo: p.dojo, go: function (x) { self.go(x); } };
+      var body = this.overlayBody(p, s, common) || (SCREENS[s.screen] || homeScreen)(self, p, s, common);
       return html`<div class="app">${body}</div>`;
     }
   }

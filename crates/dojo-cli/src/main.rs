@@ -1,8 +1,8 @@
-mod add;
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
+#![cfg_attr(not(test), warn(clippy::indexing_slicing))]
 mod build;
 mod cmd;
 mod course_files;
-mod import_progress;
 
 use cmd::{add::run_add, build::run_build, import_progress::run_import_progress, init::run_init, lock::run_lock, next_id::run_next_id, stats::run_stats, validate::run_validate};
 use course_files::{load, read, CourseFiles};

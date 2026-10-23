@@ -339,32 +339,27 @@ pub enum Item {
     Numeric(NumericItem),
 }
 
-impl Item {
-    pub fn id(&self) -> &str {
-        match self {
-            Item::Choice(i) => &i.id,
-            Item::Gap(i) => &i.id,
-            Item::Card(i) => &i.id,
-            Item::Multi(i) => &i.id,
-            Item::Match(i) => &i.id,
-            Item::Order(i) => &i.id,
-            Item::Cloze(i) => &i.id,
-            Item::Numeric(i) => &i.id,
+macro_rules! common_field {
+    ($self:expr, $i:ident => $e:expr) => {
+        match $self {
+            Item::Choice($i) => $e,
+            Item::Gap($i) => $e,
+            Item::Card($i) => $e,
+            Item::Multi($i) => $e,
+            Item::Match($i) => $e,
+            Item::Order($i) => $e,
+            Item::Cloze($i) => $e,
+            Item::Numeric($i) => $e,
         }
-    }
+    };
+}
 
-    pub fn unit(&self) -> &str {
-        match self {
-            Item::Choice(i) => &i.unit,
-            Item::Gap(i) => &i.unit,
-            Item::Card(i) => &i.unit,
-            Item::Multi(i) => &i.unit,
-            Item::Match(i) => &i.unit,
-            Item::Order(i) => &i.unit,
-            Item::Cloze(i) => &i.unit,
-            Item::Numeric(i) => &i.unit,
-        }
-    }
+impl Item {
+    pub fn id(&self) -> &str { common_field!(self, i => &i.id) }
+
+    pub fn unit(&self) -> &str { common_field!(self, i => &i.unit) }
+
+    pub fn prompt(&self) -> &str { common_field!(self, i => &i.prompt) }
 
     pub fn item_type(&self) -> ItemType {
         match self {
@@ -379,88 +374,16 @@ impl Item {
         }
     }
 
-    /// Ids of retired items this item replaces; empty when the field is absent.
-    pub fn supersedes(&self) -> &[String] {
-        self.supersedes_field().unwrap_or(&[])
-    }
-
     /// The `supersedes` field as written; `None` when absent.
-    pub fn supersedes_field(&self) -> Option<&[String]> {
-        match self {
-            Item::Choice(i) => i.supersedes.as_deref(),
-            Item::Gap(i) => i.supersedes.as_deref(),
-            Item::Card(i) => i.supersedes.as_deref(),
-            Item::Multi(i) => i.supersedes.as_deref(),
-            Item::Match(i) => i.supersedes.as_deref(),
-            Item::Order(i) => i.supersedes.as_deref(),
-            Item::Cloze(i) => i.supersedes.as_deref(),
-            Item::Numeric(i) => i.supersedes.as_deref(),
-        }
-    }
+    pub fn supersedes_field(&self) -> Option<&[String]> { common_field!(self, i => i.supersedes.as_deref()) }
 
-    pub fn is_retired(&self) -> bool {
-        let status = match self {
-            Item::Choice(i) => i.status,
-            Item::Gap(i) => i.status,
-            Item::Card(i) => i.status,
-            Item::Multi(i) => i.status,
-            Item::Match(i) => i.status,
-            Item::Order(i) => i.status,
-            Item::Cloze(i) => i.status,
-            Item::Numeric(i) => i.status,
-        };
-        status == Some(Status::Retired)
-    }
+    pub fn is_retired(&self) -> bool { common_field!(self, i => i.status) == Some(Status::Retired) }
 
-    pub fn stimulus(&self) -> Option<&str> {
-        match self {
-            Item::Choice(i) => i.stimulus.as_deref(),
-            Item::Gap(i) => i.stimulus.as_deref(),
-            Item::Card(i) => i.stimulus.as_deref(),
-            Item::Multi(i) => i.stimulus.as_deref(),
-            Item::Match(i) => i.stimulus.as_deref(),
-            Item::Order(i) => i.stimulus.as_deref(),
-            Item::Cloze(i) => i.stimulus.as_deref(),
-            Item::Numeric(i) => i.stimulus.as_deref(),
-        }
-    }
+    pub fn stimulus(&self) -> Option<&str> { common_field!(self, i => i.stimulus.as_deref()) }
 
-    pub fn speak(&self) -> Option<&str> {
-        match self {
-            Item::Choice(i) => i.speak.as_deref(),
-            Item::Gap(i) => i.speak.as_deref(),
-            Item::Card(i) => i.speak.as_deref(),
-            Item::Multi(i) => i.speak.as_deref(),
-            Item::Match(i) => i.speak.as_deref(),
-            Item::Order(i) => i.speak.as_deref(),
-            Item::Cloze(i) => i.speak.as_deref(),
-            Item::Numeric(i) => i.speak.as_deref(),
-        }
-    }
+    pub fn speak(&self) -> Option<&str> { common_field!(self, i => i.speak.as_deref()) }
 
-    pub fn tags(&self) -> Option<&Vec<String>> {
-        match self {
-            Item::Choice(i) => Some(&i.tags),
-            Item::Gap(i) => Some(&i.tags),
-            Item::Card(i) => Some(&i.tags),
-            Item::Multi(i) => Some(&i.tags),
-            Item::Match(i) => Some(&i.tags),
-            Item::Order(i) => Some(&i.tags),
-            Item::Cloze(i) => Some(&i.tags),
-            Item::Numeric(i) => Some(&i.tags),
-        }
-    }
+    pub fn tags(&self) -> &[String] { common_field!(self, i => &i.tags) }
 
-    pub fn entity(&self) -> Option<&str> {
-        match self {
-            Item::Choice(i) => i.entity.as_deref(),
-            Item::Gap(i) => i.entity.as_deref(),
-            Item::Card(i) => i.entity.as_deref(),
-            Item::Multi(i) => i.entity.as_deref(),
-            Item::Match(i) => i.entity.as_deref(),
-            Item::Order(i) => i.entity.as_deref(),
-            Item::Cloze(i) => i.entity.as_deref(),
-            Item::Numeric(i) => i.entity.as_deref(),
-        }
-    }
+    pub fn entity(&self) -> Option<&str> { common_field!(self, i => i.entity.as_deref()) }
 }

@@ -12,12 +12,7 @@
     if (Array.isArray(v)) return v.map(sortKeys);
     if (!v || typeof v !== 'object') return v;
     var out = Object.create(null);
-    var DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
-    Object.keys(v).sort().forEach(function (k) {
-      if (DANGEROUS_KEYS.indexOf(k) === -1) {
-        out[k] = sortKeys(v[k]);
-      }
-    });
+    Object.keys(v).sort().forEach(function (k) { out[k] = sortKeys(v[k]); });
     return out;
   }
 

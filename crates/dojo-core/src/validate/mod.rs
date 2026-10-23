@@ -2,32 +2,7 @@ use crate::content::{DetailConfig, DetailField, Course, ExamConfig, Item, ItemTy
 use crate::lock::IdLock;
 use std::collections::{HashMap, HashSet};
 
-/// Diagnostic severity; errors make a course invalid.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Severity {
-    Error,
-    Warning,
-}
-
-impl Severity {
-    /// Lowercase name: `error` or `warning`.
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Severity::Error => "error",
-            Severity::Warning => "warning",
-        }
-    }
-}
-
-/// One finding; `line` is 1-based, 0 when the finding has no line.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Diagnostic {
-    pub severity: Severity,
-    pub code: &'static str,
-    pub file: String,
-    pub line: usize,
-    pub message: String,
-}
+pub use crate::diagnostic::{Diagnostic, Severity};
 
 /// A content file handed to the validator; `name` is the path shown in diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,8 +19,8 @@ mod items;
 mod course;
 mod quality;
 mod speech;
+mod dupes;
 use course::check_course;
-use items::item_tags;
 pub use codes::CODES;
 
 const MAX_PROMPT_CHARS: usize = 600;

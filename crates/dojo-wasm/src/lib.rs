@@ -1,6 +1,8 @@
 //! WebAssembly entry points. ABI: `alloc`/`dealloc` manage buffers in linear memory;
 //! `call(name_ptr, name_len, args_ptr, args_len)` returns `(result_ptr << 32) | result_len`,
 //! a UTF-8 JSON envelope that the caller releases with `dealloc`.
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
+#![cfg_attr(not(test), warn(clippy::indexing_slicing))]
 
 #[cfg(target_arch = "wasm32")]
 mod glue {

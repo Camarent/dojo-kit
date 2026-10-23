@@ -1,7 +1,7 @@
 'use strict';
 
 const { T0, H, D, INTERVALS } = require('../const.js');
-const { Fl, pickDrillJs } = require('../utils.js');
+const { Fl, pickDrillJs, vec } = require('../utils.js');
 const { ref } = require('../ref.js');
 const { unitQueueOracle } = require('../oracles/srs.js');
 
@@ -18,24 +18,14 @@ function srsBuildQueuePart1(kit) {
     c: { s: 3, due: T0 + 3 * D, ok: 3, bad: 0, last: T0 - INTERVALS[3] }
   };
 
-  kit.buildQueueCases.push({
-    name: 'due_sorted_ascending',
-    input: { items: itemsDue, order: kit.order, now: T0, newAllowance: 0 },
-    expect: ref('buildQueue', itemsDue, kit.order, T0, 0),
-    source: 'reference'
-  });
+  kit.buildQueueCases.push(vec('due_sorted_ascending', { items: itemsDue, order: kit.order, now: T0, newAllowance: 0 }, ref('buildQueue', itemsDue, kit.order, T0, 0), 'reference'));
 
   const itemsFresh = {
     b: { s: 2, due: T0 + D, ok: 2, bad: 0, last: T0 - INTERVALS[2] },
     c: { s: 3, due: T0 + 3 * D, ok: 3, bad: 0, last: T0 - INTERVALS[3] }
   };
 
-  kit.buildQueueCases.push({
-    name: 'fresh_limited_by_new_allowance',
-    input: { items: itemsFresh, order: kit.order, now: T0, newAllowance: 2 },
-    expect: ref('buildQueue', itemsFresh, kit.order, T0, 2),
-    source: 'reference'
-  });
+  kit.buildQueueCases.push(vec('fresh_limited_by_new_allowance', { items: itemsFresh, order: kit.order, now: T0, newAllowance: 2 }, ref('buildQueue', itemsFresh, kit.order, T0, 2), 'reference'));
 
   const itemsUnknown = {
     a: { s: 1, due: T0 + 2 * D, ok: 1, bad: 0, last: T0 - INTERVALS[1] },
@@ -43,40 +33,20 @@ function srsBuildQueuePart1(kit) {
     unknown: { s: 1, due: T0 + 5 * D, ok: 1, bad: 0, last: T0 - INTERVALS[1] }
   };
 
-  kit.buildQueueCases.push({
-    name: 'unknown_ids_ignored',
-    input: { items: itemsUnknown, order: kit.order, now: T0, newAllowance: 0 },
-    expect: ref('buildQueue', itemsUnknown, kit.order, T0, 0),
-    source: 'reference'
-  });
+  kit.buildQueueCases.push(vec('unknown_ids_ignored', { items: itemsUnknown, order: kit.order, now: T0, newAllowance: 0 }, ref('buildQueue', itemsUnknown, kit.order, T0, 0), 'reference'));
 
-  kit.buildQueueCases.push({
-    name: 'new_allowance_0',
-    input: { items: {}, order: kit.order, now: T0, newAllowance: 0 },
-    expect: ref('buildQueue', {}, kit.order, T0, 0),
-    source: 'reference'
-  });
+  kit.buildQueueCases.push(vec('new_allowance_0', { items: {}, order: kit.order, now: T0, newAllowance: 0 }, ref('buildQueue', {}, kit.order, T0, 0), 'reference'));
 
-  kit.buildQueueCases.push({
-    name: 'empty_items',
-    input: { items: {}, order: kit.order, now: T0, newAllowance: 5 },
-    expect: ref('buildQueue', {}, kit.order, T0, 5),
-    source: 'reference'
-  });
+  kit.buildQueueCases.push(vec('empty_items', { items: {}, order: kit.order, now: T0, newAllowance: 5 }, ref('buildQueue', {}, kit.order, T0, 5), 'reference'));
 
-  kit.buildQueueCases.push({
-    name: 'float_due_sorted_ascending',
-    input: {
+  kit.buildQueueCases.push(vec('float_due_sorted_ascending', {
       items: {
         a: { s: 1, due: new Fl(T0 - 2 * D), ok: 1, bad: 0, last: T0 - D },
         b: { s: 2, due: new Fl(T0 - 3 * D), ok: 2, bad: 0, last: T0 - D },
         c: { s: 3, due: new Fl(T0 + D), ok: 3, bad: 0, last: T0 - D }
       },
       order: ['a', 'b', 'c', 'd'], now: T0, newAllowance: 1
-    },
-    expect: { due: ['b', 'a'], fresh: ['d'] },
-    source: 'spec'
-  });
+    }, { due: ['b', 'a'], fresh: ['d'] }, 'spec'));
 }
 
 function srsApplyPlacementPart1(kit) {
@@ -84,111 +54,46 @@ function srsApplyPlacementPart1(kit) {
   kit.applyPlacementCases = [];
 
   // known=true: move to stage 4 with spread
-  kit.applyPlacementCases.push({
-    name: 'known_unseen_to_stage_4',
-    input: { rec: null, known: true, now: T0, seed: '1' },
-    expect: ref('applyPlacement', null, true, T0, undefined, 1),
-    source: 'reference'
-  });
+  kit.applyPlacementCases.push(vec('known_unseen_to_stage_4', { rec: null, known: true, now: T0, seed: '1' }, ref('applyPlacement', null, true, T0, undefined, 1), 'reference'));
 
-  kit.applyPlacementCases.push({
-    name: 'known_new_rec_to_stage_4',
-    input: { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, seed: '1' },
-    expect: ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, undefined, 1),
-    source: 'reference'
-  });
+  kit.applyPlacementCases.push(vec('known_new_rec_to_stage_4', { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, seed: '1' }, ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, undefined, 1), 'reference'));
 
   // Stage already at 4 should stay unchanged (idempotent)
-  kit.applyPlacementCases.push({
-    name: 'known_stage_4_unchanged',
-    input: { rec: { s: 4, due: T0 + INTERVALS[4], ok: 5, bad: 1, last: T0 }, known: true, now: T0, seed: '1' },
-    expect: ref('applyPlacement', { s: 4, due: T0 + INTERVALS[4], ok: 5, bad: 1, last: T0 }, true, T0, undefined, 1),
-    source: 'reference'
-  });
+  kit.applyPlacementCases.push(vec('known_stage_4_unchanged', { rec: { s: 4, due: T0 + INTERVALS[4], ok: 5, bad: 1, last: T0 }, known: true, now: T0, seed: '1' }, ref('applyPlacement', { s: 4, due: T0 + INTERVALS[4], ok: 5, bad: 1, last: T0 }, true, T0, undefined, 1), 'reference'));
 
   // Stage past 4 should stay unchanged (never lower)
-  kit.applyPlacementCases.push({
-    name: 'known_stage_5_unchanged',
-    input: { rec: { s: 5, due: T0 + INTERVALS[5], ok: 10, bad: 2, last: T0 }, known: true, now: T0, seed: '1' },
-    expect: ref('applyPlacement', { s: 5, due: T0 + INTERVALS[5], ok: 10, bad: 2, last: T0 }, true, T0, undefined, 1),
-    source: 'reference'
-  });
+  kit.applyPlacementCases.push(vec('known_stage_5_unchanged', { rec: { s: 5, due: T0 + INTERVALS[5], ok: 10, bad: 2, last: T0 }, known: true, now: T0, seed: '1' }, ref('applyPlacement', { s: 5, due: T0 + INTERVALS[5], ok: 10, bad: 2, last: T0 }, true, T0, undefined, 1), 'reference'));
 
   // known=false: return record unchanged
-  kit.applyPlacementCases.push({
-    name: 'unknown_null_rec_unchanged',
-    input: { rec: null, known: false, now: T0, seed: '1' },
-    expect: ref('applyPlacement', null, false, T0, undefined, 1),
-    source: 'reference'
-  });
+  kit.applyPlacementCases.push(vec('unknown_null_rec_unchanged', { rec: null, known: false, now: T0, seed: '1' }, ref('applyPlacement', null, false, T0, undefined, 1), 'reference'));
 
-  kit.applyPlacementCases.push({
-    name: 'unknown_existing_rec_unchanged',
-    input: { rec: { s: 2, due: T0 + INTERVALS[2], ok: 3, bad: 1, last: T0 }, known: false, now: T0, seed: '1' },
-    expect: ref('applyPlacement', { s: 2, due: T0 + INTERVALS[2], ok: 3, bad: 1, last: T0 }, false, T0, undefined, 1),
-    source: 'reference'
-  });
+  kit.applyPlacementCases.push(vec('unknown_existing_rec_unchanged', { rec: { s: 2, due: T0 + INTERVALS[2], ok: 3, bad: 1, last: T0 }, known: false, now: T0, seed: '1' }, ref('applyPlacement', { s: 2, due: T0 + INTERVALS[2], ok: 3, bad: 1, last: T0 }, false, T0, undefined, 1), 'reference'));
 
   // Custom kit.ladder with fewer than 5 stages
   const shortLadder = [0, 4 * H, D, 3 * D]; // max stage = 3
-  kit.applyPlacementCases.push({
-    name: 'known_short_ladder_to_max_stage_3',
-    input: { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, ladder: shortLadder, seed: '1' },
-    expect: ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, shortLadder, 1),
-    source: 'reference'
-  });
+  kit.applyPlacementCases.push(vec('known_short_ladder_to_max_stage_3', { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, ladder: shortLadder, seed: '1' }, ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, shortLadder, 1), 'reference'));
 
   // Deterministic spread: same seed gives same result
-  kit.applyPlacementCases.push({
-    name: 'deterministic_spread_same_seed',
-    input: { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, seed: '42' },
-    expect: ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, undefined, 42),
-    source: 'spec'
-  });
+  kit.applyPlacementCases.push(vec('deterministic_spread_same_seed', { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, seed: '42' }, ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, undefined, 42), 'spec'));
 }
 
 function srsApplyPlacementPart2(kit) {
   // Different seeds give different results
-  kit.applyPlacementCases.push({
-    name: 'deterministic_spread_diff_seed',
-    input: { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, seed: '99' },
-    expect: ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, undefined, 99),
-    source: 'spec'
-  });
+  kit.applyPlacementCases.push(vec('deterministic_spread_diff_seed', { rec: { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, known: true, now: T0, seed: '99' }, ref('applyPlacement', { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, true, T0, undefined, 99), 'spec'));
 
   const placeRec = { s: 0, due: T0, ok: 0, bad: 0, last: T0 };
   for (const big of ['18446744073709551615', '12345678901234567890', '9007199254740993']) {
-    kit.applyPlacementCases.push({
-      name: 'large_seed_' + big,
-      input: { rec: placeRec, known: true, now: T0, seed: big },
-      expect: ref('applyPlacement', placeRec, true, T0, undefined, big),
-      source: 'spec'
-    });
+    kit.applyPlacementCases.push(vec('large_seed_' + big, { rec: placeRec, known: true, now: T0, seed: big }, ref('applyPlacement', placeRec, true, T0, undefined, big), 'spec'));
   }
   for (const st of [1, 3]) {
     const r = { s: st, due: T0, ok: 2, bad: 0, last: T0 };
-    kit.applyPlacementCases.push({
-      name: 'known_from_stage_' + st + '_to_4',
-      input: { rec: r, known: true, now: T0, seed: '7' },
-      expect: ref('applyPlacement', r, true, T0, undefined, '7'),
-      source: 'spec'
-    });
+    kit.applyPlacementCases.push(vec('known_from_stage_' + st + '_to_4', { rec: r, known: true, now: T0, seed: '7' }, ref('applyPlacement', r, true, T0, undefined, '7'), 'spec'));
   }
   {
     const r = { s: 0, due: T0, ok: 0, bad: 0, last: T0, ps: 7 };
-    kit.applyPlacementCases.push({
-      name: 'known_keeps_extra_fields',
-      input: { rec: r, known: true, now: T0, seed: '5' },
-      expect: ref('applyPlacement', r, true, T0, undefined, '5'),
-      source: 'spec'
-    });
+    kit.applyPlacementCases.push(vec('known_keeps_extra_fields', { rec: r, known: true, now: T0, seed: '5' }, ref('applyPlacement', r, true, T0, undefined, '5'), 'spec'));
     const one = [0];
-    kit.applyPlacementCases.push({
-      name: 'known_single_entry_ladder_unchanged',
-      input: { rec: placeRec, known: true, now: T0, ladder: one, seed: '5' },
-      expect: ref('applyPlacement', placeRec, true, T0, one, '5'),
-      source: 'spec'
-    });
+    kit.applyPlacementCases.push(vec('known_single_entry_ladder_unchanged', { rec: placeRec, known: true, now: T0, ladder: one, seed: '5' }, ref('applyPlacement', placeRec, true, T0, one, '5'), 'spec'));
   }
 
   kit.groups.push({ fn: 'applyPlacement', cases: kit.applyPlacementCases });
@@ -202,12 +107,7 @@ function srsApplyPlacementPart3(kit) {
   const uUnits = { a1: 'A', a2: 'A', a3: 'A', b1: 'B', b2: 'B', b3: 'B', c1: 'C' };
   const uItems = { b1: { s: 1, due: T0 - D, ok: 1, bad: 0, last: T0 - 2 * D } };
   const addUnitCase = (name, allowance, caps, items, itemUnits) => {
-    kit.buildQueueCases.push({
-      name: name,
-      input: { items: items, order: uOrder, now: T0, newAllowance: allowance, unitNewCaps: caps, itemUnits: itemUnits },
-      expect: kit.unitQueueOracle({ items, ord: uOrder, allowance, caps, itemUnits }),
-      source: 'spec'
-    });
+    kit.buildQueueCases.push(vec(name, { items: items, order: uOrder, now: T0, newAllowance: allowance, unitNewCaps: caps, itemUnits: itemUnits }, kit.unitQueueOracle({ items, ord: uOrder, allowance, caps, itemUnits }), 'spec'));
   };
   addUnitCase('unit_cap_zero_blocks_unit', 10, { A: 0 }, {}, uUnits);
   addUnitCase('unit_cap_below_global', 10, { A: 1, B: 2 }, {}, uUnits);
@@ -215,27 +115,17 @@ function srsApplyPlacementPart3(kit) {
   addUnitCase('unit_without_cap_unlimited', 10, { A: 1 }, {}, uUnits);
   addUnitCase('existing_records_not_counted_as_new', 10, { B: 1 }, uItems, uUnits);
   addUnitCase('empty_caps_unchanged', 3, {}, {}, uUnits);
-  kit.buildQueueCases.push({
-    name: 'absent_unit_caps_unchanged',
-    input: { items: {}, order: uOrder, now: T0, newAllowance: 4, itemUnits: uUnits },
-    expect: { due: [], fresh: ['a1', 'a2', 'a3', 'b1'] },
-    source: 'spec'
-  });
+  kit.buildQueueCases.push(vec('absent_unit_caps_unchanged', { items: {}, order: uOrder, now: T0, newAllowance: 4, itemUnits: uUnits }, { due: [], fresh: ['a1', 'a2', 'a3', 'b1'] }, 'spec'));
 
   // Group caps over entities (Rust-side spec cases, append-only).
   const gOrder = ['k1a', 'k1b', 'k1c', 'k1d', 'k2a', 'k2b', 'k3a', 'x1'];
   const gUnits = { k1a: 'kanji', k1b: 'kanji', k1c: 'kanji', k1d: 'kanji', k2a: 'kanji', k2b: 'kanji', k3a: 'kanji', x1: 'other' };
   const gEnt = { k1a: 'K1', k1b: 'K1', k1c: 'K1', k1d: 'K1', k2a: 'K2', k2b: 'K2', k3a: 'K3' };
   const addGroupCase = (name, allowance, cap, usedMap, items, expect) => {
-    kit.buildQueueCases.push({
-      name: name,
-      input: {
+    kit.buildQueueCases.push(vec(name, {
         items: items, order: gOrder, now: T0, newAllowance: allowance, itemUnits: gUnits, itemEntities: gEnt,
         groupNewCaps: { kv: cap }, groupUnits: { kv: ['kanji'] }, used: usedMap, day: '2025-01-01', courseId: 'c'
-      },
-      expect: expect,
-      source: 'spec'
-    });
+      }, expect, 'spec'));
   };
   addGroupCase('group_cap_counts_entities', 5, 2, {}, {}, { due: [], fresh: ['k1a', 'k1b', 'k1c', 'k1d', 'k2a', 'k2b', 'x1'] });
   addGroupCase('group_cap_never_splits_entity', 5, 1, {}, {}, { due: [], fresh: ['k1a', 'k1b', 'k1c', 'k1d', 'x1'] });
@@ -243,12 +133,7 @@ function srsApplyPlacementPart3(kit) {
   addGroupCase('group_started_entity_new_items_free', 5, 1, {}, { k1a: { s: 1, due: T0 + D, ok: 1, bad: 0, last: T0 - D } },
     { due: [], fresh: ['k1b', 'k1c', 'k1d', 'k2a', 'k2b', 'x1'] });
   addGroupCase('group_exempt_from_global_allowance', 0, 1, {}, {}, { due: [], fresh: ['k1a', 'k1b', 'k1c', 'k1d'] });
-  kit.buildQueueCases.push({
-    name: 'absent_group_args_unchanged',
-    input: { items: {}, order: gOrder, now: T0, newAllowance: 3, itemUnits: gUnits, itemEntities: gEnt },
-    expect: { due: [], fresh: ['k1a', 'k1b', 'k1c'] },
-    source: 'spec'
-  });
+  kit.buildQueueCases.push(vec('absent_group_args_unchanged', { items: {}, order: gOrder, now: T0, newAllowance: 3, itemUnits: gUnits, itemEntities: gEnt }, { due: [], fresh: ['k1a', 'k1b', 'k1c'] }, 'spec'));
 
   // Scoped (srs.scope "entity") queues: one slot per entity (spec cases, append-only).
   const sOrder = ['a1', 'a2', 'a3', 'b1', 'b2', 'x1'];

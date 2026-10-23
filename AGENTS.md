@@ -104,7 +104,7 @@ Add items with `./dojo add` (new ids are assigned for you), or retire items. Nev
 - No readings glued with "/" in choice or multi options; use separate options instead.
 - The prompt must match the input the item type gives: do not ask to "write" on a choice/match/order/card, do not ask to "choose/pick" on a gap.
 - No mixed scripts: text should only use Latin, Cyrillic, Hiragana, Katakana, or CJK characters (common punctuation and digits are allowed); whitelist other scripts via `course.json` `scripts: ["Arabic"]` if intentional.
-- Self-check: each gap has one answer unless the prompt says "any", "one of", or similar; each option is unique after normalization; each order prompt's `___` count matches its steps count.
+- Self-check: each gap has one answer unless the prompt says "any", "one of", or similar; each option is unique after normalization; each order prompt's `___` count matches its steps count; no two non-stimulus gap/cloze/numeric items share the same normalized prompt with different normalized answer sets (`same_prompt_different_answers`).
 
 ## 9. Other UI languages
 `en` and `ru` are shipped in `web/i18n/`. If the course `uiLanguage` has no `web/i18n/<lang>.json`, translate `web/i18n/en.json` into `workspace/<course-id>/i18n/<lang>.json`: keep every key and every `{placeholder}`, translate the values, keep plural suffixes. Then run validate and build (section 7). Do not edit the framework for this.

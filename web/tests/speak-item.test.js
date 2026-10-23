@@ -35,3 +35,11 @@ test('SessionScreen hides play button for item without speak', async () => {
   assert.ok(!renderedText.includes('['), 'no raw [');
   assert.ok(!renderedText.includes('undefined'), 'no undefined');
 });
+
+test('SessionScreen keeps play button when order sentence owns the prompt', async () => {
+  const { scr } = await start({ items: [{ id: 'o1', unit: 'u1', type: 'order', prompt: 'x ___ y ___', steps: ['A', 'B'], speak: 'hello' }] });
+  const tree = scr.view();
+  let pb = null;
+  H.walk(tree, (n) => { if (!pb && n.props.testid === 'play-item') pb = n; });
+  assert.ok(pb, 'play-item present for owned prompt');
+});

@@ -151,3 +151,13 @@ test('store exportText and importText round-trip', async () => {
   assert.strictEqual(result.ok, true, 'importText should succeed');
   assert.deepStrictEqual(store2.doc.items, { 'item1': { s: 1, due: 1000001, ok: 1, bad: 0, last: 1000000 } });
 });
+
+test('sortKeys keeps constructor and __proto__ as own data keys without pollution', () => {
+  const input = JSON.parse('{"b":1,"constructor":{"x":2},"__proto__":{"polluted":true}}');
+  const result = DojoStorage.sortKeys(input);
+  assert.strictEqual(Object.getPrototypeOf(result), null);
+  assert.strictEqual(({}).polluted, undefined);
+  assert.strictEqual(result.polluted, undefined);
+  assert.deepStrictEqual(Object.keys(result), ['__proto__', 'b', 'constructor']);
+  assert.strictEqual(JSON.stringify(result), '{"__proto__":{"polluted":true},"b":1,"constructor":{"x":2}}');
+});

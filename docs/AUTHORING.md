@@ -21,7 +21,7 @@ Common: `type`, `prompt` (required); optional `tags`, `explanation`, `source`, `
 | `cloze` | `parts`: strings (text) and arrays of strings (blank + alternatives) | `normalize` | 1-5 blanks (more warns, over 10 errors) |
 | `numeric` | `answer` | `tolerance` (absolute), `unitLabel` (display) | |
 | `match` | `pairs` `[{left,right}]` (2-6; 2-8 allowed) | `distractors` | lefts distinct, rights (and distractors) distinct |
-| `order` | `steps` in correct order (3-7; 2-10 allowed) | | the app shuffles |
+| `order` | `steps` in correct order (3-7; 2-10 allowed) | | the app shuffles; with one `___` per step the words are tapped into the sentence; without `___` they are listed |
 | `card` | `back` (front is `prompt`) | | self-rated; never in an exam |
 
 Example shapes (from `examples/showcase/content/shapes.jsonl`):
@@ -43,7 +43,7 @@ Also `--file <path>` (read the batch from a file) and `--dry-run` (check without
 
 ## Unambiguous-answer rules
 1. A learner who knows the fact must be able to answer without guessing; a gap has exactly one answer (every accepted spelling goes into `answers`; several different answers only when the prompt says "any" or "one of").
-2. The prompt matches the input type: no "write" on choice/match/order/card, no "choose/pick" on gap (validator `prompt_type_mismatch`).
+2. The prompt matches the input type: no "write" on choice/match/order/card, no "choose/pick" on gap (validator `prompt_type_mismatch`); no two non-stimulus gap/cloze/numeric items share the same normalized prompt with different normalized answer sets (validator `same_prompt_different_answers`).
 3. Options are unique after normalization (`choice_duplicate_options`, `multi_duplicate_options`); no readings glued with "/" in options (`ambiguous_answer`). Slashes inside a parenthetical note are fine. Alternatives like "брат/сестра" must be split into separate options or written with "or".
 4. The answer is not in the prompt (`answer_in_prompt`; for a listening script the question may name the topic, never the answer).
 5. The right option is not the longest; distractors have similar length and form and are mistakes a real learner makes. No "all/none of the above".
@@ -78,7 +78,7 @@ Before `./dojo build`:
 - `srs` - `{ladder, dropOnWrong}` for that unit.
 - `placement` (bool) - `false` excludes the unit from the placement test (needs course-level `placement`, else `placement_unused`).
 - `newOrder` - `"file"` or `"random"`: order in which new items appear.
-- `examOnly` (bool, default false): exam sections draw this unit's items first, fill up from shared units; training prefers shared items and uses these only if the queue would be empty (`crates/dojo-core/src/exam.rs:156`); see "Exams".
+- `examOnly` (bool, default false): exam sections draw this unit's items first, fill up from shared units; training prefers shared items and uses these only if the queue would be empty (`crates/dojo-core/src/exam/`); see "Exams".
 
 Course-level counterparts and extras: `srs`, `srsByType` (per item type), `newOrder`, `learnedStage`, `types` (restrict item types), `introNew`, `dontKnow`, `allowOverride`, `normalize`, `speech`, `scripts`, `captions`, `ruby` (see "Question captions and ruby skip set").
 - `srs.ladder`: intervals in milliseconds by stage; at least 2 entries, first 0, non-negative, non-decreasing. Default `[0, 14400000, 86400000, 259200000, 604800000, 1209600000, 2592000000]`. Leave it alone unless the user asks (e.g. an exam date soon).
@@ -92,8 +92,8 @@ Course-level `placement`: `{"perUnit": 5, "mode": "check"}`. `perUnit` = items s
 Single exam: `exam: {minutes?, passMark?, pass?, sections: [{title, count, units?, tags?, types?}]}`. Take the real exam's format and pass rule from the user; do not invent them. A section's `count` must not exceed the matching active items (`exam_too_big` warning); a section cannot use `card` or a type not enabled (`bad_exam_section`).
 Several exams: `exams: [{id (required, unique, frozen once published), title?, minutes?, passMark?, pass?, sections, timing?, scoring?, passPoints?, note?}]`; the legacy `exam` has id `default`.
 Pass rule:
-- `passMark` is optional: a fraction 0..1 (0.7 = 70%); pass when correct/total `>=` it. Absent, the default is 0.6 (`DEFAULT_PASS_MARK`, `crates/dojo-core/src/exam.rs:8`). `pass_rule_default` warns when none of `passMark`, `pass` or `scoring` is set: confirm the rule with the user.
-- `pass: {mode?: percent|points, basis?: official|author, source?, scaled?}`. `mode` defaults to `points` when `scoring` is set, else `percent` (`crates/dojo-core/src/exam.rs:11`). In points mode `passMark` is ignored (`pass_mark_ignored` warning); `mode: points` without `scoring` is an error (`bad_pass_rule`). `basis: official` without `source` warns (`pass_rule_no_source`). `scaled: true` sets the result's `estimate` flag, points mode only (`crates/dojo-core/src/exam.rs:88`).
+- `passMark` is optional: a fraction 0..1 (0.7 = 70%); pass when correct/total `>=` it. Absent, the default is 0.6 (`DEFAULT_PASS_MARK`, `crates/dojo-core/src/exam/`). `pass_rule_default` warns when none of `passMark`, `pass` or `scoring` is set: confirm the rule with the user.
+- `pass: {mode?: percent|points, basis?: official|author, source?, scaled?}`. `mode` defaults to `points` when `scoring` is set, else `percent` (`crates/dojo-core/src/exam/`). In points mode `passMark` is ignored (`pass_mark_ignored` warning); `mode: points` without `scoring` is an error (`bad_pass_rule`). `basis: official` without `source` warns (`pass_rule_no_source`). `scaled: true` sets the result's `estimate` flag, points mode only (`crates/dojo-core/src/exam/`).
 Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
 - Ideally mock-exam questions differ from training questions: put them in units with `examOnly: true` (unit field above) and point the exam sections at those units.
 - Each exam section needs at least 20% of its `count` (rounded up) from `examOnly` units; below that `exam_few_unique` warns (`crates/dojo-core/src/validate/exam.rs:279`).

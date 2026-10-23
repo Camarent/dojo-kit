@@ -11,4 +11,7 @@ if echo "$msg" | grep -E 'workspace/[A-Za-z0-9_/-]+' | grep -qv 'workspace/<'; t
   echo "refused: message references private workspace" >&2; exit 1
 fi
 if echo "$msg" | msg_names_job; then echo "refused: message names a job" >&2; exit 1; fi
+if ! echo "$msg" | subject_ok; then
+  echo "refused: subject must match '<type>(<area>): <what>' (types: feat fix refactor test docs chore perf build style)" >&2; exit 1
+fi
 exit 0

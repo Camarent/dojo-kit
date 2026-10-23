@@ -4,6 +4,8 @@ const B64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012
 use serde_json::Value;
 
 /// Standard base64 with padding.
+// Contract: `chunks(3)` yields non-empty chunks; `B64` has 64 entries and is indexed by `& 63`.
+#[allow(clippy::indexing_slicing)]
 pub fn base64(data: &[u8]) -> String {
     let mut out = String::with_capacity(data.len().div_ceil(3) * 4);
     for chunk in data.chunks(3) {
@@ -48,8 +50,9 @@ pub fn escape_script_text(s: &str) -> String {
     let lower = s.to_ascii_lowercase();
     let mut out = String::with_capacity(s.len());
     let mut last = 0;
+    let last_script = lower.rfind("<script");
     for (i, _) in lower.match_indices("<!--") {
-        if lower[i + 4..].contains("<script") {
+        if last_script.is_some_and(|p| i < p) {
             out.push_str(&s[last..i]);
             out.push_str("<\\!");
             last = i + 2;
@@ -126,6 +129,20 @@ pub fn fill_template(template: &str, parts: &[(&str, String)]) -> Result<String,
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn comment_open_escaped_only_before_a_later_script() {
+        assert_eq!(escape_script_text("<!-- a <script"), "<\\!-- a <script");
+        assert_eq!(escape_script_text("<script <!-- a"), "<script <!-- a");
+        assert_eq!(escape_script_text("<!--<SCRIPT"), "<\\!--<SCRIPT");
+        assert_eq!(escape_script_text("x</SCRIPT y"), "x<\\/SCRIPT y");
+    }
+
+    #[test]
+    fn many_comment_opens_without_script_unchanged() {
+        let s = "<!--".repeat(20000);
+        assert_eq!(escape_script_text(&s), s);
+    }
 
     #[test]
     fn base64_vectors() {

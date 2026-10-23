@@ -117,3 +117,9 @@ test('Extra shows q.result.firstWrong with n = firstWrong + 1, nothing otherwise
 test('order.js does not use innerHTML', () => {
   assert.ok(!/innerHTML/.test(read('types/order.js')));
 });
+
+test('unknown placed id is skipped in list mode without throwing', () => {
+  const r = render(['zzz', 'a']);
+  assert.strictEqual(find(r.vnode, 'order-placed-0').length, 0);
+  assert.strictEqual(find(r.vnode, 'order-placed-1')[0].props['aria-label'], 'Position 2: First');
+});

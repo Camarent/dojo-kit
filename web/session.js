@@ -226,6 +226,8 @@
       return { available: !!course.placement, done: !!(st && st.placementDone) };
     }
 
+    Object.freeze(ctx.fn);
+
     return { counts: counts, entityStates: entityStates, start: start, exams: exams, placement: placement, moreNew: moreNew, stage: stage, record: record, expected: expectedFor, examDraft: examDraft, discardDraft: discardDraft, unitSettings: unitSettings, unitLadder: ladderForUnit, unitConfig: unitConfig, globalNewPerDay: globalNewPerDay, setUnitSetting: setUnitSetting, groupSettings: groupSettings, setGroupSetting: setGroupSetting, weakList: weakList };
   }
 

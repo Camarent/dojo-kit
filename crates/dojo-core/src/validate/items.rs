@@ -3,32 +3,6 @@ use crate::check::{Normalize, normalize};
 use crate::content::{ClozePart, Item, ItemType};
 use std::collections::{BTreeMap, HashSet};
 
-pub(super) fn item_tags(item: &Item) -> &[String] {
-    match item {
-        Item::Choice(i) => &i.tags,
-        Item::Gap(i) => &i.tags,
-        Item::Card(i) => &i.tags,
-        Item::Multi(i) => &i.tags,
-        Item::Match(i) => &i.tags,
-        Item::Order(i) => &i.tags,
-        Item::Cloze(i) => &i.tags,
-        Item::Numeric(i) => &i.tags,
-    }
-}
-
-pub(super) fn item_prompt(item: &Item) -> &str {
-    match item {
-        Item::Choice(i) => &i.prompt,
-        Item::Gap(i) => &i.prompt,
-        Item::Card(i) => &i.prompt,
-        Item::Multi(i) => &i.prompt,
-        Item::Match(i) => &i.prompt,
-        Item::Order(i) => &i.prompt,
-        Item::Cloze(i) => &i.prompt,
-        Item::Numeric(i) => &i.prompt,
-    }
-}
-
 fn contains_leak(norm_prompt: &str, norm_answer: &str) -> bool {
     norm_answer.chars().count() >= MIN_LEAK_CHARS && norm_prompt.contains(norm_answer)
 }
@@ -56,7 +30,7 @@ pub(super) fn item_body(item: &Item) -> String {
 
 pub(super) fn check_item_body(item: &Item, file: &str, line: usize, sink: &mut Sink) {
     let id = item.id();
-    if item_prompt(item).trim().is_empty() {
+    if item.prompt().trim().is_empty() {
         sink.error("empty_prompt", file, line, format!("item '{id}' has an empty prompt"));
     }
     match item {
@@ -69,7 +43,7 @@ pub(super) fn check_item_body(item: &Item, file: &str, line: usize, sink: &mut S
         Item::Cloze(c) => check_cloze(c, id, file, line, sink),
         Item::Numeric(n) => check_numeric(n, id, file, line, sink),
     }
-    if item_prompt(item).chars().count() > MAX_PROMPT_CHARS {
+    if item.prompt().chars().count() > MAX_PROMPT_CHARS {
         sink.warning("prompt_too_long", file, line, format!("item '{id}' prompt is longer than {MAX_PROMPT_CHARS} characters"));
     }
 }
@@ -303,11 +277,13 @@ pub(super) fn check_leak(item: &Item, file: &str, line: usize, sink: &mut Sink, 
 
 
 fn sorted_tags(item: &Item) -> Vec<String> {
-    let mut t = item.tags().cloned().unwrap_or_default();
+    let mut t = item.tags().to_vec();
     t.sort();
     t
 }
 
+// Contract: the only caller passes groups with at least 2 items; `message.len() >= 2` when it ends with ", ".
+#[allow(clippy::indexing_slicing)]
 fn stimulus_split_message(stim_id: &str, stim_items: &[&Item]) -> Option<String> {
     let first_item = stim_items[0];
     let first_unit = first_item.unit();

@@ -254,6 +254,8 @@ fn build_content(course: &CourseFiles, course_json: &serde_json::Value) -> Step<
     fatal(build_content_inner(course, course_json))
 }
 
+// Contract: `content` is a JSON object built in this function, so string-key assignment cannot panic.
+#[allow(clippy::indexing_slicing)]
 fn build_content_inner(course: &CourseFiles, course_json: &serde_json::Value) -> Result<Content, String> {
     let mut items: Vec<serde_json::Value> = Vec::new();
     let mut parsed: Vec<Item> = Vec::new();

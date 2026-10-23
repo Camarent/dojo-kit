@@ -1,5 +1,6 @@
-use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm, item_body, item_prompt};
+use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm, item_body};
 use super::quality::{check_ambiguous_answer, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
+use super::dupes::check_same_prompt_diff_answers;
 use super::speech::validate_speak;
 use super::{COURSE_FILE, Diagnostic, LOCK_FILE, Severity, Sink, SourceFile, exam, is_valid_id};
 use super::groups::{check_bar_matches, check_entity_spans_groups, check_mixed_entity_scope};
@@ -140,7 +141,7 @@ fn check_one_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemCtx,
 
 fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemCtx, seen: &mut Seen<'a>, sink: &mut Sink) {
     let id = item.id();
-    check_prompt_type_mismatch(item_prompt(item), item.item_type(), sink, name, line, id);
+    check_prompt_type_mismatch(item.prompt(), item.item_type(), sink, name, line, id);
     check_ambiguous_answer(item, sink, name, line);
     check_order_blanks_mismatch(item, sink, name, line);
 
@@ -159,7 +160,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
     let course_norm = ctx.course.and_then(|c| c.normalize.as_ref());
     let default_norm = Normalize::default();
     let norm_opts = fold_norm(item_norm, course_norm).unwrap_or(&default_norm);
-    let key = (item.item_type().as_str(), normalize(item_prompt(item), norm_opts), item_body(item));
+    let key = (item.item_type().as_str(), normalize(item.prompt(), norm_opts), item_body(item));
     match seen.first_prompt.get(&key) {
         Some((f, l)) => sink.warning("duplicate_prompt", name, line, format!("item '{id}' repeats the prompt at {f}:{l}")),
         None => {
@@ -172,7 +173,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
 fn item_has_foreign_script(item: &Item, scripts: &HashSet<String>) -> bool {
     let foreign = |t: &str| has_foreign_script(t, scripts);
     let explained = |e: &Option<String>| e.as_ref().is_some_and(|exp| foreign(exp));
-    if foreign(item_prompt(item)) {
+    if foreign(item.prompt()) {
         return true;
     }
     match item {
@@ -216,6 +217,10 @@ pub(super) fn check_course_totals(c: &Course, all: &AllItems, course_sink: &mut 
     }
     // Check stimulus groups for consistency
     check_stimulus_groups(all, course_sink);
+    
+    // Check for same prompt with different answers
+    let course_norm = c.normalize.as_ref();
+    check_same_prompt_diff_answers(all, course_sink, course_norm);
     
     // Check entity spans groups
     check_entity_spans_groups(c, all, course_sink);

@@ -1,5 +1,5 @@
 # AUDIT: tools and commands (dojo-kit)
-Thresholds: /root/.claude/practices/{rust,rust-wasm,js}.md (no project overrides). Versions as installed 2026-10-22. No package.json in repo: JS tools live in /tmp/audit-tools (outside repo, nothing added to project).
+Thresholds: the shared practices files {rust,rust-wasm,js}.md outside the repo (no project overrides). Versions as installed 2026-10-22. No package.json in repo: JS tools live in a scratch directory outside the repo, nothing added to project).
 
 ## Stacks
 | Stack | Where |
@@ -23,19 +23,19 @@ Thresholds: /root/.claude/practices/{rust,rust-wasm,js}.md (no project overrides
 | gitleaks | 8.30.1 | official GitHub release gitleaks/gitleaks (sha256 checked vs checksums.txt), MIT; not preinstalled: install onto PATH outside the repo; hooks refuse to run without it unless `DOJO_ALLOW_NO_GITLEAKS=1` is set |
 Not installed: cargo-udeps (needs nightly; only stable present; cargo-machete covers), twiggy/wasm-opt (not requested; wasm-pack not checked), trufflehog (gitleaks suffices).
 
-## Commands (verified, run from repo root; B=/tmp/audit-tools/node_modules/.bin)
+## Commands (verified, run from repo root; B=<tools dir outside repo>/node_modules/.bin)
 | Goal | Command |
 |---|---|
 | Clippy size/complexity | `cargo clippy --workspace --all-targets -- -W clippy::too_many_lines -W clippy::cognitive_complexity -W clippy::too_many_arguments -W clippy::type_complexity -W clippy::excessive_nesting -W clippy::fn_params_excessive_bools -W clippy::struct_excessive_bools` (add `-D warnings` for gate; thresholds in clippy.toml, not yet present) |
-| Panics | `cargo clippy --workspace -- -W clippy::unwrap_used -W clippy::expect_used -W clippy::indexing_slicing -W clippy::panic` |
+| Panics | `cargo clippy --workspace -- -W clippy::unwrap_used -W clippy::expect_used -W clippy::indexing_slicing -W clippy::panic` (gate: same with each `-W` replaced by `-D`, plus `-D warnings` once other lints are clean; 0 panic warnings expected; needs `rustup component add clippy`) |
 | WASM clippy | `cargo clippy -p dojo-wasm --target wasm32-unknown-unknown -- -D warnings` (target not checked) |
 | CVEs | `cargo audit` (clean at setup) |
 | Licenses/bans/sources | `cargo deny check` (deny.toml in repo; at setup fails only on foldhash = Zlib, flagged) |
 | Unused deps | `cargo machete --with-metadata` (exit 1 = found) |
 | Binary size | `cargo bloat --release -n 20 -p dojo-cli` ; `--crates` (no WASM support) |
 | Secrets | `gitleaks git --redact --no-banner .; gitleaks dir --redact --no-banner .` (clean at setup); fallback `git grep -nEi "(api[_-]?key\|secret\|token\|password)\s*[:=]"` |
-| ESLint | copy of flat config from js.md into /tmp/audit-tools/proj/eslint.config.js; `cd /tmp/audit-tools/proj && $B/eslint -c eslint.config.js web tools` (proj has symlinks web, tools) |
-| Dead code JS | `cd /tmp/audit-tools/proj && $B/knip --no-config-hints` (needs the package.json there; ran, exit 0) |
+| ESLint | copy of flat config from js.md into <tools dir>/proj/eslint.config.js; `cd <tools dir>/proj && $B/eslint -c eslint.config.js web tools` (proj has symlinks web, tools) |
+| Dead code JS | `cd <tools dir>/proj && $B/knip --no-config-hints` (needs the package.json there; ran, exit 0) |
 | Duplicates JS | `$B/jscpd web --min-lines 10 --min-tokens 70 --threshold 5 --ignore "**/vendor/**,**/tests/**,**/n5/**"` |
 | Import cycles | `$B/madge --circular --extensions js web` |
 
@@ -47,14 +47,14 @@ Allowed: MIT, Apache-2.0, BSD-2/3-Clause, ISC, Unicode-3.0 (deny.toml). Anything
 Zlib allowed only for foldhash (serde_json preserve_order dependency, required by CONTRACT); any other Zlib crate is flagged.
 
 ## Install missing
-Rust tools: `cargo install cargo-audit cargo-deny cargo-machete cargo-bloat --locked`; `rustup component add clippy`. JS: `mkdir -p /tmp/audit-tools && cd /tmp/audit-tools && npm init -y && npm i knip jscpd madge eslint`. gitleaks: download release tarball from github.com/gitleaks/gitleaks/releases, verify against checksums.txt, put binary in PATH.
+Rust tools: `cargo install cargo-audit cargo-deny cargo-machete cargo-bloat --locked`; `rustup component add clippy`. JS: `mkdir -p <tools dir outside repo> && cd <tools dir outside repo> && npm init -y && npm i knip jscpd madge eslint`. gitleaks: download release tarball from github.com/gitleaks/gitleaks/releases, verify against checksums.txt, put binary in PATH.
 
 ## Coverage
 Measured 2026-10-22 on dev @ 98b22b5. Tool: cargo-llvm-cov 0.9.1 (crates.io, `cargo install cargo-llvm-cov --locked`) + `rustup component add llvm-tools-preview`; JS: built-in `node --test --experimental-test-coverage` (node v24.22.1).
 
 | Area | Command |
 |---|---|
-| Rust | `CARGO_LLVM_COV_TARGET_DIR=/tmp/cov-target cargo llvm-cov --workspace --summary-only` (profiles and build in /tmp, not the repo) |
+| Rust | `CARGO_LLVM_COV_TARGET_DIR=<dir outside repo> cargo llvm-cov --workspace --summary-only` (profiles and build outside the repo) |
 | JS | `scripts/build-wasm.sh` first (loader.js needs dojo_wasm.wasm in target/), then `node --test --experimental-test-coverage web/tests/*.test.js tests/*.test.js` |
 
 Baseline Rust (lines): total 92.96% (regions 92.62%, functions 85.28%); dojo-core ~93.5% lines (lowest: api.rs 81.5%, content.rs 89.1%, validate.rs 91.1%); dojo-cli ~88.5% lines (main.rs 84.4%, import_progress.rs 90.5%, add.rs 93.1%, build.rs 96.1%); dojo-wasm: 0 tests, not in the report (no instrumented code run).

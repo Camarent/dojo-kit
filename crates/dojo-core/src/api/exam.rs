@@ -59,7 +59,7 @@ fn score(a: &Value) -> Result<Value, CallError> {
 
     let scoring = match a.get("scoring") {
         None | Some(Value::Null) => {
-            return Ok(serde_json::to_value(exam::score(&results, total, pass_mark)).unwrap());
+            return serde_json::to_value(exam::score(&results, total, pass_mark)).map_err(|e| bad(e.to_string()));
         }
         Some(v) => v.as_array().ok_or_else(|| bad("`scoring` must be an array"))?,
     };
@@ -115,6 +115,6 @@ fn score(a: &Value) -> Result<Value, CallError> {
             scaled: pass_rule.as_ref().and_then(|r| r.scaled) == Some(true),
         },
     ).map_err(bad)?;
-    Ok(serde_json::to_value(s).unwrap())
+    serde_json::to_value(s).map_err(|e| bad(e.to_string()))
 }
 

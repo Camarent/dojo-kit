@@ -9,12 +9,9 @@
 
   function create(ctx) {
     var dojo = ctx.dojo;
-    var store = ctx.store;
     var course = ctx.course;
     var items = ctx.items;
-    var byId = ctx.byId;
     var now = ctx.now;
-    var today = ctx.today;
 
     function counts() {
       var active = ctx.fn.activeItems();

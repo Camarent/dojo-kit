@@ -13,37 +13,41 @@
   var renderText = DojoCommon.renderText;
   var cls = DojoCommon.cls;
 
+  function label(t, value) {
+    return value === 'known' ? t('session.known') : value === 'again' ? t('session.again') : value === '-' ? t('session.dontKnow') : value;
+  }
+
+  function examVerdict(t, sum) {
+    return html`<p class=${cls('banner', sum.pass ? 'good' : 'bad')} data-testid="exam-verdict">${sum.estimate ? (sum.pass ? t('results.pass_estimate') : t('results.fail_estimate')) : (sum.pass ? t('results.pass') : t('results.fail'))}</p>`;
+  }
+
+  function examParts(t, sum) {
+    return html`<section data-testid="exam-parts">
+      <h2>${t('results.parts')}</h2>
+      <ul class="parts">
+        ${sum.parts.map(function (part, i) {
+          return html`<li key=${i} data-testid=${'part-' + i}>
+            <b>${part.title}</b>: <span>${part.raw} / ${part.total}</span> · <span>${t('results.points', { n: part.points })}</span> · <span class=${part.pass ? 'good' : 'bad'}>${part.pass ? t('results.pass') : t('results.fail')}</span>
+          </li>`;
+        })}
+      </ul>
+      <p data-testid="exam-total-points"><b>${t('results.total_points', { n: sum.totalPoints })}</b>${sum.passPoints !== undefined ? ' · ' + t('results.pass_points', { n: sum.passPoints }) : ''}</p>
+    </section>`;
+  }
+
+  function note(id, text) {
+    return html`<p class="notice" data-testid=${id}>${text}</p>`;
+  }
+
   function create(deps) {
     var percent = deps.percent;
     var fmtClock = deps.fmtClock;
-
-    function label(t, value) {
-      return value === 'known' ? t('session.known') : value === 'again' ? t('session.again') : value === '-' ? t('session.dontKnow') : value;
-    }
-
-    function examVerdict(t, sum) {
-      return html`<p class=${cls('banner', sum.pass ? 'good' : 'bad')} data-testid="exam-verdict">${sum.estimate ? (sum.pass ? t('results.pass_estimate') : t('results.fail_estimate')) : (sum.pass ? t('results.pass') : t('results.fail'))}</p>`;
-    }
 
     function stats(t, sum, raw, total, pct) {
       return html`<section class="stats">
         <div class="stat" data-testid="score"><b>${raw} / ${total}</b><span>${t('results.score')}</span></div>
         <div class="stat" data-testid="percent"><b>${pct}%</b><span>${t('results.percent')}</span></div>
         <div class="stat" data-testid="time"><b>${fmtClock(sum.durationMs)}</b><span>${t('results.time')}</span></div>
-      </section>`;
-    }
-
-    function examParts(t, sum) {
-      return html`<section data-testid="exam-parts">
-        <h2>${t('results.parts')}</h2>
-        <ul class="parts">
-          ${sum.parts.map(function (part, i) {
-            return html`<li key=${i} data-testid=${'part-' + i}>
-              <b>${part.title}</b>: <span>${part.raw} / ${part.total}</span> · <span>${t('results.points', { n: part.points })}</span> · <span class=${part.pass ? 'good' : 'bad'}>${part.pass ? t('results.pass') : t('results.fail')}</span>
-            </li>`;
-          })}
-        </ul>
-        <p data-testid="exam-total-points"><b>${t('results.total_points', { n: sum.totalPoints })}</b>${sum.passPoints !== undefined ? ' · ' + t('results.pass_points', { n: sum.passPoints }) : ''}</p>
       </section>`;
     }
 
@@ -78,31 +82,45 @@
       </section>`;
     }
 
+    function statsHint(t, sum, exam) {
+      var total = exam ? sum.total : sum.answered;
+      var raw = exam ? sum.raw : sum.correct;
+      return raw === 0 && total > 0 ? note('results-hint', t('results.hint')) : null;
+    }
+
+    function scoreStats(t, sum, exam) {
+      var total = exam ? sum.total : sum.answered;
+      var pct = exam ? percent(sum.fraction) : percent(total ? sum.correct / total : 0);
+      return stats(t, sum, exam ? sum.raw : sum.correct, total, pct);
+    }
+
+    function actions(p, t, isPlacement) {
+      return html`<div class="row results-actions">
+        <button type="button" class="btn" data-testid="btn-home" onClick=${function () { p.go('home'); }}>${t('results.home')}</button>
+        ${!isPlacement ? html`<button type="button" class="btn primary btn-again-session" data-testid="btn-again-session" onClick=${p.onAgain}>${t('results.again')}</button>` : null}
+      </div>`;
+    }
+
     function Results(p) {
       var t = p.t;
       var sum = p.summary;
       var exam = sum.mode === 'exam';
       var isPlacement = sum.mode === 'placement';
       var missed = sum.review.filter(function (r) { return !r.correct; });
-      var total = exam ? sum.total : sum.answered;
-      var pct = exam ? percent(sum.fraction) : percent(total ? sum.correct / total : 0);
-      var raw = exam ? sum.raw : sum.correct;
+      var first = !isPlacement;
       return html`<main class="screen" data-testid="results">
         <header class="head"><h1>${t('results.title')}</h1></header>
         ${isPlacement ? html`<p class="banner good" data-testid="placement-result">${t('results.placement')}</p>` : null}
         ${exam ? examVerdict(t, sum) : null}
-        ${exam && sum.estimate ? html`<p class="notice" data-testid="exam-estimate">${t('results.estimate_note')}</p>` : null}
-        ${exam && sum.training ? html`<p class="notice" data-testid="exam-training">${t('results.training')}</p>` : null}
-        ${!isPlacement ? stats(t, sum, raw, total, pct) : null}
-        ${!isPlacement && raw === 0 && total > 0 ? html`<p class="notice" data-testid="results-hint">${t('results.hint')}</p>` : null}
+        ${exam && sum.estimate ? note('exam-estimate', t('results.estimate_note')) : null}
+        ${exam && sum.training ? note('exam-training', t('results.training')) : null}
+        ${first ? scoreStats(t, sum, exam) : null}
+        ${first ? statsHint(t, sum, exam) : null}
         ${exam && sum.parts && sum.parts.length ? examParts(t, sum) : null}
-        ${exam && sum.note ? html`<p class="notice" data-testid="exam-note">${sum.note}</p>` : null}
+        ${exam && sum.note ? note('exam-note', sum.note) : null}
         ${exam && sum.short && sum.short.length ? html`<p class="notice">${t('session.short')}</p>` : null}
-        ${!isPlacement ? missedSection(p, t, sum, missed) : null}
-        <div class="row results-actions">
-          <button type="button" class="btn" data-testid="btn-home" onClick=${function () { p.go('home'); }}>${t('results.home')}</button>
-          ${!isPlacement ? html`<button type="button" class="btn primary btn-again-session" data-testid="btn-again-session" onClick=${p.onAgain}>${t('results.again')}</button>` : null}
-        </div>
+        ${first ? missedSection(p, t, sum, missed) : null}
+        ${actions(p, t, isPlacement)}
       </main>`;
     }
 

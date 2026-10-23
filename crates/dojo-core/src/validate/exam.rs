@@ -105,6 +105,8 @@ fn check_exam_pass(id: &str, exam: &ExamConfig, sink: &mut Sink) {
 
 type KnownCheck<'a> = dyn FnMut(&mut Sink, String, &str) + 'a;
 
+// Contract: `indices[i]` is read for `i` in `1..indices.len()` after the length check; `tg.sections` is guarded by `indices.len() >= 2`.
+#[allow(clippy::indexing_slicing)]
 fn check_exam_timing(id: &str, exam: &ExamConfig, check_known: &mut KnownCheck, sink: &mut Sink) {
     if let Some(timing) = &exam.timing {
         if timing.is_empty() {
@@ -135,11 +137,11 @@ fn check_exam_timing(id: &str, exam: &ExamConfig, check_known: &mut KnownCheck, 
             for (tg_idx, tg) in timing.iter().enumerate() {
                 // Get indices for all sections in this group (only those that exist)
                 let mut indices: Vec<usize> = tg.sections.iter().filter_map(|st| section_to_idx.get(st.as_str())).copied().collect();
-                if indices.is_empty() {
-                    continue; // all sections are unknown, already reported
-                }
                 indices.sort();
-                let range = (*indices.first().unwrap(), *indices.last().unwrap());
+                let (Some(&lo), Some(&hi)) = (indices.first(), indices.last()) else {
+                    continue; // all sections are unknown, already reported
+                };
+                let range = (lo, hi);
                 group_ranges.push(range);
                 
                 // Check contiguity: each index should be exactly one more than the previous
@@ -247,7 +249,7 @@ pub(super) fn check_exam_sizes(course: &Course, items: &[(&str, usize, &Item)], 
                 .iter()
                 .filter(|(_, _, item)| !item.is_retired())
                 .filter(|(_, _, item)| section.units.as_ref().is_none_or(|u| u.iter().any(|x| x == item.unit())))
-                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item_tags(item).iter().any(|x| t.contains(x))))
+                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item.tags().iter().any(|x| t.contains(x))))
                 .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == item.item_type().as_str())))
                 .count();
             if section.count > matching {
@@ -264,7 +266,7 @@ pub(super) fn check_exam_sizes(course: &Course, items: &[(&str, usize, &Item)], 
                 .iter()
                 .filter(|(_, _, item)| !item.is_retired())
                 .filter(|(_, _, item)| section.units.as_ref().is_none_or(|u| u.iter().any(|x| x == item.unit())))
-                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item_tags(item).iter().any(|x| t.contains(x))))
+                .filter(|(_, _, item)| section.tags.as_ref().is_none_or(|t| item.tags().iter().any(|x| t.contains(x))))
                 .filter(|(_, _, item)| section.types.as_ref().is_none_or(|t| t.iter().any(|x| x == item.item_type().as_str())))
                 .filter(|(_, _, item)| {
                     course.units.iter().any(|u| u.id == item.unit() && u.exam_only == Some(true))

@@ -20,3 +20,21 @@
 }
 .order-placed.right { background: var(--good-soft); border-color: var(--good); }
 .order-placed.wrong { background: var(--bad-soft); border-color: var(--bad); }
+.order-sentence { line-height: 2.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+.order-slot {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 4.5ch; min-height: var(--tap);
+  padding: var(--space-2) var(--space-3);
+  color: var(--fg);
+  border: 2px solid; border-radius: var(--radius-sm);
+  vertical-align: middle;
+  cursor: pointer;
+}
+.order-slot.empty { border: 2px dashed var(--control-border); background: transparent; }
+.order-slot:not(.empty) { background: var(--accent-soft); border-color: var(--accent); }
+.order-slot:not(.empty):hover:not(:disabled) { border-color: var(--accent); }
+.order-slot.right { background: var(--good-soft); border-color: var(--good); }
+.order-slot.wrong { background: var(--bad-soft); border-color: var(--bad); }
+.order-slot:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.order-slot:disabled { cursor: default; }
+.order.sentence .order-unplaced { flex-direction: row; flex-wrap: wrap; }

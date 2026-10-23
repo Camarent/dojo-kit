@@ -72,6 +72,8 @@ fn is_leap_year(year: i64) -> bool {
     (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 }
 
+// Contract: callers check `1..=12` for `month` before the call.
+#[allow(clippy::indexing_slicing)]
 fn days_in_month(year: i64, month: i64) -> i64 {
     let days: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     if month == 2 && is_leap_year(year) {
@@ -99,6 +101,10 @@ pub fn parse_iso_ms(s: &str) -> Option<i64> {
     }
 }
 
+const MAX_YEAR: i64 = 9999;
+
+// Contract: `parts`, `date_parts` and `time_parts` lengths are checked (2, 3, 3) before indexing; `idx` comes from `find` on `sec_part`.
+#[allow(clippy::indexing_slicing)]
 fn parse_datetime(no_z: &str) -> Option<i64> {
     let parts: Vec<&str> = no_z.split('T').collect();
     if parts.len() != 2 { return None; }
@@ -122,7 +128,7 @@ fn parse_datetime(no_z: &str) -> Option<i64> {
         let sec: i64 = sec_part.parse().ok()?;
         (sec, 0)
     };
-    if year < 1970 || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
+    if !(1970..=MAX_YEAR).contains(&year) || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
         return None;
     }
     if hour > 23 || minute > 59 || second > 59 { return None; }
@@ -130,13 +136,15 @@ fn parse_datetime(no_z: &str) -> Option<i64> {
     Some(days * 86400000 + hour * 3600000 + minute * 60000 + second * 1000 + millis)
 }
 
+// Contract: `date_parts.len() == 3` is checked before indexing.
+#[allow(clippy::indexing_slicing)]
 fn parse_date(s: &str) -> Option<i64> {
     let date_parts: Vec<&str> = s.split('-').collect();
     if date_parts.len() != 3 { return None; }
     let year: i64 = date_parts[0].parse().ok()?;
     let month: i64 = date_parts[1].parse().ok()?;
     let day: i64 = date_parts[2].parse().ok()?;
-    if year < 1970 || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
+    if !(1970..=MAX_YEAR).contains(&year) || month < 1 || month > 12 || day < 1 || day > days_in_month(year, month) {
         return None;
     }
     Some(days_from_civil(year, month, day) * MS_PER_DAY)
@@ -162,6 +170,15 @@ mod tests {
             parse_iso_ms("2026-01-15T10:20:30.5Z"),
             Some(1768472430500)
         );
+    }
+
+    #[test]
+    fn parse_iso_ms_year_cap() {
+        assert_eq!(parse_iso_ms("10000-01-01"), None);
+        assert_eq!(parse_iso_ms("10000-01-01T00:00:00Z"), None);
+        assert_eq!(parse_iso_ms("300000000-01-01T00:00:00Z"), None);
+        assert_eq!(parse_iso_ms("9999-12-31"), Some(253402214400000));
+        assert_eq!(parse_iso_ms("9999-12-31T23:59:59Z"), Some(253402300799000));
     }
 
     #[test]

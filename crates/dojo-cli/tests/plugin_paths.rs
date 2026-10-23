@@ -142,6 +142,36 @@ fn plugin_that_is_a_symlink_is_rejected() {
 }
 
 #[test]
+fn course_json_that_is_a_symlink_is_rejected() {
+    let dir = unique_dir("course-symlink");
+    copy_dir(&demo(), &dir);
+    let real = dir.join("real-course.json");
+    std::fs::rename(dir.join("course.json"), &real).unwrap();
+    unix_fs::symlink(&real, dir.join("course.json")).unwrap();
+
+    let validate_out = dojo().arg("validate").arg(&dir).output().unwrap();
+    assert_ne!(code(&validate_out), Some(0), "validate accepted symlinked course.json: {}", stdout(&validate_out));
+
+    let build_out = unique_dir("course-symlink-build");
+    let wasm = unique_dir("course-symlink-wasm");
+    std::fs::write(wasm.join("tiny.wasm"), [0u8, 0x61, 0x73, 0x6d, 1, 0, 0, 0]).unwrap();
+    let web = unique_dir("course-symlink-web");
+    let web_path = fixture_web(&web);
+    let build = dojo()
+        .arg("build")
+        .arg(&dir)
+        .arg("--out")
+        .arg(&build_out)
+        .arg("--wasm")
+        .arg(wasm.join("tiny.wasm"))
+        .arg("--web")
+        .arg(&web_path)
+        .output()
+        .unwrap();
+    assert_ne!(code(&build), Some(0), "build accepted symlinked course.json: {}", stdout(&build));
+}
+
+#[test]
 fn nonexistent_course_directory_gives_non_zero_exit() {
     let missing = std::env::temp_dir().join("dojo-cli-nonexistent-course");
     let out = dojo().arg("validate").arg(&missing).output().unwrap();

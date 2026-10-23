@@ -73,7 +73,7 @@
         var typeOrder = types.slice();
         var typeSeed = hashString(sessionSeed + '|' + unitId);
         var typeRand = mulberry32(typeSeed);
-        typeOrder.sort(function (a, b) {
+        typeOrder.sort(function () {
           var ra = typeRand();
           var rb = typeRand();
           return ra < rb ? -1 : ra > rb ? 1 : 0;

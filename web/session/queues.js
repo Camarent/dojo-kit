@@ -5,8 +5,6 @@
   'use strict';
 
   var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./util.js') : null);
-  var hashString = util.hashString;
-  var mulberry32 = util.mulberry32;
   var shuffledIndexes = util.shuffledIndexes;
   var isRetired = util.isRetired;
   var UNIT_NEW_PREFIX = util.K.UNIT_NEW_PREFIX;
@@ -169,10 +167,7 @@
       return rawBuiltQueue(false);
     }
 
-    function rawBuiltQueue(sharedOnly) {
-      var order = ctx.fn.activeItems().map(function (it) { return it.id; });
-      if (sharedOnly) order = preferShared(order);
-
+    function shuffleRandomUnits(order) {
       // Shuffle items within each random-order unit's own slots
       var unitLookup = {};
       (course.units || []).forEach(function (u) { unitLookup[u.id] = u; });
@@ -202,14 +197,10 @@
           });
         }
       }
-      order = shuffledOrder;
-      
-      var args = { items: ctx.fn.records(), order: order, now: now(), newAllowance: newAllowance(), unitNewCaps: buildUnitNewCaps(), itemUnits: buildItemUnits() };
-      var sa = scopedArgs();
-      if (sa) args.scopedMembers = sa.scopedMembers;
-      var ga = groupQueueArgs();
-      if (!ga) return dojo.call('buildQueue', args);
-      Object.keys(ga).forEach(function (k) { args[k] = ga[k]; });
+      return shuffledOrder;
+    }
+
+    function queueWithExtraNew(args, order) {
       var xg = extraGroup();
       var extra = extraNewToday();
       var base = xg ? groupCap(xg) : null;
@@ -269,6 +260,21 @@
       var merged = { due: q0.due, fresh: q0.fresh.concat(more) };
       if (q0.drills) merged.drills = Object.assign({}, q0.drills, q2.drills);
       return merged;
+    }
+
+    function rawBuiltQueue(sharedOnly) {
+      var order = ctx.fn.activeItems().map(function (it) { return it.id; });
+      if (sharedOnly) order = preferShared(order);
+
+      order = shuffleRandomUnits(order);
+
+      var args = { items: ctx.fn.records(), order: order, now: now(), newAllowance: newAllowance(), unitNewCaps: buildUnitNewCaps(), itemUnits: buildItemUnits() };
+      var sa = scopedArgs();
+      if (sa) args.scopedMembers = sa.scopedMembers;
+      var ga = groupQueueArgs();
+      if (!ga) return dojo.call('buildQueue', args);
+      Object.keys(ga).forEach(function (k) { args[k] = ga[k]; });
+      return queueWithExtraNew(args, order);
     }
 
     function dailyQueue(groupId) {

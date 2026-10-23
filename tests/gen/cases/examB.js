@@ -1,6 +1,6 @@
 'use strict';
 
-const { sampleJs, scoreJs } = require('../utils.js');
+const { oracleCase, sampleJs, scoreJs } = require('../utils.js');
 
 function examScorePart1(kit) {
   // stimulus-free section next to a group: unchanged greedy
@@ -24,9 +24,7 @@ function examScorePart1(kit) {
   // score cases
   kit.scoreCases = [];
 
-  kit.scoreCases.push({
-    name: 'all_correct',
-    input: {
+  kit.scoreCases.push(oracleCase('all_correct', {
       results: [
         { id: 'q1', correct: true },
         { id: 'q2', correct: true },
@@ -34,45 +32,20 @@ function examScorePart1(kit) {
       ],
       total: 3,
       passMark: 0.7
-    },
-    expect: scoreJs({
-      results: [
-        { id: 'q1', correct: true },
-        { id: 'q2', correct: true },
-        { id: 'q3', correct: true }
-      ],
-      total: 3,
-      passMark: 0.7
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 
-  kit.scoreCases.push({
-    name: 'none_correct',
-    input: {
+  kit.scoreCases.push(oracleCase('none_correct', {
       results: [
         { id: 'q1', correct: false },
         { id: 'q2', correct: false }
       ],
       total: 2,
       passMark: 0.5
-    },
-    expect: scoreJs({
-      results: [
-        { id: 'q1', correct: false },
-        { id: 'q2', correct: false }
-      ],
-      total: 2,
-      passMark: 0.5
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 }
 
 function examScorePart2(kit) {
-  kit.scoreCases.push({
-    name: 'boundary_exactly_at_pass_mark',
-    input: {
+  kit.scoreCases.push(oracleCase('boundary_exactly_at_pass_mark', {
       results: [
         { id: 'q1', correct: true },
         { id: 'q2', correct: true },
@@ -84,26 +57,9 @@ function examScorePart2(kit) {
       ],
       total: 10,
       passMark: 0.7
-    },
-    expect: scoreJs({
-      results: [
-        { id: 'q1', correct: true },
-        { id: 'q2', correct: true },
-        { id: 'q3', correct: true },
-        { id: 'q4', correct: true },
-        { id: 'q5', correct: true },
-        { id: 'q6', correct: true },
-        { id: 'q7', correct: true }
-      ],
-      total: 10,
-      passMark: 0.7
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 
-  kit.scoreCases.push({
-    name: 'just_below_pass_mark',
-    input: {
+  kit.scoreCases.push(oracleCase('just_below_pass_mark', {
       results: [
         { id: 'q1', correct: true },
         { id: 'q2', correct: true },
@@ -115,79 +71,32 @@ function examScorePart2(kit) {
       ],
       total: 10,
       passMark: 0.7
-    },
-    expect: scoreJs({
-      results: [
-        { id: 'q1', correct: true },
-        { id: 'q2', correct: true },
-        { id: 'q3', correct: true },
-        { id: 'q4', correct: true },
-        { id: 'q5', correct: true },
-        { id: 'q6', correct: true },
-        { id: 'q7', correct: false }
-      ],
-      total: 10,
-      passMark: 0.7
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 }
 
 function examScorePart3(kit) {
-  kit.scoreCases.push({
-    name: 'total_0',
-    input: {
+  kit.scoreCases.push(oracleCase('total_0', {
       results: [],
       total: 0,
       passMark: 0.5
-    },
-    expect: scoreJs({
-      results: [],
-      total: 0,
-      passMark: 0.5
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 
-  kit.scoreCases.push({
-    name: 'unanswered_questions',
-    input: {
+  kit.scoreCases.push(oracleCase('unanswered_questions', {
       results: [
         { id: 'q1', correct: true }
       ],
       total: 5,
       passMark: 0.5
-    },
-    expect: scoreJs({
-      results: [
-        { id: 'q1', correct: true }
-      ],
-      total: 5,
-      passMark: 0.5
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 
-  kit.scoreCases.push({
-    name: 'duplicate_ids_count_each',
-    input: {
+  kit.scoreCases.push(oracleCase('duplicate_ids_count_each', {
       results: [
         { id: 'q1', correct: true },
         { id: 'q1', correct: true }
       ],
       total: 2,
       passMark: 0.5
-    },
-    expect: scoreJs({
-      results: [
-        { id: 'q1', correct: true },
-        { id: 'q1', correct: true }
-      ],
-      total: 2,
-      passMark: 0.5
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 
   // scoring cases (JLPT-shaped: s12 120 questions of 1 point, min 38; l 60 questions, min 19; passPoints 80)
   kit.jlptSections = [
@@ -233,31 +142,15 @@ function examScorePart4(kit) {
   });
 
   // default passMark is 0.6
-  kit.scoreCases.push({
-    name: 'default_pass_mark_6_of_10',
-    input: {
+  kit.scoreCases.push(oracleCase('default_pass_mark_6_of_10', {
       results: Array(6).fill(null).map((_, i) => ({ id: 'q' + i, correct: true })).concat(Array(4).fill(null).map((_, i) => ({ id: 'q' + (i + 6), correct: false }))),
       total: 10
-    },
-    expect: scoreJs({
-      results: Array(6).fill(null).map((_, i) => ({ id: 'q' + i, correct: true })).concat(Array(4).fill(null).map((_, i) => ({ id: 'q' + (i + 6), correct: false }))),
-      total: 10
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 
-  kit.scoreCases.push({
-    name: 'default_pass_mark_5_of_10',
-    input: {
+  kit.scoreCases.push(oracleCase('default_pass_mark_5_of_10', {
       results: Array(5).fill(null).map((_, i) => ({ id: 'q' + i, correct: true })).concat(Array(5).fill(null).map((_, i) => ({ id: 'q' + (i + 5), correct: false }))),
       total: 10
-    },
-    expect: scoreJs({
-      results: Array(5).fill(null).map((_, i) => ({ id: 'q' + i, correct: true })).concat(Array(5).fill(null).map((_, i) => ({ id: 'q' + (i + 5), correct: false }))),
-      total: 10
-    }),
-    source: 'spec'
-  });
+    }, scoreJs));
 }
 
 function examScorePart5(kit) {
@@ -275,12 +168,7 @@ function examScorePart5(kit) {
     sections: [{ title: 's', start: 0, count: 4 }],
     scoring: [{ title: 'P', sections: ['s'], points: 10, minPoints: 100 }]
   };
-  kit.scoreCases.push({
-    name: 'percent_mode_with_scoring_ignores_points',
-    input: percentModeInput,
-    expect: scoreJs(percentModeInput),
-    source: 'spec'
-  });
+  kit.scoreCases.push(oracleCase('percent_mode_with_scoring_ignores_points', percentModeInput, scoreJs));
 
   // points scaled sets estimate
   const jlptScaledInput = {
@@ -294,12 +182,7 @@ function examScorePart5(kit) {
   };
   for (let i = 0; i < 120; i++) jlptScaledInput.results.push({ id: 'a' + i, correct: i < 70 });
   for (let i = 0; i < 60; i++) jlptScaledInput.results.push({ id: 'b' + i, correct: i < 30 });
-  kit.scoreCases.push({
-    name: 'points_scaled_sets_estimate',
-    input: jlptScaledInput,
-    expect: scoreJs(jlptScaledInput),
-    source: 'spec'
-  });
+  kit.scoreCases.push(oracleCase('points_scaled_sets_estimate', jlptScaledInput, scoreJs));
 
   // points unscaled no estimate
   const jlptUnscaledInput = {
@@ -313,12 +196,7 @@ function examScorePart5(kit) {
   };
   for (let i = 0; i < 120; i++) jlptUnscaledInput.results.push({ id: 'a' + i, correct: i < 70 });
   for (let i = 0; i < 60; i++) jlptUnscaledInput.results.push({ id: 'b' + i, correct: i < 30 });
-  kit.scoreCases.push({
-    name: 'points_unscaled_no_estimate',
-    input: jlptUnscaledInput,
-    expect: scoreJs(jlptUnscaledInput),
-    source: 'spec'
-  });
+  kit.scoreCases.push(oracleCase('points_unscaled_no_estimate', jlptUnscaledInput, scoreJs));
 
   kit.roundingInput = (name, rawCorrect) => {
     const results = [];

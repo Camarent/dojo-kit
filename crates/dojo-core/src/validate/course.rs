@@ -12,6 +12,8 @@ pub(super) fn check_plugin_path(path: &str, kind: &str, sink: &mut Sink) {
     }
 }
 
+// Contract: `ladder.len() >= 2` is checked before `ladder[0]`; `windows(2)` yields two-element slices.
+#[allow(clippy::indexing_slicing)]
 pub(super) fn ladder_problem(ladder: &[i64]) -> Option<&'static str> {
     if ladder.len() < 2 {
         Some("has fewer than 2 entries")

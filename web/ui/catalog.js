@@ -20,8 +20,6 @@
   var renderText = DojoCommon.renderText;
   var cls = DojoCommon.cls;
   var Chip = DojoCommon.Chip;
-  var ProgressBar = DojoCommon.ProgressBar;
-  var Notice = DojoCommon.Notice;
 
   // Alias from DojoDetail
   var renderDeclarativeDetail = DojoDetail.renderDeclarativeDetail;
@@ -193,7 +191,6 @@
 
     // Split render into named helpers to keep functions <= 100 lines
     renderHeader(p, s, t) {
-      var self = this;
       return html`<header class="head">
         <h1>${t('catalog.title')}</h1>
         <button type="button" class="btn" data-testid="btn-back" onClick=${function () { p.go('home'); }}>${t('back')}</button>
@@ -239,7 +236,7 @@
       </div>`;
     }
 
-    renderTopicList(p, s, t, items, all) {
+    renderTopicList(p, s, t, items) {
       var self = this;
       return html`<ul class="catalog-list" data-testid="catalog-list">
         ${items.map(function (r) {
@@ -309,7 +306,6 @@
       var self = this;
       var all = this.topics();
       var items = all.slice(0, s.limit);
-      var tags = this.allTags();
       var d = s.detailItem;
 
       return html`<main class="screen" data-testid="catalog">
@@ -318,7 +314,7 @@
         ${this.renderFilters(p, s, t)}
         <p class="muted catalog-count" data-testid="catalog-count">${t('catalog.topics.count', { n: all.length })}</p>
         ${s.search.trim() && all.length === 0 ? html`<p class="muted" data-testid="catalog-empty">${t('catalog.empty')}</p>` : null}
-        ${this.renderTopicList(p, s, t, items, all)}
+        ${this.renderTopicList(p, s, t, items)}
         ${all.length > items.length ? html`<button type="button" class="btn catalog-more" data-testid="catalog-more"
           onClick=${function () { self.setState({ limit: s.limit + CATALOG_PAGE }); }}>${t('catalog.more', { n: all.length - items.length })}</button>` : null}
         ${d ? this.renderDetail(p, s, t, d) : null}

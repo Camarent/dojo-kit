@@ -162,13 +162,4 @@ function makeDaysCases() {
 // CHECK EXAM REFERENCE IMPLEMENTATIONS
 // ============================================================
 
-// u64 constants for splitmix64
-const SPLITMIX64_INC = 0x9e3779b97f4a7c15n;
-const SPLITMIX64_MUL1 = 0xbf58476d1ce4e5b9n;
-const SPLITMIX64_MUL2 = 0x94d049bb133111ebn;
-
-// Mask for 64-bit unsigned integers
-const MASK64 = (1n << 64n) - 1n;
-
-
 module.exports = { makeDaysCases };

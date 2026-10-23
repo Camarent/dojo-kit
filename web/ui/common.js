@@ -8,7 +8,6 @@
   var Component = preact.Component;
   var html = htm.bind(h);
   var DojoExt = root.DojoExt || {};
-  var DojoI18n = root.DojoI18n || (typeof require !== 'undefined' ? require('./i18n.js') : null) || {};
 
   // ---------- helpers ----------
 
@@ -83,6 +82,7 @@
   function renderPromptLine(promptEl, item, audio, lines) {
     var pb = html`<${Playback} audio=${audio} lines=${lines} testid="play-item" pid=${'i:' + item.id} />`;
     if (!lines.length) return promptEl;
+    if (!promptEl) return pb;
     if (audio && audio.status === 'ok') return html`<div class="qline">${promptEl}${pb}</div>`;
     return [promptEl, pb];
   }

@@ -26,3 +26,7 @@ test('dead CSS selectors stay removed', () => {
   assert.ok(!read('styles/app.css').includes('.choice-options'));
   assert.ok(!read('styles/types-cloze.css').includes('.cloze-expected'));
 });
+
+test('stimulus.js keeps no tagInfo fallback copy', () => {
+  assert.ok(!read('ui/stimulus.js').includes('Object.prototype.hasOwnProperty.call(course.tagLabels'));
+});

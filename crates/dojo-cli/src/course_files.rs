@@ -34,7 +34,9 @@ pub(crate) fn load(dir: &Path) -> Result<CourseFiles, String> {
     if !dir.is_dir() {
         return Err(format!("not a directory: {}", dir.display()));
     }
-    let course_text = read(&dir.join("course.json"))?;
+    let course_path = dir.join("course.json");
+    check_symlink(&course_path, "course.json")?;
+    let course_text = read(&course_path)?;
     let content = dir.join("content");
 
     let mut names: Vec<String> = Vec::new();

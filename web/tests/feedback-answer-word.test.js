@@ -8,7 +8,7 @@ const kj = (c, ru, on, kun, examples) => ({ id: 'k-' + c, unit: 'k', type: 'card
 const items = [
   {
     id: 'sd-47', unit: 'sd', type: 'choice', tags: ['sd'],
-    prompt: '【にがつ】に{雪|ゆき}がたくさん{降|ふ}りました。',
+    prompt: 'きのうの【にがつ】は{雪|ゆき}が{降|ふ}りません。',
     options: ['二月', '二日', '三月', '二目'], answer: 0,
     explanation: '二月 = にがつ. 三月 = さんがつ, 二日 = ふつか.'
   },

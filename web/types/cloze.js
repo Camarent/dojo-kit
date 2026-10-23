@@ -46,13 +46,13 @@
     var inputs = p.state.inputs;
     var marks = res && !p.exam && res.detail ? res.detail.results : null;
 
-    function renderBlank(n) {
+    function renderBlank(n, fill) {
       var value = inputs[n] || '';
       var ok = marks ? marks[n] : null;
       return html`<span class="cloze-blank" key=${'b' + n}>
         <input type="text" class=${cls('cloze-field', ok === true && 'right', ok === false && 'wrong')}
           id=${'cloze-input-' + n} data-testid=${'cloze-input-' + n} name=${'blank-' + n} value=${value} readOnly=${!!res} aria-readonly=${res ? 'true' : null}
-          style=${{ width: Math.max(value.length + 2, 6) + 'ch' }}
+          style=${fill ? null : { width: Math.max(value.length + 2, 6) + 'ch' }}
           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck=${false}
           aria-label=${t('q.cloze.blank', { n: n + 1 })} ref=${n === 0 ? p.inputRef : null}
           onInput=${function (e) {
@@ -93,7 +93,7 @@
         for (var j = 0; j < group.length; j++) {
           var seg = group[j];
           if (seg.blank !== undefined) {
-            blankEl = renderBlank(seg.blank);
+            blankEl = renderBlank(seg.blank, true);
           } else {
             textParts.push(h('span', { key: keyPrefix + 't' + textIndex }, renderText(seg.text)));
             textIndex++;
@@ -101,9 +101,9 @@
         }
 
         if (blankEl !== null) {
-          return html`<div class="cloze-group" key=${'g' + gi}>${textParts}${blankEl}</div>`;
+          return html`<div class="cloze-group" key=${'g' + gi}><span class="cloze-label">${textParts}</span>${blankEl}</div>`;
         } else {
-          return html`<div class="cloze-group" key=${'g' + gi}>${textParts}</div>`;
+          return html`<div class="cloze-group cloze-group-text" key=${'g' + gi}>${textParts}</div>`;
         }
       });
     }

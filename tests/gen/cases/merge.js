@@ -9,7 +9,7 @@ function mergePartPart1(kit) {
   kit.cases = [];
 
   // reference kit.cases
-  kit.addRefCase = function addRefCase(name, input, expect) {
+  kit.addRefCase = function addRefCase(name, input) {
     const result = ref('merge', input.a, input.b);
     const commutes = ref('stableJson', result) === ref('stableJson', ref('merge', input.b, input.a));
     kit.cases.push({

@@ -32,6 +32,8 @@ pub fn parse_course(text: &str) -> Result<Course, Vec<ParseError>> {
     serde_json::from_str(text).map_err(|e| vec![ParseError { line: 0, message: e.to_string() }])
 }
 
+// Contract: `from` is below `text.len()` (callers pass `pos < len` or a prior result of this fn).
+#[allow(clippy::indexing_slicing)]
 fn next_line(text: &str, from: usize) -> Option<usize> {
     text.as_bytes()[from..].iter().position(|&b| b == b'\n').map(|i| from + i + 1).filter(|&i| i < text.len())
 }
@@ -66,6 +68,8 @@ fn object_end(bytes: &[u8], start: usize) -> Option<usize> {
 }
 
 /// Shared scanner for JSONL parsing. Takes a parsing function that attempts to deserialize a chunk.
+// Contract: `pos < bytes.len()` loop bound; `end` and `start` are offsets found inside `text`.
+#[allow(clippy::indexing_slicing)]
 fn scan_jsonl<'a, T, F>(text: &'a str, parse_fn: F) -> (Vec<(usize, T)>, Vec<ParseError>)
 where
     T: DeserializeOwned,

@@ -54,6 +54,7 @@ fn create_minimal_course(dir: &PathBuf) {
         "type": "gap",
         "prompt": "Q1",
         "answers": ["a"],
+        "unit": "u1",
         "id": "i1"
     })];
     let content_text: String = items
@@ -112,6 +113,21 @@ fn now_flag_invalid_date_exits_non_zero() {
     let out = run_import_progress(&old_progress, &id_map, &dir, Some("2026-01-00"));
     assert_ne!(code(&out), Some(0), "stdout: {}, stderr: {}", stdout(&out), stderr(&out));
     assert!(stderr(&out).contains("invalid timestamp"));
+}
+
+#[test]
+fn now_flag_huge_year_exits_non_zero() {
+    for now in ["300000000-01-01", "300000000-01-01T00:00:00Z", "10000-01-01T00:00:00Z"] {
+        let dir = unique_dir("now-huge");
+        create_minimal_course(&dir);
+        let old_progress = dir.join("old.json");
+        fs::write(&old_progress, "{\"items\":{}, \"stats\":{}, \"settings\":{}}").unwrap();
+        let id_map = dir.join("map.json");
+        fs::write(&id_map, "{\"map\":{}}").unwrap();
+        let out = run_import_progress(&old_progress, &id_map, &dir, Some(now));
+        assert_eq!(code(&out), Some(2), "{now}: stdout: {}, stderr: {}", stdout(&out), stderr(&out));
+        assert!(stderr(&out).contains("invalid timestamp"), "{now}");
+    }
 }
 
 #[test]

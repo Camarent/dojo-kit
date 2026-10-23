@@ -110,6 +110,22 @@
     return null;
   }
 
+  // Render one field body by field.type (default text); null when the value does not fit the type.
+  function renderFieldContent(field, value, r) {
+    var type = field.type || 'text';
+    if (type === 'text') return renderTextDetail(value, field.key, r);
+    if (type === 'list') return renderListDetail(value, field.key, r);
+    if (type === 'objects') return renderObjectsDetail(value, field.key, r);
+    if (type === 'table') return renderTableDetail(value, field.key, r);
+    if (type === 'pairs') return renderPairsDetail(value, field, field.key, r);
+    return null;
+  }
+
+  // Field label: label > t(labelKey) > key.
+  function fieldLabel(field, t) {
+    return field.label || (field.labelKey && t ? t(field.labelKey) : field.key);
+  }
+
   // Render declarative detail fields from item.meta. all=true uses renderTextAll.
   function renderDeclarativeDetail(course, unit, item, t, all) {
     var r = all ? renderTextAll : renderText;
@@ -128,21 +144,8 @@
       // Skip missing or empty fields
       if (value === null || value === undefined || value === '') continue;
 
-      var label = field.label || (field.labelKey && t ? t(field.labelKey) : field.key);
-      var type = field.type || 'text';
-      var content = null;
-
-      if (type === 'text') {
-        content = renderTextDetail(value, field.key, r);
-      } else if (type === 'list') {
-        content = renderListDetail(value, field.key, r);
-      } else if (type === 'objects') {
-        content = renderObjectsDetail(value, field.key, r);
-      } else if (type === 'table') {
-        content = renderTableDetail(value, field.key, r);
-      } else if (type === 'pairs') {
-        content = renderPairsDetail(value, field, field.key, r);
-      }
+      var label = fieldLabel(field, t);
+      var content = renderFieldContent(field, value, r);
 
       if (content) {
         rendered.push(html`<div class="detail-field" data-testid=${'detail-field-' + field.key}><b>${label}:</b> ${content}</div>`);
