@@ -103,7 +103,8 @@ test('after a timeout the feedback shows the timed-out notice and the plugin hoo
   ss.state.qstate = { text: '12' };
   ss.timeout();
   const v = ss.view();
-  assert.ok(H.find(v, 'timed-out'), 'notice shown');
+  assert.strictEqual(H.find(v, 'timed-out'), null);
+  assert.strictEqual(H.text(H.find(v, 'verdict')), 'Time is up');
   assert.ok(H.find(v, 'expected'), 'correct answer shown');
   assert.strictEqual(seen.timedOut, true);
   assert.strictEqual(String(seen.expected), '87');
@@ -153,7 +154,7 @@ test('a timeout with an empty field shows no invalid-number error', async () => 
   ss.state.qstate = { text: '' };
   ss.timeout();
   const v = ss.view();
-  assert.ok(H.find(v, 'timed-out'));
+  assert.ok(H.find(v, 'verdict'));
   assert.strictEqual(H.find(v, 'numeric-invalid'), null);
 });
 

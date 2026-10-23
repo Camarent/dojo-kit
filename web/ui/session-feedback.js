@@ -23,6 +23,12 @@
 
   // Methods shared by SessionScreen and PlacementSession; `this` is the host component
   // (needs props, state, setState, isExam(), isExamMode(), overrideAnswer()).
+  function revealedLine(s, t) {
+    var st = s.cur && s.cur.stimulus;
+    if (!st || !st.hideText || !st.text) return null;
+    return html`<p data-testid="revealed-text">${t('session.revealed')} <span class="pre">${st.text}</span></p>`;
+  }
+
   function createShared(deps) {
     var kanjiRows = deps.kanjiRows;
     var tagInfo = deps.tagInfo;
@@ -110,12 +116,12 @@
       } else if (res) {
         var def = DojoTypes.get(s.cur.item.type) || {};
         var self = this;
-        var showOverride = !res.correct && this.props.session.canOverride && this.props.session.canOverride();
+        var showOverride = !res.correct && !res.timedOut && this.props.session.canOverride && this.props.session.canOverride();
         body = html`<div class=${cls('feedback', res.correct ? 'right' : 'wrong')} data-testid="feedback" role="status">
-          <b data-testid="verdict">${def.verdict ? def.verdict(res, t) : (res.correct ? t('session.correct') : t('session.wrong'))}</b>
-          ${res.timedOut ? html`<p class="notice" data-testid="timed-out">${t('session.timedOut')}</p>` : null}
+          <b data-testid="verdict">${def.verdict ? def.verdict(res, t) : (res.correct ? t('session.correct') : res.timedOut ? t('session.timedOut') : t('session.wrong'))}</b>
           ${!def.hideExpected && !res.correct ? html`<p data-testid="expected">${t('session.expected')} <span class="pre">${renderTextAll(res.expected)}</span></p>` : null}
-          ${def.Extra ? h(def.Extra, { result: res, t: t }) : null}
+          ${revealedLine(s, t)}
+          ${def.Extra ? h(def.Extra, { result: res, t: t, raw: s.qstate && s.qstate.text }) : null}
           ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}
           ${this.feedbackDetail(p, s)}
           ${kanjiRows(p, s, this.isExamMode())}

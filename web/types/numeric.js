@@ -47,6 +47,7 @@
     var t = p.t;
     if (p.exam || !detail) return null;
     if (detail.parsed !== null) {
+      if (res.correct || String(detail.parsed) === String(p.raw === undefined || p.raw === null ? '' : p.raw).trim()) return null;
       return html`<p data-testid="numeric-readAs">${t('q.numeric.readAs', { value: String(detail.parsed) })}</p>`;
     }
     if (res.timedOut) return null;
