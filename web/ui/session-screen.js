@@ -345,13 +345,16 @@
       var cur = s.cur;
       var itemLines = audio ? speechLines(cur.item) : [];
       var caption = captionFor(p.course, cur.item, p.t);
+      var def = DojoTypes.get(cur.item.type);
+      var showPlainPrompt = !def || !def.ownsPrompt || !def.ownsPrompt(cur.item, cur.view);
       var plainPrompt = typeof cur.item.prompt === 'string' ? (DojoExt.plain ? DojoExt.plain(cur.item.prompt) : cur.item.prompt) : '';
       var bigPrompt = plainPrompt.length > 0 && plainPrompt.length <= 6 && plainPrompt.indexOf('\n') < 0;
       return html`<article class="qcard">
           ${s.showIntro ? html`<div class="intro" data-testid="intro">${renderText(cur.item.explanation)}</div>` : null}
           <${Stimulus} stimulus=${cur.stimulus} audio=${audio} />
           ${caption ? html`<p class="qcaption" data-testid="caption">${caption}</p>` : null}
-          ${renderPromptLine(renderPromptEl(cur.item, bigPrompt), cur.item, audio, itemLines)}
+          ${showPlainPrompt ? renderPromptLine(renderPromptEl(cur.item, bigPrompt), cur.item, audio, itemLines)
+            : renderPromptLine(null, cur.item, audio, itemLines)}
           <div style="display: contents" ref=${function (el) { self.qbox = el; }}>${this.renderQuestion(p, s)}</div>
         </article>`;
     }

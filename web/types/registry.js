@@ -6,6 +6,7 @@
  *   hideExpected: true                            do not show the "expected" line on a wrong result
  *   selfRated: true                               self-rated type (no typed answer); no "I don't know" button
  *   Extra(props)                                  extra feedback block, props = { result, t }
+ *   ownsPrompt(item, view)                        returns true if the type handles the prompt itself
  * Question props: { item, view, result, picked, exam, t, state, setState(patch), onSubmit(input, picked), onReveal(), inputRef }.
  */
 (function (root, factory) {

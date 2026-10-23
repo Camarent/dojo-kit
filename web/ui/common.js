@@ -82,6 +82,7 @@
   function renderPromptLine(promptEl, item, audio, lines) {
     var pb = html`<${Playback} audio=${audio} lines=${lines} testid="play-item" pid=${'i:' + item.id} />`;
     if (!lines.length) return promptEl;
+    if (!promptEl) return pb;
     if (audio && audio.status === 'ok') return html`<div class="qline">${promptEl}${pb}</div>`;
     return [promptEl, pb];
   }

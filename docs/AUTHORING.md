@@ -21,7 +21,7 @@ Common: `type`, `prompt` (required); optional `tags`, `explanation`, `source`, `
 | `cloze` | `parts`: strings (text) and arrays of strings (blank + alternatives) | `normalize` | 1-5 blanks (more warns, over 10 errors) |
 | `numeric` | `answer` | `tolerance` (absolute), `unitLabel` (display) | |
 | `match` | `pairs` `[{left,right}]` (2-6; 2-8 allowed) | `distractors` | lefts distinct, rights (and distractors) distinct |
-| `order` | `steps` in correct order (3-7; 2-10 allowed) | | the app shuffles |
+| `order` | `steps` in correct order (3-7; 2-10 allowed) | | the app shuffles; with one `___` per step the words are tapped into the sentence; without `___` they are listed |
 | `card` | `back` (front is `prompt`) | | self-rated; never in an exam |
 
 Example shapes (from `examples/showcase/content/shapes.jsonl`):
