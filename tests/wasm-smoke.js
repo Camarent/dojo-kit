@@ -91,8 +91,8 @@ async function main() {
   const failures = [];
   if (bytes.length > MAX_BYTES) failures.push(`wasm is ${bytes.length} bytes, budget ${MAX_BYTES}`);
 
-  // Check WASM size is under 360 KB
-  if (bytes.length >= 370000) failures.push(`wasm is ${bytes.length} bytes, must be under 370000`);
+  // Check WASM size is under 360 KiB
+  if (bytes.length >= 368640) failures.push(`wasm is ${bytes.length} bytes, must be under 368640`);
 
   scanNameSection(bytes, failures);
   const dojo = await load(bytes);

@@ -280,7 +280,7 @@
     function dailyQueue(groupId) {
       var q = builtQueue();
       var ids = q.due.concat(q.fresh);
-      if (ctx.fn.mixDaily) ids = ctx.fn.mixDaily(ids, q.fresh);
+      if (ctx.fn.mixDaily) ids = ctx.fn.mixDaily(ids, q.fresh, groupId);
       if (groupId === undefined || groupId === null) return ids;
       var unitOf = {};
       items.forEach(function (it) { unitOf[it.id] = it.unit; });

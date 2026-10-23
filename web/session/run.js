@@ -207,7 +207,7 @@
           if (!verdict && ctx.fn.qtimerPending()) verdict = { correct: false, given: '' };
           if (!verdict) return { error: 'bad_input' };
           // For gap retry: don't record, don't advance, don't mark as answered
-          if (verdict.verdict === 'retry' && mode === 'exam' && !session.training) {
+          if (verdict.verdict === 'retry' && ((mode === 'exam' && !session.training) || ctx.fn.qtimerPending())) {
             verdict = { correct: false, given: verdict.given };
           } else if (verdict.verdict === 'retry') {
             return { verdict: 'retry', retry: true, expected: util.expectedFor(item), explanation: item.explanation || null };
@@ -289,6 +289,7 @@
           delete requeued[requeueKey(item)];
         }
       }
+      if (la.timer) ctx.fn.qtimerRestore(la.timer);
       var verdict = Object.assign({}, la.verdict, { correct: true });
       sx.lastAnswer = null;
       return result(item, verdict);

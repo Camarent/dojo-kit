@@ -336,6 +336,31 @@ struct OutArgs<'a> {
     audio: &'a [build_audio::AudioFile],
 }
 
+/// Fails when the output directory is the course directory or nested with it (the build removes data/audio under the output).
+fn check_out_disjoint(target: &Path, dir: &Path) -> Result<(), String> {
+    let canon = |p: &Path| -> PathBuf {
+        let mut tail = Vec::new();
+        let mut cur = p.to_path_buf();
+        while !cur.exists() {
+            match cur.file_name().map(|n| n.to_os_string()) {
+                Some(n) => tail.push(n),
+                None => break,
+            }
+            if !cur.pop() {
+                break;
+            }
+        }
+        let mut base = cur.canonicalize().unwrap_or(cur);
+        tail.iter().rev().for_each(|n| base.push(n));
+        base
+    };
+    let (t, d) = (canon(target), canon(dir));
+    if t.starts_with(&d) || d.starts_with(&t) {
+        return Err(format!("output directory {} overlaps the course directory {}", t.display(), d.display()));
+    }
+    Ok(())
+}
+
 fn write_outputs(o: &OutArgs) -> Step<u8> {
     let OutArgs { out, dir, course_id, lang, content, html, wasm_bytes, audio } = *o;
     let total = content.bytes.len() + html.len();
@@ -356,6 +381,7 @@ fn write_outputs(o: &OutArgs) -> Step<u8> {
     for f in audio {
         manifest["files"].as_array_mut().map(|a| a.push(json!({"path": f.rel, "bytes": f.bytes})));
     }
+    failed(check_out_disjoint(out.join(course_id).as_path(), dir))?;
     let manifest_text = fatal(serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string()))? + "\n";
 
     let fixed = (total + manifest_text.len() + include_str!("../../../../THIRD_PARTY_NOTICES.md").len()) as u64;

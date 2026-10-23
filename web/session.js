@@ -79,6 +79,9 @@
     };
     var qtimer = qtimerMod ? qtimerMod.create(ctx) : null;
     ctx.fn.qtimerAfter = qtimer ? qtimer.afterVerdict : function () {};
+    ctx.fn.qtimerClear = qtimer ? qtimer.clear : function () {};
+    ctx.fn.qtimerSnapshot = qtimer ? qtimer.snapshot : function () { return null; };
+    ctx.fn.qtimerRestore = qtimer ? qtimer.restore : function () {};
     ctx.fn.qtimerPending = qtimer ? qtimer.pending : function () { return false; };
     var overrides = overridesMod.create(ctx);
     Object.assign(ctx.fn, overrides);

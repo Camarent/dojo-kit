@@ -1,5 +1,5 @@
 /* session/qtimer.js — adaptive per-question timer (contract 12.2). Not used in exams or placement.
- * Exports DojoSessionQtimer: create(ctx) -> { limitFor(item), afterVerdict(item, v), pending(), attach(session) }.
+ * Exports DojoSessionQtimer: create(ctx) -> { limitFor(item), afterVerdict(item, v), clear(), snapshot(), restore(snap), pending(), attach(session) }.
  *   limitFor(item) -> ms | null (null = no timer for the item). base = settings timer:baseMs > unit timer > course timer > 8000.
  *   afterVerdict(item, { correct, timedOut, answerMs?, limitMs? }) writes settings timer:scale / timer:streak (never when adaptive:false).
  *   attach(session) adds session.timerLimit(item), session.timerStart(item) -> limitMs | null, session.answerTimed(input), and rejects session.answer
@@ -65,10 +65,36 @@
       writeSettings(r.scale, r.streak);
     }
 
-    function expired() { return !!started && ctx.now() - started.at > started.limitMs; }
+    function expired(id) { return !!started && started.id === id && ctx.now() - started.at > started.limitMs; }
+
+    function clear() { started = null; }
+
+    function snapshot() {
+      var st = settings();
+      return { scale: st['timer:scale'], streak: st['timer:streak'] };
+    }
+
+    function restore(snap) {
+      var st = settings();
+      if (!snap || (st['timer:scale'] === snap.scale && st['timer:streak'] === snap.streak)) return;
+      ctx.store.update(function (doc) {
+        doc.settings = doc.settings || {};
+        doc.settings.ts = doc.settings.ts || {};
+        ['scale', 'streak'].forEach(function (k) {
+          if (snap[k] === undefined) delete doc.settings['timer:' + k]; else doc.settings['timer:' + k] = snap[k];
+          doc.settings.ts['timer:' + k] = ctx.now();
+        });
+      });
+    }
+
+    function currentId(session) {
+      var cur = session.current && session.current();
+      return cur && cur.item ? cur.item.id : null;
+    }
 
     function attach(session) {
       var answer = session.answer;
+      started = null;
       session.timerLimit = limitFor;
       session.timerStart = function (item) {
         var limitMs = limitFor(item);
@@ -76,7 +102,7 @@
         return limitMs;
       };
       session.answer = function (input) {
-        if (expired() && !forced) return { error: 'timed_out' };
+        if (expired(currentId(session)) && !forced) return { error: 'timed_out' };
         return answer.call(session, input);
       };
       session.answerTimed = function (input) {
@@ -85,7 +111,7 @@
       };
     }
 
-    return { limitFor: limitFor, afterVerdict: afterVerdict, pending: function () { return forced; }, attach: attach };
+    return { limitFor: limitFor, afterVerdict: afterVerdict, clear: clear, snapshot: snapshot, restore: restore, pending: function () { return forced; }, attach: attach };
   }
 
   var api = { create: create };

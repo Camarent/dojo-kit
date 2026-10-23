@@ -1,6 +1,6 @@
 /* session/weighted-queue.js — errorWeighted scheduler mode (contract 12.4) and record extras (12.3) for the study session engine.
  * Exports DojoSessionWeightedQueue: create(ctx) -> { weightedMode(unitId), weightedQueue({ids, newAllowance, limit}) -> [id],
- *   mixDaily(ids, fresh) -> ids, mixPractice(ids, limit) -> ids, weakByError(valid, limit) -> ids | null, extrasFor(item, writes, v) -> writes }.
+ *   mixDaily(ids, fresh, groupId) -> ids, mixPractice(ids, limit) -> ids, weakByError(valid, limit) -> ids | null, extrasFor(item, writes, v) -> writes }.
  *   The seed comes from ctx.random. Ladder units are left in place; only ids of errorWeighted units are replaced.
  */
 (function (root) {
@@ -10,8 +10,18 @@
   var LIMIT = util.K.DEFAULT_PRACTICE_LIMIT;
 
   function create(ctx) {
+    var modes = null;
+
+    function modeTable() {
+      if (!modes) {
+        modes = {};
+        (ctx.course.units || []).forEach(function (u) { modes[u.id] = ctx.fn.unitConfig(u.id).mode === 'errorWeighted'; });
+      }
+      return modes;
+    }
+
     function weightedMode(unitId) {
-      return ctx.fn.unitConfig(unitId).mode === 'errorWeighted';
+      return modeTable()[unitId] === true;
     }
 
     function isWeightedId(id) {
@@ -20,7 +30,8 @@
     }
 
     function anyWeighted() {
-      return (ctx.course.units || []).some(function (u) { return weightedMode(u.id); });
+      var t = modeTable();
+      return Object.keys(t).some(function (k) { return t[k]; });
     }
 
     function weightedQueue(opts) {
@@ -30,13 +41,16 @@
       });
     }
 
-    function mixDaily(ids, fresh) {
+    function mixDaily(ids, fresh, groupId) {
       if (!anyWeighted()) return ids;
-      var recs = ctx.fn.records();
-      var freshW = fresh.filter(isWeightedId);
-      var known = ctx.fn.activeItems().filter(function (it) { return recs[it.id] !== undefined && isWeightedId(it.id); });
-      var wIds = known.map(function (it) { return it.id; }).concat(freshW);
-      var picked = weightedQueue({ ids: wIds, newAllowance: freshW.length, limit: LIMIT });
+      var inScope = function (id) {
+        var it = ctx.byId[id];
+        if (!it || !isWeightedId(id) || ctx.fn.unitIsExamOnly(it.unit)) return false;
+        return groupId === undefined || groupId === null || ctx.unitGroup[it.unit] === groupId;
+      };
+      var wIds = ids.filter(inScope);
+      var freshN = fresh.filter(inScope).length;
+      var picked = weightedQueue({ ids: wIds, newAllowance: freshN, limit: LIMIT });
       return ids.filter(function (id) { return !isWeightedId(id); }).concat(picked);
     }
 
@@ -48,6 +62,7 @@
     }
 
     function weakByError(valid, limit) {
+      if (!anyWeighted()) return null;
       var all = Object.keys(valid);
       var wIds = all.filter(isWeightedId);
       if (!wIds.length) return null;
@@ -72,7 +87,7 @@
       if (!writes || !writes[item.id] || !extrasEnabled(item, weighted)) return writes;
       var out = Object.assign({}, writes);
       out[item.id] = ctx.dojo.call('applyExtras', {
-        rec: writes[item.id], correct: v.correct === true, given: typeof v.given === 'string' ? v.given : null,
+        rec: writes[item.id], correct: v.correct === true, given: !v.dontKnow && typeof v.given === 'string' ? v.given : null,
         timedOut: v.timedOut === true, weighted: weighted
       });
       return out;

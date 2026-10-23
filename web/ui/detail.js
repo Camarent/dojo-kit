@@ -208,7 +208,8 @@
     if (!rec) return null;
     var hasE = typeof rec.e === 'number' && isFinite(rec.e);
     var hasTo = typeof rec.to === 'number' && rec.to > 0;
-    var cf = Array.isArray(rec.cf) ? rec.cf.map(function (p, i) { return { k: p[0], n: p[1], i: i }; }) : [];
+    var cf = Array.isArray(rec.cf) ? rec.cf.map(function (p, i) { return { k: Array.isArray(p) ? p[0] : null, n: Array.isArray(p) ? p[1] : 0, i: i }; })
+      .filter(function (c) { return typeof c.k === 'string' && typeof c.n === 'number' && isFinite(c.n) && c.n >= 1; }) : [];
     cf.sort(function (a, b) { return b.n - a.n || a.i - b.i; });
     if (!hasE && !hasTo && !cf.length) return null;
     var top = cf.slice(0, 3).map(function (c) { return c.k + ' ×' + c.n; }).join(', ');

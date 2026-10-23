@@ -198,12 +198,14 @@
       sx.entityWrong[se] = true;
       setWrong = true;
     }
-    if (!relearn && sx.mode !== 'placement') ctx.fn.qtimerAfter(item, verdict);
+    var timerSnap = ctx.fn.qtimerSnapshot();
+    if (relearn) ctx.fn.qtimerClear();
+    else if (sx.mode !== 'placement') ctx.fn.qtimerAfter(item, verdict);
     sx.answeredAt[sx.session.index] = true;
     sx.session.answered++;
     var pushed = false;
     if (!relearn && sx.mode !== 'placement') pushed = sx.fn.recordGrade(item, verdict);
-    sx.lastAnswer = sx.mode === 'placement' ? null : { index: sx.session.index, item: item, prev: prev, relearn: relearn, verdict: verdict, pushed: pushed, setWrong: setWrong };
+    sx.lastAnswer = sx.mode === 'placement' ? null : { index: sx.session.index, item: item, prev: prev, relearn: relearn, verdict: verdict, pushed: pushed, setWrong: setWrong, timer: relearn ? null : timerSnap };
     if (sx.isTimedExam) {
       sx.draftAnswers[sx.session.index] = { i: sx.session.index, c: !!verdict.correct, g: stableGiven(verdict.given) };
       sx.fn.saveDraft(true);

@@ -304,3 +304,20 @@ fn null_timer_builds_like_no_timer() {
     assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
     assert!(json_file(&out.join("demo/data/content.json"))["course"]["timer"].is_null());
 }
+
+#[test]
+fn out_dir_resolving_to_the_course_dir_fails_and_keeps_its_audio() {
+    let mut e = env("overlap");
+    add_audio(&e, &[16]);
+    let same = e.root.join("demo");
+    fs::rename(&e.course, &same).unwrap();
+    e.course = same;
+    fs::create_dir_all(e.course.join("data/audio")).unwrap();
+    put(&e.course.join("data/audio/keep.bin"), "x");
+    let o = build(&e, &e.root);
+    assert_eq!(o.status.code(), Some(1));
+    assert!(stderr(&o).contains("overlaps the course directory"), "{}", stderr(&o));
+    assert!(e.course.join("data/audio/keep.bin").exists());
+    let inner = build(&e, &e.course);
+    assert_eq!(inner.status.code(), Some(1));
+}
