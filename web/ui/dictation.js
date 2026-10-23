@@ -34,8 +34,8 @@
     var cur = null;
     var uses = 0;
     var started = false;
-    var events = ['pointerdown'];
-    function mark() { gesture = true; }
+    var events = ['pointerdown', 'touchend', 'click'];
+    function mark() { gesture = true; if (audio && audio.unlock) audio.unlock(); }
     if (win && win.addEventListener) events.forEach(function (n) { win.addEventListener(n, mark, true); });
 
     function play() {

@@ -73,7 +73,7 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 - `web/ext.js` - `DojoExt` registry for build-time course plugins: markup, hooks and plugin settings (see Settings precedence and Invariants); the built-in ruby renderer and its skip set (`useRuby`, `rubyRender`, `rubyPlain`) live in `web/ext/ruby.js`.
 - `web/styles/app.css` - session layout at the end of the file (centered question card, full-width answers, `feedback-detail` with its own scroll).
 - `web/speech.js` - `DojoSpeech` playback over `window.speechSynthesis`; course voice settings come from `course.speech` in `content.json`.
-- `web/audio.js` - global `DojoAudio` (UMD): `configure`, `ready`, `pick`, `play(clipId)`, `stop`, `unlock` (`web/audio.js`); pack fetch, decode and the Audio-element fallback.
+- `web/audio.js` - global `DojoAudio` (UMD): `configure`, `ready`, `pick`, `play(clipId[, {onStart}])`, `duration`, `status`, `preload`, `stop`, `unlock` (`web/audio.js`); pack fetch, decode, measured duration, Audio-element fallback (Blob then `data:` URL), tap-time unlock/prime. `PlayButton` (`web/ui/common.js`) shows the `play-track` progressbar and the `audio-debug` line; a failed clip sets `audio.played[pid]` so the question timer starts. Tests: `web/tests/audio-ios.test.js`.
 - `web/session/qtimer.js` - `DojoSessionQtimer` (`create(ctx)`, `attach`): per-question timer limit, adaptive settings `timer:scale` / `timer:streak`, expiry (`web/session/qtimer.js`).
 - `web/session/weighted-queue.js` - `DojoSessionWeightedQueue`: `weightedMode`, `weightedQueue` (`web/session/weighted-queue.js`), which calls WASM `weightedQueue`.
 - `web/storage.js` - store, progress document handling, paste import/export, artifact-db adapter.

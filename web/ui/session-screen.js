@@ -182,7 +182,7 @@
       var st = s.cur.stimulus;
       var pids = ['i:' + item.id].concat(st ? ['s:' + st.id] : []);
       var hasAudio = !!audio && audio.status === 'ok' && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))));
-      var canStart = function () { return !hasAudio || pids.some(function (k) { return self.played && self.played[k]; }); };
+      var canStart = function () { return !hasAudio || pids.some(function (k) { return (self.played && self.played[k]) || (self.released && self.released[k]); }); };
       return h(QuestionTimer, { key: 'qt' + s.cur.position, now: p.now, limitMs: limit, canStart: canStart,
         onStart: function () { session.timerStart(item); }, onExpire: function () { self.timeout(); }, stopped: !!s.result, t: p.t });
     }
@@ -314,6 +314,7 @@
       var def = DojoTypes.get(cur.item.type);
       var showPlainPrompt = !def || !def.ownsPrompt || !def.ownsPrompt(cur.item, cur.view);
       var plainPrompt = typeof cur.item.prompt === 'string' ? (DojoExt.plain ? DojoExt.plain(cur.item.prompt) : cur.item.prompt) : '';
+      if (cur.item.type === 'numeric' && showPlainPrompt && plainPrompt.length > 0 && !(p.course && p.course.captions && p.course.captions.numeric)) caption = '';
       var bigPrompt = plainPrompt.length > 0 && plainPrompt.length <= 6 && plainPrompt.indexOf('\n') < 0;
       return html`<article class="qcard">
           ${s.showIntro && introText(cur.item) ? html`<div class="intro" data-testid="intro">${renderText(introText(cur.item))}</div>` : null}

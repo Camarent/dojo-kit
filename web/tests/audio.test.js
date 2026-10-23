@@ -35,7 +35,7 @@ function env(opts = {}) {
       decodeAudioData(ab, ok) { e.decoded.push(Array.from(new Uint8Array(ab))); ok({}); }
       createBufferSource() { return { connect() {}, start() { e.started++; setImmediate(() => this.onended()); }, stop() {} }; }
     },
-    Audio: class { constructor(url) { e.elUrl = url; } play() { setImmediate(() => this.onended()); } pause() {} },
+    Audio: class { constructor(url) { e.elUrl = url; } play() { setImmediate(() => this.onended && this.onended()); } pause() {} },
     Blob: class { constructor(parts, o) { e.blob = Array.from(parts[0]); e.mime = o.type; } },
     URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} }
   };

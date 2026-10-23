@@ -204,6 +204,7 @@
   "speech.played": "Played",
   "speech.novoice": "This device has no {lang} voice. Install one in your system speech settings.",
   "audio.failed": "Audio could not be played.",
+  "audio.track": "Playback progress",
   "audio.loading": "Loading audio...",
   "home.exam.training": "Training (untimed)",
   "home.exam.countdown.one": "{n} day until the exam",
