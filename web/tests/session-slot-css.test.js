@@ -91,3 +91,10 @@ test('No .feedback-slot rule declares a min-height', () => {
              'No .feedback-slot rule should declare min-height');
   }
 });
+
+test('feedback detail flows in the page: no max-height or overflow scroller on .feedback-detail', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'styles', 'app.css'), 'utf8');
+  const rules = css.match(/[^{}]*\.feedback-detail[^{}]*\{[^}]*\}/g) || [];
+  assert.ok(rules.length > 0);
+  for (const r of rules) assert.ok(!/max-height|overflow/.test(r), r);
+});
