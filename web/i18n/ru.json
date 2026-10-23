@@ -124,6 +124,7 @@
   "session.retry.message": "Попробуйте другую форму",
   "session.your_answer": "Ваш ответ",
   "session.timer": "Осталось времени",
+  "session.timer.seconds": "{n} с",
   "session.short": "В некоторых разделах вопросов меньше, чем запрошено.",
   "session.error": "Не удалось продолжить ({code}).",
   "session.override": "Было правильно (опечатка)",

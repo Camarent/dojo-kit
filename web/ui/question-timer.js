@@ -4,6 +4,7 @@
  *   controller({ now, limitMs, canStart(), onStart(), onExpire() }) -> { poll(), stop(), state() }
  *     poll(): starts the clock once canStart() is true (playback ended, or no audio), fires onExpire once at the limit.
  *     Replays never reset or stop the clock; stop() ends it without onExpire.
+ *   slot(h, timed, child) -> fixed-height <div data-testid="qtimer-slot"> around child when timed, else null.
  *   QuestionTimer props { now, limitMs, canStart, onStart, onExpire, stopped, t } renders <div data-testid="qtimer"> with a bar.
  */
 (function (root) {
@@ -48,20 +49,30 @@
       componentWillUnmount() { clearInterval(this.iv); if (this.ctl) this.ctl.stop(); }
       tickBar() {
         if (this.props.stopped) { this.ctl.stop(); clearInterval(this.iv); }
-        else this.setState({ fraction: this.ctl.poll().fraction });
+        else { var st = this.ctl.poll(); this.setState({ fraction: st.fraction, left: st.left, waiting: !st.running && st.left === this.props.limitMs }); }
       }
       render(p, s) {
         var f = typeof s.fraction === 'number' ? s.fraction : 1;
-        return html`<div class="qtimer" data-testid="qtimer" role="progressbar" aria-label=${p.t ? p.t('session.timer') : null} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(f * 100)}
-          style="height:6px;background:var(--surface-2);border-radius:999px;overflow:hidden">
-          <span style=${{ display: 'block', height: '100%', background: 'var(--accent)', width: Math.round(f * 100) + '%' }}></span>
+        var left = typeof s.left === 'number' ? s.left : p.limitMs;
+        var secs = Math.ceil(left / 1000);
+        var waiting = s.waiting !== false;
+        var label = p.t ? p.t('session.timer.seconds', { n: secs }) : secs + ' s';
+        return html`<div class=${waiting ? 'qtimer waiting' : 'qtimer'} data-testid="qtimer">
+          <div class="qtimer-bar" role="progressbar" aria-label=${p.t ? p.t('session.timer') : null} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(f * 100)}>
+            <span style=${{ width: Math.round(f * 100) + '%' }}></span>
+          </div>
+          <span class="qtimer-secs" data-testid="qtimer-secs" aria-hidden="true">${label}</span>
         </div>`;
       }
     }
     return { QuestionTimer: QuestionTimer };
   }
 
-  var api = { controller: controller, create: create };
+  function slot(h, timed, child) {
+    return timed ? h('div', { class: 'qtimer-slot', 'data-testid': 'qtimer-slot' }, child) : null;
+  }
+
+  var api = { controller: controller, create: create, slot: slot };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DojoQuestionTimer = api;
 })(typeof self !== 'undefined' ? self : this);

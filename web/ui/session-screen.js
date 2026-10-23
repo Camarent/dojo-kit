@@ -322,7 +322,7 @@
           ${caption ? html`<p class="qcaption" data-testid="caption">${caption}</p>` : null}
           ${showPlainPrompt ? renderPromptLine(renderPromptEl(cur.item, bigPrompt), cur.item, audio, itemLines)
             : renderPromptLine(null, cur.item, audio, itemLines)}
-          <div style="display: contents" ref=${function (el) { self.qbox = el; }}>${this.renderQuestion(p, s)}</div>
+          <div style="display: contents" ref=${function (el) { self.qbox = el; }}>${QTimer ? QTimer.slot(h, p.session.timerLimit && p.session.timerLimit(cur.item), this.renderQTimer(p, s, audio)) : null}${this.renderQuestion(p, s)}</div>
         </article>`;
     }
     renderActions(p, s) {
@@ -364,7 +364,6 @@
       return html`<main class="screen session" data-testid="session" data-mode=${p.session.mode}>
         ${this.renderTopbar(p, s)}
         ${p.session.warnings ? html`<p class="notice" data-testid="exam-short">${p.t('session.short')}</p>` : null}
-        ${card ? null : this.renderQTimer(p, s, audio)}
         ${card ? this.renderIntroCard(p, s, audio) : this.renderQuestionCard(p, s, audio)}
         ${card ? null : this.renderFeedback(p, s)}
         ${s.guard ? html`<p class="notice bad" role="alert" data-testid="guard-message">${s.guard}</p>` : null}
