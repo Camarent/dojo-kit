@@ -1,7 +1,7 @@
 /*
  * ui/stimulus.js — Stimulus, kanjiRows and small format helpers
  * Globals expected: preact, htm, DojoCommon, DojoExt, optional DojoSession.
- * create() returns { Stimulus, kanjiRows, tagInfo, captionFor, fmtClock, percent, uniqueSorted, toggle, localDay }.
+ * create() returns { itemLabel(item, stimulus, dupes), dupeSet(prompts), Stimulus, kanjiRows, tagInfo, captionFor, fmtClock, percent, uniqueSorted, toggle, localDay }.
  */
 (function (root) {
   'use strict';
@@ -105,7 +105,22 @@
       </ul>`;
     }
 
-    return { Stimulus: Stimulus, kanjiRows: kanjiRows, tagInfo: tagInfo, captionFor: captionFor, fmtClock: fmtClock, percent: percent, uniqueSorted: uniqueSorted, toggle: toggle, localDay: localDay };
+    function stimText(st) { return st && typeof st === 'object' ? st.text : st; }
+    function dupeSet(prompts) {
+      var seen = Object.create(null), dupes = Object.create(null);
+      prompts.forEach(function (p) { if (seen[p]) dupes[p] = true; seen[p] = true; });
+      return dupes;
+    }
+    function itemLabel(item, stimulus, dupes) {
+      var prompt = item.prompt;
+      if (!dupes || !Object.prototype.hasOwnProperty.call(dupes, prompt) || !dupes[prompt]) return prompt;
+      var text = stimText(stimulus);
+      if (text) return text;
+      if (typeof item.answer === 'number' || (typeof item.answer === 'string' && item.answer)) return String(item.answer);
+      return prompt;
+    }
+
+    return { itemLabel: itemLabel, dupeSet: dupeSet, Stimulus: Stimulus, kanjiRows: kanjiRows, tagInfo: tagInfo, captionFor: captionFor, fmtClock: fmtClock, percent: percent, uniqueSorted: uniqueSorted, toggle: toggle, localDay: localDay };
   }
 
   var api = { create: create };

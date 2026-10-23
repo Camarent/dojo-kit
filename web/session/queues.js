@@ -347,7 +347,10 @@
     function weakList(limit) {
       var valid = weakValidIds();
       var ids = weakIds(valid, limit);
-      return ids.map(function (id) { return { id: id, prompt: byId[id] ? byId[id].prompt : '' }; });
+      return ids.map(function (id) { var it = byId[id];
+        var st = it && it.stimulus && ctx.stimById ? ctx.stimById[it.stimulus] : null;
+        return { id: id, prompt: it ? it.prompt : '', stimText: st ? st.text : undefined, answer: it ? it.answer : undefined };
+      });
     }
     return {
       scopedArgs: scopedArgs, scopedRecords: scopedRecords, scopedMemberList: scopedMemberList,

@@ -42,6 +42,7 @@
   function create(deps) {
     var percent = deps.percent;
     var fmtClock = deps.fmtClock;
+    var itemLabel = deps.itemLabel || function (it) { return it.prompt; };
 
     function stats(t, sum, raw, total, pct) {
       return html`<section class="stats">
@@ -51,10 +52,15 @@
       </section>`;
     }
 
+    function labelOf(p, item) {
+      var st = item.stimulus && p.stimuli ? p.stimuli.filter(function (s) { return s.id === item.stimulus; })[0] : null;
+      return itemLabel(item, st, p.dupes);
+    }
+
     function missedItem(p, t, r) {
       var item = p.byId[r.id];
       return html`<li key=${r.id} data-testid=${'missed-' + r.id}>
-        <p class="qtext">${item ? renderText(item.prompt) : r.id}</p>
+        <p class="qtext">${item ? renderText(labelOf(p, item)) : r.id}</p>
         <p class="pre"><span class="muted">${t('results.given')}:</span> ${renderText(label(t, r.given))}</p>
         <p class="pre"><span class="muted">${t('session.expected')}</span> ${renderText(r.expected)}</p>
       </li>`;
@@ -63,12 +69,14 @@
     function skippedItem(p, t, id) {
       var item = p.byId[id];
       return html`<li key=${id} data-testid=${'skipped-' + id} class="skipped">
-        <p class="qtext">${item ? renderText(item.prompt) : id}</p>
+        <p class="qtext">${item ? renderText(labelOf(p, item)) : id}</p>
         <p class="muted" data-testid="skipped-label">${t('results.skipped')}</p>
       </li>`;
     }
 
-    function missedList(p, t, sum, missed) {
+    function missedList(p0, t, sum, missed) {
+      var ids = missed.map(function (r) { return r.id; }).concat(sum.skipped || []);
+      var p = Object.assign({}, p0, { dupes: deps.dupeSet ? deps.dupeSet(ids.map(function (id) { return p0.byId[id] ? p0.byId[id].prompt : id; })) : {} });
       return html`<ul class="missed" data-testid="missed">
         ${missed.map(function (r) { return missedItem(p, t, r); })}
         ${sum.skipped && sum.skipped.length > 0 ? sum.skipped.map(function (id) { return skippedItem(p, t, id); }) : null}

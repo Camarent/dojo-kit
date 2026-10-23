@@ -173,9 +173,16 @@
   }
 
   // Helper: actions section
+  function stimShared() { return (root.DojoStimulus || (typeof require !== 'undefined' ? require('./stimulus.js') : null)).create(); }
+  function weakDupes(list) { return stimShared().dupeSet(list.map(function (w) { return w.prompt; })); }
+  function weakLabel(w, dupes) {
+    return stimShared().itemLabel({ prompt: w.prompt || '', answer: w.answer }, w.stimText, dupes) || '';
+  }
+
   function renderActionsSection(o) {
     var p = o.p, t = o.t, c = o.c, weakList = o.weakList;
     var hasWeak = weakList.length > 0;
+    var dupes = weakDupes(weakList);
     var hasPlacement = o.hasPlacement, placementDone = o.placementDone, canReview = o.canReview, hasGroups = o.hasGroups;
     return html`<section class="actions">
       ${c.fresh > c.newToday && !hasGroups ? html`<div class="row wrap more-new" data-testid="more-new">
@@ -199,7 +206,7 @@
         <h3 class="weak-title" id="weak-title" data-testid="weak-title">${t('home.weakspots')}</h3>
         <ul class="chips weak-chips" data-testid="weak-chips" aria-labelledby="weak-title">
           ${weakList.map(function (item) {
-            var plain = DojoExt.plain(item.prompt || '');
+            var plain = DojoExt.plain(weakLabel(item, dupes));
             var truncated = plain.length > 24 ? plain.slice(0, 24) + '\u2026' : plain;
             return html`<li><span class="chip" title=${plain}><span class="chip-text">${truncated}</span></span></li>`;
           })}

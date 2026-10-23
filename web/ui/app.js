@@ -35,7 +35,7 @@
   var sessionParts = DojoSessionScreen.create({ Stimulus: Stimulus, kanjiRows: shared.kanjiRows, tagInfo: shared.tagInfo, captionFor: shared.captionFor, fmtClock: shared.fmtClock });
   var SessionBoundary = sessionParts.SessionBoundary;
   var SessionScreen = sessionParts.SessionScreen;
-  var Results = DojoResults.create({ percent: shared.percent, fmtClock: shared.fmtClock }).Results;
+  var Results = DojoResults.create({ percent: shared.percent, fmtClock: shared.fmtClock, itemLabel: shared.itemLabel, dupeSet: shared.dupeSet }).Results;
   var DojoPlacement = dep('DojoPlacement', './placement.js');
   var placementParts = DojoPlacement.create({ uniqueSorted: shared.uniqueSorted, tagInfo: shared.tagInfo, toggle: shared.toggle, Stimulus: Stimulus, kanjiRows: shared.kanjiRows });
   var PracticeSetup = placementParts.PracticeSetup;
@@ -66,7 +66,7 @@
   }
   function resultsScreen(self, p, s, common) {
     var isPlacement = s.summary && s.summary.mode === 'placement';
-    return h(Results, Object.assign({ summary: s.summary, byId: p.byId, onAgain: function () { self.again(); }, isPlacement: isPlacement }, common));
+    return h(Results, Object.assign({ summary: s.summary, byId: p.byId, stimuli: p.content && p.content.stimuli, onAgain: function () { self.again(); }, isPlacement: isPlacement }, common));
   }
   function settingsScreen(self, p, s, common) {
     return h(SettingsScreen, Object.assign({ lang: p.lang, store: p.store, content: p.content, engine: p.engine, now: p.now, win: p.win,
