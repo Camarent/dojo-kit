@@ -91,6 +91,10 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .weak-chips .chip { min-width: 0; max-width: 100%; display: inline-flex; align-items: center; }
 .chip { min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--control-border); border-radius: 999px; background: var(--surface); cursor: pointer; overflow-wrap: anywhere; }
 .chip.on { background: var(--accent-soft); border-color: var(--accent); font-weight: 700; }
+.chip.on { background: var(--accent); color: var(--accent-fg); }
+.chip.on::before { content: "\2713"; margin-right: var(--space-1); }
+.setup-actions .btn { flex: 1; }
+.results-actions { flex-direction: column; align-items: stretch; }
 .stepper { display: inline-flex; align-items: center; gap: var(--space-3); }
 .stepper-value { min-width: 3ch; text-align: center; font-size: var(--fs-lg); font-weight: 700; font-variant-numeric: tabular-nums; }
 

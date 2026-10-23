@@ -1340,7 +1340,7 @@
         {
           "type": "div",
           "props": {
-            "class": "row",
+            "class": "row setup-actions",
             "children": [
               {
                 "type": "button",
@@ -5880,22 +5880,22 @@
                     {
                       "type": "button",
                       "props": {
-                        "data-testid": "btn-home",
-                        "class": "btn",
+                        "data-testid": "btn-again-session",
+                        "class": "btn big primary btn-again-session",
                         "type": "button",
                         "children": [
-                          "Home"
+                          "Do again"
                         ]
                       }
                     },
                     {
                       "type": "button",
                       "props": {
-                        "data-testid": "btn-again-session",
-                        "class": "btn primary btn-again-session",
+                        "data-testid": "btn-home",
+                        "class": "btn big",
                         "type": "button",
                         "children": [
-                          "Do again"
+                          "Home"
                         ]
                       }
                     }

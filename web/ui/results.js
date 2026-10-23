@@ -104,8 +104,8 @@
 
     function actions(p, t, isPlacement) {
       return html`<div class="row results-actions">
-        <button type="button" class="btn" data-testid="btn-home" onClick=${function () { p.go('home'); }}>${t('results.home')}</button>
-        ${!isPlacement ? html`<button type="button" class="btn primary btn-again-session" data-testid="btn-again-session" onClick=${p.onAgain}>${t('results.again')}</button>` : null}
+        ${!isPlacement ? html`<button type="button" class="btn big primary btn-again-session" data-testid="btn-again-session" onClick=${p.onAgain}>${t('results.again')}</button>` : null}
+        <button type="button" class="btn big" data-testid="btn-home" onClick=${function () { p.go('home'); }}>${t('results.home')}</button>
       </div>`;
     }
 

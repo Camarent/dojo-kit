@@ -76,3 +76,22 @@ test('app.css has results-actions and btn-again-session rules in max-width:600px
   assert.ok(hasWidth100 || hasFlexBasis100 || hasFlex11100,
     '.btn-again-session should have width: 100% or flex-basis: 100% or flex: 1 1 100%');
 });
+
+// Test c: both action buttons are full-width (btn big), again is primary and listed before home
+test('results actions: both buttons are big, again is primary and comes first', async () => {
+  const m = await H.mount({ items: [item] });
+  const summary = { mode: 'practice', raw: 1, total: 2, pct: 50, durationMs: 0, review: [], skipped: [], fraction: 0.5, correct: 1, answered: 2 };
+  const v = m.sb.DojoApp._Results({ t: m.t, byId: { g1: item }, go() {}, onAgain() {}, summary });
+  const again = H.find(v, 'btn-again-session');
+  const home = H.find(v, 'btn-home');
+  assert.ok(again.props.class.split(' ').includes('big'), 'again has big');
+  assert.ok(home.props.class.split(' ').includes('big'), 'home has big');
+  assert.ok(again.props.class.split(' ').includes('primary'), 'again is primary');
+  assert.ok(!home.props.class.split(' ').includes('primary'), 'home is not primary');
+  const order = [];
+  H.walk(v, (n) => {
+    const id = n.props && n.props['data-testid'];
+    if (id === 'btn-again-session' || id === 'btn-home') order.push(id);
+  });
+  assert.deepStrictEqual(order, ['btn-again-session', 'btn-home']);
+});
