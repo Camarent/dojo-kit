@@ -142,7 +142,7 @@
     var sentencePieces = p.item && p.item.prompt ? splitPrompt(p.item.prompt, steps.length) : null;
 
     if (sentencePieces !== null) {
-      return html`<div class="order" data-testid="order">
+      return html`<div class="order sentence" data-testid="order">
         <p class="muted order-hint">${t('q.order.hint')}</p>
         ${renderSentence(ctx, sentencePieces, byId, t, res, placed, firstWrong)}
         ${renderPool(ctx, steps, placed, firstUnplaced)}
