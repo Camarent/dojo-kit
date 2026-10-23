@@ -1,5 +1,5 @@
 'use strict';
-// Generates audio/pack-00.bin (concatenated 8-bit mono 8 kHz WAV clips d0..d9) and audio/manifest.json.
+// Generates audio/pack-00.mp3 (concatenated 8-bit mono 8 kHz WAV clips d0..d9) and audio/manifest.json.
 // Clip dN holds N beeps (d0: one long low tone). Synthetic tones only. Usage: node make-audio.js
 const fs = require('node:fs');
 const path = require('node:path');
@@ -52,14 +52,14 @@ function build() {
     off += b.length;
   }
   const pack = Buffer.concat(bufs);
-  return { pack, manifest: { v: 1, packs: [{ file: 'pack-00.bin', bytes: pack.length }], clips } };
+  return { pack, manifest: { v: 1, packs: [{ file: 'pack-00.mp3', bytes: pack.length }], clips } };
 }
 
 if (require.main === module) {
   const dir = path.join(__dirname, 'audio');
   fs.mkdirSync(dir, { recursive: true });
   const { pack, manifest } = build();
-  fs.writeFileSync(path.join(dir, 'pack-00.bin'), pack);
+  fs.writeFileSync(path.join(dir, 'pack-00.mp3'), pack);
   fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
 }
 module.exports = { build };

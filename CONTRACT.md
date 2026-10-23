@@ -147,7 +147,7 @@ The `artifact` target is the only one implemented: default storage artifact-db w
 
 ### 12.2 Per-question timer (adaptive)
 - course/unit `timer?: {baseMs?: integer 2000..30000 (default 8000), adaptive?: bool (default true), replays?: integer 0..3 (default 1)}`; out of range -> `bad_timer`; negative or non-integer -> course.json parse error. Not in exams (exam timers unchanged).
-  Defaults are materialised: `data/content.json` always carries all three fields of a present `timer`; the web reads them and never re-applies defaults. Effective timer = the unit `timer` if present, else the course `timer`, as a whole object (no per-field merge).
+  Defaults are materialised: `data/content.json` always carries all three fields of a present `timer`; the web reads them; a missing or non-finite `timer.baseMs` falls back to 8000 in `web/session/qtimer.js` (defensive). Effective timer = the unit `timer` if present, else the course `timer`, as a whole object (no per-field merge).
 - User setting `timer:baseMs` (settings, per-field ts): when a finite number, clamped to 2000..30000, it replaces the effective `baseMs`. Adaptive state `timer:scale` (0.5..2.0, default 1) and `timer:streak` in settings (existing per-field merge; no merge change).
 - Input normalisation, identical in the JS reference and Rust (stored settings may be tampered): `scale` finite number -> clamp to [0.5, 2.0], else 1. `streak` finite number >= 0 -> floor, else 0. `baseMs` finite number, else 8000. Only `outcome === "correct"` is correct; any other value ("wrong", "timeout", unknown) is handled as wrong. fast = `answerMs` and `limitMs` are finite numbers and `answerMs <= 0.8*limitMs`.
 - Core `timerNext({scale, streak, outcome, answerMs, limitMs}) -> {scale, streak}`, after normalisation:

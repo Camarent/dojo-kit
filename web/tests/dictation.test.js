@@ -130,7 +130,7 @@ test('examples/listening validates and builds', () => {
     const b = spawnSync(dojo, ['build', course, '--out', out], { encoding: 'utf8' });
     assert.strictEqual(b.status, 0, b.stdout + b.stderr);
     assert.ok(fs.existsSync(path.join(out, 'listening', 'data', 'audio', 'manifest.json')));
-    assert.ok(fs.statSync(path.join(course, 'audio', 'pack-00.bin')).size < 100 * 1024);
+    assert.ok(fs.statSync(path.join(course, 'audio', 'pack-00.mp3')).size < 100 * 1024);
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
 });
 
