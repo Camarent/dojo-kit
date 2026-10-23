@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 const web = path.join(__dirname, '..');
+const { mediaBlock } = require('./css-helpers.js');
+const extractMediaBlock = (css) => mediaBlock(css, '@media (max-width: 600px)');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 
 const DAY = 86400000;
@@ -43,36 +45,6 @@ async function home(lang, extraDoc) {
   m.doc.items['k2'] = { s: 1, due: NOW + DAY, bad: 2, ok: 1 };
   m.app.refresh();
   return m;
-}
-
-// Helper to extract the exact @media (max-width: 600px) block
-function extractMediaBlock(css) {
-  // Find the start of the media query
-  const startIdx = css.indexOf('@media (max-width: 600px)');
-  if (startIdx === -1) return null;
-  
-  // Find the opening brace of the media query
-  const openBraceIdx = css.indexOf('{', startIdx);
-  if (openBraceIdx === -1) return null;
-  
-  // Find the matching closing brace
-  let depth = 1;
-  let blockEnd = -1;
-  
-  for (let i = openBraceIdx + 1; i < css.length; i++) {
-    if (css[i] === '{') {
-      depth++;
-    } else if (css[i] === '}') {
-      depth--;
-      if (depth === 0) {
-        blockEnd = i + 1;
-        break;
-      }
-    }
-  }
-  
-  if (blockEnd === -1) return null;
-  return css.substring(startIdx, blockEnd);
 }
 
 test('CSS: @media (max-width: 600px) block exists', () => {

@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const web = path.join(__dirname, '..');
+const { parseCSS } = require('./css-helpers.js');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 
 // WCAG relative luminance formula
@@ -23,69 +24,6 @@ function getContrast(hex1, hex2) {
   const lighter = Math.max(l1, l2);
   const darker = Math.min(l1, l2);
   return (lighter + 0.05) / (darker + 0.05);
-}
-
-// Simple CSS parser: extract rules as { selector, declarations }
-function parseCSS(css) {
-  const rules = [];
-  let i = 0;
-  
-  while (i < css.length) {
-    // Skip whitespace and comments
-    if (css[i].match(/\s/)) { i++; continue; }
-    if (css[i] === '/' && css[i+1] === '*') {
-      const end = css.indexOf('*/', i);
-      if (end === -1) break;
-      i = end + 2;
-      continue;
-    }
-    if (css[i] === '@') {
-      // Skip at-rules (media queries, etc.)
-      const brace = css.indexOf('{', i);
-      if (brace === -1) break;
-      let depth = 1;
-      let j = brace + 1;
-      while (j < css.length && depth > 0) {
-        if (css[j] === '{') depth++;
-        if (css[j] === '}') depth--;
-        j++;
-      }
-      i = j;
-      continue;
-    }
-    
-    // Parse selector
-    const selectorStart = i;
-    while (i < css.length && css[i] !== '{') {
-      if (css[i] === '/' && css[i+1] === '*') {
-        // Skip comment in selector
-        const end = css.indexOf('*/', i);
-        if (end === -1) break;
-        i = end + 2;
-        continue;
-      }
-      i++;
-    }
-    if (i >= css.length) break;
-    
-    const selector = css.slice(selectorStart, i).trim();
-    if (!selector) { i++; continue; }
-    
-    // Parse declarations
-    i++; // skip '{'
-    const declStart = i;
-    let depth = 1;
-    while (i < css.length && depth > 0) {
-      if (css[i] === '{') depth++;
-      if (css[i] === '}') depth--;
-      i++;
-    }
-    
-    const declarations = css.slice(declStart, i - 1).trim();
-    rules.push({ selector, declarations });
-  }
-  
-  return rules;
 }
 
 // Extract variable values from theme blocks
