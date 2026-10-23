@@ -98,6 +98,59 @@ fn check_clip(id: &str, clip: &AudioClip, packs: &[AudioPack], loc: &Loc, sink: 
         let msg = format!("audio clip '{id}' range {}+{} is outside the decoded pack ({limit} bytes)", clip.off, clip.len);
         sink.error("audio_bad_manifest", file, 0, msg);
     }
+    check_clip_text(id, clip, loc, sink);
+}
+
+/// Reason a `text`/`tr` value is invalid, if any.
+fn text_problem(s: &str) -> Option<&'static str> {
+    if s.trim().is_empty() {
+        Some("is empty")
+    } else if s.chars().count() > 400 {
+        Some("longer than 400 characters")
+    } else if s.chars().any(|c| c.is_control() && (c as u32) < 0x20 || c == '\u{7f}') {
+        Some("contains a control character")
+    } else {
+        None
+    }
+}
+
+/// True for `^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$`.
+fn is_lang_key(k: &str) -> bool {
+    let (base, sub) = match k.split_once('-') {
+        Some((b, s)) => (b, Some(s)),
+        None => (k, None),
+    };
+    (2..=3).contains(&base.len())
+        && base.bytes().all(|b| b.is_ascii_lowercase())
+        && sub.is_none_or(|s| (2..=8).contains(&s.len()) && s.bytes().all(|b| b.is_ascii_alphanumeric()))
+}
+
+/// Checks a clip's optional `text`, `tr` and `mt`.
+fn check_clip_text(id: &str, clip: &AudioClip, loc: &Loc, sink: &mut Sink) {
+    let mut err = |field: &str, reason: &str| {
+        sink.error("audio_bad_manifest", loc.file, 0, format!("audio clip '{id}' {field}: {reason}"));
+    };
+    if let Some(reason) = clip.text.as_deref().and_then(text_problem) {
+        err("text", reason);
+    }
+    if let Some(tr) = &clip.tr {
+        if clip.text.is_none() {
+            err("tr", "requires text");
+        }
+        if tr.is_empty() || tr.len() > 8 {
+            err("tr", "must have 1 to 8 entries");
+        }
+        for (lang, value) in tr {
+            if !is_lang_key(lang) {
+                err(&format!("tr.{lang}"), "key is not a language code");
+            }
+            if let Some(reason) = text_problem(value) {
+                err(&format!("tr.{lang}"), reason);
+            }
+        }
+    } else if clip.mt {
+        err("mt", "true requires tr");
+    }
 }
 
 /// Checks that every pack file exists and has the declared size.

@@ -321,3 +321,15 @@ fn out_dir_resolving_to_the_course_dir_fails_and_keeps_its_audio() {
     let inner = build(&e, &e.course);
     assert_eq!(inner.status.code(), Some(1));
 }
+
+#[test]
+fn manifest_with_clip_text_is_copied_verbatim() {
+    let e = env("cliptext");
+    add_audio(&e, &[64]);
+    let manifest = json!({"v": 1, "packs": [{"file": "pack-00.bin", "bytes": 64}], "clips": {"c-one": {"pack": 0, "off": 0, "len": 4, "ms": 100, "mime": "audio/wav", "text": "Il est midi", "tr": {"ru": "Полдень"}, "mt": true}}});
+    put(&e.course.join("audio/manifest.json"), &serde_json::to_string_pretty(&manifest).unwrap());
+    let out = e.root.join("dist");
+    let o = build(&e, &out);
+    assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
+    assert_eq!(fs::read(out.join("demo/data/audio/manifest.json")).unwrap(), fs::read(e.course.join("audio/manifest.json")).unwrap());
+}

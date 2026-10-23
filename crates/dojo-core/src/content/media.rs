@@ -114,6 +114,15 @@ pub struct AudioClip {
     /// Optional credit/attribution.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub credit: Option<String>,
+    /// What is said in the clip, in the course's target language.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    /// Translations of `text` keyed by UI language code.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tr: Option<BTreeMap<String, String>>,
+    /// True when every entry of `tr` is machine-made.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub mt: bool,
 }
 
 /// The audio manifest structure.
