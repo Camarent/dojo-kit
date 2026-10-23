@@ -52,6 +52,12 @@
       return out === key ? '' : out;
     }
 
+    function stimulusTextVisible(st, audio, hasClip, speakable) {
+      if (!st.hideText) return true;
+      if (!speakable) return false;
+      return hasClip ? audio.status === 'unavailable' : audio.status !== 'ok';
+    }
+
     function Stimulus(p) {
       var st = p.stimulus;
       if (!st) return null;
@@ -59,7 +65,7 @@
       var lines = audio ? speechLines(st) : [];
       var clip = audio && Array.isArray(st.audio) && st.audio.length && root.DojoAudio && root.DojoAudio.ready() ? { sid: st.id, ids: st.audio } : null;
       var speakable = lines.length > 0 || !!clip;
-      var showText = !st.hideText || (speakable && audio.status !== 'ok');
+      var showText = stimulusTextVisible(st, audio, !!clip, speakable);
       return html`<section class="stimulus" data-testid="stimulus">
         ${st.title ? html`<h2 class="stimulus-title" data-testid="stimulus-title">${renderText(st.title)}</h2>` : null}
         ${speakable && showText ? html`

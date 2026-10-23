@@ -181,7 +181,7 @@
       if (!limit || !QuestionTimer) return null;
       var st = s.cur.stimulus;
       var pids = ['i:' + item.id].concat(st ? ['s:' + st.id] : []);
-      var hasAudio = !!audio && audio.status === 'ok' && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))));
+      var hasAudio = !!audio && ((root.DojoAudio && root.DojoAudio.ready() && !!st && !!st.audio && st.audio.length > 0) || (audio.status === 'ok' && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))))));
       var canStart = function () { return !hasAudio || pids.some(function (k) { return (self.played && self.played[k]) || (self.released && self.released[k]); }); };
       return h(QuestionTimer, { key: 'qt' + s.cur.position, now: p.now, limitMs: limit, canStart: canStart,
         onStart: function () { session.timerStart(item); }, onExpire: function () { self.timeout(); }, stopped: !!s.result, t: p.t });
