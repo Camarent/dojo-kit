@@ -141,7 +141,7 @@
       ${hasGroups ? renderGroupsSection(p, t, course, groups) : null}
       ${exams.length ? renderExamsSection(t, exams, p) : null}
       ${hasBars ? renderBarsSection(t, bars) : null}
-      ${!hasGroups ? renderUnitsSection(p, t, course, c) : null}
+      ${!hasGroups ? renderUnitsSection(p, t, course, c, hasBars) : null}
       ${hasGroups ? renderOtherSection(p, t, course, groups, c) : null}
     </main>`;
   }
@@ -184,6 +184,9 @@
     var hasWeak = weakList.length > 0;
     var dupes = weakDupes(weakList);
     var hasPlacement = o.hasPlacement, placementDone = o.placementDone, canReview = o.canReview, hasGroups = o.hasGroups;
+    var placementOpen = hasPlacement && !placementDone;
+    var reviewPrimary = c.due > 0 && !placementOpen;
+    var practicePrimary = !reviewPrimary && !placementOpen;
     return html`<section class="actions">
       ${c.fresh > c.newToday && !hasGroups ? html`<div class="row wrap more-new" data-testid="more-new">
         <button type="button" class="btn" data-testid="btn-more-5" onClick=${function () { p.onMoreNew(5); }}>${t('home.moreNew', { n: 5 })}</button>
@@ -192,13 +195,15 @@
       </div>` : null}
       ${hasPlacement && !placementDone ? html`<button type="button" class="btn primary big" data-testid="btn-placement"
         onClick=${function () { p.onPlacement(); }}>${t('home.placement')}</button>` : null}
-      <button type="button" class="btn primary big" disabled=${!canReview} data-testid="btn-review"
+      <button type="button" class=${'btn big' + (reviewPrimary ? ' primary' : '')} disabled=${!canReview} data-testid="btn-review"
         onClick=${function () { p.onStart('daily', {}); }}>${t('home.review')}</button>
       ${canReview ? null : html`<p class="muted" data-testid="review-hint">${t('home.review.empty')}</p>`}
       <div class="row wrap">
-        <button type="button" class="btn" data-testid="btn-practice" onClick=${function () { p.go('practice'); }}>${t('home.practice')}</button>
+        <button type="button" class=${'btn' + (practicePrimary ? ' primary' : '')} data-testid="btn-practice" onClick=${function () { p.go('practice'); }}>${t('home.practice')}</button>
         ${hasWeak ? html`<button type="button" class="btn" data-testid="btn-weak" aria-label=${t('home.weak') + ' ' + t('home.weak.count', { n: weakList.length })}
           onClick=${function () { p.onStart('weak', {}); }}>${t('home.weak')}</button>` : null}
+      </div>
+      <div class="row pair" data-testid="secondary-actions">
         <button type="button" class="btn" data-testid="btn-settings" onClick=${function () { p.go('settings'); }}>${t('home.settings')}</button>
         <button type="button" class="btn" data-testid="btn-catalog" onClick=${function () { p.go('catalog'); }}>${t('home.catalog')}</button>
       </div>
@@ -271,11 +276,11 @@
   }
 
   // Helper: units section
-  function renderUnitsSection(p, t, course, c) {
+  function renderUnitsSection(p, t, course, c, hasBars) {
     return html`<section aria-labelledby="units-title">
       <h2 id="units-title">${t('home.units')}</h2>
       ${c.active === 0 ? html`<p class="muted" data-testid="empty-course">${t('home.empty')}</p>` : html`<ul class="units" data-testid="units">
-        ${c.totals && c.totals.total > 0 ? html`<li class="total-progress" data-testid="total-progress">
+        ${c.totals && c.totals.total > 0 && !hasBars ? html`<li class="total-progress" data-testid="total-progress">
           <${ProgressBar} counts=${c.totals} ariaLabel=${t('progress.aria', c.totals)} />
         </li>` : null}
         ${(course.units || []).map(function (u) {

@@ -228,7 +228,7 @@
                       "type": "button",
                       "props": {
                         "data-testid": "btn-review",
-                        "class": "btn primary big",
+                        "class": "btn big",
                         "disabled": false,
                         "type": "button",
                         "children": [
@@ -263,7 +263,16 @@
                                 "Weak spots"
                               ]
                             }
-                          },
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "div",
+                      "props": {
+                        "data-testid": "secondary-actions",
+                        "class": "row pair",
+                        "children": [
                           {
                             "type": "button",
                             "props": {

@@ -157,3 +157,12 @@ test('CSS: progress-bar is 8px, never sized by flex basis; no hard-coded colors 
     assert.ok(!/--warn|--good/.test(r), r);
   });
 });
+
+test('settings and catalog share one 2-column grid row', async () => {
+  const m = await mount({ items: ITEMS, course: COURSE });
+  const row = find(m.tree(), 'secondary-actions');
+  assert.ok(/\bpair\b/.test(String(row.props.className || row.props.class)));
+  assert.ok(find(row, 'btn-settings') && find(row, 'btn-catalog'));
+  const css = read('styles/app.css');
+  assert.ok(/\.row\.pair\s*\{[^}]*grid-template-columns:\s*1fr 1fr/.test(css));
+});

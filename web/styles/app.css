@@ -26,6 +26,7 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .row { display: flex; gap: var(--space-3); align-items: center; }
 .row.wrap { flex-wrap: wrap; }
 .row.end { justify-content: flex-end; }
+.row.pair { display: grid; grid-template-columns: 1fr 1fr; }
 
 .btn {
   min-height: var(--tap); min-width: var(--tap); padding: 0 var(--space-4);
@@ -82,7 +83,7 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .unit-nums { display: flex; gap: var(--space-4); font-variant-numeric: tabular-nums; color: var(--fg-muted); flex: none; }
 .unit-nums span { min-width: 2ch; text-align: right; }
 .unit-nums .due { color: var(--accent); font-weight: 700; }
-.legend { margin-top: var(--space-2); text-align: right; }
+.legend { margin-top: var(--space-2); text-align: left; }
 
 .group { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 .group legend, .legend-like { font-weight: 700; padding: 0; margin-bottom: var(--space-2); }
@@ -91,8 +92,8 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .weak-chips .chip { min-width: 0; max-width: 100%; display: inline-flex; align-items: center; }
 .chip { min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--control-border); border-radius: 999px; background: var(--surface); cursor: pointer; overflow-wrap: anywhere; }
 .chip.on { background: var(--accent-soft); border-color: var(--accent); font-weight: 700; }
-.chip.on { background: var(--accent); color: var(--accent-fg); }
-.chip.on::before { content: "\2713"; margin-right: var(--space-1); }
+[data-testid="practice"] .chip.on { background: var(--accent); color: var(--accent-fg); }
+[data-testid="practice"] .chip.on::before { content: "\2713"; margin-right: var(--space-1); }
 .setup-actions .btn { flex: 1; }
 .results-actions { flex-direction: column; align-items: stretch; }
 .stepper { display: inline-flex; align-items: center; gap: var(--space-3); }
@@ -293,10 +294,6 @@ html.dojo-no-scroll { overflow: hidden !important; }
     min-height: var(--tap);
     display: inline-flex;
     align-items: center;
-  }
-  .row.wrap:has(> .btn[data-testid="btn-catalog"]) {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
   }
   .weak-chips .chip-text {
     display: -webkit-box;
