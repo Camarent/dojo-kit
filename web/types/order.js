@@ -32,17 +32,15 @@
   }
 
   // Render a sentence with slots for the new UX
-  function renderSentence(ctx, sentencePieces, byId, t, res, placed, firstWrong) {
-    var mark = function(k) {
-      if (firstWrong === undefined) return '';
-      if (firstWrong === null || k < firstWrong) return 'right';
-      return k === firstWrong ? 'wrong' : '';
-    };
+  function renderSentence(ctx, sentencePieces) {
+    var t = ctx.t, res = ctx.res, placed = ctx.placed, byId = ctx.byId, mark = ctx.mark;
+    var slots = [], n = 0;
+    sentencePieces.forEach(function (piece) { slots.push(piece === null ? n++ : -1); });
 
     return html`<p class="order-sentence" data-testid="prompt">
       ${sentencePieces.map(function(piece, idx) {
         if (piece === null) {
-          var k = ctx.slotIndex++;
+          var k = slots[idx];
           var id = placed[k];
           if (id !== undefined) {
             var label = t('q.order.position', { n: k + 1 });
@@ -61,13 +59,8 @@
   }
 
   // Render the old numbered-list fallback
-  function renderList(ctx, steps, placed, byId, res, firstWrong) {
-    var mark = function(k) {
-      if (firstWrong === undefined) return '';
-      if (firstWrong === null || k < firstWrong) return 'right';
-      return k === firstWrong ? 'wrong' : '';
-    };
-
+  function renderList(ctx) {
+    var placed = ctx.placed, byId = ctx.byId, res = ctx.res, mark = ctx.mark;
     return html`<ol class="order-placed-list" data-testid="order-placed-list">
       ${placed.map(function (id, k) {
         var label = ctx.t('q.order.position', { n: k + 1 });
@@ -81,7 +74,8 @@
   }
 
   // Render the pool of unplaced words
-  function renderPool(ctx, steps, placed, firstUnplaced) {
+  function renderPool(ctx) {
+    var steps = ctx.steps, placed = ctx.placed, firstUnplaced = ctx.firstUnplaced;
     return html`<ul class="order-unplaced" data-testid="order-unplaced">
       ${steps.map(function (s, i) {
         return placed.indexOf(s.id) >= 0 ? null : html`<li key=${s.id}><button type="button" class="order-step"
@@ -93,7 +87,8 @@
   }
 
   // Render action buttons (reset, check)
-  function renderActions(ctx, t, res, checkDisabled) {
+  function renderActions(ctx) {
+    var t = ctx.t, res = ctx.res, checkDisabled = ctx.checkDisabled;
     return html`<div class="row">
       <button type="button" class="btn" disabled=${!!res} data-testid="order-reset"
         onClick=${function () { ctx.setState({ placed: [] }); }}>${t('q.order.reset')}</button>
@@ -108,7 +103,7 @@
     return splitPrompt(item.prompt, view.steps.length) !== null;
   }
 
-  function buildCtx(p, placed, steps, byId, res, checkDisabled, firstUnplaced) {
+  function buildCtx(p, placed, steps, byId, res, checkDisabled, firstUnplaced, firstWrong) {
     var focusOn = firstUnplaced >= 0 ? 'step' : (checkDisabled ? 'placed' : 'check');
     return {
       t: p.t,
@@ -122,8 +117,14 @@
       setState: p.setState,
       onSubmit: p.onSubmit,
       focusOn: focusOn,
+      checkDisabled: checkDisabled,
+      firstUnplaced: firstUnplaced,
       flag: function (on) { return on ? 'true' : undefined; },
-      slotIndex: 0
+      mark: function (k) {
+        if (firstWrong === undefined) return '';
+        if (firstWrong === null || k < firstWrong) return 'right';
+        return k === firstWrong ? 'wrong' : '';
+      }
     };
   }
 
@@ -138,22 +139,22 @@
     var firstUnplaced = -1;
     steps.forEach(function (s, i) { if (firstUnplaced < 0 && placed.indexOf(s.id) < 0) firstUnplaced = i; });
     var checkDisabled = !!res || !canSubmit(p.state);
-    var ctx = buildCtx(p, placed, steps, byId, res, checkDisabled, firstUnplaced);
+    var ctx = buildCtx(p, placed, steps, byId, res, checkDisabled, firstUnplaced, firstWrong);
     var sentencePieces = p.item && p.item.prompt ? splitPrompt(p.item.prompt, steps.length) : null;
 
     if (sentencePieces !== null) {
       return html`<div class="order sentence" data-testid="order">
         <p class="muted order-hint">${t('q.order.hint')}</p>
-        ${renderSentence(ctx, sentencePieces, byId, t, res, placed, firstWrong)}
-        ${renderPool(ctx, steps, placed, firstUnplaced)}
-        ${renderActions(ctx, t, res, checkDisabled)}
+        ${renderSentence(ctx, sentencePieces)}
+        ${renderPool(ctx)}
+        ${renderActions(ctx)}
       </div>`;
     }
     return html`<div class="order" data-testid="order">
       <p class="muted order-hint">${t('q.order.hint')}</p>
-      ${renderPool(ctx, steps, placed, firstUnplaced)}
-      ${renderList(ctx, steps, placed, byId, res, firstWrong)}
-      ${renderActions(ctx, t, res, checkDisabled)}
+      ${renderPool(ctx)}
+      ${renderList(ctx)}
+      ${renderActions(ctx)}
     </div>`;
   }
 
