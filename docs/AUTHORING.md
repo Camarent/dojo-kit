@@ -78,7 +78,7 @@ Before `./dojo build`:
 - `srs` - `{ladder, dropOnWrong}` for that unit.
 - `placement` (bool) - `false` excludes the unit from the placement test (needs course-level `placement`, else `placement_unused`).
 - `newOrder` - `"file"` or `"random"`: order in which new items appear.
-- `examOnly` (bool, default false): exam sections draw this unit's items first, fill up from shared units; training prefers shared items and uses these only if the queue would be empty (`crates/dojo-core/src/exam.rs:156`); see "Exams".
+- `examOnly` (bool, default false): exam sections draw this unit's items first, fill up from shared units; training prefers shared items and uses these only if the queue would be empty (`crates/dojo-core/src/exam/`); see "Exams".
 
 Course-level counterparts and extras: `srs`, `srsByType` (per item type), `newOrder`, `learnedStage`, `types` (restrict item types), `introNew`, `dontKnow`, `allowOverride`, `normalize`, `speech`, `scripts`, `captions`, `ruby` (see "Question captions and ruby skip set").
 - `srs.ladder`: intervals in milliseconds by stage; at least 2 entries, first 0, non-negative, non-decreasing. Default `[0, 14400000, 86400000, 259200000, 604800000, 1209600000, 2592000000]`. Leave it alone unless the user asks (e.g. an exam date soon).
@@ -92,8 +92,8 @@ Course-level `placement`: `{"perUnit": 5, "mode": "check"}`. `perUnit` = items s
 Single exam: `exam: {minutes?, passMark?, pass?, sections: [{title, count, units?, tags?, types?}]}`. Take the real exam's format and pass rule from the user; do not invent them. A section's `count` must not exceed the matching active items (`exam_too_big` warning); a section cannot use `card` or a type not enabled (`bad_exam_section`).
 Several exams: `exams: [{id (required, unique, frozen once published), title?, minutes?, passMark?, pass?, sections, timing?, scoring?, passPoints?, note?}]`; the legacy `exam` has id `default`.
 Pass rule:
-- `passMark` is optional: a fraction 0..1 (0.7 = 70%); pass when correct/total `>=` it. Absent, the default is 0.6 (`DEFAULT_PASS_MARK`, `crates/dojo-core/src/exam.rs:8`). `pass_rule_default` warns when none of `passMark`, `pass` or `scoring` is set: confirm the rule with the user.
-- `pass: {mode?: percent|points, basis?: official|author, source?, scaled?}`. `mode` defaults to `points` when `scoring` is set, else `percent` (`crates/dojo-core/src/exam.rs:11`). In points mode `passMark` is ignored (`pass_mark_ignored` warning); `mode: points` without `scoring` is an error (`bad_pass_rule`). `basis: official` without `source` warns (`pass_rule_no_source`). `scaled: true` sets the result's `estimate` flag, points mode only (`crates/dojo-core/src/exam.rs:88`).
+- `passMark` is optional: a fraction 0..1 (0.7 = 70%); pass when correct/total `>=` it. Absent, the default is 0.6 (`DEFAULT_PASS_MARK`, `crates/dojo-core/src/exam/`). `pass_rule_default` warns when none of `passMark`, `pass` or `scoring` is set: confirm the rule with the user.
+- `pass: {mode?: percent|points, basis?: official|author, source?, scaled?}`. `mode` defaults to `points` when `scoring` is set, else `percent` (`crates/dojo-core/src/exam/`). In points mode `passMark` is ignored (`pass_mark_ignored` warning); `mode: points` without `scoring` is an error (`bad_pass_rule`). `basis: official` without `source` warns (`pass_rule_no_source`). `scaled: true` sets the result's `estimate` flag, points mode only (`crates/dojo-core/src/exam/`).
 Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
 - Ideally mock-exam questions differ from training questions: put them in units with `examOnly: true` (unit field above) and point the exam sections at those units.
 - Each exam section needs at least 20% of its `count` (rounded up) from `examOnly` units; below that `exam_few_unique` warns (`crates/dojo-core/src/validate/exam.rs:279`).

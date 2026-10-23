@@ -49,7 +49,7 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `dojo` wrapper, `tests/wr
 - Exam resume: `node --test web/tests/exam-resume.test.js web/tests/app-resume.test.js`.
 - Groups: `node --test web/tests/groups.test.js web/tests/groups-ui.test.js web/tests/groups-build.test.js`.
 - Web unit test: `node --test web/tests/storage.test.js`; exam flow: `node --test web/tests/exams.test.js`; placement: `node --test web/tests/placement.test.js`; unit caps and unit ladders: `node --test web/tests/unit-settings.test.js`.
-- Full web test run: the directory form `node --test web/tests` fails on Node 22; web test files live under `web/tests/`, Node test files also live in `tests/` (`tests/fw-root.test.js`, `tests/reference-no-n5.test.js`, `tests/build-wasm-paths.test.js`).
+- Full web test run: the directory form `node --test web/tests` fails (checked on Node 24.22.1: `Cannot find module '…/web/tests'`; Node 22 not checked, TODO(verify)); web test files live under `web/tests/`, Node test files also live in `tests/` (`tests/fw-root.test.js`, `tests/reference-no-n5.test.js`, `tests/build-wasm-paths.test.js`).
 - Full suite (from repo root, replaces the web-only run): `scripts/build-wasm.sh && cargo test --workspace && node --test web/tests/*.test.js tests/*.test.js && node tests/wasm-smoke.js && node tests/gen-vectors.js && git diff --exit-code -- tests/vectors && bash tests/hooks-test.sh`.
 - End-to-end wrapper check: `tests/wrapper.sh` (`bash tests/wrapper.sh`).
 - Build a course: `./dojo validate <course-dir>` then `./dojo build <course-dir>`.
