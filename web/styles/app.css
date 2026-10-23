@@ -42,6 +42,12 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .btn.big { min-height: 52px; font-size: var(--fs-lg); width: 100%; }
 .btn.icon { padding: 0; font-size: var(--fs-lg); }
 .btn.play { flex: none; order: 2; width: 2.25rem; height: 2.25rem; min-width: var(--tap); min-height: var(--tap); padding: 0; }
+.btn.play.big-play { width: 4rem; height: 4rem; min-width: 64px; min-height: 64px; font-size: 1.6rem; margin-inline: auto; }
+.qline.centred { justify-content: center; align-items: center; }
+.replays { font-size: var(--fs-sm); align-self: center; }
+.spin { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) { .spin { animation: spin 0.9s linear infinite; } }
+@keyframes spin { to { transform: rotate(360deg); } }
 .btn.danger { background: var(--bad); color: var(--bg); border-color: var(--bad); }
 :root[data-theme="dark"] .btn.danger { background: var(--bad-soft); color: var(--bad); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.danger { background: var(--bad-soft); color: var(--bad); } }

@@ -6,6 +6,7 @@
  *     open({ stimulus, timer, onEnd }): resets the replay count; plays the clip once when the stimulus is a listening
  *       stimulus, audio is ready and the user has made a gesture
  *     replay() -> bool: plays again while replays < replayBudget; the first play (autoplay or manual) is free, else false
+ *     remaining() -> number|null: replays left once the first play started, null before it or without a limit
  *     onKey(event) -> bool: any key counts as a gesture; "r" without modifiers replays (true when handled)
  *   sync(screen[, audio]): opens/closes the controller kept on a session screen as screen.dict when screen.state.cur changes
  *     stop(): removes the gesture listeners and stops playback
@@ -68,6 +69,11 @@
 
     function exhausted() { return !!cur && started && uses >= cur.budget; }
 
+    function remaining() {
+      if (!cur || !started || !isFinite(cur.budget)) return null;
+      return Math.max(0, cur.budget - uses);
+    }
+
     function take() {
       if (!cur) return true;
       return claim();
@@ -87,7 +93,7 @@
       if (audio && audio.stop) audio.stop();
     }
 
-    return { open: open, replay: replay, onKey: onKey, stop: stop, take: take, exhausted: exhausted };
+    return { open: open, replay: replay, onKey: onKey, stop: stop, take: take, exhausted: exhausted, remaining: remaining };
   }
 
   function timerOf(course, item) {

@@ -75,7 +75,7 @@
           </div>
         ` : null}
         ${showText && !speakable ? html`<p class="stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>` : null}
-        ${speakable && !showText ? html`<${Playback} audio=${audio} lines=${lines} clip=${clip} testid="play-stimulus" pid=${'s:' + st.id} dict=${p.dict} />` : null}
+        ${speakable && !showText ? html`<div class="qline centred"><${Playback} audio=${audio} lines=${lines} clip=${clip} testid="play-stimulus" pid=${'s:' + st.id} dict=${p.dict} /></div>` : null}
       </section>`;
     }
 

@@ -120,11 +120,17 @@
       var exam = p.audio.exam;
       var once = exam && (s.played || p.audio.played[p.pid]);
       var label = once ? t('speech.played') : s.playing ? (exam ? t('speech.playing') : t('speech.stop')) : t('speech.play');
-      if (p.clip && s.playing && !exam) label = t('audio.loading');
+      var loading = p.audio.status === 'loading' || (!!p.clip && s.playing && !s.track);
+      if (loading || (p.clip && s.playing && !exam)) label = t('audio.loading');
+      var left = p.dict && p.dict.remaining ? p.dict.remaining() : null;
+      var spent = !s.playing && !!p.dict && p.dict.exhausted();
+      if (spent) label = t('audio.noreplay');
       var self = this;
-      var btn = html`<button type="button" class="btn icon play" data-testid=${p.testid} aria-label=${label} title=${label}
-        disabled=${once || (exam && s.playing) || (!s.playing && !!p.dict && p.dict.exhausted())} onClick=${function () { self.click(); }}><span aria-hidden="true">${s.playing && !exam ? '\u25A0' : '\u25B6'}</span></button>`;
+      var glyph = loading ? html`<span class="spin" data-testid="play-spin" aria-hidden="true">\u25CC</span>` : html`<span aria-hidden="true">${s.playing && !exam ? '\u25A0' : '\u25B6'}</span>`;
+      var btn = html`<button type="button" class=${p.clip ? 'btn icon play big-play' : 'btn icon play'} data-testid=${p.testid} aria-label=${label} title=${label}
+        disabled=${once || (exam && s.playing) || spent} onClick=${function () { self.click(); }}>${glyph}</button>`;
       var extra = [];
+      if (left !== null) extra.push(html`<span class="replays muted" data-testid="play-replays" role="status">${t('audio.replays', { n: left })}</span>`);
       if (p.clip && s.playing && s.track) extra.push(renderTrack(s.track, (s.now || Date.now()) - s.track.at, t));
       if (p.clip && debugOn(p.audio)) extra.push(renderDebug());
       if (!s.failed) return extra.length ? [btn].concat(extra) : btn;
