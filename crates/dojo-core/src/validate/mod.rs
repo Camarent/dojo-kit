@@ -11,6 +11,7 @@ pub struct SourceFile {
     pub text: String,
 }
 
+mod audio;
 mod codes;
 mod exam;
 mod files;
@@ -22,6 +23,7 @@ mod speech;
 mod dupes;
 use course::check_course;
 pub use codes::CODES;
+pub use files::check_audio_files;
 
 const MAX_PROMPT_CHARS: usize = 600;
 const MIN_LEAK_CHARS: usize = 3;

@@ -1,0 +1,7 @@
+{
+  "v": 2,
+  "packs": [
+    {"file": "p.bin", "bytes": 100, "enc": "raw"}
+  ],
+  "clips": {}
+}

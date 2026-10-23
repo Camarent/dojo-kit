@@ -1,5 +1,6 @@
 mod course;
 mod item;
+mod media;
 mod parse;
 mod speech;
 
@@ -12,6 +13,7 @@ pub use item::{
     CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, ItemType, MatchItem, MultiItem,
     NewOrder, NumericItem, OrderItem, Pair, Status,
 };
+pub use media::{AudioConfig, AudioClip, AudioEncoding, AudioManifest, AudioPack, SrsMode, TimerConfig};
 pub use parse::{
     parse_course, parse_intros, parse_items, parse_stimuli, ParsedIntros, ParsedItems,
     ParsedJsonl, ParsedStimuli, ParseError,

@@ -237,6 +237,35 @@
           "type": "null"
         }
       ]
+    },
+    "audio": {
+      "description": "Audio configuration: manifest path and optional base URL.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AudioConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timer": {
+      "description": "Default per-question timer settings for the course.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TimerConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "confusions": {
+      "description": "Whether to track confusions (wrong answer patterns) in progress records.",
+      "type": [
+        "boolean",
+        "null"
+      ]
     }
   },
   "additionalProperties": false,
@@ -307,6 +336,17 @@
               "type": "null"
             }
           ]
+        },
+        "timer": {
+          "description": "Per-question timer settings; overrides course.timer if present.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimerConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false,
@@ -356,6 +396,17 @@
           ],
           "format": "uint32",
           "minimum": 0
+        },
+        "mode": {
+          "description": "Scheduling mode: `\"ladder\"` (default) or `\"errorWeighted\"`.\nNot allowed in `srsByType` (mode_by_type).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SrsMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -366,6 +417,14 @@
       "enum": [
         "item",
         "entity"
+      ]
+    },
+    "SrsMode": {
+      "description": "Scheduler mode of a course or unit `srs` block.",
+      "type": "string",
+      "enum": [
+        "ladder",
+        "errorWeighted"
       ]
     },
     "NewOrder": {
@@ -451,6 +510,32 @@
       "required": [
         "key"
       ]
+    },
+    "TimerConfig": {
+      "description": "Timer configuration for adaptive time limits.",
+      "type": "object",
+      "properties": {
+        "baseMs": {
+          "description": "Base time limit in milliseconds (2000..30000, default 8000).",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0,
+          "default": 8000
+        },
+        "adaptive": {
+          "description": "Whether to use adaptive timing (default true).",
+          "type": "boolean",
+          "default": true
+        },
+        "replays": {
+          "description": "Number of replays allowed (0..3, default 1).",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0,
+          "default": 1
+        }
+      },
+      "additionalProperties": false
     },
     "ItemType": {
       "description": "Question types available in v1.",
@@ -1028,6 +1113,27 @@
         }
       },
       "additionalProperties": false
+    },
+    "AudioConfig": {
+      "description": "Course-level audio configuration.",
+      "type": "object",
+      "properties": {
+        "manifest": {
+          "description": "Path to the audio manifest file relative to the course directory.",
+          "type": "string"
+        },
+        "base": {
+          "description": "Optional base URL or relative prefix for audio files.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "manifest"
+      ]
     }
   }
 }

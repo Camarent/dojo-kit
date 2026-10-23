@@ -1,3 +1,4 @@
+use super::audio::{ManifestState, check_manifest, check_mode_by_type, check_pack_files, check_stimuli_audio, check_timer_config, load_manifest};
 use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm, item_body};
 use super::quality::{check_ambiguous_answer, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
 use super::dupes::check_same_prompt_diff_answers;
@@ -8,6 +9,7 @@ use crate::check::{Normalize, normalize};
 use crate::content::{Course, Item, ParsedItems, parse_intros, parse_stimuli};
 use crate::lock::IdLock;
 use std::collections::{HashMap, HashSet};
+use std::path::Path;
 
 pub(super) type AllItems<'a> = [(&'a str, usize, &'a Item)];
 
@@ -229,6 +231,15 @@ pub(super) fn check_course_totals(c: &Course, all: &AllItems, course_sink: &mut 
 
     // Check bar/extraTags matches
     check_bar_matches(c, all, course_sink);
+    
+    // Check mode_by_type
+    check_mode_by_type(&c.srs_by_type, course_sink);
+    
+    // Check timer configs
+    check_timer_config(&c.timer, COURSE_FILE, course_sink);
+    for unit in &c.units {
+        check_timer_config(&unit.timer, COURSE_FILE, course_sink);
+    }
 }
 
 pub(super) fn check_ids_and_lock(all: &AllItems, lock: Option<&IdLock>, out: &mut Vec<Diagnostic>) {
@@ -263,4 +274,34 @@ pub(super) fn check_ids_and_lock(all: &AllItems, lock: Option<&IdLock>, out: &mu
         found.sort_by(|a, b| (a.0, a.1.code, &a.1.file, a.1.line).cmp(&(b.0, b.1.code, &b.1.file, b.1.line)));
         out.extend(found.into_iter().map(|(_, d)| d));
     }
+}
+
+/// Validates audio configuration and files.
+/// This requires file I/O, so it's called from the CLI layer with the course directory.
+pub fn check_audio_files(
+    course: &Course,
+    course_dir: &Path,
+    stimuli: &Option<SourceFile>,
+) -> Vec<Diagnostic> {
+    let mut sink = Sink { out: Vec::new() };
+    let parsed = stimuli.as_ref().map(|s| parse_stimuli(&s.text).stimuli).unwrap_or_default();
+    let name = stimuli.as_ref().map_or("stimuli.jsonl", |s| s.name.as_str());
+    let Some(audio) = &course.audio else {
+        check_stimuli_audio(&parsed, name, &ManifestState::NoConfig, &mut sink);
+        return sink.out;
+    };
+    if audio.manifest.is_empty() {
+        sink.error("audio_without_manifest", COURSE_FILE, 0, "audio config has empty manifest path".to_string());
+        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, &mut sink);
+        return sink.out;
+    }
+    let loaded = load_manifest(audio, course_dir, &mut sink);
+    let Some((manifest, dir)) = loaded else {
+        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, &mut sink);
+        return sink.out;
+    };
+    check_manifest(&manifest, &audio.manifest, &mut sink);
+    check_pack_files(&manifest, &dir, &audio.manifest, &mut sink);
+    check_stimuli_audio(&parsed, name, &ManifestState::Loaded(&manifest), &mut sink);
+    sink.out
 }

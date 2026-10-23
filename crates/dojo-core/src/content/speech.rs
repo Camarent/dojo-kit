@@ -57,6 +57,9 @@ pub struct Stimulus {
     pub hide_text: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub speak: Option<Speak>,
+    /// Audio clips (1..32) for this stimulus; clip IDs from the audio manifest.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audio: Option<Vec<String>>,
 }
 
 /// Intro card shown once per entity before its first question (`intros.jsonl`).
