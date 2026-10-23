@@ -71,12 +71,18 @@
       </div>`;
     },
     // Wrong-answer extras: entity intro body (plugin intro hook or title + text), else plugin detail hook and the declarative
-    // detail, then the item's tags. Null for correct answers and when there is nothing to show.
+    // detail, then the item's tags. Correct answers get only the plugin detail hook output (ctx.correct true); null when
+    // there is nothing to show.
     feedbackDetail: function (p, s) {
       var item = s.cur && s.cur.item;
       var session = p.session;
-      if (!item || (s.result && s.result.correct)) return null;
-      var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h, feedback: true };
+      if (!item) return null;
+      var correct = !!(s.result && s.result.correct);
+      var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h, feedback: true, correct: correct };
+      if (correct) {
+        var shown = DojoExt.detail ? DojoExt.detail(item, ctx) : null;
+        return shown ? html`<section class="feedback-detail" data-testid="feedback-detail"><div data-testid="detail-hook">${shown}</div></section>` : null;
+      }
       var unit = (p.course.units || []).filter(function (u) { return u.id === item.unit; })[0] || null;
       var decl = renderDeclarativeDetail(p.course, unit, item, p.t, true);
       var intro = session.entityIntro ? session.entityIntro(item) : null;

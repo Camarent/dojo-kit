@@ -154,3 +154,30 @@ test('intro hook ctx.feedback is undefined in catalog detail view', async () => 
   // Check that intro-hook is rendered
   assert.ok(H.find(v, 'intro-hook'), 'intro-hook is rendered');
 });
+
+test('correct answer: detail hook output is shown with ctx.correct true, and no decl or tags', async () => {
+  const items = [gap('a', 'u1', { tags: ['t1'] })];
+  const m = await H.mount({ items, course: courseWithUnits([{ id: 'u1', title: 'Unit 1' }]) });
+  m.app.go('home');
+  const seen = [];
+  m.sb.DojoExt.registerDetail(function (item, ctx) {
+    seen.push(ctx.correct);
+    return ctx.correct ? ctx.h('div', { 'data-testid': 'words' }, 'Words') : null;
+  });
+  m.app.startMode('practice', { types: ['gap'] });
+  const ss = m.screen(m.sb.DojoApp._SessionScreen);
+  ss.answer({ text: 'x' }, undefined);
+  const v = ss.view();
+  assert.deepStrictEqual(seen, [true]);
+  assert.ok(H.find(v, 'words'), 'words list shown on a correct answer');
+  assert.strictEqual(H.find(v, 'feedback-tags'), null);
+});
+
+test('correct answer: no detail section when the hook returns nothing', async () => {
+  const m = await H.mount({ items: [gap('a', 'u1')], course: courseWithUnits([{ id: 'u1', title: 'Unit 1' }]) });
+  m.app.go('home');
+  m.app.startMode('practice', { types: ['gap'] });
+  const ss = m.screen(m.sb.DojoApp._SessionScreen);
+  ss.answer({ text: 'x' }, undefined);
+  assert.strictEqual(H.find(ss.view(), 'feedback-detail'), null);
+});
