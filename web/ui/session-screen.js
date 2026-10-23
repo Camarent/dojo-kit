@@ -104,7 +104,7 @@
       var session = this.props.session;
       var card = cur && session.introFor ? session.introFor(cur.item) : null;
       var showIntro = !card && !!(cur && session.shouldShowIntro(cur.item));
-      return { cur: cur, result: null, picked: null, qstate: this.initialQState(cur), error: null, guard: null, retry: false, speechFail: false, showIntro: showIntro, introCard: card };
+      return { cur: cur, result: null, picked: null, qstate: this.initialQState(cur), error: null, guard: null, retry: false, speechFail: false, showIntro: showIntro, introCard: card, audioMark: root.DojoAudio && root.DojoAudio.mark ? root.DojoAudio.mark() : 0 };
     }
     componentDidMount() {
       var self = this;

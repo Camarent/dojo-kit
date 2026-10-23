@@ -5,6 +5,9 @@
  *   pick(stimulusId, ids, random) -> id   random() in [0,1); never the id picked last for that stimulus when ids.length > 1
  *   play(clipId[, {onStart({ms})}]) -> Promise<{ms}>  resolves at playback end, rejects on any failure; each pack is fetched and decoded to bytes once.
  *                            ms = manifest ms, or the measured duration (decoded buffer / Audio.duration) when the manifest ms is 0 or missing; onStart gets it when playback begins
+ *   mark() -> n              audio sequence number; call at item start
+ *   heardClip(stimulusId, since) -> id|null  id picked last for the stimulus whose playback started after mark() value `since`
+ *   clipMeta(id) -> {text, tr, mt}|null  manifest clip fields (null before load / unknown id)
  *   duration(clipId) -> ms|null  last known duration of a clip (manifest or measured)
  *   status() -> {manifest, packs, ctx, decodeError, playError}  plain strings for the debug line
  *   preload() -> Promise      fetches manifest and all packs (errors recorded in status(), never thrown)
@@ -22,6 +25,8 @@
   var DEFAULT_BASE = 'data/audio/';
   var st = null;
   var last = {};
+  var plays = 0;
+  var startedAt = {};
 
   function configure(o) {
     o = o || {};
@@ -29,6 +34,8 @@
     if (base.charAt(base.length - 1) !== '/') base += '/';
     st = { base: base, manifest: o.manifest || null, mp: null, packs: {}, win: o.win || root, fetch: o.fetch || null, ctx: null, el: null, stopFn: null, seq: 0, active: null, measured: {}, mdone: null, pdone: {}, info: { manifest: 'idle', packs: {}, decodeError: '', playError: '', step: 'idle', err: '', path: '' } };
     last = {};
+    plays = 0;
+    startedAt = {};
   }
 
   function ready() { return !!st; }
@@ -202,8 +209,8 @@
     if (!st) return Promise.reject(new Error('audio: not configured'));
     if (st.active && st.active.id === clipId) return st.active.promise;
     stop();
-    var seq = ++st.seq;
-    var mine = st;
+    var seq = ++st.seq, mine = st, o0 = opts;
+    opts = Object.assign({}, o0, { onStart: function (i) { startedAt[clipId] = ++plays; if (o0 && o0.onStart) o0.onStart(i); } });
     var rec = { id: clipId, promise: null };
     rec.promise = playNow(clipId, opts, seq);
     mine.active = rec;
@@ -226,6 +233,17 @@
       if (!clip) throw new Error('audio: unknown clip ' + clipId);
       return loadPack(m, clip.pack).then(function (bytes) { return startClip(Object.assign({ id: clipId }, clip), bytes, opts, seq); });
     }).catch(fail);
+  }
+
+  function mark() { return plays; }
+  function heardClip(sid, since) {
+    var id = last[sid];
+    return startedAt[id] > (since === undefined ? Infinity : since) ? id : null;
+  }
+
+  function clipMeta(id) {
+    var m = st && (st.mdone || st.manifest), c = m && m.clips && m.clips[id];
+    return c ? { text: c.text, tr: c.tr, mt: !!c.mt } : null;
   }
 
   function duration(clipId) {
@@ -277,5 +295,5 @@
     } catch (e) { /* ignore */ }
   }
 
-  return { configure: configure, ready: ready, pick: pick, play: play, duration: duration, status: status, preload: preload, stop: stop, unlock: unlock };
+  return { configure: configure, ready: ready, pick: pick, play: play, duration: duration, status: status, mark: mark, heardClip: heardClip, clipMeta: clipMeta, preload: preload, stop: stop, unlock: unlock };
 });

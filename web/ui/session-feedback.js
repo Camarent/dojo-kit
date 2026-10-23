@@ -121,6 +121,7 @@
           <b data-testid="verdict">${def.verdict ? def.verdict(res, t) : (res.correct ? t('session.correct') : res.timedOut ? t('session.timedOut') : t('session.wrong'))}</b>
           ${!def.hideExpected && !res.correct ? html`<p data-testid="expected">${t('session.expected')} <span class="pre">${renderTextAll(res.expected)}</span></p>` : null}
           ${revealedLine(s, t)}
+          ${root.DojoClipText ? root.DojoClipText.render(s, t, p.lang) : null}
           ${def.Extra ? h(def.Extra, { result: res, t: t, raw: s.qstate && s.qstate.text }) : null}
           ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}
           ${this.feedbackDetail(p, s)}

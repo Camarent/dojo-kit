@@ -377,3 +377,6 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .ptrack-text { position: relative; display: block; text-align: center; color: var(--fg); }
 
 .range-labels { display: flex; justify-content: space-between; font-size: 0.85em; }
+
+.clip-lines p { margin: .25rem 0; }
+.clip-lines [data-testid="clip-tr-label"] { color: var(--muted, inherit); }
