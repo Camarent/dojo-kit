@@ -219,7 +219,7 @@ test('app.js: data-testid="prompt" occurs only once', () => {
 
 test('intro and speakable stimulus use .qbody (no .qtext typography); css rule has no font rules', () => {
   const css = read('styles/app.css');
-  const js = read('ui/app.js') + read('ui/common.js') + read('ui/stimulus.js') + read('ui/session-screen.js');
+  const js = read('ui/app.js') + read('ui/common.js') + read('ui/stimulus.js') + read('ui/session-focus.js') + read('ui/session-screen.js');
   const m = css.match(/\.qline \.qbody\s*\{([^}]*)\}/);
   assert.ok(m, 'app.css must contain .qline .qbody rule');
   assert.ok(m[1].includes('min-width: 0') && m[1].includes('flex: 1 1 auto'));

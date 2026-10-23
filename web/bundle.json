@@ -42,6 +42,7 @@
     "ui/home.js",
     "ui/stimulus.js",
     "ui/session-feedback.js",
+    "ui/session-focus.js",
     "ui/session-screen.js",
     "ui/results.js",
     "ui/placement.js",

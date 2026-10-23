@@ -28,6 +28,7 @@
   var renderIntroBody = DojoDetail.renderIntroBody;
 
   var createShared = (root.DojoSessionFeedback || (typeof require !== 'undefined' ? require('./session-feedback.js') : {})).createShared;
+  var SessionFocus = (root.DojoSessionFocus || (typeof require !== 'undefined' ? require('./session-focus.js') : {}));
 
   function create(deps) {
     var Stimulus = deps.Stimulus;
@@ -138,50 +139,11 @@
       if (this.props.session.release) this.props.session.release();
     }
     componentDidUpdate() { this.focusSoon(); }
-    onModality(e) {
-      this.kbd = e.type === 'keydown';
-      var box = this.qbox;
-      if (this.kbd && box && box.querySelectorAll) {
-        var marked = box.querySelectorAll('[data-nofocusring]');
-        for (var i = 0; i < marked.length; i++) marked[i].removeAttribute('data-nofocusring');
-      }
-    }
-    focusSoon() {
-      var self = this;
-      setTimeout(function () { self.applyFocus(); }, 0);
-    }
-    refocusLost(s, box, doc, active, had) {
-      var lost = doc && (!active || active === doc.body);
-      if (!(had && lost && !s.result && box && box.querySelector)) return;
-      var re = box.querySelector('[data-refocus]');
-      if (re && re.focus) { re.focus(); this.hadFocus = true; }
-    }
-    focusTarget(s, box) {
-      var el = s.introCard ? this.introBtn : s.result ? this.nextBtn : this.input;
-      if (!el && !s.result && box && box.querySelector) el = box.querySelector('[data-autofocus]');
-      return el;
-    }
-    applyFocus() {
-      var s = this.state;
-      if (s.confirm) return;
-      var last = this.lastFocus;
-      var box = this.qbox;
-      var doc = this.props.win && this.props.win.document;
-      var active = doc && doc.activeElement;
-      var had = this.hadFocus;
-      this.hadFocus = !!(box && active && box.contains && box.contains(active));
-      if (last && last.cur === s.cur && last.answered === !!s.result && last.intro === !!s.introCard) {
-        this.refocusLost(s, box, doc, active, had);
-        return;
-      }
-      this.lastFocus = { cur: s.cur, answered: !!s.result, intro: !!s.introCard };
-      var el = this.focusTarget(s, box);
-      if (el && el.focus) {
-        if (!this.kbd && el.setAttribute) el.setAttribute('data-nofocusring', '');
-        el.focus();
-        this.hadFocus = !s.result;
-      }
-    }
+    onModality(e) { SessionFocus.onModality(this,e); }
+    focusSoon() { SessionFocus.focusSoon(this); }
+    refocusLost(s,box,doc,active,had) { SessionFocus.refocusLost(this,s,box,doc,active,had); }
+    focusTarget(s,box) { return SessionFocus.focusTarget(this,s,box); }
+    applyFocus() { SessionFocus.applyFocus(this); }
     tick() {
       var session = this.props.session;
       if (this.finishing) return;
@@ -198,33 +160,9 @@
       } else if (left <= 0) { this.setState({ remaining: 0 }); this.finish(); return; }
       this.setState({ remaining: Math.max(0, left) });
     }
-    isExamMode() { return this.props.session.mode === 'exam'; }
-    isExam() { return this.props.session.mode === 'exam' && !this.props.session.training; }
-    onInputNav(e) {
-      var s = this.state;
-      if (s.result || !s.cur) return;
-      var tag = e.target && e.target.tagName;
-      if (tag !== 'INPUT') return;
-      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-      var box = this.qbox;
-      if (!box) return;
-      var controls = [];
-      var collect = function (node) {
-        var on = function (n) { var a = n.getAttribute(n.tagName === 'INPUT' ? 'readonly' : 'disabled'); return a === true || a === '' || a === 'true'; };
-        if ((node.tagName === 'INPUT' || node.tagName === 'BUTTON') && !on(node)) controls.push(node);
-        if (node.childNodes) node.childNodes.forEach(function (c) { collect(c); });
-      };
-      collect(box);
-      var currentIndex = -1;
-      for (var i = 0; i < controls.length; i++) {
-        if (controls[i] === e.target) { currentIndex = i; break; }
-      }
-      if (currentIndex === -1) return;
-      var nextIndex = e.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
-      if (nextIndex < 0 || nextIndex >= controls.length) return;
-      controls[nextIndex].focus();
-      e.preventDefault();
-    }
+    isExamMode() { return this.props.session.mode==='exam'; }
+    isExam() { return this.props.session.mode==='exam'&&!this.props.session.training; }
+    onInputNav(e) { SessionFocus.onInputNav(this,e); }
     onKey(e) {
       this.onModality(e);
       var s = this.state;
