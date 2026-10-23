@@ -27,6 +27,7 @@
   var countsMod = root.DojoSessionCounts || (typeof require === 'function' ? require('./session/counts.js') : null);
   var examMod = root.DojoSessionExam || (typeof require === 'function' ? require('./session/exam.js') : null);
   var runMod = root.DojoSessionRun || (typeof require === 'function' ? require('./session/run.js') : null);
+  var qtimerMod = root.DojoSessionQtimer || (typeof require === 'function' ? require('./session/qtimer.js') : null);
   var overridesMod = root.DojoSessionOverrides || (typeof require === 'function' ? require('./session/overrides.js') : null);
   var isRetired = util.isRetired;
   var ensureObject = util.ensureObject;
@@ -75,6 +76,9 @@
         placement: placement
       }
     };
+    var qtimer = qtimerMod ? qtimerMod.create(ctx) : null;
+    ctx.fn.qtimerAfter = qtimer ? qtimer.afterVerdict : function () {};
+    ctx.fn.qtimerPending = qtimer ? qtimer.pending : function () { return false; };
     var overrides = overridesMod.create(ctx);
     Object.assign(ctx.fn, overrides);
     var unitConfig = overrides.unitConfig;
@@ -196,7 +200,9 @@
         return { error: 'engine' };
       }
       if (!plan.ids.length) return { error: 'empty' };
-      return createSession(mode, plan);
+      var session = createSession(mode, plan);
+      if (qtimer && !session.error && (mode === 'daily' || mode === 'practice' || mode === 'weak')) qtimer.attach(session);
+      return session;
     }
     function newSessionId(mode) {
       return mode + '-' + now() + '-' + Math.floor(random() * 4294967296).toString(36);

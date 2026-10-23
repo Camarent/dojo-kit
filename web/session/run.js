@@ -204,6 +204,7 @@
           }
         } else {
           verdict = sx.fn.gradeInput(item, input);
+          if (!verdict && ctx.fn.qtimerPending()) verdict = { correct: false, given: '' };
           if (!verdict) return { error: 'bad_input' };
           // For gap retry: don't record, don't advance, don't mark as answered
           if (verdict.verdict === 'retry' && mode === 'exam' && !session.training) {

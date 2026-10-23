@@ -186,6 +186,7 @@
   }
 
   function applyVerdict(item, verdict, options) {
+    if (!verdict.correct && (options.timedOut === true || ctx.fn.qtimerPending())) verdict = Object.assign({}, verdict, { timedOut: true });
     var rec = options.rec;
     var prev = options.prev;
     var relearn = options.relearn;
@@ -197,6 +198,7 @@
       sx.entityWrong[se] = true;
       setWrong = true;
     }
+    if (!relearn && sx.mode !== 'placement') ctx.fn.qtimerAfter(item, verdict);
     sx.answeredAt[sx.session.index] = true;
     sx.session.answered++;
     var pushed = false;
@@ -206,7 +208,8 @@
       sx.draftAnswers[sx.session.index] = { i: sx.session.index, c: !!verdict.correct, g: stableGiven(verdict.given) };
       sx.fn.saveDraft(true);
     }
-    return sx.fn.result(item, verdict);
+    var out = sx.fn.result(item, verdict);
+    return verdict.timedOut ? Object.assign({}, out, { timedOut: true }) : out;
   }
 
     return { gradeInput: gradeInput, nextRecord: nextRecord, applyVerdict: applyVerdict };

@@ -28,6 +28,8 @@
   var renderIntroBody = DojoDetail.renderIntroBody;
 
   var createShared = (root.DojoSessionFeedback || (typeof require !== 'undefined' ? require('./session-feedback.js') : {})).createShared;
+  var QTimer = (root.DojoQuestionTimer || (typeof require !== 'undefined' ? require('./question-timer.js') : null));
+  var QuestionTimer = QTimer ? QTimer.create().QuestionTimer : null;
   var SessionFocus = (root.DojoSessionFocus || (typeof require !== 'undefined' ? require('./session-focus.js') : {}));
 
   function create(deps) {
@@ -159,6 +161,27 @@
         }
       } else if (left <= 0) { this.setState({ remaining: 0 }); this.finish(); return; }
       this.setState({ remaining: Math.max(0, left) });
+    }
+    timeout() {
+      var q = this.state.qstate;
+      if (this.state.result || !this.state.cur) return;
+      var r = this.props.session.answerTimed({ text: q && typeof q.text === 'string' ? q.text : '' });
+      if (r.error || r.retry) return;
+      this.answeredOn = this.state.cur;
+      this.setState({ result: r, picked: q && q.text, error: null, guard: null, answered: this.state.answered + 1 });
+    }
+    renderQTimer(p, s, audio) {
+      var self = this;
+      var session = p.session;
+      var item = s.cur.item;
+      var limit = session.timerLimit && !s.result && !s.showIntro ? session.timerLimit(item) : null;
+      if (!limit || !QuestionTimer) return null;
+      var st = s.cur.stimulus;
+      var pids = ['i:' + item.id].concat(st ? ['s:' + st.id] : []);
+      var hasAudio = !!audio && audio.status === 'ok' && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))));
+      var canStart = function () { return !hasAudio || pids.some(function (k) { return self.played && self.played[k]; }); };
+      return h(QuestionTimer, { key: 'qt' + s.cur.position, now: p.now, limitMs: limit, canStart: canStart,
+        onStart: function () { session.timerStart(item); }, onExpire: function () { self.timeout(); }, stopped: !!s.result });
     }
     isExamMode() { return this.props.session.mode==='exam'; }
     isExam() { return this.props.session.mode==='exam'&&!this.props.session.training; }
@@ -336,6 +359,7 @@
       return html`<main class="screen session" data-testid="session" data-mode=${p.session.mode}>
         ${this.renderTopbar(p, s)}
         ${p.session.warnings ? html`<p class="notice" data-testid="exam-short">${p.t('session.short')}</p>` : null}
+        ${card ? null : this.renderQTimer(p, s, audio)}
         ${card ? this.renderIntroCard(p, s, audio) : this.renderQuestionCard(p, s, audio)}
         ${card ? null : this.renderFeedback(p, s)}
         ${s.guard ? html`<p class="notice bad" role="alert" data-testid="guard-message">${s.guard}</p>` : null}

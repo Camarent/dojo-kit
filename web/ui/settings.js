@@ -17,6 +17,8 @@
   var Notice = DojoCommon.Notice;
   var applyTheme = DojoCommon.applyTheme;
   var speechCfg = DojoCommon.speechCfg;
+  var timerMod = root.DojoSettingsTimer || null;
+  var renderTimerSettings = timerMod ? timerMod.create().renderTimerSettings : function () { return null; };
 
   function create(deps) {
     var renderSpeechSettings = deps.renderSpeechSettings;
@@ -159,6 +161,7 @@
         ${sectionImport(s, t, self)}
         ${sectionReset(s, t, self)}
         ${renderSpeechSettings(p, self)}
+        ${renderTimerSettings(p, self)}
         ${renderPluginSettings(p, self)}
         ${sectionAbout(p, t)}
         <div class="row"><button type="button" class="btn" data-testid="btn-back" onClick=${function () { p.go('home'); }}>${t('back')}</button></div>
