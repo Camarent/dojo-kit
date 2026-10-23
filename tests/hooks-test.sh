@@ -136,9 +136,14 @@ new_repo; echo a > a.txt; git add a.txt
 expect_refused "Test 21: commit message naming a job is refused (vibe job)" "names a job" git commit --quiet -m "vibe job foo" --author="$A"
 expect_refused "Test 22: commit message naming job/ branch is refused" "names a job" git commit --quiet -m "Merge job/foo-task-12 into dev" --author="$A"
 expect_refused "Test 22b: job/<stage>-task-N is refused" "names a job" git commit --quiet -m "from job/audit-fixes-1-task-70" --author="$A"
+expect_refused "Test 22d: Merge job/<name>-tN without -task is refused" "names a job" git commit --quiet -m "Merge job/n5-dojo-sync-t3 into dev" --author="$A"
+expect_refused "Test 22e: Merge job/<name> plain is refused" "names a job" git commit --quiet -m "Merge job/audit-setup into dev" --author="$A"
 expect_refused "Test 23: non-UTC author date is refused" "date offset" env GIT_AUTHOR_DATE="2026-01-01T10:00:00 +0300" git commit --quiet -m "dated" --author="$A"
 expect_refused "Test 23b: non-UTC committer date is refused" "date offset" env GIT_COMMITTER_DATE="2026-01-01T10:00:00 +0300" git commit --quiet -m "dated" --author="$A"
 expect_ok "Test 22c: legit messages with subtask-1, job/queue, task-3 pass" git commit --quiet -m "subtask-1 style ids; job/queue docs; see task-3" --author="$A"
+echo '{}' > progress-export.json; git add -f progress-export.json
+expect_refused "Test 22f: forced progress*.json is refused by pre-commit" "private or generated" git commit --quiet -m "export" --author="$A"
+git rm --quiet --cached -f progress-export.json; rm -f progress-export.json
 echo a2 > a2.txt; git add a2.txt
 expect_ok "Test 23c: UTC dates and plain message pass" git commit --quiet -m "plain" --author="$A"
 # pre-push range check with a non-UTC / job commit made with --no-verify
