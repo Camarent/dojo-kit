@@ -157,11 +157,11 @@
         ${sectionUnits(p, t, self)}
         ${sectionGroups(p, t, self)}
         ${sectionPlacement(p, t)}
+        ${renderTimerSettings(p, self)}
         ${sectionExport(s, t, self)}
         ${sectionImport(s, t, self)}
         ${sectionReset(s, t, self)}
         ${renderSpeechSettings(p, self)}
-        ${renderTimerSettings(p, self)}
         ${renderPluginSettings(p, self)}
         ${sectionAbout(p, t)}
         <div class="row"><button type="button" class="btn" data-testid="btn-back" onClick=${function () { p.go('home'); }}>${t('back')}</button></div>

@@ -25,9 +25,13 @@
         <h2>${p.t('settings.timer')}</h2>
         <p class="muted">${p.t('settings.timer.hint')}</p>
         <div class="setting-row">
-          <label for="timer-base">${p.t('settings.timer.base')}: <output data-testid="timer-base-value">${sec}</output></label>
+          <label for="timer-base">${p.t('settings.timer.base')}: <output data-testid="timer-base-value">${p.t('settings.timer.unit').replace('{n}', sec)}</output></label>
           <input type="range" class="field" id="timer-base" data-testid="timer-base" min="2" max="30" step="1" value=${sec}
             onChange=${function (e) { var n = parseFloat(e.target.value); if (isFinite(n)) self.setSetting('timer:baseMs', Math.min(30, Math.max(2, Math.round(n))) * 1000); }} />
+          <div class="range-labels muted" data-testid="timer-range-labels">
+            <span data-testid="timer-min">${p.t('settings.timer.min').replace('{n}', 2)}</span>
+            <span data-testid="timer-max">${p.t('settings.timer.max').replace('{n}', 30)}</span>
+          </div>
         </div>
       </section>`;
     }
