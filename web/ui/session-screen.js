@@ -30,6 +30,7 @@
   var createShared = (root.DojoSessionFeedback || (typeof require !== 'undefined' ? require('./session-feedback.js') : {})).createShared;
   var QTimer = (root.DojoQuestionTimer || (typeof require !== 'undefined' ? require('./question-timer.js') : null));
   var QuestionTimer = QTimer ? QTimer.create().QuestionTimer : null;
+  var Dictation = root.DojoDictation || (typeof require !== 'undefined' ? require('./dictation.js') : null);
   var SessionFocus = (root.DojoSessionFocus || (typeof require !== 'undefined' ? require('./session-focus.js') : {}));
 
   function create(deps) {
@@ -125,6 +126,7 @@
         this._onVoices = function () { self.forceUpdate(); };
         ss.addEventListener('voiceschanged', this._onVoices);
       }
+      if (Dictation) Dictation.sync(this);
       this.focusSoon();
     }
     componentWillUnmount() {
@@ -132,6 +134,7 @@
       this.props.win.removeEventListener('pointerdown', this.onModality);
       if (Speech) Speech.stop(this.props.win);
       if (this.timer) clearInterval(this.timer);
+      if (this.dict) this.dict.stop();
       if (this.onHide) {
         this.props.win.removeEventListener('visibilitychange', this.onHide);
         this.props.win.removeEventListener('pagehide', this.onHide);
@@ -140,7 +143,7 @@
       if (ss && ss.removeEventListener && this._onVoices) ss.removeEventListener('voiceschanged', this._onVoices);
       if (this.props.session.release) this.props.session.release();
     }
-    componentDidUpdate() { this.focusSoon(); }
+    componentDidUpdate() { if (Dictation) Dictation.sync(this); this.focusSoon(); }
     onModality(e) { SessionFocus.onModality(this,e); }
     focusSoon() { SessionFocus.focusSoon(this); }
     refocusLost(s,box,doc,active,had) { SessionFocus.refocusLost(this,s,box,doc,active,had); }
@@ -190,6 +193,7 @@
       this.onModality(e);
       var s = this.state;
       if (s.confirm || !s.cur || DojoTypes.keyBlocked(e, {allowInput: true})) return;
+      if (this.dict && this.dict.onKey(e)) return;
       var tag = e.target && e.target.tagName;
       var advance = e.key === 'Enter' || e.key === 'ArrowRight';
       if (s.introCard) { this.onIntroKey(e, tag, advance); return; }
@@ -250,7 +254,7 @@
     questionProps(p, s) {
       var self = this;
       return {
-        item: s.cur.item, view: s.cur.view, result: s.result, picked: s.picked, exam: this.isExam(), t: p.t,
+        item: s.cur.item, view: s.cur.view, stimulus: s.cur.stimulus, result: s.result, picked: s.picked, exam: this.isExam(), t: p.t,
         state: s.qstate,
         setState: function (patch) { self.setState({ qstate: Object.assign({}, self.state.qstate, patch) }); },
         onSubmit: function (input, picked) { self.answer(input, picked); },

@@ -78,7 +78,7 @@
       var session = p.session;
       if (!item) return null;
       var correct = !!(s.result && s.result.correct);
-      var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h, feedback: true, correct: correct };
+      var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h, feedback: true, correct: correct, timedOut: !!(s.result && s.result.timedOut), expected: s.result ? s.result.expected : undefined };
       if (correct) {
         var shown = DojoExt.detail ? DojoExt.detail(item, ctx) : null;
         return shown ? html`<section class="feedback-detail" data-testid="feedback-detail"><div data-testid="detail-hook">${shown}</div></section>` : null;
@@ -113,6 +113,7 @@
         var showOverride = !res.correct && this.props.session.canOverride && this.props.session.canOverride();
         body = html`<div class=${cls('feedback', res.correct ? 'right' : 'wrong')} data-testid="feedback" role="status">
           <b data-testid="verdict">${def.verdict ? def.verdict(res, t) : (res.correct ? t('session.correct') : t('session.wrong'))}</b>
+          ${res.timedOut ? html`<p class="notice" data-testid="timed-out">${t('session.timedOut')}</p>` : null}
           ${!def.hideExpected && !res.correct ? html`<p data-testid="expected">${t('session.expected')} <span class="pre">${renderTextAll(res.expected)}</span></p>` : null}
           ${def.Extra ? h(def.Extra, { result: res, t: t }) : null}
           ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}

@@ -119,6 +119,7 @@
   "session.expected": "Правильно:",
   "session.accepted": "Также принимается",
   "session.recorded": "Ответ записан.",
+  "session.timedOut": "Время вышло.",
   "session.retry": "Тоже подходит",
   "session.retry.message": "Попробуйте другую форму",
   "session.your_answer": "Ваш ответ",

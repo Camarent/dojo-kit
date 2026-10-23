@@ -47,6 +47,7 @@
     "ui/session-feedback.js",
     "ui/session-focus.js",
     "ui/question-timer.js",
+    "ui/dictation.js",
     "ui/session-screen.js",
     "ui/results.js",
     "ui/placement.js",

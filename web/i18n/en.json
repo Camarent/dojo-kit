@@ -114,6 +114,7 @@
   "session.expected": "Correct:",
   "session.accepted": "Also accepted",
   "session.recorded": "Answer recorded.",
+  "session.timedOut": "Time is up.",
   "session.retry": "Also fits",
   "session.retry.message": "Try the other form",
   "session.your_answer": "Your answer",
