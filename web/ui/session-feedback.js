@@ -76,7 +76,7 @@
       var item = s.cur && s.cur.item;
       var session = p.session;
       if (!item || (s.result && s.result.correct)) return null;
-      var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h };
+      var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h, feedback: true };
       var unit = (p.course.units || []).filter(function (u) { return u.id === item.unit; })[0] || null;
       var decl = renderDeclarativeDetail(p.course, unit, item, p.t, true);
       var intro = session.entityIntro ? session.entityIntro(item) : null;
