@@ -91,7 +91,7 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
         }
         
         if by_answers.len() > 1 {
-            let (file, line, _) = prompt_items[0];
+            let Some(&(file, line, _)) = prompt_items.first() else { continue };
             let ids: Vec<String> = prompt_items.iter().map(|(_, _, it)| format!("'{}'", it.id())).collect();
             sink.warning(
                 "same_prompt_different_answers",
