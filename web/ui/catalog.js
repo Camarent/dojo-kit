@@ -293,7 +293,8 @@
               var okN = rec.ok || 0, badN = rec.bad || 0, stepN = rec.s || 0;
               return html`<p class="muted" data-testid="detail-step">${t('catalog.step', { s: stepN })} · ${dueText()}</p>
                 <p class="muted" data-testid="detail-due">${t('catalog.due')}: ${dueText()}</p>
-                <p class="muted" data-testid="detail-counts">${t('catalog.counts', { ok: okN, bad: badN })}</p>`;
+                <p class="muted" data-testid="detail-counts">${t('catalog.counts', { ok: okN, bad: badN })}</p>
+                ${DojoDetail.renderExtrasStats(rec, t)}`;
             })()}
             ${detailHookOut ? html`<div data-testid="detail-hook">${detailHookOut}</div>` : null}
           </article>

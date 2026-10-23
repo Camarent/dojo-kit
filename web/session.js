@@ -28,6 +28,7 @@
   var examMod = root.DojoSessionExam || (typeof require === 'function' ? require('./session/exam.js') : null);
   var runMod = root.DojoSessionRun || (typeof require === 'function' ? require('./session/run.js') : null);
   var qtimerMod = root.DojoSessionQtimer || (typeof require === 'function' ? require('./session/qtimer.js') : null);
+  var weightedMod = root.DojoSessionWeightedQueue || (typeof require === 'function' ? require('./session/weighted-queue.js') : null);
   var overridesMod = root.DojoSessionOverrides || (typeof require === 'function' ? require('./session/overrides.js') : null);
   var isRetired = util.isRetired;
   var ensureObject = util.ensureObject;
@@ -87,6 +88,7 @@
     var ladderForUnit = overrides.ladderForUnit;
     var groupSettings = overrides.groupSettings;
     var setGroupSetting = overrides.setGroupSetting;
+    Object.assign(ctx.fn, weightedMod.create(ctx));
     var queues = queuesMod.create(ctx);
     Object.assign(ctx.fn, queues);
     var placementQueueApi = placementQueueMod.create(ctx);

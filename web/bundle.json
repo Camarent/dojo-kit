@@ -12,6 +12,7 @@
     "session/util.js",
     "session/overrides.js",
     "session/placement-queue.js",
+    "session/weighted-queue.js",
     "session/queues.js",
     "session/counts.js",
     "session/exam.js",

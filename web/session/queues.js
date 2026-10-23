@@ -280,6 +280,7 @@
     function dailyQueue(groupId) {
       var q = builtQueue();
       var ids = q.due.concat(q.fresh);
+      if (ctx.fn.mixDaily) ids = ctx.fn.mixDaily(ids, q.fresh);
       if (groupId === undefined || groupId === null) return ids;
       var unitOf = {};
       items.forEach(function (it) { unitOf[it.id] = it.unit; });
@@ -308,11 +309,14 @@
       rows.sort(function (a, b) { return a.due - b.due || a.last - b.last || a.i - b.i; });
       var all = rows.map(function (r) { return r.id; });
       var shared = preferShared(all);
+      if (ctx.fn.mixPractice) return ctx.fn.mixPractice(shared, opts.limit || DEFAULT_PRACTICE_LIMIT);
       return shared.slice(0, opts.limit || DEFAULT_PRACTICE_LIMIT);
     }
 
     // Weakest ids among shared items; among all valid ones when no shared item is weak.
     function weakIds(valid, limit) {
+      var byError = ctx.fn.weakByError && ctx.fn.weakByError(valid, limit);
+      if (byError) return byError;
       var all = Object.keys(valid);
       var shared = preferShared(all);
       if (shared.length < all.length) {

@@ -187,7 +187,7 @@
 
   function applyVerdict(item, verdict, options) {
     if (!verdict.correct && (options.timedOut === true || ctx.fn.qtimerPending())) verdict = Object.assign({}, verdict, { timedOut: true });
-    var rec = options.rec;
+    var rec = options.relearn || sx.mode === 'placement' ? options.rec : ctx.fn.extrasFor(item, options.rec, verdict);
     var prev = options.prev;
     var relearn = options.relearn;
     var isNewRecord = options.isNewRecord;
