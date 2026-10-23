@@ -129,41 +129,57 @@ The `artifact` target is the only one implemented: default storage artifact-db w
 ## 12. Audio, timers, weighted scheduling
 
 ### 12.1 Audio assets
-- course.json `audio?: {manifest: "<path in course dir>", base?: "<URL or relative prefix>"}`.
-- Manifest `{v:1, packs:[{file, bytes, sha256?, enc:"raw"|"base64"}], clips:{<clipId>:{pack, off, len, ms, mime, credit?}}}`.
-  clipId `^[a-z0-9][a-z0-9-]{0,63}$`; `pack` = index into packs; `off`/`len` = byte range in the decoded pack bytes.
-- stimuli.jsonl gains `audio?: [clipId]` (1..32 variants of the same utterance). `hideText` + `audio` = listening stimulus.
-- Validator codes (errors): `audio_without_manifest`, `audio_manifest_missing`, `audio_bad_manifest`, `audio_unknown_clip`, `audio_pack_missing`, `audio_pack_mismatch` (file size != `bytes`). `sha256` is informative: dojo-kit has no hash crate and adds none; course tools check it.
-- `dojo build` copies the manifest to `data/audio/manifest.json` and packs to `data/audio/<file>` (not inlined), lists them in manifest.json.
+- course.json `audio?: {manifest: "<path in course dir>", base?: "<URL or relative prefix>"}`. `manifest` is relative to the course dir with `/` separators; absolute, or containing a `..` component -> `audio_path_escape`; empty -> `audio_without_manifest`. The course-side `audio` and `timer` objects reject unknown fields like the rest of course.json.
+- Manifest `{v:1, packs:[{file, bytes, sha256?, enc?:"raw"|"base64" (default "raw")}], clips:{<clipId>:{pack, off, len, ms, mime, credit?}}}`.
+  Unknown fields at any manifest level are ignored (additive v1 extensions). Invalid JSON, a wrong type or a missing required field -> `audio_bad_manifest` whose message contains the parser error text.
+  `file` is a bare file name `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`, resolved against the directory that contains the manifest (not the course dir). Example: manifest `audio/manifest.json`, pack on disk `audio/pack-00.bin`, `file: "pack-00.bin"`.
+  `audio_bad_manifest` also for: `v != 1`; empty `packs`; `file` not matching the pattern; clipId not matching `^[a-z0-9][a-z0-9-]{0,63}$`; `pack >= packs.length`; `len == 0`; byte range outside the decoded pack: raw `off + len > bytes` (checked add), base64 `off + len > floor(bytes/4)*3`.
+- stimuli.jsonl gains `audio?: [clipId]`: 1..32 distinct ids (variants of the same utterance), else `audio_bad_stimulus`. `hideText` + `audio` = listening stimulus.
+  A stimulus with `audio` while course.json has no `audio` -> `audio_without_manifest` at `stimuli.jsonl:<line>`. Each listed id missing from the manifest -> `audio_unknown_clip` at `stimuli.jsonl:<line>`, once per id per stimulus; skipped when the manifest could not be loaded or parsed (one error, no cascade).
+- Validator codes (errors): `audio_without_manifest`, `audio_path_escape`, `audio_manifest_missing`, `audio_bad_manifest`, `audio_bad_stimulus`, `audio_unknown_clip`, `audio_pack_missing` (no file `<manifest dir>/<file>`), `audio_pack_mismatch` (file size != `bytes`). `sha256` is informative: dojo-kit has no hash crate and adds none; course tools check it.
+- Diagnostic order is deterministic (stable CLI JSON): course.json audio checks; manifest read/parse; manifest structure (`v`, empty packs, packs by index, then clips in ascending clipId byte order: id, pack index, len, range); pack files by index (missing, size); stimuli.jsonl in line order (list size/duplicates, without manifest, unknown ids in list order). No HashMap/HashSet iteration order reaches the output.
+- `dojo build` copies the manifest to `data/audio/manifest.json` and each pack from `<manifest dir>/<file>` to `data/audio/<file>` (not inlined), lists them in manifest.json.
   New limits: any single file > 16 MiB fails; whole dist > 60 MiB fails; > 250 files fails (artifact: 16 MB/file, 64 MB/publish, 255 files). Old 8/16 MiB content gates unchanged.
 - Provenance (per-clip source record) stays in the course (`audio/sources.jsonl`); only optional `credit` ships. The framework repo ships no audio; tests use synthetic bytes/tones.
-- Web `web/audio.js` (`DojoAudio`): base = `window.DOJO_AUDIO_BASE` > `course.audio.base` > `data/audio/` (swap for Cloudflare R2 later, no core change).
+- Web `web/audio.js` (`DojoAudio`): base = `window.DOJO_AUDIO_BASE` > `course.audio.base` > `data/audio/`; a pack URL is base + `file` (swap for Cloudflare R2 later, no core change).
   Lazy pack fetch + per-pack cache; decode via `AudioContext.decodeAudioData` (no media-src needed), fallback `<audio>` + Blob URL; `play(clipId) -> Promise<{ms}>` resolves at playback end.
-  Variant pick: `ctx.random` among `stimulus.audio`, never the variant played last for that stimulus in this session. Failure -> `speak` via DojoSpeech if present, else show text + notice; never blocks grading.
+  Variant pick: `ctx.random` among `stimulus.audio`, never the variant played last for that stimulus in this session (a single variant is replayed). Failure -> `speak` via DojoSpeech if present, else show text + notice; never blocks grading.
 
 ### 12.2 Per-question timer (adaptive)
-- course/unit `timer?: {baseMs? (2000..30000, default 8000), adaptive? (default true), replays? (0..3, default 1)}`; unit overrides course. Not in exams (exam timers unchanged).
-- User setting `timer:baseMs` (settings, per-field ts) overrides the course value. Adaptive state `timer:scale` (0.5..2.0, default 1) and `timer:streak` in settings (existing per-field merge; no merge change).
-- Core `timerNext({scale, streak, outcome:"correct"|"wrong"|"timeout", answerMs, limitMs}) -> {scale, streak}`: wrong/timeout: scale=min(2.0, scale*1.2), streak=0. Correct with answerMs <= 0.8*limitMs: streak+1; at 3: scale=max(0.5, scale*0.9), streak=0. Correct slower: streak=0. Round scale to 4 decimals (round4(x) = round(x*1e4)/1e4, x >= 0, half away from zero = JS Math.round for x >= 0).
-- Core `timerLimit({baseMs, scale}) -> ms` = clamp(round(baseMs*scale), 1500, 60000). Example: 8000 -> wrong -> 9600 -> 3 fast correct -> 8640.
+- course/unit `timer?: {baseMs?: integer 2000..30000 (default 8000), adaptive?: bool (default true), replays?: integer 0..3 (default 1)}`; out of range -> `bad_timer`; negative or non-integer -> course.json parse error. Not in exams (exam timers unchanged).
+  Defaults are materialised: `data/content.json` always carries all three fields of a present `timer`; the web reads them and never re-applies defaults. Effective timer = the unit `timer` if present, else the course `timer`, as a whole object (no per-field merge).
+- User setting `timer:baseMs` (settings, per-field ts): when a finite number, clamped to 2000..30000, it replaces the effective `baseMs`. Adaptive state `timer:scale` (0.5..2.0, default 1) and `timer:streak` in settings (existing per-field merge; no merge change).
+- Input normalisation, identical in the JS reference and Rust (stored settings may be tampered): `scale` finite number -> clamp to [0.5, 2.0], else 1. `streak` finite number >= 0 -> floor, else 0. `baseMs` finite number, else 8000. Only `outcome === "correct"` is correct; any other value ("wrong", "timeout", unknown) is handled as wrong. fast = `answerMs` and `limitMs` are finite numbers and `answerMs <= 0.8*limitMs`.
+- Core `timerNext({scale, streak, outcome, answerMs, limitMs}) -> {scale, streak}`, after normalisation:
+  not correct: scale = round4(min(2.0, scale*1.2)), streak = 0.
+  correct and fast: n = streak+1; if n >= 3: scale = round4(max(0.5, scale*0.9)), streak = 0; else scale = round4(scale), streak = n.
+  correct, not fast: scale = round4(scale), streak = 0.
+- Core `timerLimit({baseMs, scale}) -> ms` = clamp(round(baseMs*scale), 1500, 60000), after normalisation. Example: 8000 -> wrong -> 9600 -> 3 fast correct -> 8640.
+- Float rules: operations in exactly the order written. round4(x) = round(x*1e4)/1e4; round = half away from zero (Rust `f64::round`, JS `Math.round`; equal because every rounded value here is >= 0); never `floor(x+0.5)`.
 - Clock starts at playback end (render time if no audio); replay does not stop it. Expiry submits the CURRENT field contents: if they equal the correct answer the answer counts as correct (not timed out); otherwise (empty or wrong) it is wrong with `timedOut:true`. Feedback after expiry shows the correct answer in French words AND digits (e.g. "quatre-vingt-sept - 87").
 
 ### 12.3 Record extras and confusions
-- Core `applyExtras({rec, correct, given, timedOut, weighted}) -> rec`: never touches s/due/ok/bad/last.
-  `e` (error EWMA, only when `weighted`): e' = round4(0.7*e + 0.3*(correct?0:1)), absent e = 0.5. Example 0.5 -wrong-> 0.65 -correct-> 0.455.
-  `cf` {given: count}: wrong, not timed out, trimmed given 1..16 chars -> +1; at most 8 keys (evict lowest count, ties: larger key).
-  `to`: timedOut -> +1.
+- Core `applyExtras({rec, correct, given, timedOut, weighted}) -> rec`. A flag is set only when it is exactly `true`. `rec` that is not a plain object (absent, null, array) -> `{}`. Never touches s/due/ok/bad/last or unknown fields. Only `e`, `cf`, `to` are written, each only when its rule fires; a field whose rule does not fire is copied unchanged, even if malformed.
+- `e` (error EWMA; only when `weighted`): e0 = `e` when a finite number, clamped to [0, 1], else 0.5; e' = round4((0.7*e0) + (0.3*x)), x = 0 if correct else 1. Example 0.5 -wrong-> 0.65 -correct-> 0.455.
+- `to` (only when `timedOut`): to' = min(2^53-1, t + 1), t = floor(`to`) when a finite number >= 0, else 0. Written as a JSON integer.
+- `cf` = confusions as an ordered list of pairs `[[given, count], ...]`, at most 8, oldest first. Counted when not correct, not timed out, `given` is a string and key = trim(given) has 1..16 Unicode scalar values.
+  trim strips leading and trailing characters of the Unicode White_Space set: U+0009..U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000..U+200A, U+2028, U+2029, U+202F, U+205F, U+3000 (= Rust `str::trim`; JS `String.prototype.trim` differs on U+0085 and U+FEFF and is not used). Length = code points (JS `[...s].length`, Rust `s.chars().count()`).
+  Steps: (1) normalise the stored value: not an array -> `[]`; keep entries that are 2-element arrays `[string of 1..16 scalar values, count]` with count an integer in 1..2^53-1; drop other entries and any later duplicate of a key (first wins). (2) key present -> count = min(2^53-1, count+1), position unchanged; else append `[key, 1]`. (3) while more than 8 entries: remove the entry with the lowest count among the entries other than key; ties -> the earliest (lowest index). The new key always enters.
+  Counts are written as JSON integers. Display order (stats UI): count desc, ties lower index first.
+- Vectors: `e`, `scale` and weights compare as numbers (a port may write `1.0` where JS writes `1`); counts compare as exact integers; `cf` order is exact.
 - Web calls it after applyAnswer only when the unit has `timer`, `srs.mode:"errorWeighted"` or course `confusions:true`. Courses without these fields write exactly what they write today.
-- Progress: extras live inside item records; sanitize already keeps unknown record fields, merge takes the whole record by `last`, so old builds keep them (checked on master e595c61 with a sanitize/merge roundtrip). Known limit: concurrent devices lose one side's increments (same as ok/bad today).
+- Progress: extras live inside item records; sanitize already keeps unknown record fields (deep clone, arrays included), merge takes the whole record by `last`, so old builds keep them (checked on master e595c61 with a sanitize/merge roundtrip). Known limit: concurrent devices lose one side's increments (same as ok/bad today). `cf` never shipped as an object, so there is no migration; an object-shaped `cf` from a pre-release dev build is normalised to `[]` at the next counted confusion.
 
 ### 12.4 errorWeighted scheduler mode
-- `srs.mode?: "ladder"|"errorWeighted"` in course `srs` and `units[].srs`; not in `srsByType` (`mode_by_type`). Ladder records still written (s/due), so switching modes loses nothing.
+- `srs.mode?: "ladder"|"errorWeighted"` in course `srs` and `units[].srs` (an enum: any other value is a course.json parse error naming the allowed values); not in `srsByType` (`mode_by_type`). Absent = ladder. Ladder records still written (s/due), so switching modes loses nothing.
 - Core `weightedQueue({ids, records, now, seed, limit, newAllowance}) -> [id]` (deterministic, splitmix64 as in exam `sample`):
-  candidates = ids with a record + the first `newAllowance` ids without one (input order). b = min(s,5); staleDays = clamp(floor((now-last)/86400000),0,7), 7 if no record; e default 0.5.
-  weight = (0.15+e) * BOXF[b] * (1 + 0.5*staleDays/7), BOXF = [1, 0.7071067811865476, 0.5, 0.35355339059327373, 0.25, 0.17677669529663687]
-  (a table, not pow: JS and Rust pow may differ by 1 ulp). Examples: new item 0.975; e .455, b 1, stale 0 -> 0.4278 (4 d.p.).
-  Sampling: r = splitmix64 next / 2^64; pick the first candidate whose running weight sum (input order) exceeds r * total; remove; repeat.
-  Output: worst-first = up to 5 seen ids with e >= 0.3 by e desc (ties input order), then weighted sampling without replacement until `limit`.
+  Inputs: `ids` duplicates dropped (first kept). `limit`, `newAllowance`: finite number -> max(0, floor(x)), else 0. `seed`: decimal string of an integer 0..2^64-1; anything else is a caller error (JS throws, Rust returns Err). `now`: ms. An id has a record iff `records` has an OWN property `id` whose value is a non-null, non-array object; anything else is new.
+  Record fields: e0 = `e` when a finite number, clamped to [0, 1], else 0.5; b = min(5, floor(s)) when `s` is a finite number > 0, else 0; staleDays = clamp(floor((now - last)/86400000), 0, 7) when `last` is a finite number, else 7. A new item has e0 0.5, b 0, staleDays 7.
+  candidates = ids with a record + the first `newAllowance` ids without one (input order).
+  weight = ((0.15 + e0) * BOXF[b]) * (1 + ((0.5 * staleDays) / 7)), in exactly this operation order (vectors compare unrounded f64). BOXF = [1, 0.7071067811865476, 0.5, 0.35355339059327373, 0.25, 0.17677669529663687] (a table, not pow: JS and Rust pow may differ by 1 ulp). Examples: new item 0.975; e .455, b 1, stale 0 -> 0.4278 (4 d.p.).
+  Worst-first: candidates with a record whose `e` is a finite number (an absent `e` does not qualify, so a ladder -> errorWeighted switch promotes nothing), e0 >= 0.3, by e0 desc (ties input order), at most 5, then at most `limit` of them.
+  Sampling fills the remaining `limit - head` slots from pool = candidates minus head, input order. Per draw: v = next splitmix64 output (state starts at seed); r = (v >> 11) / 2^53 (exact, 0 <= r < 1); total = left-to-right sum of the current pool weights starting at 0.0, recomputed every draw (no running subtraction); target = r * total; pick the first index whose left-to-right running sum (from 0.0) is > target, or the last index if none is; remove it; repeat until the slots are filled or the pool is empty.
+  Output: unique ids, length min(limit, candidates). Vector group `unitRandom` ({seed, n} -> first n values of r) pins the conversion.
 - Web: daily/practice sessions of errorWeighted units use it; wrong answers reuse the existing relearn requeue. Weak list uses e in this mode.
 
 ### 12.5 Numeric dictation (composition, no new item type)
