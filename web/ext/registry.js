@@ -10,7 +10,7 @@
   'use strict';
 
   var S = {
-    markups: {}, active: null, scriptGuard: null, guard: null, detailFn: null, introFn: null, rankFn: null,
+    markups: {}, active: null, scriptGuard: null, guard: null, detailFn: null, introFn: null, preTextFn: null, rankFn: null,
     rubySkip: null, rubyDict: null, rubyDictMax: 0,
     pluginSettings: {}, settingsAccessor: null, settingsBound: false
   };
@@ -40,6 +40,11 @@
   function registerIntro(fn) {
     if (typeof fn !== 'function') throw new Error('DojoExt.registerIntro: function required');
     S.introFn = fn;
+  }
+
+  function registerPreAnswerText(fn) {
+    if (typeof fn !== 'function') throw new Error('DojoExt.registerPreAnswerText: function required');
+    S.preTextFn = fn;
   }
 
   function registerVoiceRank(fn) {
@@ -295,6 +300,7 @@
     registerBeforeSubmit: registerBeforeSubmit,
     registerDetail: registerDetail,
     registerIntro: registerIntro,
+    registerPreAnswerText: registerPreAnswerText,
     registerVoiceRank: registerVoiceRank,
     registerSetting: registerSetting,
     bindSettings: bindSettings,

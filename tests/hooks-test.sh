@@ -150,13 +150,20 @@ expect_refused "Test 21: commit message naming a job is refused (vibe job)" "nam
 expect_refused "Test 22: commit message naming job/ branch is refused" "names a job" git commit --quiet -m "Merge job/foo-task-12 into dev" --author="$A"
 expect_refused "Test 22b: job/<stage>-task-N is refused" "names a job" git commit --quiet -m "from job/audit-fixes-1-task-70" --author="$A"
 expect_refused "Test 22d: Merge job/<name>-tN without -task is refused" "names a job" git commit --quiet -m "Merge job/n5-dojo-sync-t3 into dev" --author="$A"
+expect_refused "Test 22g: typed message with a bare job/<name> is refused" "names a job" git commit --quiet -m "fix(x): squash job/audit-setup" --author="$A"
 expect_refused "Test 22e: Merge job/<name> plain is refused" "names a job" git commit --quiet -m "Merge job/audit-setup into dev" --author="$A"
 expect_refused "Test 23: non-UTC author date is refused" "date offset" env GIT_AUTHOR_DATE="2026-01-01T10:00:00 +0300" git commit --quiet -m "chore(test): dated" --author="$A"
 expect_refused "Test 23b: non-UTC committer date is refused" "date offset" env GIT_COMMITTER_DATE="2026-01-01T10:00:00 +0300" git commit --quiet -m "chore(test): dated" --author="$A"
-expect_ok "Test 22c: legit messages with subtask-1, job/queue, task-3 pass" git commit --quiet -m "chore(test): subtask-1 style ids; job/queue docs; see task-3" --author="$A"
+expect_ok "Test 22c: legit messages with subtask-1, job/queue, task-3 pass" git commit --quiet -m "chore(test): subtask-1 style ids; job queue docs; see task-3" --author="$A"
 echo '{}' > progress-export.json; git add -f progress-export.json
 expect_refused "Test 22f: forced progress*.json is refused by pre-commit" "private or generated" git commit --quiet -m "chore(test): export" --author="$A"
 git rm --quiet --cached -f progress-export.json; rm -f progress-export.json
+for pf in new-progress.json sub/my-Progress-2.json Progress.json; do
+  mkdir -p "$(dirname "$pf")"; echo '{}' > "$pf"; git add -f "$pf"
+  expect_refused "Test 22h: forced $pf is refused by pre-commit" "private or generated" git commit --quiet -m "chore(test): export" --author="$A"
+  git rm --quiet --cached -f "$pf"; rm -f "$pf"
+done
+expect_ok "Test 22i: *-progress.json is ignored by .gitignore" git -C "$guard_dir/.." check-ignore -q my-progress.json
 echo a2 > a2.txt; git add a2.txt
 expect_ok "Test 23c: UTC dates and plain message pass" git commit --quiet -m "chore(test): plain" --author="$A"
 # pre-push range check with a non-UTC / job commit made with --no-verify
@@ -166,6 +173,11 @@ expect_refused "Test 23d: pre-push refuses non-UTC date in range" "date offset" 
 echo c > c.txt; git add c.txt
 git commit --quiet --no-verify -m "chore(test): Squash of job x" --author="$A"
 expect_refused "Test 23e: pre-push refuses job message in range" "names a job" sh -c "printf 'refs/heads/m %s refs/heads/m 0000000000000000000000000000000000000000\n' \"\$(git rev-parse HEAD)\" | '$guard_dir/pre-push'"
+
+# pre-push rechecks the subject format (commits made with --no-verify)
+echo e > e.txt; git add e.txt
+git commit --quiet --no-verify -m "Cap parsed year" --author="$A"
+expect_refused "Test 23f: pre-push refuses an untyped subject in range" "subject is not" sh -c "printf 'refs/heads/m %s refs/heads/m 0000000000000000000000000000000000000000\\n' \"\$(git rev-parse HEAD)\" | '$guard_dir/pre-push'"
 
 # gitleaks missing: fails without the override (empty PATH dir without gitleaks)
 new_repo; echo d > d.txt; git add d.txt

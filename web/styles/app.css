@@ -87,7 +87,7 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .group legend, .legend-like { font-weight: 700; padding: 0; margin-bottom: var(--space-2); }
 .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .weak-chips { list-style: none; margin: 0; padding: 0; }
-.weak-chips .chip { min-width: 0; max-width: 100%; }
+.weak-chips .chip { min-width: 0; max-width: 100%; display: inline-flex; align-items: center; }
 .chip { min-height: var(--tap); padding: 0 var(--space-4); border: 1px solid var(--control-border); border-radius: 999px; background: var(--surface); cursor: pointer; overflow-wrap: anywhere; }
 .chip.on { background: var(--accent-soft); border-color: var(--accent); font-weight: 700; }
 .stepper { display: inline-flex; align-items: center; gap: var(--space-3); }
@@ -134,7 +134,7 @@ textarea.field { resize: vertical; }
 select { accent-color: var(--accent); min-height: var(--tap); border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--surface); }
 .card-slot { display: flex; flex-direction: column; gap: var(--space-3); min-height: 7rem; justify-content: center; }
 .back { font-size: var(--fs-lg); font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; }
-.feedback-slot { min-height: 6.5rem; }
+.feedback-slot:empty { display: none; }
 .feedback { padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid; display: flex; flex-direction: column; gap: var(--space-2); }
 .feedback.right { background: var(--good-soft); border-color: var(--good); }
 .feedback.wrong { background: var(--bad-soft); border-color: var(--bad); }
@@ -286,7 +286,7 @@ html.dojo-no-scroll { overflow: hidden !important; }
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
-  .weak-chips .chip {
+  .weak-chips .chip-text {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -324,7 +324,9 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .kanji-row-grid { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-2); align-items: center; }
 .kanji-ch { font-size: var(--fs-lg); min-width: 1.5em; }
 @media (max-width: 390px) {
-  .kanji-row-grid { grid-template-columns: 1fr; gap: var(--space-1); }
+  .kanji-row-grid { gap: var(--space-1); }
+  .kanji-mean { min-width: 0; overflow-wrap: anywhere; }
+  .kanji-read { font-size: var(--fs-sm); text-align: right; }
 }
 
 /* Session layout: header row, centered question card, full-width answers, action row, feedback with a colored edge. */
@@ -352,7 +354,6 @@ html.dojo-no-scroll { overflow: hidden !important; }
 @media (min-width: 700px) {
   .session { max-width: 640px; margin-inline: auto; }
 }
-.session .feedback-detail { max-height: 18rem; overflow-y: auto; }
 [data-nofocusring]:focus-visible { outline: none; }
 .detail-table, .detail-pairs { border-collapse: collapse; width: 100%; }
 .detail-table th, .detail-table td, .detail-pairs td { border: 1px solid var(--border); padding: var(--space-1) var(--space-2); }

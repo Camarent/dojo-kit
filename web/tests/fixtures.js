@@ -126,7 +126,7 @@ class Node_ {
     this.childNodes = [];
     this.parentNode = null;
     this.attrs = {};
-    this.style = {};
+    this.style = { setProperty(k, v) { this[k] = v; } };
     this.listeners = {};
     this.onclick = null;
     this.oninput = null;

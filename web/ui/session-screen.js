@@ -341,6 +341,7 @@
         </div>`;
     }
     renderQuestionCard(p, s, audio) {
+      var introText = function (item) { return DojoExt.preAnswerText ? DojoExt.preAnswerText(item, item.explanation) : item.explanation; };
       var self = this;
       var cur = s.cur;
       var itemLines = audio ? speechLines(cur.item) : [];
@@ -350,7 +351,7 @@
       var plainPrompt = typeof cur.item.prompt === 'string' ? (DojoExt.plain ? DojoExt.plain(cur.item.prompt) : cur.item.prompt) : '';
       var bigPrompt = plainPrompt.length > 0 && plainPrompt.length <= 6 && plainPrompt.indexOf('\n') < 0;
       return html`<article class="qcard">
-          ${s.showIntro ? html`<div class="intro" data-testid="intro">${renderText(cur.item.explanation)}</div>` : null}
+          ${s.showIntro && introText(cur.item) ? html`<div class="intro" data-testid="intro">${renderText(introText(cur.item))}</div>` : null}
           <${Stimulus} stimulus=${cur.stimulus} audio=${audio} />
           ${caption ? html`<p class="qcaption" data-testid="caption">${caption}</p>` : null}
           ${showPlainPrompt ? renderPromptLine(renderPromptEl(cur.item, bigPrompt), cur.item, audio, itemLines)

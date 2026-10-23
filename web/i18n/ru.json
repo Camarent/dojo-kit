@@ -92,7 +92,7 @@
   "session.exit": "Выйти",
   "session.stay": "Продолжить",
   "session.exit.title": "Выйти из сессии?",
-  "session.exit.body": "Уже данные ответы сохранены.",
+  "session.exit.body": "Ответы, которые вы уже дали, сохранены.",
   "session.finish": "Завершить",
   "session.finish.title": "Завершить экзамен?",
   "session.finish.unanswered.one": "Без ответа {n} вопрос.",

@@ -154,10 +154,14 @@ test('kanji-rows: label uses i18n key session.kanji', async () => {
   assert.strictEqual(labelText, 'Kanji in this word', 'Label should use i18n session.kanji key');
 });
 
-test('kanji-rows: CSS contract - single-column rule at max-width 390px', async () => {
+test('kanji-rows: at max-width 390px the row stays one compact line (3 columns kept)', async () => {
   const css = H.read('styles/app.css');
-  const normalized = css.replace(/\s+/g, ' ').trim();
-  assert.ok(normalized.includes('@media (max-width: 390px) { .kanji-row-grid { grid-template-columns: 1fr;'), 'CSS should contain single-column rule for .kanji-row-grid at max-width 390px');
+  const base = css.match(/\.kanji-row-grid\s*\{[^}]*\}/)[0];
+  assert.ok(/grid-template-columns:\s*auto 1fr auto/.test(base));
+  const m = css.match(/@media \(max-width: 390px\)\s*\{[^@]*?\n\}/g).filter((b) => b.includes('.kanji-row-grid'));
+  assert.equal(m.length, 1);
+  assert.ok(!/grid-template-columns/.test(m[0]), 'no column collapse at 390px');
+  assert.ok(/\.kanji-read\s*\{[^}]*font-size:\s*var\(--fs-sm\)/.test(m[0]));
 });
 
 test('kanji-rows: no trailing separator when kanji has only on-reading', async () => {

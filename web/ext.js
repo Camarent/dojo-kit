@@ -17,6 +17,7 @@
   function registerBeforeSubmit(fn) { return registry.registerBeforeSubmit(fn); }
   function registerDetail(fn) { return registry.registerDetail(fn); }
   function registerIntro(fn) { return registry.registerIntro(fn); }
+  function registerPreAnswerText(fn) { return registry.registerPreAnswerText(fn); }
   function registerVoiceRank(fn) { return registry.registerVoiceRank(fn); }
   function registerSetting(config) { return registry.registerSetting(config); }
   function bindSettings(fn) { return registry.bindSettings(fn); }
@@ -61,6 +62,13 @@
     catch (e) { warn('intro failed', e); return null; }
   }
 
+  // Text of item.explanation shown before the answer (inline intro); the plugin hook may drop answer-revealing parts.
+  function preAnswerText(item, text) {
+    if (!S.preTextFn) return text;
+    try { var r = S.preTextFn(clone(item), text); return typeof r === 'string' ? r : text; }
+    catch (e) { warn('preAnswerText failed', e); return text; }
+  }
+
   function voiceRank(voice, role) {
     if (!S.rankFn) return 0;
     try { var r = S.rankFn(voice, role); return typeof r === 'number' && isFinite(r) ? r : 0; }
@@ -68,7 +76,7 @@
   }
 
   function reset() {
-    S.introFn = null; S.rankFn = null; S.markups = {}; S.active = null;
+    S.introFn = null; S.preTextFn = null; S.rankFn = null; S.markups = {}; S.active = null;
     S.rubySkip = null; S.rubyDict = null; S.rubyDictMax = 0; S.guard = null;
     S.scriptGuard = null; S.detailFn = null; S.pluginSettings = {};
     S.settingsAccessor = null; S.settingsBound = false;
@@ -76,7 +84,7 @@
 
   return {
     registerMarkup: registerMarkup, registerBeforeSubmit: registerBeforeSubmit,
-    registerDetail: registerDetail, registerIntro: registerIntro, registerVoiceRank: registerVoiceRank,
+    registerDetail: registerDetail, registerIntro: registerIntro, registerPreAnswerText: registerPreAnswerText, preAnswerText: preAnswerText, registerVoiceRank: registerVoiceRank,
     registerSetting: registerSetting, bindSettings: bindSettings, getSetting: getSetting,
     getRegisteredSettings: getRegisteredSettings, use: use, useInputScript: useInputScript,
     useRuby: useRuby, text: text, textAll: textAll, plain: plain, beforeSubmit: beforeSubmit,

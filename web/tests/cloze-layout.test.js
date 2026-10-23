@@ -33,7 +33,7 @@ test('.cloze-groups is one grid; .cloze-group uses display: contents (shared lab
 
 test('cloze.js: reading inputs skip the inline width; inline blanks keep it', () => {
   const js = read('types/cloze.js');
-  assert.ok(/style=\$\{fill \? null : \{ width:/.test(js));
+  assert.ok(/style=\$\{fill \? null : \{ '--blank-w':/.test(js));
   assert.ok(js.includes('renderBlank(seg.blank, true)'));
 });
 
