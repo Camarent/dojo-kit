@@ -118,6 +118,7 @@
   "session.retry": "Also fits",
   "session.retry.message": "Try the other form",
   "session.your_answer": "Your answer",
+  "session.timer": "Time left",
   "session.short": "Some sections have fewer questions than requested.",
   "session.error": "Could not continue ({code}).",
   "session.override": "I was right (typo)",

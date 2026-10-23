@@ -4,7 +4,7 @@
  *   controller({ now, limitMs, canStart(), onStart(), onExpire() }) -> { poll(), stop(), state() }
  *     poll(): starts the clock once canStart() is true (playback ended, or no audio), fires onExpire once at the limit.
  *     Replays never reset or stop the clock; stop() ends it without onExpire.
- *   QuestionTimer props { now, limitMs, canStart, onStart, onExpire, stopped } renders <div data-testid="qtimer"> with a bar.
+ *   QuestionTimer props { now, limitMs, canStart, onStart, onExpire, stopped, t } renders <div data-testid="qtimer"> with a bar.
  */
 (function (root) {
   'use strict';
@@ -52,7 +52,7 @@
       }
       render(p, s) {
         var f = typeof s.fraction === 'number' ? s.fraction : 1;
-        return html`<div class="qtimer" data-testid="qtimer" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(f * 100)}
+        return html`<div class="qtimer" data-testid="qtimer" role="progressbar" aria-label=${p.t ? p.t('session.timer') : null} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(f * 100)}
           style="height:6px;background:var(--surface-2);border-radius:999px;overflow:hidden">
           <span style=${{ display: 'block', height: '100%', background: 'var(--accent)', width: Math.round(f * 100) + '%' }}></span>
         </div>`;

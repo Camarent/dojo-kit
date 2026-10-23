@@ -20,17 +20,26 @@ if ! command -v cargo >/dev/null 2>&1; then
     exit 2
 fi
 
-cd "$REPO_ROOT"
 if stale "$TARGET"; then
-    cargo build -q --release -p dojo-cli
+    (cd "$REPO_ROOT" && cargo build -q --release -p dojo-cli)
 fi
 
+has_web() {
+    printf '%s\n' "$@" | grep -Eq -- '^--web(=|$)'
+}
+
 wasm_args=()
+if [ "${1:-}" = "validate" ] && ! has_web "$@"; then
+    wasm_args+=(--web "$REPO_ROOT/web")
+fi
 if [ "${1:-}" = "build" ] && ! printf '%s\n' "$@" | grep -qx -- '--wasm'; then
     if stale "$WASM"; then
         "$REPO_ROOT/scripts/build-wasm.sh" -q
     fi
     wasm_args=(--wasm "$WASM")
+    if ! has_web "$@"; then
+        wasm_args+=(--web "$REPO_ROOT/web")
+    fi
 fi
 
 exec "$TARGET" "$@" ${wasm_args[@]+"${wasm_args[@]}"}

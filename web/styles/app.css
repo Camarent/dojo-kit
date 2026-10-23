@@ -33,7 +33,7 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
   background: var(--surface); cursor: pointer; font-weight: 600;
 }
 .btn:hover:not(:disabled) { background: var(--surface-2); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled { color: var(--fg-muted); cursor: not-allowed; }
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .btn.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
 .btn.primary:disabled { background: transparent; border: 1px solid var(--control-border); color: var(--fg-muted); }

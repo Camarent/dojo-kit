@@ -184,7 +184,7 @@
       var hasAudio = !!audio && audio.status === 'ok' && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))));
       var canStart = function () { return !hasAudio || pids.some(function (k) { return self.played && self.played[k]; }); };
       return h(QuestionTimer, { key: 'qt' + s.cur.position, now: p.now, limitMs: limit, canStart: canStart,
-        onStart: function () { session.timerStart(item); }, onExpire: function () { self.timeout(); }, stopped: !!s.result });
+        onStart: function () { session.timerStart(item); }, onExpire: function () { self.timeout(); }, stopped: !!s.result, t: p.t });
     }
     isExamMode() { return this.props.session.mode==='exam'; }
     isExam() { return this.props.session.mode==='exam'&&!this.props.session.training; }

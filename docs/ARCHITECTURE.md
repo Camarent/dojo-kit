@@ -32,7 +32,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 8. Placement (only when `course.placement` is set): the session samples per unit, the learner answers known/again, each answer is stored by WASM `applyPlacement`, and finishing sets `settings.placementDone`. It does not touch streak or daily stats.
 
 ## Entry points
-- `./dojo` (repo root) - bash wrapper: builds `dojo-cli` (and the WASM for `build`) when sources are newer, then runs the binary. Honours `CARGO_TARGET_DIR`.
+- `./dojo` (repo root) - bash wrapper: builds `dojo-cli` (and the WASM for `build`) when sources are newer, then runs the binary. Honours `CARGO_TARGET_DIR`. Path arguments are resolved against the caller's cwd, not the repo root.
 - `dojo` binary: `crates/dojo-cli/src/main.rs` `main`; commands dispatched in `run` at `crates/dojo-cli/src/main.rs`.
 - Browser: `web/boot.js` (runs on load, `index.html` embeds it).
 - Dev server: `node web/dev/serve.js <dist/courseId> [port]`.

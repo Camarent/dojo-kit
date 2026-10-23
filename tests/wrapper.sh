@@ -41,9 +41,19 @@ fi
 echo "Testing validate..."
 "$REPO_ROOT/dojo" validate "$WORKSPACE/test-course"
 
+# Relative course path resolves against the caller's directory
+echo "Testing validate with a relative path..."
+(cd "$WORKSPACE/test-course" && "$REPO_ROOT/dojo" validate .)
+(cd "$WORKSPACE" && "$REPO_ROOT/dojo" validate test-course)
+
 # Test stats
 echo "Testing stats..."
 "$REPO_ROOT/dojo" stats "$WORKSPACE/test-course"
+
+# Relative course paths resolve against the caller's directory, not the repo root
+echo "Testing stats and build with relative paths..."
+(cd "$REPO_ROOT" && "$REPO_ROOT/dojo" stats examples/listening >/dev/null)
+(cd "$REPO_ROOT/examples" && "$REPO_ROOT/dojo" stats listening >/dev/null)
 
 # Test next-id
 echo "Testing next-id..."
@@ -55,6 +65,30 @@ printf '%s\n' '{"type":"card","id":"unit-1","unit":"unit-1","prompt":"Q","back":
 "$REPO_ROOT/dojo" build "$WORKSPACE/test-course" --out "$TMP_DIR/dist"
 if [ ! -f "$TMP_DIR/dist/test-course/index.html" ] || [ ! -f "$TMP_DIR/dist/test-course/data/content.json" ]; then
     echo "ERROR: build output missing" >&2
+    exit 1
+fi
+
+# Relative build paths resolve against the caller's directory
+echo "Testing build with relative paths..."
+(cd "$REPO_ROOT" && "$REPO_ROOT/dojo" build examples/listening --out "$TMP_DIR/dist-root" >/dev/null)
+(cd "$REPO_ROOT/examples" && "$REPO_ROOT/dojo" build listening --out "$TMP_DIR/dist-examples" >/dev/null)
+for d in dist-root dist-examples; do
+    if [ ! -f "$TMP_DIR/$d/listening/index.html" ]; then
+        echo "ERROR: relative build output missing in $d" >&2
+        exit 1
+    fi
+done
+
+# --web=PATH counts as an explicit web directory: the wrapper must not append a second --web.
+# A stub binary (fresh, so not rebuilt) echoes its argv.
+echo "Testing --web=PATH detection..."
+stub_dir="$TMP_DIR/stub-target/release"
+mkdir -p "$stub_dir"
+printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$@"\n' > "$stub_dir/dojo"
+chmod +x "$stub_dir/dojo"
+args=$(CARGO_TARGET_DIR="$TMP_DIR/stub-target" "$REPO_ROOT/dojo" validate "$WORKSPACE/test-course" --web="$REPO_ROOT/web")
+if [ "$args" != "$(printf '%s\n' validate "$WORKSPACE/test-course" --web="$REPO_ROOT/web")" ]; then
+    echo "ERROR: wrapper altered args for --web=PATH: $args" >&2
     exit 1
 fi
 
