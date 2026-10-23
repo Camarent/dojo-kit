@@ -6,7 +6,7 @@ fn num(a: &Value, key: &str) -> Option<f64> {
 }
 
 pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
-    if !a.is_object() && matches!(name, "timerNext" | "timerLimit" | "applyExtras") {
+    if !a.is_object() && matches!(name, "timerNext" | "timerLimit" | "applyExtras" | "weightedQueue") {
         return Err(bad("arguments must be an object"));
     }
     match name {
@@ -69,6 +69,7 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
             Ok(json!({"scale": scale, "streak": streak as u64}))
         }
         "timerLimit" => Ok(Value::from(srs::timer_limit(num(a, "baseMs"), num(a, "scale")) as u64)),
+        "weightedQueue" => weighted_call(a),
         "applyExtras" => {
             let o = srs::Outcome {
                 correct: a.get("correct") == Some(&Value::Bool(true)),
@@ -82,3 +83,17 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
     }
 }
 
+
+fn weighted_call(a: &Value) -> Result<Value, CallError> {
+    let ids = field(a, "ids")?.as_array().ok_or_else(|| bad("`ids` must be an array"))?;
+    let ids = ids.iter().map(|v| v.as_str().ok_or_else(|| bad("`ids` must be strings"))).collect::<Result<Vec<_>, _>>()?;
+    let input = srs::WeightedIn {
+        ids,
+        records: a.get("records").and_then(Value::as_object),
+        now: num(a, "now").ok_or_else(|| bad("`now` must be a number"))?,
+        seed: text(a, "seed")?,
+        limit: num(a, "limit").unwrap_or(0.0),
+        new_allowance: num(a, "newAllowance").unwrap_or(0.0),
+    };
+    Ok(json!(srs::weighted_queue(&input).map_err(bad)?))
+}

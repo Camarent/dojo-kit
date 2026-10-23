@@ -68,6 +68,7 @@ pub fn drop_for_unit_json(course: &Value, unit_id: &str, item_type: Option<&str>
 /// - `ladder`: `ladder_for_unit_json` without an item type (unit.srs > course.srs > default);
 /// - `dropOnWrong`: `drop_for_unit_json` without an item type (unit.srs > course.srs > `COURSE_DEFAULT_DROP`);
 /// - `newOrder`: `unit.newOrder` > `course.newOrder` > "file";
+/// - `mode`: only present as `"errorWeighted"` (unit.srs > course.srs; `srsByType` ignored); absent = ladder;
 /// - `dropByType`: `srsByType` is per item type, so `{<type>: drop}` (`drop_for_unit_json` with that type)
 ///   for every type present in `srsByType`.
 pub fn unit_config(course: &Value, unit_id: &str) -> Value {
@@ -103,6 +104,9 @@ pub fn unit_config(course: &Value, unit_id: &str) -> Value {
     out.insert("dropOnWrong".into(), Value::from(drop_for_unit_json(course, unit_id, None)));
     out.insert("newOrder".into(), Value::from(new_order));
     out.insert("dropByType".into(), Value::Object(drop_by_type));
+    if pick("mode").and_then(Value::as_str) == Some("errorWeighted") {
+        out.insert("mode".into(), Value::from("errorWeighted"));
+    }
     Value::Object(out)
 }
 
@@ -119,6 +123,19 @@ mod unit_config_tests {
         assert_eq!(c["newOrder"], "file");
         assert_eq!(c["ladder"], Value::from(DEFAULT_LADDER.to_vec()));
         assert_eq!(c["dropByType"], json!({}));
+    }
+
+    #[test]
+    fn mode_resolves_unit_over_course_and_ignores_by_type() {
+        let ew = json!({"mode": "errorWeighted"});
+        let mode = |c: Value| unit_config(&c, "u1").get("mode").cloned();
+        assert_eq!(mode(json!({"units": [{"id": "u1"}]})), None);
+        assert_eq!(mode(json!({"units": [{"id": "u1"}], "srs": ew})), Some(json!("errorWeighted")));
+        let unit = json!({"units": [{"id": "u1", "srs": ew}], "srs": {"mode": "ladder"}});
+        assert_eq!(mode(unit), Some(json!("errorWeighted")));
+        let off = json!({"units": [{"id": "u1", "srs": {"mode": "ladder"}}], "srs": ew});
+        assert_eq!(mode(off), None);
+        assert_eq!(mode(json!({"units": [{"id": "u1"}], "srsByType": {"t": ew}})), None);
     }
 
     #[test]

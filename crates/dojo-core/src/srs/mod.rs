@@ -7,6 +7,7 @@ mod entity;
 mod queue;
 mod timer;
 mod extras;
+mod weighted;
 
 pub use config::*;
 use config::{interval, max_stage};
@@ -14,6 +15,7 @@ pub use entity::*;
 pub use queue::*;
 pub use timer::{timer_limit, timer_next, TimerIn};
 pub use extras::{apply_extras, Outcome};
+pub use weighted::{draw_index, unit_random, weight, weighted_queue, WeightedIn};
 
 pub const HOUR: i64 = 3_600_000;
 pub const DAY: i64 = 24 * HOUR;
