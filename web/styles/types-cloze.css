@@ -4,7 +4,6 @@
 .cloze-group { display: contents; }
 .cloze-group-text { display: block; grid-column: 1 / -1; }
 .cloze-label { white-space: pre-wrap; }
-@media (max-width: 500px) { .cloze-groups { grid-template-columns: minmax(0, 1fr); } .cloze-blank { align-self: stretch; justify-self: stretch; width: 100%; } }
 .cloze-blank { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; vertical-align: middle; flex: 1 1 auto; min-width: 0; }
 .cloze-groups .cloze-blank { justify-self: stretch; width: 100%; }
 .cloze-hint { color: var(--fg); font-size: var(--fs); margin: 0; }
@@ -13,9 +12,11 @@
   font: inherit; font-size: var(--fs-lg); color: var(--fg); background: var(--bg); border: 1px solid var(--control-border); border-radius: var(--radius-sm);
   width: 100%;
 }
+.cloze-sentence .cloze-field { width: var(--blank-w, 100%); }
 .cloze-field:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .cloze-field.right { border-color: var(--good); background: var(--good-soft); }
 .cloze-field.wrong { border-color: var(--bad); background: var(--bad-soft); }
 .cloze-mark { flex: none; font-weight: 700; width: 1.5em; text-align: center; }
 .cloze-field.right + .cloze-mark { color: var(--good); }
 .cloze-field.wrong + .cloze-mark { color: var(--bad); }
+@media (max-width: 500px) { .cloze-groups { grid-template-columns: minmax(0, 1fr); } .cloze-blank, .cloze-sentence .cloze-field { width: 100%; } .cloze-sentence { white-space: pre-line; } }

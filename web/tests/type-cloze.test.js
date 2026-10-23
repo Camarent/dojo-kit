@@ -58,14 +58,14 @@ test('renders text segments, hint and one attribute-complete input per blank', (
 
 test('inline blank (single-blank sentence) width grows with content', () => {
   const v1 = { segments: [{ text: 'A ' }, { blank: 0 }], blanks: 1 };
-  const w = (val) => inputs(def.Question(props({ view: v1, state: { inputs: [val] } })))[0].props.style.width;
+  const w = (val) => inputs(def.Question(props({ view: v1, state: { inputs: [val] } })))[0].props.style['--blank-w'];
   assert.ok(parseInt(w('x'.repeat(30)), 10) > parseInt(w(''), 10));
 });
 
 test('reading-row inputs (multi-blank) carry no inline width so they fill their cell', () => {
   const ins = inputs(def.Question(props()));
   assert.strictEqual(ins.length, 2);
-  for (const i of ins) assert.ok(!i.props.style || i.props.style.width === undefined);
+  for (const i of ins) assert.ok(!i.props.style || i.props.style['--blank-w'] === undefined);
 });
 
 test('multi-blank rows live in ONE .cloze-groups container (shared label column)', () => {
@@ -158,4 +158,11 @@ test('Enter moves focus from input 0 to input 1 (still works)', () => {
   const result = def.onKey(enter('cloze-input-0'), props({ view: view2, state: def.initialState(view2) }));
   assert.strictEqual(result, null);
   assert.strictEqual(enter.focused, 'cloze-input-1');
+});
+
+test('group label drops its leading space so the second label aligns with the first', () => {
+  const v = def.Question(props({ view: { segments: [{ text: 'on: ' }, { blank: 0 }, { text: ' kun: ' }, { blank: 1 }], blanks: 2 } }));
+  const labels = find(v, (n) => n.props && n.props.class === 'cloze-label');
+  const text = (n) => JSON.stringify(n.props.children);
+  assert.ok(text(labels[1]).includes('kun: ') && !text(labels[1]).includes('" kun'));
 });

@@ -18,13 +18,20 @@ test('cloze-groups rule declares gap: var(--space-3)', () => {
     '.cloze-groups rule should contain gap: var(--space-3)');
 });
 
-test('@media (max-width: 500px) stacks to one column and stretches .cloze-blank', () => {
+test('@media (max-width: 500px) stacks groups, stretches blanks and the single-blank field', () => {
   const mediaMatch = css.match(/@media \(max-width: 500px\)\s*\{.*\}/);
   assert.ok(mediaMatch, 'types-cloze.css should contain @media (max-width: 500px) block');
   assert.ok(/\.cloze-groups\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/.test(mediaMatch[0]));
-  assert.ok(/\.cloze-blank\s*\{[^}]*align-self: stretch/.test(mediaMatch[0]));
-  assert.ok(/\.cloze-blank\s*\{[^}]*justify-self: stretch/.test(mediaMatch[0]));
-  assert.ok(/\.cloze-blank\s*\{[^}]*width: 100%/.test(mediaMatch[0]));
+  assert.ok(/\.cloze-blank,\s*\.cloze-sentence \.cloze-field\s*\{[^}]*width: 100%/.test(mediaMatch[0]));
+  assert.ok(!/justify-self|align-self/.test(mediaMatch[0]), 'grouped stretch is declared once, outside the media block');
+});
+
+test('phone media block comes after the base single-blank field width so it wins', () => {
+  assert.ok(css.indexOf('@media (max-width: 500px)') > css.indexOf('.cloze-sentence .cloze-field {'));
+});
+
+test('single-blank sentence field width comes from --blank-w (inline on desktop)', () => {
+  assert.ok(/\.cloze-sentence \.cloze-field\s*\{\s*width: var\(--blank-w, 100%\)/.test(css));
 });
 
 test('input rule declares min-width: 10ch', () => {
