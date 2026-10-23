@@ -200,6 +200,31 @@
     }
     isExamMode() { return this.props.session.mode === 'exam'; }
     isExam() { return this.props.session.mode === 'exam' && !this.props.session.training; }
+    onInputNav(e) {
+      var s = this.state;
+      if (s.result || !s.cur) return;
+      var tag = e.target && e.target.tagName;
+      if (tag !== 'INPUT') return;
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      var box = this.qbox;
+      if (!box) return;
+      var controls = [];
+      var collect = function (node) {
+        var on = function (n) { var a = n.getAttribute(n.tagName === 'INPUT' ? 'readonly' : 'disabled'); return a === true || a === '' || a === 'true'; };
+        if ((node.tagName === 'INPUT' || node.tagName === 'BUTTON') && !on(node)) controls.push(node);
+        if (node.childNodes) node.childNodes.forEach(function (c) { collect(c); });
+      };
+      collect(box);
+      var currentIndex = -1;
+      for (var i = 0; i < controls.length; i++) {
+        if (controls[i] === e.target) { currentIndex = i; break; }
+      }
+      if (currentIndex === -1) return;
+      var nextIndex = e.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
+      if (nextIndex < 0 || nextIndex >= controls.length) return;
+      controls[nextIndex].focus();
+      e.preventDefault();
+    }
     onKey(e) {
       this.onModality(e);
       var s = this.state;
@@ -208,6 +233,7 @@
       var advance = e.key === 'Enter' || e.key === 'ArrowRight';
       if (s.introCard) { this.onIntroKey(e, tag, advance); return; }
       if (s.result && advance) { this.onAdvanceKey(e, tag); return; }
+      this.onInputNav(e);
       this.onTypeKey(e, s);
     }
     onIntroKey(e, tag, advance) {
