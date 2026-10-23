@@ -5,6 +5,7 @@ use serde_json::json;
 use std::fs;
 use std::path::{Path, PathBuf};
 use crate::course_files::*;
+use crate::cmd::build_audio;
 use crate::cmd::validate::{count, print_text};
 use crate::{build, USAGE};
 
@@ -132,6 +133,8 @@ fn build_course(args: &[String]) -> Step<u8> {
     };
 
     let course_json: serde_json::Value = fatal(serde_json::from_str(&course.course_text).map_err(|e| format!("course.json: {e}")))?;
+    let course_json = failed(build_audio::materialise_timers(&course_json))?;
+    let audio = failed(build_audio::collect(dir, &course_json))?;
     let course_id = course_json.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
     let title = course_json.get("title").and_then(|v| v.as_str()).unwrap_or_default().to_string();
 
@@ -141,7 +144,7 @@ fn build_course(args: &[String]) -> Step<u8> {
     let wasm = fatal(fs::read(&wasm_path).map_err(|e| format!("cannot read wasm {}: {e}", wasm_path.display())))?;
     let content = build_content(&course, &course_json)?;
     let html = render_html(&template, &title, &assets, &wasm, i18n)?;
-    write_outputs(&a.out, dir, &course_id, &assets.lang, &content, &html, wasm.len())
+    write_outputs(&OutArgs { out: &a.out, dir, course_id: &course_id, lang: &assets.lang, content: &content, html: &html, wasm_bytes: wasm.len(), audio: &audio })
 }
 
 fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::Value) -> Step<Assets> {
@@ -322,12 +325,24 @@ fn render_html(template: &str, title: &str, assets: &Assets, wasm: &[u8], i18n: 
     Ok(html.into_bytes())
 }
 
-fn write_outputs(out: &Path, dir: &Path, course_id: &str, lang: &str, content: &Content, html: &[u8], wasm_bytes: usize) -> Step<u8> {
+struct OutArgs<'a> {
+    out: &'a Path,
+    dir: &'a Path,
+    course_id: &'a str,
+    lang: &'a str,
+    content: &'a Content,
+    html: &'a [u8],
+    wasm_bytes: usize,
+    audio: &'a [build_audio::AudioFile],
+}
+
+fn write_outputs(o: &OutArgs) -> Step<u8> {
+    let OutArgs { out, dir, course_id, lang, content, html, wasm_bytes, audio } = *o;
     let total = content.bytes.len() + html.len();
     if total > MAX_BYTES {
         return Err(Stop::Fail(format!("total size {total} bytes exceeds the {MAX_BYTES} byte limit")));
     }
-    let manifest = json!({
+    let mut manifest = json!({
         "course": course_id,
         "version": content.version,
         "files": [
@@ -338,8 +353,13 @@ fn write_outputs(out: &Path, dir: &Path, course_id: &str, lang: &str, content: &
         "wasmBytes": wasm_bytes,
         "lang": lang,
     });
+    for f in audio {
+        manifest["files"].as_array_mut().map(|a| a.push(json!({"path": f.rel, "bytes": f.bytes})));
+    }
     let manifest_text = fatal(serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string()))? + "\n";
 
+    let fixed = (total + manifest_text.len() + include_str!("../../../../THIRD_PARTY_NOTICES.md").len()) as u64;
+    failed(build_audio::check_totals(audio, fixed, 4))?;
     fatal(write_out(&dir.join("ids.lock"), content.next_lock.to_text().as_bytes()))?;
     let target = out.join(course_id);
     fatal(write_out(&target.join("data/content.json"), &content.bytes))?;
@@ -349,6 +369,7 @@ fn write_outputs(out: &Path, dir: &Path, course_id: &str, lang: &str, content: &
     // Write third-party notices
     let notices = include_str!("../../../../THIRD_PARTY_NOTICES.md");
     fatal(write_out(&target.join("THIRD_PARTY_NOTICES.md"), notices.as_bytes()))?;
+    fatal(build_audio::copy(&target, audio))?;
 
     println!("built {course_id} version {} lang {lang} -> {}", content.version, target.display());
     println!("  data/content.json {} bytes, index.html {} bytes, wasm {wasm_bytes} bytes, total {total} bytes", content.bytes.len(), html.len());
