@@ -134,7 +134,7 @@ textarea.field { resize: vertical; }
 select { accent-color: var(--accent); min-height: var(--tap); border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--surface); }
 .card-slot { display: flex; flex-direction: column; gap: var(--space-3); min-height: 7rem; justify-content: center; }
 .back { font-size: var(--fs-lg); font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; }
-.feedback-slot { min-height: 6.5rem; }
+.feedback-slot:empty { display: none; }
 .feedback { padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid; display: flex; flex-direction: column; gap: var(--space-2); }
 .feedback.right { background: var(--good-soft); border-color: var(--good); }
 .feedback.wrong { background: var(--bad-soft); border-color: var(--bad); }
