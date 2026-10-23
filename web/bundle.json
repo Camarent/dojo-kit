@@ -26,6 +26,7 @@
     "ext/readings.js",
     "ext.js",
     "speech.js",
+    "audio.js",
     "types/choice.js",
     "types/gap.js",
     "types/card.js",

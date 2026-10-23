@@ -47,6 +47,21 @@
     return { speech: course && course.speech, lang: course && course.contentLanguage };
   }
 
+  function playClip(btn, p) {
+    var A = root.DojoAudio;
+    A.unlock();
+    btn.setState({ playing: true, failed: false });
+    var fin = function (ok) {
+      if (ok) p.audio.played[p.pid] = true;
+      if (!btn.gone) btn.setState({ playing: false, played: ok || btn.state.played, failed: !ok });
+    };
+    A.play(A.pick(p.clip.sid, p.clip.ids, Math.random)).then(function () { fin(true); }, function () {
+      fin(false);
+      if (!p.lines.length) p.audio.onFail();
+      else Speech.play(p.lines, p.audio.cfg, { onEnd: function () {}, onError: function () {} }, p.audio.win);
+    });
+  }
+
   class PlayButton extends Component {
     constructor(props) {
       super(props);
@@ -57,10 +72,11 @@
       var p = this.props;
       var self = this;
       if (this.state.playing) {
-        Speech.stop(p.audio.win);
+        if (p.clip) root.DojoAudio.stop(); else Speech.stop(p.audio.win);
         this.setState({ playing: false });
         return;
       }
+      if (p.clip) { playClip(this, p); return; }
       var r = Speech.play(p.lines, p.audio.cfg, {
         onEnd: function () { p.audio.played[p.pid] = true; if (!self.gone) self.setState({ playing: false, played: true }); },
         onError: function () { if (!self.gone) self.setState({ playing: false }); p.audio.onFail(); }
@@ -73,9 +89,12 @@
       var exam = p.audio.exam;
       var once = exam && (s.played || p.audio.played[p.pid]);
       var label = once ? t('speech.played') : s.playing ? (exam ? t('speech.playing') : t('speech.stop')) : t('speech.play');
+      if (p.clip && s.playing && !exam) label = t('audio.loading');
       var self = this;
-      return html`<button type="button" class="btn icon play" data-testid=${p.testid} aria-label=${label} title=${label}
+      var btn = html`<button type="button" class="btn icon play" data-testid=${p.testid} aria-label=${label} title=${label}
         disabled=${once || (exam && s.playing)} onClick=${function () { self.click(); }}><span aria-hidden="true">${s.playing && !exam ? '\u25A0' : '\u25B6'}</span></button>`;
+      if (!s.failed) return btn;
+      return [btn, html`<span class="notice" role="status" data-testid=${p.testid + '-failed'}>${t('audio.failed')}</span>`];
     }
   }
 
@@ -89,7 +108,7 @@
 
   function Playback(p) {
     var a = p.audio;
-    if (a.status !== 'ok') {
+    if (a.status !== 'ok' && !p.clip) {
       var spoken = (a.cfg && a.cfg.speech && a.cfg.speech.lang) || (a.cfg && a.cfg.lang);
       var displayLang = spoken;
       if (a.uiLang && spoken) {
@@ -99,7 +118,7 @@
       }
       return html`<p class="notice" role="status" data-testid=${p.testid + '-notice'}>${a.t('speech.novoice', { lang: displayLang })}</p>`;
     }
-    return h(PlayButton, { key: p.pid, pid: p.pid, lines: p.lines, audio: a, testid: p.testid });
+    return h(PlayButton, { key: p.pid, pid: p.pid, lines: p.lines, clip: p.clip, audio: a, testid: p.testid });
   }
 
   function cls() {

@@ -57,18 +57,19 @@
       if (!st) return null;
       var audio = p.audio;
       var lines = audio ? speechLines(st) : [];
-      var speakable = lines.length > 0;
+      var clip = audio && Array.isArray(st.audio) && st.audio.length && root.DojoAudio && root.DojoAudio.ready() ? { sid: st.id, ids: st.audio } : null;
+      var speakable = lines.length > 0 || !!clip;
       var showText = !st.hideText || (speakable && audio.status !== 'ok');
       return html`<section class="stimulus" data-testid="stimulus">
         ${st.title ? html`<h2 class="stimulus-title" data-testid="stimulus-title">${renderText(st.title)}</h2>` : null}
         ${speakable && showText ? html`
           <div class="qline">
             <p class="qbody stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>
-            <${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />
+            <${Playback} audio=${audio} lines=${lines} clip=${clip} testid="play-stimulus" pid=${'s:' + st.id} />
           </div>
         ` : null}
         ${showText && !speakable ? html`<p class="stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>` : null}
-        ${speakable && !showText ? html`<${Playback} audio=${audio} lines=${lines} testid="play-stimulus" pid=${'s:' + st.id} />` : null}
+        ${speakable && !showText ? html`<${Playback} audio=${audio} lines=${lines} clip=${clip} testid="play-stimulus" pid=${'s:' + st.id} />` : null}
       </section>`;
     }
 
