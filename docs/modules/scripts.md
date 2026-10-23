@@ -1,6 +1,6 @@
 ---
 paths: [scripts/]
-summary: Repo build scripts (WASM release build).
+summary: Repo build and check scripts (WASM build, whole check chain).
 ---
 # scripts
 
@@ -9,6 +9,8 @@ Holds `scripts/build-wasm.sh`, the release build of `dojo-wasm`.
 
 ## Public surface
 - `scripts/build-wasm.sh [cargo args]` - runs `cargo build --release -p dojo-wasm --target wasm32-unknown-unknown` with `--remap-path-prefix` flags so build-machine paths are not embedded; then overwrites remaining `/rustc/<hash>` strings in `dojo_wasm.wasm` in place (same length). Output: `$CARGO_TARGET_DIR` or `target/` + `wasm32-unknown-unknown/release/dojo_wasm.wasm`.
+
+- `scripts/check-all.sh [--with-gate]` - the whole check chain (build-wasm, `cargo test --workspace`, node tests, wasm smoke, vectors no-op, hooks test), each step through `qrun.py` when `DOJO_QRUN` names it (agents export `DOJO_QRUN=<path to qrun.py>`; unset means plain run, untrimmed output); stops at the first red step and prints `CHECK-ALL FAILED at <step>` or `CHECK-ALL OK`. `--with-gate` adds the n5 gate (off by default; gate path from `DOJO_N5_GATE`). Sets `GIT_CONFIG_*` safe.directory `*` if unset.
 
 ## Invariants and gotchas
 - Exits 1 if the repo root, `CARGO_HOME` or the rustc sysroot path contains a space (`tests/build-wasm-paths.test.js`).
