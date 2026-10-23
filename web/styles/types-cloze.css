@@ -4,8 +4,9 @@
 .cloze-group { display: contents; }
 .cloze-group-text { display: block; grid-column: 1 / -1; }
 .cloze-label { white-space: pre-wrap; }
-@media (max-width: 500px) { .cloze-groups { grid-template-columns: minmax(0, 1fr); } .cloze-blank { align-self: stretch; } }
+@media (max-width: 500px) { .cloze-groups { grid-template-columns: minmax(0, 1fr); } .cloze-blank { align-self: stretch; justify-self: stretch; width: 100%; } }
 .cloze-blank { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; vertical-align: middle; flex: 1 1 auto; min-width: 0; }
+.cloze-groups .cloze-blank { justify-self: stretch; width: 100%; }
 .cloze-hint { color: var(--fg); font-size: var(--fs); margin: 0; }
 .cloze-field {
   box-sizing: border-box; max-width: 100%; min-width: 10ch; min-height: var(--tap); padding: var(--space-1) var(--space-2);
