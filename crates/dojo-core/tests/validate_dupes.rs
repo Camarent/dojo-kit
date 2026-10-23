@@ -115,3 +115,35 @@ fn cloze_swapped_blank_answers_detected() {
     let d = run(COURSE, &[l1, l2]);
     assert!(codes(&d).contains(&"same_prompt_different_answers"), "got {d:?}");
 }
+
+fn warns(lines: &[&str]) -> bool {
+    codes(&run(COURSE, lines)).contains(&"same_prompt_different_answers")
+}
+
+#[test]
+fn case_sensitive_gap_prompts_differing_in_case_are_distinct() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"Nine","answers":["a"],"normalize":{"caseSensitive":true}}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"nine","answers":["b"],"normalize":{"caseSensitive":true}}"#;
+    assert!(!warns(&[l1, l2]));
+}
+
+#[test]
+fn case_sensitive_cloze_prompts_differing_in_case_are_distinct() {
+    let l1 = r#"{"type":"cloze","id":"u-1","unit":"u","prompt":"Nine","parts":["x ",["a"]],"normalize":{"caseSensitive":true}}"#;
+    let l2 = r#"{"type":"cloze","id":"u-2","unit":"u","prompt":"nine","parts":["x ",["b"]],"normalize":{"caseSensitive":true}}"#;
+    assert!(!warns(&[l1, l2]));
+}
+
+#[test]
+fn case_sensitive_gap_answers_differing_in_case_warn() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"p","answers":["A"],"normalize":{"caseSensitive":true}}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"p","answers":["a"],"normalize":{"caseSensitive":true}}"#;
+    assert!(warns(&[l1, l2]));
+}
+
+#[test]
+fn case_sensitive_cloze_answers_differing_in_case_warn() {
+    let l1 = r#"{"type":"cloze","id":"u-1","unit":"u","prompt":"p","parts":["x ",["A"]],"normalize":{"caseSensitive":true}}"#;
+    let l2 = r#"{"type":"cloze","id":"u-2","unit":"u","prompt":"p","parts":["x ",["a"]],"normalize":{"caseSensitive":true}}"#;
+    assert!(warns(&[l1, l2]));
+}

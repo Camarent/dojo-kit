@@ -1,12 +1,12 @@
-use super::Sink;
+use super::{Sink, items::fold_norm};
 use crate::check::{Normalize, normalize};
 use crate::content::{ClozePart, Item, ItemType};
 use std::collections::BTreeMap;
 
 /// Normalize answer sets for comparison
 fn normalize_answer_set(item: &Item, course_norm: Option<&Normalize>) -> Vec<Vec<String>> {
-    let norm_opts = item_normalize_opts(item).or(course_norm).cloned().unwrap_or_default();
-    
+    let norm_opts = effective_norm(item, course_norm);
+
     match item {
         Item::Gap(g) => {
             let mut v: Vec<String> = g.answers.iter().map(|a| normalize(a, &norm_opts)).collect();
@@ -15,7 +15,6 @@ fn normalize_answer_set(item: &Item, course_norm: Option<&Normalize>) -> Vec<Vec
             vec![v]
         }
         Item::Cloze(c) => {
-            let norm_opts = c.normalize.as_ref().or(course_norm).cloned().unwrap_or_default();
             c.parts
                 .iter()
                 .filter_map(|p| match p {
@@ -37,13 +36,14 @@ fn normalize_answer_set(item: &Item, course_norm: Option<&Normalize>) -> Vec<Vec
     }
 }
 
-/// Get normalization options from item if available
-fn item_normalize_opts(item: &Item) -> Option<&Normalize> {
-    match item {
-        Item::Gap(g) => g.normalize.as_ref().filter(|n| !n.fold.is_empty()),
-        Item::Cloze(c) => c.normalize.as_ref().filter(|n| !n.fold.is_empty()),
+/// Effective normalization for an item: the same precedence as the leak check (`fold_norm`), then the item's own options.
+fn effective_norm(item: &Item, course_norm: Option<&Normalize>) -> Normalize {
+    let item_norm = match item {
+        Item::Gap(g) => g.normalize.as_ref(),
+        Item::Cloze(c) => c.normalize.as_ref(),
         _ => None,
-    }
+    };
+    fold_norm(item_norm, course_norm).cloned().or_else(|| item_norm.cloned()).unwrap_or_default()
 }
 
 /// Check for items with same prompt but different answers
@@ -65,7 +65,7 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
         }
         
         // Normalize the prompt
-        let norm_opts = item_normalize_opts(item).or(course_norm).cloned().unwrap_or_default();
+        let norm_opts = effective_norm(item, course_norm);
         let norm_prompt = normalize(item.prompt(), &norm_opts);
         
         // Skip empty prompts
