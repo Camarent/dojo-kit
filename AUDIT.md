@@ -33,7 +33,7 @@ Not installed: cargo-udeps (needs nightly; only stable present; cargo-machete co
 | Licenses/bans/sources | `cargo deny check` (deny.toml in repo; at setup fails only on foldhash = Zlib, flagged) |
 | Unused deps | `cargo machete --with-metadata` (exit 1 = found) |
 | Binary size | `cargo bloat --release -n 20 -p dojo-cli` ; `--crates` (no WASM support) |
-| Secrets | `gitleaks git --redact --no-banner .; gitleaks dir --redact --no-banner .` (clean at setup); fallback `git grep -nEi "(api[_-]?key\|secret\|token\|password)\s*[:=]"` |
+| Secrets | `GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks git --redact --no-banner .; GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks dir --redact --no-banner .` (clean at setup); check scanned bytes > 0: a refused repo prints no leaks after 0 bytes; fallback `git grep -nEi "(api[_-]?key\|secret\|token\|password)\s*[:=]"` |
 | ESLint | copy of flat config from js.md into <tools dir>/proj/eslint.config.js; `cd <tools dir>/proj && $B/eslint -c eslint.config.js web tools` (proj has symlinks web, tools) |
 | Dead code JS | `cd <tools dir>/proj && $B/knip --no-config-hints` (needs the package.json there; ran, exit 0) |
 | Duplicates JS | `$B/jscpd web --min-lines 10 --min-tokens 70 --threshold 5 --ignore "**/vendor/**,**/tests/**,**/n5/**"` |
