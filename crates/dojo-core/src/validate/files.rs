@@ -36,10 +36,8 @@ pub(super) fn check_stimuli_file(stimuli: Option<&SourceFile>, course: Option<&C
             if stim.hide_text == Some(true) {
                 stimulus_hide_text.insert(stim_id.clone());
             }
-            if let Some(ref speak) = stim.speak {
-                if let Some(course) = course {
-                    validate_speak(speak, course.speech.as_ref().and_then(|s| s.voices.as_ref()), &stim_file.name, *line, course_sink);
-                }
+            if let Some(ref speak) = stim.speak && let Some(course) = course {
+                validate_speak(speak, course.speech.as_ref().and_then(|s| s.voices.as_ref()), &stim_file.name, *line, course_sink);
             }
             stimulus_map.insert(stim_id, (stim_file.name.clone(), *line));
         }
@@ -124,16 +122,12 @@ fn check_one_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemCtx,
     }
     check_item_body(item, name, line, sink);
 
-    if let Some(speak_text) = item.speak() {
-        if speak_text.is_empty() {
-            sink.error("bad_speech", name, line, "item speak field is empty".to_string());
-        }
+    if let Some(speak_text) = item.speak() && speak_text.is_empty() {
+        sink.error("bad_speech", name, line, "item speak field is empty".to_string());
     }
 
-    if let Some(stim_id) = item.stimulus() {
-        if !ctx.stimuli.map.contains_key(stim_id) {
-            sink.error("unknown_stimulus", name, line, format!("item '{id}' references unknown stimulus '{}'", stim_id));
-        }
+    if let Some(stim_id) = item.stimulus() && !ctx.stimuli.map.contains_key(stim_id) {
+        sink.error("unknown_stimulus", name, line, format!("item '{id}' references unknown stimulus '{}'", stim_id));
     }
 
     if !item.is_retired() {
@@ -258,16 +252,14 @@ pub(super) fn check_ids_and_lock(all: &AllItems, lock: Option<&IdLock>, out: &mu
                 let message = format!("id '{}' was retired in ids.lock and cannot be reused", item.id());
                 found.push((item.id(), Diagnostic { severity: Severity::Error, code: "retired_id_reused", file: file.to_string(), line: *line, message }));
             }
-            if !item.is_retired() {
-                if let Some(locked_type) = lock.types.get(item.id()) {
-                    let current_type = item.item_type().as_str();
-                    if locked_type.as_str() != current_type {
-                        let message = format!(
-                            "id '{}' type changed from '{}' to '{}'",
-                            item.id(), locked_type, current_type
-                        );
-                        found.push((item.id(), Diagnostic { severity: Severity::Warning, code: "item_type_changed", file: file.to_string(), line: *line, message }));
-                    }
+            if !item.is_retired() && let Some(locked_type) = lock.types.get(item.id()) {
+                let current_type = item.item_type().as_str();
+                if locked_type.as_str() != current_type {
+                    let message = format!(
+                        "id '{}' type changed from '{}' to '{}'",
+                        item.id(), locked_type, current_type
+                    );
+                    found.push((item.id(), Diagnostic { severity: Severity::Warning, code: "item_type_changed", file: file.to_string(), line: *line, message }));
                 }
             }
         }

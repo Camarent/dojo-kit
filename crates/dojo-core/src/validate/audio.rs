@@ -235,7 +235,7 @@ fn is_valid_clip_id(id: &str) -> bool {
     if chars.len() > 64 {
         return false;
     }
-    let first = chars[0];
+    let Some(&first) = chars.first() else { return false };
     if !first.is_ascii_lowercase() && !first.is_ascii_digit() {
         return false;
     }

@@ -19,9 +19,9 @@ fn valid_key(k: &str) -> bool {
 }
 
 fn pair(p: &Value) -> Option<(String, u64)> {
-    let a = p.as_array().filter(|a| a.len() == 2)?;
-    let key = a[0].as_str().filter(|k| valid_key(k))?;
-    let n = a[1].as_f64().filter(|n| n.fract() == 0.0 && (1.0..=MAX_INT).contains(n))?;
+    let [k, n] = p.as_array()?.as_slice() else { return None };
+    let key = k.as_str().filter(|k| valid_key(k))?;
+    let n = n.as_f64().filter(|n| n.fract() == 0.0 && (1.0..=MAX_INT).contains(n))?;
     Some((key.to_string(), n as u64))
 }
 
@@ -44,7 +44,7 @@ fn add_confusion(cf: Option<&Value>, key: &str) -> Value {
     while list.len() > CF_MAX_KEYS {
         let mut drop: Option<usize> = None;
         for (i, (k, n)) in list.iter().enumerate() {
-            if k != key && drop.is_none_or(|d| *n < list[d].1) {
+            if k != key && drop.is_none_or(|d| list.get(d).is_some_and(|(_, dn)| *n < *dn)) {
                 drop = Some(i);
             }
         }

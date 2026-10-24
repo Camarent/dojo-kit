@@ -54,7 +54,7 @@ pub fn weight(rec: Option<&Map<String, Value>>, now: f64) -> f64 {
             (e_of(r), b, stale)
         }
     };
-    ((0.15 + e) * BOXF[b]) * (1.0 + ((0.5 * stale) / 7.0))
+    ((0.15 + e) * BOXF.get(b).copied().unwrap_or(0.0)) * (1.0 + ((0.5 * stale) / 7.0))
 }
 
 /// splitmix64 output -> r in [0, 1).
