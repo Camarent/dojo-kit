@@ -143,7 +143,7 @@ test('overriding a wrong answer restores the timer scale and streak', async () =
   const env = await setup({ content: mk([{ id: 't', title: 'T', timer: T }], [gapItem('t-1', 't'), gapItem('t-2', 't')]) });
   const s = env.engine.start('practice', { limit: 5 });
   s.timerStart(s.current().item);
-  s.answer({ text: 'zzz' });
+  s.answer({ text: 'at-' });
   assert.strictEqual(env.doc.settings['timer:scale'], 1.2);
   assert.strictEqual(s.canOverride(), true);
   s.overrideLast();

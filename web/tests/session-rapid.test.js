@@ -127,11 +127,11 @@ const sessionOf = (m) => m.app.state.session;
 // Answer the current item wrongly (typed kana / generic), then optionally override, then Next, all without awaiting renders.
 async function answerCurrent(m, wrong) {
   if (q(m.rootEl, 'gap-input')) {
-    typeInto(m, 'gap-input', wrong ? 'ばつ' : 'れいぞうこ');
+    typeInto(m, 'gap-input', wrong ? 'れいぞうく' : 'れいぞうこ');
     await m.flush();
     q(m.rootEl, 'gap-form').fire('submit');
   } else if (q(m.rootEl, 'cloze')) {
-    typeInto(m, 'cloze-input-0', wrong ? 'ばつ' : 'の');
+    typeInto(m, 'cloze-input-0', wrong ? 'の'.repeat(0) + 'ばつ' : 'の');
     await m.flush();
     click(m, 'btn-submit');
   } else {
@@ -247,7 +247,7 @@ test('typed wrong, override and Next fired twice each: one step, no error', asyn
   const m = await mount(ITEMS, { dontKnow: true });
   await startDaily(m);
   const s = sessionOf(m);
-  typeInto(m, 'gap-input', 'ばつ');
+  typeInto(m, 'gap-input', 'れいぞうく');
   await m.flush();
   q(m.rootEl, 'gap-form').fire('submit');
   q(m.rootEl, 'gap-form').fire('submit');

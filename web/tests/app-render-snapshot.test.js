@@ -109,7 +109,7 @@ function snapshotAll(m) {
   enterSession('practice', { unitId: 'u1' });
   const session = m.screen(Cls._SessionScreen);
   out.session = S(session.view());
-  session.answer({ text: 'wrong' }, null);
+  session.answer({ text: 'au1' }, null);
   out.sessionFeedback = S(session.view());
 
   m.app.endSession(m.app.state.session.finish());

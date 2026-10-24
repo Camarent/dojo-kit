@@ -12,7 +12,7 @@ const { loadBundle } = require('./load-bundle.js');
 const NOW = 1760000000000;
 const ITEMS = [
   { id: 'c1', unit: 'u', type: 'choice', prompt: 'Pick', options: ['A', 'B', 'C'], answer: 1, explanation: 'Because B', tags: ['t1'] },
-  { id: 'g1', unit: 'u', type: 'gap', prompt: 'Fill', answers: ['x'] }
+  { id: 'g1', unit: 'u', type: 'gap', prompt: 'Fill', answers: ['x', 'xy'] }
 ];
 
 function loadApp() {
@@ -85,7 +85,7 @@ test('choice wrong answer: expected, explanation, detail with tags', async () =>
 
 test('gap wrong answer offers override; override marks correct once', async () => {
   const { sc, session } = await setup('gap');
-  sc.answer({ text: 'nope' }, undefined);
+  sc.answer({ text: 'xz' }, undefined);
   assert.strictEqual(sc.state.result.correct, false);
   assert.strictEqual(fb(sc), 'feedback,verdict,expected,btn-override');
   sc.overrideAnswer();
@@ -140,7 +140,7 @@ test('keyboard: digit answers a choice; Enter/ArrowRight advance after a result'
 
 test('keyboard: Enter on a BUTTON or ArrowRight in INPUT does not advance', async () => {
   const { sc } = await setup('gap');
-  sc.answer({ text: 'x' });
+  sc.answer({ text: 'xz' });
   const cur = sc.state.cur;
   sc.onKey(key('Enter', { target: { tagName: 'BUTTON' } }));
   sc.onKey(key('ArrowRight', { target: { tagName: 'INPUT' } }));

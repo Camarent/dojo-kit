@@ -256,7 +256,9 @@
       if (!la || la.index !== session.index || la.verdict.correct) return false;
       if (mode === 'exam' || mode === 'placement' || course.allowOverride === false) return false;
       if (la.verdict.dontKnow) return false;
-      return util.K.TYPED.indexOf(la.item.type) >= 0;
+      if (util.K.TYPED.indexOf(la.item.type) < 0) return false;
+      if (la.item.type !== 'gap' || typeof la.verdict.given !== 'string') return true;
+      return util.isTypo(la.verdict.given, la.item.answers);
     };
 
     session.overrideLast = function () {
