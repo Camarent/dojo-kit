@@ -5144,7 +5144,7 @@
                     "class": "notice",
                     "role": "status",
                     "children": [
-                      "This device has no Japanese voice. Install one in your system speech settings."
+                      "This device has no voice for \"Japanese\". Install one in your system speech settings."
                     ]
                   }
                 }
@@ -5641,7 +5641,7 @@
                         "class": "btn",
                         "type": "button",
                         "children": [
-                          "I was right (typo)"
+                          "Count as correct (typo)"
                         ]
                       }
                     }

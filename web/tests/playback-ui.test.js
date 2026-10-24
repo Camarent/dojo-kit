@@ -24,10 +24,10 @@ function button(replays, status) {
 
 test('replays:1 shows 1 left, one replay leaves 0 and the button disabled with the noreplay label', () => {
   const { b, dict, view } = button(1);
-  assert.match(H.text(H.find(view(), 'play-replays')), /Replays: 1/);
+  assert.match(H.text(H.find(view(), 'play-replays')), /Replays left: 1/);
   assert.strictEqual(dict.take(), true);
   const v = view();
-  assert.match(H.text(H.find(v, 'play-replays')), /Replays: 0/);
+  assert.match(H.text(H.find(v, 'play-replays')), /Replays left: 0/);
   const btn = H.find(v, 'p');
   assert.strictEqual(btn.props.disabled, true);
   assert.strictEqual(btn.props['aria-label'], en['audio.noreplay']);
@@ -36,16 +36,16 @@ test('replays:1 shows 1 left, one replay leaves 0 and the button disabled with t
 
 test('replays:2 shows 2 then 1 left', () => {
   const { dict, view } = button(2);
-  assert.match(H.text(H.find(view(), 'play-replays')), /Replays: 2/);
+  assert.match(H.text(H.find(view(), 'play-replays')), /Replays left: 2/);
   dict.take();
-  assert.match(H.text(H.find(view(), 'play-replays')), /Replays: 1/);
+  assert.match(H.text(H.find(view(), 'play-replays')), /Replays left: 1/);
 });
 
 test('russian counter is plural-aware and has the noreplay text', () => {
   const t = H.loadApp().DojoApp._makeT({ en, ru }, 'ru');
-  assert.strictEqual(t('audio.replays', { n: 1 }), 'Повтор: 1');
-  assert.strictEqual(t('audio.replays', { n: 2 }), 'Повтора: 2');
-  assert.strictEqual(t('audio.replays', { n: 0 }), 'Повторов: 0');
+  assert.strictEqual(t('audio.replays', { n: 1 }), 'Повторов осталось: 1');
+  assert.strictEqual(t('audio.replays', { n: 2 }), 'Повторов осталось: 2');
+  assert.strictEqual(t('audio.replays', { n: 0 }), 'Повторов осталось: 0');
   assert.strictEqual(t('audio.noreplay'), 'Повторов больше нет');
 });
 

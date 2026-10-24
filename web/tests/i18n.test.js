@@ -111,3 +111,25 @@ test('new wording strings are present', () => {
   assert.strictEqual(ru['settings.theme'], 'Оформление');
   assert.strictEqual(en['session.expected'], 'Correct:');
 });
+
+test('ru speech.novoice quotes the language name instead of inflecting it', () => {
+  assert.strictEqual(
+    ru['speech.novoice'],
+    'Для языка «{lang}» на этом устройстве нет голоса. Установите его в системных настройках речи.',
+  );
+});
+
+test('ru session.override uses the "count as correct" label', () => {
+  assert.strictEqual(ru['session.override'], 'Засчитать (опечатка)');
+});
+
+test('ru audio.replays plural forms all read "Повторов осталось: {n}"', () => {
+  ['one', 'few', 'many'].forEach((form) => {
+    assert.strictEqual(ru['audio.replays.' + form], 'Повторов осталось: {n}', form);
+  });
+});
+
+test('en audio.replays.one and .other read "Replays left: {n}"', () => {
+  assert.strictEqual(en['audio.replays.one'], 'Replays left: {n}');
+  assert.strictEqual(en['audio.replays.other'], 'Replays left: {n}');
+});
