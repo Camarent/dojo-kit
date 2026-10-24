@@ -20,7 +20,7 @@
       e.preventDefault();
       if (!res && canSubmit(p.state)) p.onSubmit({ text: text }, text);
     }}>
-      <input type="text" class=${cls('field', state)} value=${text} readOnly=${!!res} aria-readonly=${res ? 'true' : null} autocomplete="off" autocapitalize="off"
+      <input type="text" inputmode=${p.item && p.item.inputMode ? p.item.inputMode : null} class=${cls('field', state)} value=${text} readOnly=${!!res} aria-readonly=${res ? 'true' : null} autocomplete="off" autocapitalize="off"
         autocorrect="off" spellcheck=${false} aria-label=${t('session.your_answer')} data-testid="gap-input" name="answer"
         ref=${p.inputRef} onInput=${function (e) { p.setState({ text: e.target.value }); }} />
       ${!res ? html`<button type="submit" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit">${t('session.check')}</button>` : null}

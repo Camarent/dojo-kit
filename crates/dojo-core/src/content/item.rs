@@ -1,3 +1,4 @@
+use super::input_mode::InputMode;
 use crate::check::Normalize;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -122,6 +123,8 @@ pub struct GapItem {
     pub retry: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub normalize: Option<Normalize>,
+    #[serde(rename = "inputMode", default, skip_serializing_if = "Option::is_none")]
+    pub input_mode: Option<InputMode>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub meta: Option<serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

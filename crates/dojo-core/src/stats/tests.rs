@@ -74,6 +74,7 @@ fn gap_item(id: &str, unit: &str) -> Item {
         answers: vec!["answer".to_string()],
         retry: vec![],
         normalize: None,
+        input_mode: None,
         meta: None,
         stimulus: None,
         speak: None,

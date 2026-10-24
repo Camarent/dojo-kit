@@ -1,4 +1,5 @@
 mod course;
+mod input_mode;
 mod item;
 mod media;
 mod parse;
@@ -9,6 +10,7 @@ pub use course::{
     PassBasis, PassMode, PassRule, PlacementConfig, Plugins, RubyConfig, ScoringPart, SrsConfig,
     SrsScope, Section, TagLabel, TagLabelDetail, TimingGroup, Unit,
 };
+pub use input_mode::InputMode;
 pub use item::{
     CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, ItemType, MatchItem, MultiItem,
     NewOrder, NumericItem, OrderItem, Pair, Status,
