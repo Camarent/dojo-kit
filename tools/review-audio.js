@@ -3,7 +3,7 @@
 /*
  * review-audio.js — builds a self-contained audio review page.
  *   buildReviewPage({ manifestPath, rows, base }) -> html string
- *     rows = [{ clip, text, tr?, group? }]; base = audio base URL (default 'data/audio/').
+ *     rows = [{ clip, text, tr?, group?, level?, form? }]; level/form group rows (missing -> 'other'); course sets the title; base = audio base URL (default 'data/audio/').
  *   CLI: node tools/review-audio.js <manifest.json> <rows.json> <out.html>
  * The page inlines web/audio.js and plays only through DojoAudio.configure/play.
  * Flag export is {"v":1,"ids":[sorted clip ids]}, the shape of audio/blocklist.json.
@@ -23,12 +23,13 @@ function jsonForScript(v) {
 
 function rowHtml(r) {
   const tr = r.tr ? ` <span class="tr">${esc(r.tr)}</span>` : '';
-  return `<div class="row" data-row="${esc(r.clip)}"><button type="button" data-play="${esc(r.clip)}">&#9658;</button> `
+  const form = r.form ? String(r.form) : 'other';
+  return `<div class="row" data-form="${esc(form)}" data-row="${esc(r.clip)}"><button type="button" data-play="${esc(r.clip)}">&#9658;</button> `
     + `<button type="button" data-flag="${esc(r.clip)}">flag</button> `
     + `<code>${esc(r.clip)}</code> <span class="text">${esc(r.text)}</span>${tr}</div>`;
 }
 
-function bodyHtml(rows) {
+function legacyBody(rows) {
   const order = [];
   const byGroup = new Map();
   for (const r of rows) {
@@ -40,8 +41,40 @@ function bodyHtml(rows) {
   return order.map((g) => (g ? `<h2>${esc(g)}</h2>\n` : '') + byGroup.get(g).map(rowHtml).join('\n')).join('\n');
 }
 
+function sortKeys(keys) {
+  return keys.sort((a, b) => (a === 'other') - (b === 'other') || a.localeCompare(b, 'en', { numeric: true }));
+}
+
+function formBody(rows) {
+  const levels = new Map();
+  for (const r of rows) {
+    const l = r.level ? String(r.level) : 'other';
+    const f = r.form ? String(r.form) : 'other';
+    if (!levels.has(l)) levels.set(l, new Map());
+    if (!levels.get(l).has(f)) levels.get(l).set(f, []);
+    levels.get(l).get(f).push(r);
+  }
+  return sortKeys([...levels.keys()]).map((l) => `<h2>${esc(l)}</h2>\n` + sortKeys([...levels.get(l).keys()]).map(
+    (f) => `<h3>${esc(f)}</h3>\n` + levels.get(l).get(f).map(rowHtml).join('\n')).join('\n')).join('\n');
+}
+
+function filterHtml(rows) {
+  const forms = sortKeys([...new Set(rows.map((r) => (r.form ? String(r.form) : 'other')))]);
+  return '<select id="formfilter"><option value="">all forms</option>'
+    + forms.map((f) => `<option value="${esc(f)}">${esc(f)}</option>`).join('') + '</select>';
+}
+
+function bodyHtml(rows) {
+  if (!rows.some((r) => r.form || r.level)) return legacyBody(rows);
+  return filterHtml(rows) + '\n' + formBody(rows);
+}
+
 const PAGE_JS = `
 var flagged = {};
+var ff = document.getElementById('formfilter');
+if (ff && ff.addEventListener) ff.addEventListener('change', function () {
+  document.querySelectorAll('.row').forEach(function (r) { r.style.display = !ff.value || r.dataset.form === ff.value ? '' : 'none'; });
+});
 function exportFlags() {
   document.getElementById('out').value = JSON.stringify({ v: 1, ids: Object.keys(flagged).sort() });
 }
@@ -61,11 +94,11 @@ document.querySelectorAll('button[data-flag]').forEach(function (b) {
 exportFlags();
 `;
 
-function buildReviewPage({ manifestPath, rows, base }) {
+function buildReviewPage({ manifestPath, rows, base, course }) {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const audioSrc = fs.readFileSync(AUDIO_JS, 'utf8').replace(/<\/script/gi, '<\\/script');
   return `<!doctype html>
-<html><head><meta charset="utf-8"><title>Audio review</title></head>
+<html><head><meta charset="utf-8"><title>${esc(course ? 'Clip review: ' + course : 'Clip review')}</title></head>
 <body>
 <p id="err"></p>
 ${bodyHtml(rows)}

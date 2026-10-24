@@ -117,3 +117,21 @@ test('CLI writes the page and rejects bad usage', () => {
   assert.ok(fs.readFileSync(out, 'utf8').includes('DojoAudio.configure'));
   assert.throws(() => execFileSync('node', [tool], { stdio: 'pipe' }));
 });
+
+test('rows group by level then form, missing form under other, form filter present', () => {
+  const html = buildReviewPage({ manifestPath: tmpManifest(CLIPS, 'none'), course: 'FR <x>', rows: [
+    { clip: 'a', text: 't', level: 'L2', form: 'time' },
+    { clip: 'b', text: 't', level: 'L1', form: 'plain' },
+    { clip: 'c', text: 't', level: 'L1' },
+  ] });
+  const idx = (s) => html.indexOf(s);
+  assert.ok(idx('<h2>L1</h2>') < idx('<h2>L2</h2>'));
+  assert.ok(idx('<h3>plain</h3>') < idx('<h3>other</h3>'));
+  assert.ok(html.includes('id="formfilter"'));
+  assert.ok(html.includes('<title>Clip review: FR &lt;x&gt;</title>'));
+});
+
+test('row field values are escaped', () => {
+  const html = buildReviewPage({ manifestPath: tmpManifest(CLIPS, 'none'), rows: [{ clip: 'a', text: 't', level: '<img onerror=x>', form: '<b>' }] });
+  assert.ok(!html.includes('<img onerror=x>'));
+});
