@@ -12,4 +12,5 @@ test('range fields are border-box and capped at container width', () => {
   assert.ok(m, 'rule input[type="range"].field exists');
   assert.match(m[1], /box-sizing:\s*border-box/);
   assert.match(m[1], /max-width:\s*100%/);
+  assert.match(m[1], /margin-inline:\s*0/);
 });
