@@ -86,3 +86,22 @@ test('slot has fixed height and the session track is thinner than the timer bar'
   assert.ok(h(/\n\.progress \{[^}]*height: (\d+)px/) < h(/\.qtimer-bar \{[^}]*height: (\d+)px/));
   for (const l of ['en', 'ru']) assert.ok(JSON.parse(read('i18n/' + l + '.json'))['session.timer.seconds'].includes('{n}'));
 });
+
+test('bar has aria-valuetext; stopped state keeps the bar with the done class', () => {
+  const QT = mkTimer();
+  const props = { limitMs: 8000, t, stopped: true };
+  const v = new QT(props).render(props, { fraction: 0.5, left: 4000, waiting: false });
+  assert.match(v.props.class, /qtimer-bar--done/);
+  const bar = find(v, (n) => n.props && n.props.role === 'progressbar');
+  assert.strictEqual(bar.props['aria-valuetext'], 'session.timer.seconds:4');
+  const run = { limitMs: 8000, t };
+  assert.doesNotMatch(new QT(run).render(run, {}).props.class, /qtimer-bar--done/);
+});
+
+test('session screen keeps rendering the timer after the answer', () => {
+  const src = read('ui/session-screen.js');
+  const m = src.match(/var limit = session\.timerLimit[^\n]*/);
+  assert.ok(m);
+  assert.doesNotMatch(m[0], /s\.result/);
+  assert.match(src, /stopped: !!s\.result/);
+});

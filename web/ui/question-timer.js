@@ -57,8 +57,8 @@
         var secs = Math.ceil(left / 1000);
         var waiting = s.waiting !== false;
         var label = p.t ? p.t('session.timer.seconds', { n: secs }) : secs + ' s';
-        return html`<div class=${waiting ? 'qtimer waiting' : 'qtimer'} data-testid="qtimer">
-          <div class="qtimer-bar" role="progressbar" aria-label=${p.t ? p.t('session.timer') : null} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(f * 100)}>
+        return html`<div class=${(waiting ? 'qtimer waiting' : 'qtimer') + (p.stopped ? ' qtimer-bar--done' : '')} data-testid="qtimer">
+          <div class="qtimer-bar" role="progressbar" aria-label=${p.t ? p.t('session.timer') : null} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(f * 100)} aria-valuetext=${label}>
             <span style=${{ width: Math.round(f * 100) + '%' }}></span>
           </div>
           <span class="qtimer-secs" data-testid="qtimer-secs" aria-hidden="true">${label}</span>

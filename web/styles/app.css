@@ -112,6 +112,7 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .qtimer-bar { flex: 1; height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
 .qtimer-bar span { display: block; height: 100%; background: var(--accent); }
 .qtimer-secs { min-width: 3em; text-align: right; font-variant-numeric: tabular-nums; }
+.qtimer-bar--done .qtimer-bar span { visibility: hidden; }
 .qtimer.waiting { color: var(--fg-muted); }
 .qtimer.waiting .qtimer-bar span { background: var(--fg-muted); }
 .progress span { display: block; height: 100%; background: var(--accent); }

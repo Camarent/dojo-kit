@@ -177,7 +177,7 @@
       var self = this;
       var session = p.session;
       var item = s.cur.item;
-      var limit = session.timerLimit && !s.result && !s.showIntro ? session.timerLimit(item) : null;
+      var limit = session.timerLimit && !s.showIntro ? session.timerLimit(item) : null;
       if (!limit || !QuestionTimer) return null;
       var st = s.cur.stimulus;
       var pids = ['i:' + item.id].concat(st ? ['s:' + st.id] : []);
