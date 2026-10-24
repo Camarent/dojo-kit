@@ -1,11 +1,13 @@
 /* session/clip-flags.js — user flags on bad audio clips of the study session engine.
  * Exports DojoSessionClipFlags: create(ctx) -> { flagged(), isFlagged(id), setFlag(id, on), filterStimulus(st) }.
  * Flag = settings["clipFlag:<clipId>"] === true; un-flag writes the null tombstone with settings.ts[key] = now.
+ * Heard = settings["heard:<clipId>"] = strictly increasing number (ms-based) of the last playback start; heardAt(id) -> number|undefined, markHeard(id).
  */
 (function (root) {
   'use strict';
 
   var PREFIX = 'clipFlag:';
+  var HEARD = 'heard:';
   var ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
   var Speech = root.DojoSpeech || (typeof require === 'function' ? require('../speech.js') : null);
 
@@ -46,7 +48,25 @@
       return copy;
     }
 
-    return { flagged: flagged, isFlagged: isFlagged, setFlag: setFlag, filterStimulus: filterStimulus };
+    function heardAt(id) {
+      var v = settings()[HEARD + id];
+      return typeof v === 'number' ? v : undefined;
+    }
+
+    function markHeard(id) {
+      if (typeof id !== 'string' || !ID_RE.test(id)) return;
+      var s = settings();
+      var top = 0;
+      Object.keys(s).forEach(function (k) { if (k.indexOf(HEARD) === 0 && typeof s[k] === 'number' && s[k] > top) top = s[k]; });
+      ctx.store.update(function (doc) {
+        doc.settings = doc.settings || {};
+        doc.settings.ts = doc.settings.ts || {};
+        doc.settings[HEARD + id] = Math.max(ctx.now(), top + 1);
+        doc.settings.ts[HEARD + id] = ctx.now();
+      });
+    }
+
+    return { flagged: flagged, isFlagged: isFlagged, setFlag: setFlag, filterStimulus: filterStimulus, heardAt: heardAt, markHeard: markHeard };
   }
 
   var api = { create: create };

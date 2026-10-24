@@ -6,6 +6,7 @@
  *   play(clipId[, {onStart({ms})}]) -> Promise<{ms}>  resolves at playback end, rejects on any failure; each pack is fetched and decoded to bytes once.
  *                            ms = manifest ms, or the measured duration (decoded buffer / Audio.duration) when the manifest ms is 0 or missing; onStart gets it when playback begins
  *   mark() -> n              audio sequence number; call at item start
+ *   bindHeard({get(id)->number|undefined, set(id)})  persists last-heard per clip; pick prefers never-heard, then oldest-heard (ties random); set fires once per pick when playback starts
  *   heardClip(stimulusId, since) -> id|null  id picked last for the stimulus whose playback started after mark() value `since`
  *   clipMeta(id) -> {text, tr, mt}|null  manifest clip fields (null before load / unknown id)
  *   duration(clipId) -> ms|null  last known duration of a clip (manifest or measured)
@@ -33,22 +34,25 @@
     var base = o.override || o.base || DEFAULT_BASE;
     if (base.charAt(base.length - 1) !== '/') base += '/';
     st = { base: base, manifest: o.manifest || null, mp: null, packs: {}, win: o.win || root, fetch: o.fetch || null, ctx: null, el: null, stopFn: null, seq: 0, active: null, measured: {}, mdone: null, pdone: {}, info: { manifest: 'idle', packs: {}, decodeError: '', playError: '', step: 'idle', err: '', path: '' } };
-    last = {};
-    plays = 0;
-    startedAt = {};
+    last = {}; plays = 0; startedAt = {}; picked = {};
   }
 
   function ready() { return !!st; }
 
+  var heard = null, picked = {};
+  function bindHeard(h) { heard = h || null; }
+  function heardOf(id) { var v = heard && heard.get(id); return typeof v === 'number' ? v : -Infinity; }
+  function noteStart(id) { startedAt[id] = ++plays; if (picked[id]) { delete picked[id]; if (heard) heard.set(id); } }
+
   function pick(sid, ids, random) {
     var pool = ids.filter(function (id) { return id !== last[sid]; });
     if (!pool.length) pool = ids;
-    var r = random();
-    var id = pool[Math.min(pool.length - 1, Math.floor(r * pool.length))];
-    last[sid] = id;
+    var oldest = Math.min.apply(null, pool.map(heardOf));
+    pool = pool.filter(function (id) { return heardOf(id) === oldest; });
+    var id = pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))];
+    last[sid] = id; picked[id] = true;
     return id;
   }
-
   function errName(e) { return (e && (e.name || e.message)) || String(e); }
   function errFull(e) { return e && e.name ? e.name + (e.message ? ': ' + e.message : '') : String(e); }
   function step(n, e) { if (st) { st.info.step = n; if (e) st.info.err = errFull(e); } }
@@ -193,8 +197,7 @@
 
   function startClip(clip, bytes, opts, seq) {
     if (seq !== st.seq) return Promise.resolve({ ms: 0, superseded: true });
-    clip = Object.assign({ seq: seq }, clip);
-    var part = bytes.slice(clip.off, clip.off + clip.len);
+    clip = Object.assign({ seq: seq }, clip); var part = bytes.slice(clip.off, clip.off + clip.len);
     if (elementFirst() || !context()) return viaElement(part, clip, opts);
     st.info.path = 'webaudio';
     return viaContext(context(), part, clip, opts).catch(function () {
@@ -210,7 +213,7 @@
     if (st.active && st.active.id === clipId) return st.active.promise;
     stop();
     var seq = ++st.seq, mine = st, o0 = opts;
-    opts = Object.assign({}, o0, { onStart: function (i) { startedAt[clipId] = ++plays; if (o0 && o0.onStart) o0.onStart(i); } });
+    opts = Object.assign({}, o0, { onStart: function (i) { noteStart(clipId); if (o0 && o0.onStart) o0.onStart(i); } });
     var rec = { id: clipId, promise: null };
     rec.promise = playNow(clipId, opts, seq);
     mine.active = rec;
@@ -234,18 +237,15 @@
       return loadPack(m, clip.pack).then(function (bytes) { return startClip(Object.assign({ id: clipId }, clip), bytes, opts, seq); });
     }).catch(fail);
   }
-
   function mark() { return plays; }
   function heardClip(sid, since) {
     var id = last[sid];
     return startedAt[id] > (since === undefined ? Infinity : since) ? id : null;
   }
-
   function clipMeta(id) {
     var m = st && (st.mdone || st.manifest), c = m && m.clips && m.clips[id];
     return c ? { text: c.text, tr: c.tr, mt: !!c.mt } : null;
   }
-
   function duration(clipId) {
     if (!st) return null;
     if (st.measured[clipId] > 0) return st.measured[clipId];
@@ -295,5 +295,5 @@
     } catch (e) { /* ignore */ }
   }
 
-  return { configure: configure, ready: ready, pick: pick, play: play, duration: duration, status: status, mark: mark, heardClip: heardClip, clipMeta: clipMeta, preload: preload, stop: stop, unlock: unlock };
+  return { configure: configure, ready: ready, bindHeard: bindHeard, pick: pick, play: play, duration: duration, status: status, mark: mark, heardClip: heardClip, clipMeta: clipMeta, preload: preload, stop: stop, unlock: unlock };
 });

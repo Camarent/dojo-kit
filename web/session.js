@@ -79,6 +79,7 @@
       }
     };
     var flags = clipFlagsMod.create(ctx);
+    if (root.DojoAudio && root.DojoAudio.bindHeard) root.DojoAudio.bindHeard({ get: flags.heardAt, set: flags.markHeard });
     var qtimer = qtimerMod ? qtimerMod.create(ctx) : null;
     ctx.fn.qtimerAfter = qtimer ? qtimer.afterVerdict : function () {};
     ctx.fn.qtimerClear = qtimer ? qtimer.clear : function () {};
