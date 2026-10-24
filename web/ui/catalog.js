@@ -14,6 +14,7 @@
   var DojoTypes = root.DojoTypes || {};
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
   var DojoDetail = root.DojoDetail || (typeof require !== 'undefined' ? require('./detail.js') : null) || {};
+  var CatalogAudio = root.DojoCatalogAudio || (typeof require !== 'undefined' ? require('./catalog-audio.js') : null);
   var DojoSession = root.DojoSession || (typeof require !== 'undefined' ? require('./session.js') : null) || {};
 
   // Alias from DojoCommon
@@ -93,6 +94,7 @@
     constructor(props) {
       super(props);
       var units = props.course.units || [];
+      this.ca = CatalogAudio ? CatalogAudio.create(props.content) : null;
       this.state = { search: '', selectedUnit: units.length ? units[0].id : null, selectedTags: [], selectedStages: [], tagsOpen: false, limit: CATALOG_PAGE, detailItem: null };
       this.items = props.content.items.filter(function (it) { return it.status !== 'retired'; });
       this.introById = Object.create(null);
@@ -238,8 +240,9 @@
 
     renderTopicList(p, s, t, items) {
       var self = this;
-      var titles = items.map(function (r) { return topicTitle(r.item, self.introOf(r.item)); });
-      var keyOf = function (i) { return items[i].item.unit + '\u0000' + titles[i]; };
+      var numLabel = function (item) { return self.ca ? self.ca.label(item, p.engine.expected(item)) : null; };
+      var titles = items.map(function (r) { return numLabel(r.item) || topicTitle(r.item, self.introOf(r.item)); });
+      var keyOf = function (i) { return numLabel(items[i].item) ? '\u0001' + i : items[i].item.unit + '\u0000' + titles[i]; };
       var total = new Map(), seen = new Map();
       items.forEach(function (r, i) { var k = keyOf(i); total.set(k, (total.get(k) || 0) + 1); });
       return html`<ul class="catalog-list" data-testid="catalog-list">
@@ -256,6 +259,13 @@
           </li>`;
         })}
       </ul>`;
+    }
+
+    detailPlay(p, d) {
+      if (!this.ca || !this.ca.isAudioNumeric(d)) return null;
+      var self = this;
+      var audio = this.ca.audioProps(p, function () { self.setState({ speechFail: true }); }, this.state.speechFail);
+      return this.ca.playButton(p, d, audio);
     }
 
     renderDetail(p, s, t, d) {
@@ -286,6 +296,7 @@
             ${dIntro ? html`<section class="intro" data-testid="detail-intro">${renderIntroBody({ intro: dIntro, item: d, ctx: self.hookCtx(), decl: dDecl, all: false, pre: dIntroOut })}</section>` : null}
             ${!dIntro && dDecl ? dDecl : null}
             <p class="qtext" data-testid="detail-prompt">${renderText(d.prompt)}</p>
+            ${self.detailPlay(p, d)}
             <p data-testid="detail-answers"><b>${t('session.expected')}</b> <span class="pre">${renderText(p.engine.expected(d))}</span></p>
             ${d.explanation ? html`<p class="pre" data-testid="detail-explanation">${renderText(d.explanation)}</p>` : null}
             <p class="muted" data-testid="detail-stage">${t('catalog.stage')}: ${t('catalog.stage.' + p.engine.stage(d))}</p>
