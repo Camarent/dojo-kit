@@ -99,6 +99,7 @@ function ui(audio) {
   loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext("self.DojoExt = { text: function (s) { return s; } };", sb);
   sb.DojoAudio = audio;
+  vm.runInContext(read('ui/play-button.js'), sb, { filename: 'ui/play-button.js' });
   vm.runInContext(read('ui/common.js'), sb, { filename: 'ui/common.js' });
   return sb;
 }

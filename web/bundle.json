@@ -40,6 +40,7 @@
     "types/numeric.js",
     "@course",
     "ui/i18n.js",
+    "ui/play-button.js",
     "ui/common.js",
     "ui/detail.js",
     "ui/catalog.js",

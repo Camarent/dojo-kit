@@ -67,6 +67,7 @@ function loadApp() {
   const sandbox = { console };
   loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext("self.DojoExt = { text: function (s) { return { marked: s }; } };", sandbox);
+  vm.runInContext(read('ui/play-button.js'), sandbox, { filename: 'ui/play-button.js' });
   vm.runInContext(read('ui/common.js'), sandbox, { filename: 'ui/common.js' });
   vm.runInContext(read('ui/stimulus.js'), sandbox, { filename: 'ui/stimulus.js' });
   vm.runInContext(read('ui/session-feedback.js'), sandbox, { filename: 'ui/session-feedback.js' });

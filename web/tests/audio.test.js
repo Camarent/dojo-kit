@@ -126,6 +126,7 @@ function sandboxUi(audio) {
   loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js'] });
   vm.runInContext("self.DojoExt = { text: function (s) { return s; } };", sb);
   if (audio) sb.DojoAudio = audio;
+  vm.runInContext(read('ui/play-button.js'), sb, { filename: 'ui/play-button.js' });
   vm.runInContext(read('ui/common.js'), sb, { filename: 'ui/common.js' });
   vm.runInContext(read('ui/stimulus.js'), sb, { filename: 'ui/stimulus.js' });
   return sb;
@@ -158,6 +159,7 @@ test('clip failure shows audio.failed and falls back to speech when lines exist'
   const calls = [];
   const sb = sandboxUi({ ready: () => true, unlock() {}, stop() {}, pick: (s, ids) => ids[0], play: () => Promise.reject(new Error('x')) });
   sb.DojoSpeech = { play: (lines) => { calls.push(lines); return { ok: true }; }, stop() {} };
+  vm.runInContext(read('ui/play-button.js'), sb, { filename: 'ui/play-button.js' });
   vm.runInContext(read('ui/common.js'), sb, { filename: 'ui/common.js' });
   const C = sb.DojoCommon;
   const vn = C.Playback({ audio: UI_AUDIO(), lines: [{ text: 'hi' }], clip: { sid: 's', ids: ['a-1'] }, testid: 'p', pid: 's:s' });
