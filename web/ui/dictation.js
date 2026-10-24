@@ -41,7 +41,7 @@
 
     function play() {
       var q = cur;
-      var clip = audio.pick(q.stimulus.id, q.stimulus.audio, random);
+      var clip = q.clip || (q.clip = audio.pick(q.stimulus.id, q.stimulus.audio, random));
       audio.play(clip).then(function () { if (cur === q) q.onEnd(true); }, function () { if (cur === q) q.onEnd(false); });
     }
 

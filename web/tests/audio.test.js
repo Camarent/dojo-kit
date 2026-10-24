@@ -187,3 +187,31 @@ test('clip failure without speech lines reports onFail; hidden text shows once s
   assert.strictEqual(findProp(S({ stimulus: st, audio: UI_AUDIO() }), 'data-testid') && JSON.stringify(S({ stimulus: st, audio: UI_AUDIO() })).includes('stimulus-text'), false);
   assert.ok(JSON.stringify(S({ stimulus: st, audio: UI_AUDIO({ status: 'unavailable' }) })).includes('stimulus-text'));
 });
+
+function stickySetup() {
+  const real = require('../audio.js');
+  const played = [];
+  const sb = sandboxUi({ ready: () => true, unlock() {}, stop() {}, pick: real.pick, play: (id) => { played.push(id); return Promise.resolve({}); } });
+  const mk = (ids) => {
+    const vn = sb.DojoCommon.Playback({ audio: UI_AUDIO(), lines: [], clip: { sid: 's', ids }, testid: 'p', pid: 's:s' });
+    const btn = new vn.type(vn.props);
+    btn.setState = function (s) { Object.assign(this.state, s); };
+    return btn;
+  };
+  return { played, mk };
+}
+
+test('replay of one question plays the same clip every time', async () => {
+  const { played, mk } = stickySetup();
+  const btn = mk(['a', 'b', 'c']);
+  for (let i = 0; i < 3; i++) { btn.click(); await new Promise((r) => setImmediate(r)); }
+  assert.strictEqual(played.length, 3);
+  assert.strictEqual(new Set(played).size, 1);
+});
+
+test('a new question instance may pick another clip', async () => {
+  const { played, mk } = stickySetup();
+  const ids = ['a', 'b', 'c'];
+  for (let i = 0; i < 4; i++) { mk(ids).click(); await new Promise((r) => setImmediate(r)); }
+  assert.ok(new Set(played).size > 1);
+});
