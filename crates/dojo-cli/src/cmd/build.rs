@@ -6,11 +6,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use crate::course_files::*;
 use crate::cmd::build_audio;
+use crate::cmd::build_io::{write_outputs, OutArgs};
 use crate::cmd::validate::{count, print_text};
 use crate::{build, USAGE};
-
-const WARN_BYTES: usize = 8 * 1024 * 1024;
-const MAX_BYTES: usize = 16 * 1024 * 1024;
 
 struct BuildArgs {
     dir: String,
@@ -61,25 +59,25 @@ fn read_listed(web: &Path, rel: &str) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|e| format!("bundle file missing or unreadable: {rel} ({}): {e}", path.display()))
 }
 
-fn write_out(path: &Path, bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn write_out(path: &Path, bytes: &[u8]) -> Result<(), String> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
     }
     fs::write(path, bytes).map_err(|e| format!("cannot write {}: {e}", path.display()))
 }
 
-enum Stop {
+pub(crate) enum Stop {
     Fail(String),
     Err(String),
 }
 
-type Step<T> = Result<T, Stop>;
+pub(crate) type Step<T> = Result<T, Stop>;
 
-fn fatal<T>(r: Result<T, String>) -> Step<T> {
+pub(crate) fn fatal<T>(r: Result<T, String>) -> Step<T> {
     r.map_err(Stop::Err)
 }
 
-fn failed<T>(r: Result<T, String>) -> Step<T> {
+pub(crate) fn failed<T>(r: Result<T, String>) -> Step<T> {
     r.map_err(Stop::Fail)
 }
 
@@ -91,10 +89,10 @@ struct Assets {
     lang: String,
 }
 
-struct Content {
-    bytes: Vec<u8>,
-    version: String,
-    next_lock: lock::IdLock,
+pub(crate) struct Content {
+    pub(crate) bytes: Vec<u8>,
+    pub(crate) version: String,
+    pub(crate) next_lock: lock::IdLock,
 }
 
 pub(crate) fn run_build(args: &[String]) -> Result<u8, String> {
@@ -325,82 +323,3 @@ fn render_html(template: &str, title: &str, assets: &Assets, wasm: &[u8], i18n: 
     Ok(html.into_bytes())
 }
 
-struct OutArgs<'a> {
-    out: &'a Path,
-    dir: &'a Path,
-    course_id: &'a str,
-    lang: &'a str,
-    content: &'a Content,
-    html: &'a [u8],
-    wasm_bytes: usize,
-    audio: &'a [build_audio::AudioFile],
-}
-
-/// Fails when the output directory is the course directory or nested with it (the build removes data/audio under the output).
-fn check_out_disjoint(target: &Path, dir: &Path) -> Result<(), String> {
-    let canon = |p: &Path| -> PathBuf {
-        let mut tail = Vec::new();
-        let mut cur = p.to_path_buf();
-        while !cur.exists() {
-            match cur.file_name().map(|n| n.to_os_string()) {
-                Some(n) => tail.push(n),
-                None => break,
-            }
-            if !cur.pop() {
-                break;
-            }
-        }
-        let mut base = cur.canonicalize().unwrap_or(cur);
-        tail.iter().rev().for_each(|n| base.push(n));
-        base
-    };
-    let (t, d) = (canon(target), canon(dir));
-    if t.starts_with(&d) || d.starts_with(&t) {
-        return Err(format!("output directory {} overlaps the course directory {}", t.display(), d.display()));
-    }
-    Ok(())
-}
-
-fn write_outputs(o: &OutArgs) -> Step<u8> {
-    let OutArgs { out, dir, course_id, lang, content, html, wasm_bytes, audio } = *o;
-    let total = content.bytes.len() + html.len();
-    if total > MAX_BYTES {
-        return Err(Stop::Fail(format!("total size {total} bytes exceeds the {MAX_BYTES} byte limit")));
-    }
-    let mut manifest = json!({
-        "course": course_id,
-        "version": content.version,
-        "files": [
-            {"path": "data/content.json", "bytes": content.bytes.len()},
-            {"path": "index.html", "bytes": html.len()},
-        ],
-        "totalBytes": total,
-        "wasmBytes": wasm_bytes,
-        "lang": lang,
-    });
-    for f in audio {
-        manifest["files"].as_array_mut().map(|a| a.push(json!({"path": f.rel, "bytes": f.bytes})));
-    }
-    failed(check_out_disjoint(out.join(course_id).as_path(), dir))?;
-    let manifest_text = fatal(serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string()))? + "\n";
-
-    let fixed = (total + manifest_text.len() + include_str!("../../../../THIRD_PARTY_NOTICES.md").len()) as u64;
-    failed(build_audio::check_totals(audio, fixed, 4))?;
-    fatal(write_out(&dir.join("ids.lock"), content.next_lock.to_text().as_bytes()))?;
-    let target = out.join(course_id);
-    fatal(write_out(&target.join("data/content.json"), &content.bytes))?;
-    fatal(write_out(&target.join("index.html"), html))?;
-    fatal(write_out(&target.join("manifest.json"), manifest_text.as_bytes()))?;
-
-    // Write third-party notices
-    let notices = include_str!("../../../../THIRD_PARTY_NOTICES.md");
-    fatal(write_out(&target.join("THIRD_PARTY_NOTICES.md"), notices.as_bytes()))?;
-    fatal(build_audio::copy(&target, audio))?;
-
-    println!("built {course_id} version {} lang {lang} -> {}", content.version, target.display());
-    println!("  data/content.json {} bytes, index.html {} bytes, wasm {wasm_bytes} bytes, total {total} bytes", content.bytes.len(), html.len());
-    if total > WARN_BYTES {
-        println!("warning: total size {total} bytes exceeds {WARN_BYTES} bytes");
-    }
-    Ok(0)
-}
