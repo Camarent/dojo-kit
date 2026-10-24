@@ -17,7 +17,7 @@ Common: `type`, `prompt` (required); optional `tags`, `explanation`, `source`, `
 |---|---|---|---|
 | `choice` | `options` (2+; use 3-5), `answer` (0-based index) | | true/false is `["True","False"]`; the app shuffles options |
 | `multi` | `options` (3+), `correct` (indices, non-empty, fewer than options) | | prompt says several answers are right |
-| `gap` | `answers` (all accepted forms) | `retry`, `normalize` | `retry` = readings that are close but not correct; must differ from `answers` |
+| `gap` | `answers` (all accepted forms) | `retry`, `normalize`, `inputMode` | `retry` = readings that are close but not correct; must differ from `answers`. `inputMode` = `numeric` \| `decimal` \| `text` sets the input's `inputmode` attribute (keyboard hint only, grading unchanged); any other value is a parse error |
 | `cloze` | `parts`: strings (text) and arrays of strings (blank + alternatives) | `normalize` | 1-5 blanks (more warns, over 10 errors) |
 | `numeric` | `answer` | `tolerance` (absolute), `unitLabel` (display) | |
 | `match` | `pairs` `[{left,right}]` (2-6; 2-8 allowed) | `distractors` | lefts distinct, rights (and distractors) distinct |
