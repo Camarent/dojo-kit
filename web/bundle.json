@@ -21,6 +21,7 @@
     "session/run-view.js",
     "session/run.js",
     "session/qtimer.js",
+    "session/clip-flags.js",
     "session.js",
     "types/registry.js",
     "ext/registry.js",

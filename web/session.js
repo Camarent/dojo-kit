@@ -29,6 +29,7 @@
   var runMod = root.DojoSessionRun || (typeof require === 'function' ? require('./session/run.js') : null);
   var qtimerMod = root.DojoSessionQtimer || (typeof require === 'function' ? require('./session/qtimer.js') : null);
   var weightedMod = root.DojoSessionWeightedQueue || (typeof require === 'function' ? require('./session/weighted-queue.js') : null);
+  var clipFlagsMod = root.DojoSessionClipFlags || (typeof require === 'function' ? require('./session/clip-flags.js') : null);
   var overridesMod = root.DojoSessionOverrides || (typeof require === 'function' ? require('./session/overrides.js') : null);
   var isRetired = util.isRetired;
   var ensureObject = util.ensureObject;
@@ -77,6 +78,7 @@
         placement: placement
       }
     };
+    var flags = clipFlagsMod.create(ctx);
     var qtimer = qtimerMod ? qtimerMod.create(ctx) : null;
     ctx.fn.qtimerAfter = qtimer ? qtimer.afterVerdict : function () {};
     ctx.fn.qtimerClear = qtimer ? qtimer.clear : function () {};
@@ -121,7 +123,8 @@
       return (course.placement && course.placement.mode) || 'check';
     }
     function stimulusOf(item) {
-      return item && item.stimulus && Object.prototype.hasOwnProperty.call(stimById, item.stimulus) ? stimById[item.stimulus] : null;
+      var st = item && item.stimulus && Object.prototype.hasOwnProperty.call(stimById, item.stimulus) ? stimById[item.stimulus] : null;
+      return flags.filterStimulus(st);
     }
 
     function hasAudioLines(item) {
@@ -239,7 +242,7 @@
 
     Object.freeze(ctx.fn);
 
-    return { counts: counts, entityStates: entityStates, start: start, exams: exams, placement: placement, moreNew: moreNew, stage: stage, record: record, expected: expectedFor, examDraft: examDraft, discardDraft: discardDraft, unitSettings: unitSettings, unitLadder: ladderForUnit, unitConfig: unitConfig, globalNewPerDay: globalNewPerDay, setUnitSetting: setUnitSetting, groupSettings: groupSettings, setGroupSetting: setGroupSetting, weakList: weakList };
+    return { counts: counts, entityStates: entityStates, start: start, exams: exams, placement: placement, moreNew: moreNew, stage: stage, record: record, expected: expectedFor, examDraft: examDraft, discardDraft: discardDraft, unitSettings: unitSettings, unitLadder: ladderForUnit, unitConfig: unitConfig, globalNewPerDay: globalNewPerDay, setUnitSetting: setUnitSetting, groupSettings: groupSettings, setGroupSetting: setGroupSetting, weakList: weakList, flagClip: flags.setFlag, isClipFlagged: flags.isFlagged, flaggedClips: flags.flagged };
   }
 
   /** Display info for a tag from course.tagLabels (string or {label?, kind?}): { label, internal }; label defaults to the uppercased tag. */
