@@ -16,6 +16,8 @@
     var m = id ? A.clipMeta(id) : null;
     if (!m || typeof m.text !== 'string' || !m.text) return null;
     var tr = m.tr && typeof m.tr[lang] === 'string' && m.tr[lang] ? m.tr[lang] : null;
+    var M = root.DojoFeedbackMt;
+    if (tr && M && !M.mtVisible(tr, s.result.expected)) tr = null;
     return h('div', { class: 'clip-lines', 'data-testid': 'clip-lines' },
       h('p', { 'data-testid': 'clip-text' }, t('session.clipText') + ' ', h('span', { class: 'pre' }, m.text)),
       tr ? h('p', { 'data-testid': 'clip-tr' }, h('span', { 'data-testid': 'clip-tr-label' }, t(m.mt ? 'session.clipTrMachine' : 'session.clipTr')), ' ', h('span', { class: 'pre' }, tr)) : null);

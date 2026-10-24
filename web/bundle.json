@@ -45,6 +45,7 @@
     "ui/catalog.js",
     "ui/home.js",
     "ui/stimulus.js",
+    "ui/feedback-mt.js",
     "ui/clip-text.js",
     "ui/clip-flags-section.js",
     "ui/session-feedback.js",

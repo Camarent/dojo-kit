@@ -9,6 +9,7 @@ const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const sandbox = { preact: { h: (type, props, ...kids) => ({ type, props: props || {}, kids: kids.flat() }) }, console };
 sandbox.self = sandbox;
 vm.createContext(sandbox);
+vm.runInContext(read('ui/feedback-mt.js'), sandbox);
 vm.runInContext(read('ui/clip-text.js'), sandbox);
 const CT = sandbox.DojoClipText;
 const AudioMod = (() => { const m = { exports: {} }; vm.runInNewContext(read('audio.js'), { module: m, self: {}, console, setTimeout, clearTimeout }); return m.exports; })();
@@ -34,6 +35,15 @@ test('no fallback to another language', () => {
   const n = CT.render(S, t, 'en', fake({ text: 'a', tr: { ru: 'б' } }));
   assert.ok(find(n, 'clip-text'));
   assert.strictEqual(find(n, 'clip-tr'), null);
+});
+test('translation equal to the expected answer is hidden', () => {
+  const n = CT.render({ ...S, result: { correct: true, expected: 'Три' } }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Три' } }));
+  assert.ok(find(n, 'clip-text'));
+  assert.strictEqual(find(n, 'clip-tr'), null);
+});
+test('translation differing from the expected answer is shown', () => {
+  const n = CT.render({ ...S, result: { correct: true, expected: 'Trois' } }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Три' } }));
+  assert.strictEqual(text(find(n, 'clip-tr')), 'session.clipTr Три');
 });
 test('no fields, no result, no stimulus, not heard: nothing', () => {
   assert.strictEqual(CT.render(S, t, 'ru', fake({})), null);
