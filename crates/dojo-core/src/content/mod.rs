@@ -1,6 +1,7 @@
 mod course;
 mod input_mode;
 mod item;
+mod item_kind;
 mod media;
 mod parse;
 mod speech;
@@ -12,9 +13,10 @@ pub use course::{
 };
 pub use input_mode::InputMode;
 pub use item::{
-    CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, ItemType, MatchItem, MultiItem,
-    NewOrder, NumericItem, OrderItem, Pair, Status,
+    CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, MatchItem, MultiItem,
+    NumericItem, OrderItem, Pair,
 };
+pub use item_kind::{ItemType, NewOrder, Status};
 pub use media::{AudioConfig, AudioClip, AudioEncoding, AudioManifest, AudioPack, SrsMode, TimerConfig};
 pub use parse::{
     parse_course, parse_intros, parse_items, parse_stimuli, ParsedIntros, ParsedItems,
@@ -24,7 +26,7 @@ pub use speech::{Intro, Speak, SpeakLine, SpeechConfig, Stimulus, VoiceConfig};
 
 #[cfg(test)]
 mod all_tests {
-    use super::item::ItemType;
+    use super::item_kind::ItemType;
 
     #[test]
     fn all_is_canonical_order() {
