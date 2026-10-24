@@ -11,7 +11,6 @@
   "catalog.stage.new": "Новое",
   "catalog.stage.learning": "Изучается",
   "catalog.stage.review": "Повторение",
-  "catalog.detail": "Подробности",
   "status.local": "Локально",
   "status.local.tip": "Прогресс хранится только в этом браузере.",
   "status.syncing": "Синхронизация",

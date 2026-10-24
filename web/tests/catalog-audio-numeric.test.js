@@ -27,7 +27,7 @@ test('catalog row label of an audio numeric item is the answer without ordinal',
   assert.strictEqual(label(cat, 'n1'), '11');
   assert.strictEqual(label(cat, 'n2'), '11');
   assert.strictEqual(label(cat, 'n3'), '7');
-  assert.strictEqual(label(cat, 'p1'), 'Plain prompt');
+  assert.strictEqual(label(cat, 'p1'), 'U1');
 });
 
 test('detail of an audio numeric item renders the play button', async () => {

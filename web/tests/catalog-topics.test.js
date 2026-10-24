@@ -92,20 +92,21 @@ test('topic title: meta.title beats the intro title', async () => {
   assert.strictEqual(label(c, 'ent3'), 'Meta');
 });
 
-test('topic title: no meta.title and no intro shows the prompt, not the id', async () => {
-  const c = await open({ items: [gap('t4', 'ent4', { prompt: 'Hiragana: a' })] });
-  assert.strictEqual(label(c, 'ent4'), 'Hiragana: a');
+test('topic title: no topic source never shows the prompt; unit title is used', async () => {
+  const c = await open({ items: [gap('t4', 'ent4', { prompt: 'Hiragana: a' })], course: { units: [{ id: 'u1', title: 'U1' }] } });
+  assert.strictEqual(label(c, 'ent4'), 'U1');
 });
 
-test('topic title: no prompt falls back to entity, then item id', async () => {
-  const c = await open({ items: [gap('t5', 'ent5', { prompt: '' }), gap('solo2', undefined, { prompt: '' })] });
+test('topic title: unknown unit falls back to entity, then item id', async () => {
+  const c = await open({ items: [gap('t5', 'ent5', { unit: 'zz' }), gap('solo2', undefined, { unit: 'zz' })], course: { units: [{ id: 'u1', title: 'U1' }] } });
+  c.cat.filter({ selectedUnit: null });
   assert.strictEqual(label(c, 'ent5'), 'ent5');
   assert.strictEqual(label(c, 'solo2'), 'solo2');
 });
 
 test('same-title rows in a unit get " #N" ordinals; unique titles get none', async () => {
-  const same = (id) => gap(id, undefined, { prompt: 'Same prompt' });
+  const same = (id) => gap(id, undefined, { topic: 'Same topic' });
   const c = await open({ items: [same('s1'), same('s2'), same('s3'), gap('uq')] });
-  assert.deepStrictEqual(['s1', 's2', 's3'].map((id) => label(c, id)), ['Same prompt #1', 'Same prompt #2', 'Same prompt #3']);
+  assert.deepStrictEqual(['s1', 's2', 's3'].map((id) => label(c, id)), ['Same topic #1', 'Same topic #2', 'Same topic #3']);
   assert.ok(!/#/.test(label(c, 'uq')));
 });

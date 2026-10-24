@@ -49,14 +49,6 @@
   var topicMastery = DojoDetail.topicMastery || function(es) {
     return es && es.members ? Math.round(100 * es.atLearned / es.members) : 0;
   };
-  var topicTitle = DojoDetail.topicTitle || function(item, intro) {
-    var m = item.meta || {};
-    if (m.title) return m.title;
-    if (intro && typeof intro.title === 'string' && intro.title) return intro.title;
-    if (typeof item.prompt === 'string' && item.prompt) return item.prompt;
-    return item.entity || item.id;
-  };
-
   // Use tagInfo from DojoSession if available, otherwise define it
   var tagInfo = DojoSession.tagInfo || function(course, tag) {
     var e = course && course.tagLabels && Object.prototype.hasOwnProperty.call(course.tagLabels, tag) ? course.tagLabels[tag] : null;
@@ -104,6 +96,7 @@
       var ub = this.unitById;
       (props.course.units || []).forEach(function (u) { if (u && typeof u.id === 'string') ub[u.id] = u; });
       this.index = this.buildIndex();
+      this.ords = this.buildOrdinals();
       this.onKey = this.onKey.bind(this);
     }
     componentDidMount() { this.props.win.addEventListener('keydown', this.onKey); this.updateScrollLock(); }
@@ -139,13 +132,40 @@
       e.preventDefault();
       this.setState({ detailItem: to.item });
     }
+    labelOf(item) {
+      var ca = this.ca, g = (this.unitById[item.unit] && this.unitById[item.unit].detail) || this.props.course.detail;
+      return DojoDetail.topicLabel(item, { intro: this.introOf(item), unit: this.unitById[item.unit] || null, stimulus: ca ? ca.stimulusOf(item) : null,
+        expected: this.props.engine.expected(item), glyphPath: g && typeof g.glyph === 'string' ? g.glyph : '' });
+    }
+    buildOrdinals() {
+      var self = this, total = Object.create(null), seen = Object.create(null), out = Object.create(null);
+      var key = function (it, l) { return it.unit + '\u0000' + l.text; };
+      var seenEnt = Object.create(null);
+      this.items.forEach(function (it) {
+        var id = it.entity || it.id;
+        if (seenEnt[id]) return;
+        seenEnt[id] = true;
+        var l = self.labelOf(it);
+        if (l.ordinal) total[key(it, l)] = (total[key(it, l)] || 0) + 1;
+      });
+      seenEnt = Object.create(null);
+      this.items.forEach(function (it) {
+        var id = it.entity || it.id;
+        if (seenEnt[id]) return;
+        seenEnt[id] = true;
+        var l = self.labelOf(it), k = key(it, l);
+        if (l.ordinal && total[k] > 1) { seen[k] = (seen[k] || 0) + 1; out[id] = seen[k]; }
+      });
+      return out;
+    }
+    ordOf(item) { return this.ords[item.entity || item.id] || 0; }
     introOf(item) { return this.introById[item.entity || item.id] || null; }
     buildIndex() {
       var e = this.props.engine;
       var self = this;
       var idx = {};
       this.items.forEach(function (item) {
-        var parts = [item.prompt, e.expected(item), item.explanation];
+        var parts = [item.topic, item.prompt, e.expected(item), item.explanation];
         if (Array.isArray(item.answers)) parts = parts.concat(item.answers);
         collectStrings(item.meta, parts, 0);
         var intro = self.introOf(item);
@@ -240,15 +260,10 @@
 
     renderTopicList(p, s, t, items) {
       var self = this;
-      var numLabel = function (item) { return self.ca ? self.ca.label(item, p.engine.expected(item)) : null; };
-      var titles = items.map(function (r) { return numLabel(r.item) || topicTitle(r.item, self.introOf(r.item)); });
-      var keyOf = function (i) { return numLabel(items[i].item) ? '\u0001' + i : items[i].item.unit + '\u0000' + titles[i]; };
-      var total = new Map(), seen = new Map();
-      items.forEach(function (r, i) { var k = keyOf(i); total.set(k, (total.get(k) || 0) + 1); });
+      var titles = items.map(function (r) { return self.labelOf(r.item).text; });
       return html`<ul class="catalog-list" data-testid="catalog-list">
         ${items.map(function (r, i) {
-          var k = keyOf(i);
-          var ord = total.get(k) > 1 ? seen.set(k, (seen.get(k) || 0) + 1).get(k) : 0;
+          var ord = self.ordOf(r.item);
           var state = topicState(r.es);
           return html`<li key=${'topic-' + r.id} data-testid=${'topic-' + r.id} class="catalog-item">
             <button type="button" class="catalog-btn" onClick=${function () { self.setState({ detailItem: r.item }); }}>
@@ -290,12 +305,11 @@
               }
               return null;
             })()}
-            <h2>${t('catalog.detail')}</h2>
+            <h2 data-testid="detail-title">${renderText(self.labelOf(d).text)}${self.ordOf(d) ? ' #' + self.ordOf(d) : ''}</h2>
           </div>
           <article class="qcard">
             ${dIntro ? html`<section class="intro" data-testid="detail-intro">${renderIntroBody({ intro: dIntro, item: d, ctx: self.hookCtx(), decl: dDecl, all: false, pre: dIntroOut })}</section>` : null}
             ${!dIntro && dDecl ? dDecl : null}
-            <p class="qtext" data-testid="detail-prompt">${renderText(d.prompt)}</p>
             ${self.detailPlay(p, d)}
             <p data-testid="detail-answers"><b>${t('session.expected')}</b> <span class="pre">${renderText(p.engine.expected(d))}</span></p>
             ${d.explanation ? html`<p class="pre" data-testid="detail-explanation">${renderText(d.explanation)}</p>` : null}

@@ -19,7 +19,7 @@
     function isAudioNumeric(item) {
       var st = stimulusOf(item);
       if (!st || !(hasClips(st) || st.hideText)) return false;
-      return item.inputMode === 'numeric' || item.type === 'numeric';
+      return item.inputMode === 'numeric' || item.type === 'numeric' || item.type === 'gap';
     }
 
     function label(item, expected) {

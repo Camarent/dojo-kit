@@ -996,7 +996,17 @@
                               "data-testid": "topic-label-u1-1",
                               "class": "catalog-prompt",
                               "children": [
-                                "Q u1 1"
+                                "Unit A",
+                                {
+                                  "type": "span",
+                                  "props": {
+                                    "class": "muted catalog-ord",
+                                    "children": [
+                                      " #",
+                                      1
+                                    ]
+                                  }
+                                }
                               ]
                             }
                           },
@@ -1045,7 +1055,17 @@
                               "data-testid": "topic-label-u1-2",
                               "class": "catalog-prompt",
                               "children": [
-                                "Q u1 2"
+                                "Unit A",
+                                {
+                                  "type": "span",
+                                  "props": {
+                                    "class": "muted catalog-ord",
+                                    "children": [
+                                      " #",
+                                      2
+                                    ]
+                                  }
+                                }
                               ]
                             }
                           },
@@ -1094,7 +1114,17 @@
                               "data-testid": "topic-label-u1-3",
                               "class": "catalog-prompt",
                               "children": [
-                                "Q u1 3"
+                                "Unit A",
+                                {
+                                  "type": "span",
+                                  "props": {
+                                    "class": "muted catalog-ord",
+                                    "children": [
+                                      " #",
+                                      3
+                                    ]
+                                  }
+                                }
                               ]
                             }
                           },

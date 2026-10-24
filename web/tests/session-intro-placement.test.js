@@ -170,7 +170,7 @@ test('Catalog detail: prompt, answers, explanation, stage and plugin hook with i
   find(c.cat.view(), 'topic-g2').props.children.props.onClick();
   const v = c.cat.view();
   assert.ok(find(v, 'catalog-detail'));
-  assert.ok(texts(find(v, 'detail-prompt')).join('').includes('P2'));
+  assert.strictEqual(find(v, 'detail-prompt'), null);
   assert.ok(texts(find(v, 'detail-answers')).join('').includes('x'));
   assert.ok(texts(find(v, 'detail-explanation')).join('').includes('E2'));
   assert.ok(texts(find(v, 'detail-stage')).join('').includes('catalog.stage.new'));

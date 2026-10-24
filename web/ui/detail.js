@@ -174,13 +174,22 @@
     return es && es.members ? Math.round(100 * es.atLearned / es.members) : 0;
   }
 
-  // Pick topic title: meta.title > entity intro title > item.prompt > item.entity > item.id.
-  function topicTitle(item, intro) {
+  // Topic label: first non-empty of topic > meta.title > intro.title > listening answer > glyph value > stimulus.title > unit.title > entity/id. Never item.prompt.
+  // ctx: {intro, unit, stimulus, expected, glyphPath}; listening = ctx.listening (typed item with clips/hideText stimulus).
+  function topicLabel(item, ctx) {
+    ctx = ctx || {};
+    var str = function (v) { return typeof v === 'string' && v.trim() !== '' ? v : ''; };
     var m = item.meta || {};
-    if (m.title) return m.title;
-    if (intro && typeof intro.title === 'string' && intro.title) return intro.title;
-    if (typeof item.prompt === 'string' && item.prompt) return item.prompt;
-    return item.entity || item.id;
+    var st = ctx.stimulus || null;
+    var typed = item.type === 'numeric' || item.type === 'gap' || item.inputMode === 'numeric';
+    var listening = !!st && (Array.isArray(st.audio) && st.audio.length > 0 || !!st.hideText) && typed;
+    var glyph = ctx.glyphPath ? resolvePath(item, ctx.glyphPath) : null;
+    var v = str(item.topic) || str(m.title) || str(ctx.intro && ctx.intro.title);
+    if (v) return { text: v, ordinal: true };
+    v = listening ? str(ctx.expected) : '';
+    if (v) return { text: v, ordinal: false };
+    v = str(glyph) || str(st && st.title) || str(ctx.unit && ctx.unit.title);
+    return { text: v || item.entity || item.id, ordinal: true };
   }
 
   // Intro card body: plugin hook output, else title + text. all=true uses renderTextAll.
@@ -230,7 +239,7 @@
     topicStage: topicStage,
     topicState: topicState,
     topicMastery: topicMastery,
-    topicTitle: topicTitle
+    topicLabel: topicLabel
   };
 
   // Export
