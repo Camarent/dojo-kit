@@ -102,3 +102,10 @@ test('topic title: no prompt falls back to entity, then item id', async () => {
   assert.strictEqual(label(c, 'ent5'), 'ent5');
   assert.strictEqual(label(c, 'solo2'), 'solo2');
 });
+
+test('same-title rows in a unit get " #N" ordinals; unique titles get none', async () => {
+  const same = (id) => gap(id, undefined, { prompt: 'Same prompt' });
+  const c = await open({ items: [same('s1'), same('s2'), same('s3'), gap('uq')] });
+  assert.deepStrictEqual(['s1', 's2', 's3'].map((id) => label(c, id)), ['Same prompt #1', 'Same prompt #2', 'Same prompt #3']);
+  assert.ok(!/#/.test(label(c, 'uq')));
+});

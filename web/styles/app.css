@@ -211,6 +211,7 @@ summary { cursor: pointer; min-height: var(--tap); display: list-item; padding-b
 .catalog-state.learned { border-color: var(--good); }
 .catalog-mastery { flex-shrink: 0; }
 .catalog-prompt { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.catalog-ord { font-size: .85em; }
 html.dojo-no-scroll { overflow: hidden !important; }
 .catalog-detail-dialog { max-width: min(720px, 100%); max-height: 80vh; overflow: auto; margin: 0 auto; }
 .catalog-detail-dialog .qcard { border: none; padding: 0; }
