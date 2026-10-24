@@ -74,7 +74,7 @@ function loadSandbox() {
   const win = new Node_(1, 'WINDOW');
   win.document = doc;
   const sb = { console: { warn() {}, log: console.log, error: console.error }, document: doc, window: win, setTimeout, clearTimeout, setInterval, clearInterval, Promise };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app.js']) });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app.js']) });
   vm.runInContext(read('../examples/plugins/ja-readings/ja-readings.js'), sb);
   installRubyPlugin(sb);
   return { sb, win };
@@ -127,11 +127,11 @@ const sessionOf = (m) => m.app.state.session;
 // Answer the current item wrongly (typed kana / generic), then optionally override, then Next, all without awaiting renders.
 async function answerCurrent(m, wrong) {
   if (q(m.rootEl, 'gap-input')) {
-    typeInto(m, 'gap-input', wrong ? 'ばつ' : 'れいぞうこ');
+    typeInto(m, 'gap-input', wrong ? 'れいぞうく' : 'れいぞうこ');
     await m.flush();
     q(m.rootEl, 'gap-form').fire('submit');
   } else if (q(m.rootEl, 'cloze')) {
-    typeInto(m, 'cloze-input-0', wrong ? 'ばつ' : 'の');
+    typeInto(m, 'cloze-input-0', wrong ? 'の'.repeat(0) + 'ばつ' : 'の');
     await m.flush();
     click(m, 'btn-submit');
   } else {
@@ -247,7 +247,7 @@ test('typed wrong, override and Next fired twice each: one step, no error', asyn
   const m = await mount(ITEMS, { dontKnow: true });
   await startDaily(m);
   const s = sessionOf(m);
-  typeInto(m, 'gap-input', 'ばつ');
+  typeInto(m, 'gap-input', 'れいぞうく');
   await m.flush();
   q(m.rootEl, 'gap-form').fire('submit');
   q(m.rootEl, 'gap-form').fire('submit');

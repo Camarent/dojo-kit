@@ -1,0 +1,1594 @@
+{
+  "groups": [
+    {
+      "fn": "weight",
+      "cases": [
+        {
+          "name": "new item 0.975",
+          "input": {
+            "now": 86400000000
+          },
+          "expect": 0.9750000000000001,
+          "source": "reference"
+        },
+        {
+          "name": "e .455 b1 stale 0 -> 0.4278",
+          "input": {
+            "rec": {
+              "s": 1,
+              "e": 0.455,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.42779960261786126,
+          "source": "reference"
+        },
+        {
+          "name": "b clamps at 5",
+          "input": {
+            "rec": {
+              "s": 9,
+              "e": 0.5,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.11490485194281397,
+          "source": "reference"
+        },
+        {
+          "name": "b 5 exact",
+          "input": {
+            "rec": {
+              "s": 5,
+              "e": 0.5,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.11490485194281397,
+          "source": "reference"
+        },
+        {
+          "name": "b 3 odd",
+          "input": {
+            "rec": {
+              "s": 3,
+              "e": 0.5,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.22980970388562794,
+          "source": "reference"
+        },
+        {
+          "name": "b 0",
+          "input": {
+            "rec": {
+              "s": 0,
+              "e": 0.5,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.65,
+          "source": "reference"
+        },
+        {
+          "name": "stale clamps at 7",
+          "input": {
+            "rec": {
+              "s": 0,
+              "e": 0.5,
+              "last": 83808000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.9750000000000001,
+          "source": "reference"
+        },
+        {
+          "name": "stale floor 3",
+          "input": {
+            "rec": {
+              "s": 0,
+              "e": 0.5,
+              "last": 86063040000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.7892857142857143,
+          "source": "reference"
+        },
+        {
+          "name": "stale negative clamps to 0",
+          "input": {
+            "rec": {
+              "s": 0,
+              "e": 0.5,
+              "last": 86745600000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.65,
+          "source": "reference"
+        },
+        {
+          "name": "record without e",
+          "input": {
+            "rec": {
+              "s": 1,
+              "last": 86400000000
+            },
+            "now": 86400000000
+          },
+          "expect": 0.45961940777125593,
+          "source": "reference"
+        },
+        {
+          "name": "record null is new",
+          "input": {
+            "rec": null,
+            "now": 86400000000
+          },
+          "expect": 0.9750000000000001,
+          "source": "reference"
+        },
+        {
+          "name": "record array is new",
+          "input": {
+            "rec": [
+              1
+            ],
+            "now": 86400000000
+          },
+          "expect": 0.9750000000000001,
+          "source": "reference"
+        },
+        {
+          "name": "s 2.5 floors to b 2",
+          "input": {
+            "rec": {
+              "s": 2.5,
+              "e": 0.5,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.325,
+          "source": "reference"
+        },
+        {
+          "name": "e 2 clamps to 1",
+          "input": {
+            "rec": {
+              "s": 0,
+              "e": 2,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 1.15,
+          "source": "reference"
+        },
+        {
+          "name": "e -1 clamps to 0",
+          "input": {
+            "rec": {
+              "s": 0,
+              "e": -1,
+              "last": 86400000000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.15,
+          "source": "reference"
+        },
+        {
+          "name": "last string -> stale 7",
+          "input": {
+            "rec": {
+              "s": 0,
+              "e": 0.5,
+              "last": "x"
+            },
+            "now": 86400000000
+          },
+          "expect": 0.9750000000000001,
+          "source": "reference"
+        },
+        {
+          "name": "b3 stale 6 op order",
+          "input": {
+            "rec": {
+              "s": 3,
+              "e": 0.5,
+              "last": 85881600000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.3282995769794685,
+          "source": "reference"
+        },
+        {
+          "name": "b1 stale 4 op order",
+          "input": {
+            "rec": {
+              "s": 1,
+              "e": 0.65,
+              "last": 86054400000,
+              "due": 0
+            },
+            "now": 86400000000
+          },
+          "expect": 0.7273098320775918,
+          "source": "reference"
+        },
+        {
+          "name": "s negative treated as b 0",
+          "input": {
+            "rec": {
+              "s": -1,
+              "e": 0.5,
+              "last": 86400000000
+            },
+            "now": 86400000000
+          },
+          "expect": 0.65,
+          "source": "reference"
+        },
+        {
+          "name": "record without last",
+          "input": {
+            "rec": {
+              "s": 1,
+              "e": 0.5
+            },
+            "now": 86400000000
+          },
+          "expect": 0.6894291116568839,
+          "source": "reference"
+        }
+      ]
+    },
+    {
+      "fn": "weightedQueue",
+      "cases": [
+        {
+          "name": "empty input",
+          "input": {
+            "ids": [],
+            "records": {},
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [],
+          "source": "reference"
+        },
+        {
+          "name": "limit 0",
+          "input": {
+            "ids": [
+              "a"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 0,
+            "newAllowance": 0
+          },
+          "expect": [],
+          "source": "reference"
+        },
+        {
+          "name": "new allowance input order",
+          "input": {
+            "ids": [
+              "n1",
+              "n2",
+              "n3",
+              "n4"
+            ],
+            "records": {},
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 2
+          },
+          "expect": [
+            "n2",
+            "n1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "no allowance skips new",
+          "input": {
+            "ids": [
+              "n1",
+              "a"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "a"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "limit above candidates",
+          "input": {
+            "ids": [
+              "a",
+              "b",
+              "c",
+              "n1"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 50,
+            "newAllowance": 5
+          },
+          "expect": [
+            "a",
+            "b",
+            "n1",
+            "c"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "worst first order",
+          "input": {
+            "ids": [
+              "c",
+              "b",
+              "a",
+              "d"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "a",
+            "b",
+            "d",
+            "c"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "worst first ties input order",
+          "input": {
+            "ids": [
+              "d",
+              "b"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "d",
+            "b"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "worst first threshold 0.3",
+          "input": {
+            "ids": [
+              "x",
+              "y"
+            ],
+            "records": {
+              "x": {
+                "s": 0,
+                "e": 0.3,
+                "last": 86400000000,
+                "due": 0
+              },
+              "y": {
+                "s": 0,
+                "e": 0.2999,
+                "last": 86400000000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "x",
+            "y"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "worst first max five",
+          "input": {
+            "ids": [
+              "m0",
+              "m1",
+              "m2",
+              "m3",
+              "m4",
+              "m5",
+              "m6",
+              "m7"
+            ],
+            "records": {
+              "m0": {
+                "s": 0,
+                "e": 0.9,
+                "last": 86400000000,
+                "due": 0
+              },
+              "m1": {
+                "s": 0,
+                "e": 0.85,
+                "last": 86313600000,
+                "due": 0
+              },
+              "m2": {
+                "s": 0,
+                "e": 0.8,
+                "last": 86227200000,
+                "due": 0
+              },
+              "m3": {
+                "s": 0,
+                "e": 0.75,
+                "last": 86140800000,
+                "due": 0
+              },
+              "m4": {
+                "s": 0,
+                "e": 0.7,
+                "last": 86054400000,
+                "due": 0
+              },
+              "m5": {
+                "s": 0,
+                "e": 0.65,
+                "last": 85968000000,
+                "due": 0
+              },
+              "m6": {
+                "s": 0,
+                "e": 0.6,
+                "last": 85881600000,
+                "due": 0
+              },
+              "m7": {
+                "s": 0,
+                "e": 0.55,
+                "last": 85795200000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 6,
+            "newAllowance": 0
+          },
+          "expect": [
+            "m0",
+            "m1",
+            "m2",
+            "m3",
+            "m4",
+            "m6"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "worst first capped by limit",
+          "input": {
+            "ids": [
+              "m0",
+              "m1",
+              "m2",
+              "m3",
+              "m4",
+              "m5",
+              "m6",
+              "m7"
+            ],
+            "records": {
+              "m0": {
+                "s": 0,
+                "e": 0.9,
+                "last": 86400000000,
+                "due": 0
+              },
+              "m1": {
+                "s": 0,
+                "e": 0.85,
+                "last": 86313600000,
+                "due": 0
+              },
+              "m2": {
+                "s": 0,
+                "e": 0.8,
+                "last": 86227200000,
+                "due": 0
+              },
+              "m3": {
+                "s": 0,
+                "e": 0.75,
+                "last": 86140800000,
+                "due": 0
+              },
+              "m4": {
+                "s": 0,
+                "e": 0.7,
+                "last": 86054400000,
+                "due": 0
+              },
+              "m5": {
+                "s": 0,
+                "e": 0.65,
+                "last": 85968000000,
+                "due": 0
+              },
+              "m6": {
+                "s": 0,
+                "e": 0.6,
+                "last": 85881600000,
+                "due": 0
+              },
+              "m7": {
+                "s": 0,
+                "e": 0.55,
+                "last": 85795200000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 2,
+            "newAllowance": 0
+          },
+          "expect": [
+            "m0",
+            "m1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "new items not worst first",
+          "input": {
+            "ids": [
+              "n1",
+              "c"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 1,
+            "newAllowance": 1
+          },
+          "expect": [
+            "n1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "seed 0 sampling",
+          "input": {
+            "ids": [
+              "c",
+              "d",
+              "n1",
+              "n2"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "0",
+            "limit": 3,
+            "newAllowance": 2
+          },
+          "expect": [
+            "d",
+            "n2",
+            "n1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "seed 42 sampling",
+          "input": {
+            "ids": [
+              "c",
+              "d",
+              "n1",
+              "n2"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "42",
+            "limit": 3,
+            "newAllowance": 2
+          },
+          "expect": [
+            "d",
+            "n2",
+            "n1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "seed big",
+          "input": {
+            "ids": [
+              "c",
+              "d",
+              "n1",
+              "n2"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "18446744073709551615",
+            "limit": 4,
+            "newAllowance": 2
+          },
+          "expect": [
+            "d",
+            "n2",
+            "n1",
+            "c"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "only new seed 7",
+          "input": {
+            "ids": [
+              "n1",
+              "n2",
+              "n3",
+              "n4",
+              "n5"
+            ],
+            "records": {},
+            "now": 86400000000,
+            "seed": "7",
+            "limit": 5,
+            "newAllowance": 5
+          },
+          "expect": [
+            "n2",
+            "n1",
+            "n5",
+            "n4",
+            "n3"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "sampling deterministic repeat",
+          "input": {
+            "ids": [
+              "c",
+              "d",
+              "n1",
+              "n2"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "42",
+            "limit": 3,
+            "newAllowance": 2
+          },
+          "expect": [
+            "d",
+            "n2",
+            "n1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "stale clamp matters",
+          "input": {
+            "ids": [
+              "x",
+              "y"
+            ],
+            "records": {
+              "x": {
+                "s": 0,
+                "e": 0.1,
+                "last": 77760000000,
+                "due": 0
+              },
+              "y": {
+                "s": 0,
+                "e": 0.1,
+                "last": 86400000000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "3",
+            "limit": 2,
+            "newAllowance": 0
+          },
+          "expect": [
+            "x",
+            "y"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "duplicate ids",
+          "input": {
+            "ids": [
+              "a",
+              "a",
+              "b",
+              "a",
+              "n1",
+              "n1"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "9",
+            "limit": 10,
+            "newAllowance": 5
+          },
+          "expect": [
+            "a",
+            "b",
+            "n1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "limit -1",
+          "input": {
+            "ids": [
+              "a",
+              "b"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": -1,
+            "newAllowance": 0
+          },
+          "expect": [],
+          "source": "reference"
+        },
+        {
+          "name": "limit 2.7 floors",
+          "input": {
+            "ids": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 2.7,
+            "newAllowance": 0
+          },
+          "expect": [
+            "a",
+            "b"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "limit string -> 0",
+          "input": {
+            "ids": [
+              "a"
+            ],
+            "records": {
+              "a": {
+                "s": 1,
+                "e": 0.9,
+                "last": 86313600000,
+                "due": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.5,
+                "last": 86227200000,
+                "due": 0
+              },
+              "c": {
+                "s": 2,
+                "e": 0.1,
+                "last": 86140800000,
+                "due": 0
+              },
+              "d": {
+                "s": 1,
+                "e": 0.5,
+                "last": 85622400000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": "3",
+            "newAllowance": 0
+          },
+          "expect": [],
+          "source": "reference"
+        },
+        {
+          "name": "newAllowance 1.9 floors",
+          "input": {
+            "ids": [
+              "n1",
+              "n2",
+              "n3"
+            ],
+            "records": {},
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 1.9
+          },
+          "expect": [
+            "n1"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "null record is new",
+          "input": {
+            "ids": [
+              "x",
+              "n1"
+            ],
+            "records": {
+              "x": null
+            },
+            "now": 86400000000,
+            "seed": "4",
+            "limit": 10,
+            "newAllowance": 1
+          },
+          "expect": [
+            "x"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "null record without allowance skipped",
+          "input": {
+            "ids": [
+              "x"
+            ],
+            "records": {
+              "x": null
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [],
+          "source": "reference"
+        },
+        {
+          "name": "array record is new",
+          "input": {
+            "ids": [
+              "x"
+            ],
+            "records": {
+              "x": [
+                1
+              ]
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 1
+          },
+          "expect": [
+            "x"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "prototype names are new",
+          "input": {
+            "ids": [
+              "constructor",
+              "toString",
+              "__proto__"
+            ],
+            "records": {},
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [],
+          "source": "reference"
+        },
+        {
+          "name": "prototype names with allowance",
+          "input": {
+            "ids": [
+              "constructor",
+              "toString"
+            ],
+            "records": {},
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 10,
+            "newAllowance": 1
+          },
+          "expect": [
+            "constructor"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "s 2.5 acts as b 2",
+          "input": {
+            "ids": [
+              "x",
+              "y",
+              "z"
+            ],
+            "records": {
+              "x": {
+                "s": 2.5,
+                "e": 0.2,
+                "last": 86400000000
+              },
+              "y": {
+                "s": 2,
+                "e": 0.2,
+                "last": 86400000000
+              },
+              "z": {
+                "s": 3,
+                "e": 0.2,
+                "last": 86400000000
+              }
+            },
+            "now": 86400000000,
+            "seed": "11",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "x",
+            "y",
+            "z"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "e 2 clamps to 1",
+          "input": {
+            "ids": [
+              "x",
+              "y"
+            ],
+            "records": {
+              "x": {
+                "s": 0,
+                "e": 2,
+                "last": 86400000000
+              },
+              "y": {
+                "s": 0,
+                "e": 1,
+                "last": 86400000000
+              }
+            },
+            "now": 86400000000,
+            "seed": "12",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "x",
+            "y"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "e -1 clamps to 0 (not worst-first)",
+          "input": {
+            "ids": [
+              "x",
+              "y"
+            ],
+            "records": {
+              "x": {
+                "s": 0,
+                "e": -1,
+                "last": 86400000000
+              },
+              "y": {
+                "s": 0,
+                "e": 0.2,
+                "last": 86400000000
+              }
+            },
+            "now": 86400000000,
+            "seed": "12",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "y",
+            "x"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "record without last stale 7",
+          "input": {
+            "ids": [
+              "x",
+              "y"
+            ],
+            "records": {
+              "x": {
+                "s": 0,
+                "e": 0.1
+              },
+              "y": {
+                "s": 0,
+                "e": 0.1,
+                "last": 86400000000
+              }
+            },
+            "now": 86400000000,
+            "seed": "13",
+            "limit": 10,
+            "newAllowance": 0
+          },
+          "expect": [
+            "y",
+            "x"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "records without e are not worst-first",
+          "input": {
+            "ids": [
+              "a1",
+              "a2",
+              "a3",
+              "a4",
+              "a5",
+              "a6",
+              "b"
+            ],
+            "records": {
+              "a1": {
+                "s": 0
+              },
+              "a2": {
+                "s": 0
+              },
+              "a3": {
+                "s": 0
+              },
+              "a4": {
+                "s": 0
+              },
+              "a5": {
+                "s": 0
+              },
+              "a6": {
+                "s": 0
+              },
+              "b": {
+                "s": 0,
+                "e": 0.4
+              }
+            },
+            "now": 86400000000,
+            "seed": "1",
+            "limit": 1,
+            "newAllowance": 0
+          },
+          "expect": [
+            "b"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "b clamp at 5 sampling",
+          "input": {
+            "ids": [
+              "x",
+              "y"
+            ],
+            "records": {
+              "x": {
+                "s": 50,
+                "e": 0.1,
+                "last": 86400000000,
+                "due": 0
+              },
+              "y": {
+                "s": 5,
+                "e": 0.1,
+                "last": 86400000000,
+                "due": 0
+              }
+            },
+            "now": 86400000000,
+            "seed": "3",
+            "limit": 2,
+            "newAllowance": 0
+          },
+          "expect": [
+            "x",
+            "y"
+          ],
+          "source": "reference"
+        }
+      ]
+    },
+    {
+      "fn": "splitmix64",
+      "cases": [
+        {
+          "name": "seed 0 first 3",
+          "input": {
+            "seed": "0",
+            "n": 3
+          },
+          "expect": [
+            "16294208416658607535",
+            "7960286522194355700",
+            "487617019471545679"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "seed 42 first 3",
+          "input": {
+            "seed": "42",
+            "n": 3
+          },
+          "expect": [
+            "13679457532755275413",
+            "2949826092126892291",
+            "5139283748462763858"
+          ],
+          "source": "reference"
+        }
+      ]
+    },
+    {
+      "fn": "unitRandom",
+      "cases": [
+        {
+          "name": "seed 0",
+          "input": {
+            "seed": "0",
+            "n": 3
+          },
+          "expect": [
+            0.8833108082136426,
+            0.43152799704850997,
+            0.026433771592597743
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "seed 42",
+          "input": {
+            "seed": "42",
+            "n": 3
+          },
+          "expect": [
+            0.7415648787718233,
+            0.1599103928769201,
+            0.27860113025513866
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "seed 18446744073709551615",
+          "input": {
+            "seed": "18446744073709551615",
+            "n": 3
+          },
+          "expect": [
+            0.8939429202831845,
+            0.9125972035944532,
+            0.21948196289526756
+          ],
+          "source": "reference"
+        }
+      ]
+    },
+    {
+      "fn": "drawIndex",
+      "cases": [
+        {
+          "name": "left-to-right total r low",
+          "input": {
+            "weights": [
+              0.9750000000000001,
+              0.9750000000000001,
+              0.9750000000000001,
+              0.4285714285714286
+            ],
+            "r": 0.29073482428115016
+          },
+          "expect": 0,
+          "source": "reference"
+        },
+        {
+          "name": "left-to-right total r mid",
+          "input": {
+            "weights": [
+              0.9750000000000001,
+              0.9750000000000001,
+              0.9750000000000001,
+              0.4285714285714286
+            ],
+            "r": 0.5814696485623003
+          },
+          "expect": 1,
+          "source": "reference"
+        },
+        {
+          "name": "strict greater at boundary",
+          "input": {
+            "weights": [
+              0.25,
+              0.5,
+              0.25
+            ],
+            "r": 0.25
+          },
+          "expect": 1,
+          "source": "reference"
+        },
+        {
+          "name": "r zero",
+          "input": {
+            "weights": [
+              0.25,
+              0.5,
+              0.25
+            ],
+            "r": 0
+          },
+          "expect": 0,
+          "source": "reference"
+        }
+      ]
+    }
+  ]
+}

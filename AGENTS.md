@@ -117,3 +117,5 @@ Add items with `./dojo add` (new ids are assigned for you), or retire items. Nev
 - Build says "no UI translation": see section 9.
 - Build or `./dojo` fails to compile: the framework needs a Rust toolchain (`rustup`); tell the user, do not work around it.
 - Never edit the generated `dist/` files by hand.
+
+To run a course's tests (node and python, all discovered): `scripts/course-test.sh workspace/<course-id>`.

@@ -5,11 +5,10 @@ use serde_json::json;
 use std::fs;
 use std::path::{Path, PathBuf};
 use crate::course_files::*;
+use crate::cmd::build_audio;
+use crate::cmd::build_io::{write_outputs, OutArgs};
 use crate::cmd::validate::{count, print_text};
 use crate::{build, USAGE};
-
-const WARN_BYTES: usize = 8 * 1024 * 1024;
-const MAX_BYTES: usize = 16 * 1024 * 1024;
 
 struct BuildArgs {
     dir: String,
@@ -60,25 +59,25 @@ fn read_listed(web: &Path, rel: &str) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|e| format!("bundle file missing or unreadable: {rel} ({}): {e}", path.display()))
 }
 
-fn write_out(path: &Path, bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn write_out(path: &Path, bytes: &[u8]) -> Result<(), String> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
     }
     fs::write(path, bytes).map_err(|e| format!("cannot write {}: {e}", path.display()))
 }
 
-enum Stop {
+pub(crate) enum Stop {
     Fail(String),
     Err(String),
 }
 
-type Step<T> = Result<T, Stop>;
+pub(crate) type Step<T> = Result<T, Stop>;
 
-fn fatal<T>(r: Result<T, String>) -> Step<T> {
+pub(crate) fn fatal<T>(r: Result<T, String>) -> Step<T> {
     r.map_err(Stop::Err)
 }
 
-fn failed<T>(r: Result<T, String>) -> Step<T> {
+pub(crate) fn failed<T>(r: Result<T, String>) -> Step<T> {
     r.map_err(Stop::Fail)
 }
 
@@ -90,10 +89,10 @@ struct Assets {
     lang: String,
 }
 
-struct Content {
-    bytes: Vec<u8>,
-    version: String,
-    next_lock: lock::IdLock,
+pub(crate) struct Content {
+    pub(crate) bytes: Vec<u8>,
+    pub(crate) version: String,
+    pub(crate) next_lock: lock::IdLock,
 }
 
 pub(crate) fn run_build(args: &[String]) -> Result<u8, String> {
@@ -132,6 +131,8 @@ fn build_course(args: &[String]) -> Step<u8> {
     };
 
     let course_json: serde_json::Value = fatal(serde_json::from_str(&course.course_text).map_err(|e| format!("course.json: {e}")))?;
+    let course_json = failed(build_audio::materialise_timers(&course_json))?;
+    let audio = failed(build_audio::collect(dir, &course_json))?;
     let course_id = course_json.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
     let title = course_json.get("title").and_then(|v| v.as_str()).unwrap_or_default().to_string();
 
@@ -141,7 +142,7 @@ fn build_course(args: &[String]) -> Step<u8> {
     let wasm = fatal(fs::read(&wasm_path).map_err(|e| format!("cannot read wasm {}: {e}", wasm_path.display())))?;
     let content = build_content(&course, &course_json)?;
     let html = render_html(&template, &title, &assets, &wasm, i18n)?;
-    write_outputs(&a.out, dir, &course_id, &assets.lang, &content, &html, wasm.len())
+    write_outputs(&OutArgs { out: &a.out, dir, course_id: &course_id, lang: &assets.lang, content: &content, html: &html, wasm_bytes: wasm.len(), audio: &audio })
 }
 
 fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::Value) -> Step<Assets> {
@@ -322,38 +323,3 @@ fn render_html(template: &str, title: &str, assets: &Assets, wasm: &[u8], i18n: 
     Ok(html.into_bytes())
 }
 
-fn write_outputs(out: &Path, dir: &Path, course_id: &str, lang: &str, content: &Content, html: &[u8], wasm_bytes: usize) -> Step<u8> {
-    let total = content.bytes.len() + html.len();
-    if total > MAX_BYTES {
-        return Err(Stop::Fail(format!("total size {total} bytes exceeds the {MAX_BYTES} byte limit")));
-    }
-    let manifest = json!({
-        "course": course_id,
-        "version": content.version,
-        "files": [
-            {"path": "data/content.json", "bytes": content.bytes.len()},
-            {"path": "index.html", "bytes": html.len()},
-        ],
-        "totalBytes": total,
-        "wasmBytes": wasm_bytes,
-        "lang": lang,
-    });
-    let manifest_text = fatal(serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string()))? + "\n";
-
-    fatal(write_out(&dir.join("ids.lock"), content.next_lock.to_text().as_bytes()))?;
-    let target = out.join(course_id);
-    fatal(write_out(&target.join("data/content.json"), &content.bytes))?;
-    fatal(write_out(&target.join("index.html"), html))?;
-    fatal(write_out(&target.join("manifest.json"), manifest_text.as_bytes()))?;
-
-    // Write third-party notices
-    let notices = include_str!("../../../../THIRD_PARTY_NOTICES.md");
-    fatal(write_out(&target.join("THIRD_PARTY_NOTICES.md"), notices.as_bytes()))?;
-
-    println!("built {course_id} version {} lang {lang} -> {}", content.version, target.display());
-    println!("  data/content.json {} bytes, index.html {} bytes, wasm {wasm_bytes} bytes, total {total} bytes", content.bytes.len(), html.len());
-    if total > WARN_BYTES {
-        println!("warning: total size {total} bytes exceeds {WARN_BYTES} bytes");
-    }
-    Ok(0)
-}

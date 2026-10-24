@@ -204,9 +204,10 @@
           }
         } else {
           verdict = sx.fn.gradeInput(item, input);
+          if (!verdict && ctx.fn.qtimerPending()) verdict = { correct: false, given: '' };
           if (!verdict) return { error: 'bad_input' };
           // For gap retry: don't record, don't advance, don't mark as answered
-          if (verdict.verdict === 'retry' && mode === 'exam' && !session.training) {
+          if (verdict.verdict === 'retry' && ((mode === 'exam' && !session.training) || ctx.fn.qtimerPending())) {
             verdict = { correct: false, given: verdict.given };
           } else if (verdict.verdict === 'retry') {
             return { verdict: 'retry', retry: true, expected: util.expectedFor(item), explanation: item.explanation || null };
@@ -255,7 +256,10 @@
       if (!la || la.index !== session.index || la.verdict.correct) return false;
       if (mode === 'exam' || mode === 'placement' || course.allowOverride === false) return false;
       if (la.verdict.dontKnow) return false;
-      return util.K.TYPED.indexOf(la.item.type) >= 0;
+      if (util.K.TYPED.indexOf(la.item.type) < 0) return false;
+      var nearMiss = la.item.type === 'gap' ? la.item.answers : la.item.type === 'numeric' ? [String(la.item.answer)] : null;
+      if (!nearMiss || typeof la.verdict.given !== 'string') return true;
+      return util.isTypo(la.verdict.given, nearMiss);
     };
 
     session.overrideLast = function () {
@@ -288,6 +292,7 @@
           delete requeued[requeueKey(item)];
         }
       }
+      if (la.timer) ctx.fn.qtimerRestore(la.timer);
       var verdict = Object.assign({}, la.verdict, { correct: true });
       sx.lastAnswer = null;
       return result(item, verdict);

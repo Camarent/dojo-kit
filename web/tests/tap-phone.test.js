@@ -88,12 +88,9 @@ test('CSS: @media (max-width: 600px) contains min-height: var(--tap) for home na
   assert.ok(block600.includes('.row.wrap > .btn') || block600.includes('.row.wrap>.btn'), 'Block should mention .row.wrap > .btn');
 });
 
-test('CSS: @media (max-width: 600px) contains grid for home nav row', () => {
+test('CSS: home secondary row is a 2-column grid at every width', () => {
   const css = read('styles/app.css');
-  const block600 = extractMediaBlock(css);
-  assert.ok(block600, 'app.css should contain @media (max-width: 600px) block');
-  assert.ok(block600.includes('display: grid') || block600.includes('display:grid'), 'Block should contain display: grid');
-  assert.ok(block600.includes('grid-template-columns: 1fr 1fr'), 'Block should contain grid-template-columns: 1fr 1fr');
+  assert.ok(/\.row\.pair\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*1fr 1fr/.test(css));
 });
 
 test('CSS: @media (max-width: 600px) contains line-clamp for weak-chips', () => {

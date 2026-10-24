@@ -14,6 +14,10 @@
     return DojoExt.text ? DojoExt.text(str) : str;
   }
 
+  function inputMode(st) {
+    return st && st.hideText === true && Array.isArray(st.audio) && st.audio.length > 0 ? 'numeric' : 'decimal';
+  }
+
   function canSubmit(state) { return state.text.trim() !== ''; }
 
   function Question(p) {
@@ -28,7 +32,7 @@
       if (!res && canSubmit(p.state)) p.onSubmit({ text: text }, text);
     }}>
       <div class="numeric-row">
-        <input type="text" inputmode="decimal" class=${cls('field', stateClass)} value=${text} readOnly=${!!res} aria-readonly=${res ? 'true' : null} autocomplete="off" autocapitalize="off"
+        <input type="text" inputmode=${inputMode(p.stimulus)} class=${cls('field', stateClass)} value=${text} readOnly=${!!res} aria-readonly=${res ? 'true' : null} autocomplete="off" autocapitalize="off"
           autocorrect="off" spellcheck=${false} aria-label=${t('session.your_answer')} data-testid="numeric-input" name="answer"
           ref=${p.inputRef} onInput=${function (e) { p.setState({ text: e.target.value }); }} />
         ${unitLabel ? html`<span class="unit-label">${renderText(unitLabel)}</span>` : null}
@@ -43,8 +47,10 @@
     var t = p.t;
     if (p.exam || !detail) return null;
     if (detail.parsed !== null) {
+      if (res.correct || String(detail.parsed) === String(p.raw === undefined || p.raw === null ? '' : p.raw).trim()) return null;
       return html`<p data-testid="numeric-readAs">${t('q.numeric.readAs', { value: String(detail.parsed) })}</p>`;
     }
+    if (res.timedOut) return null;
     return html`<p data-testid="numeric-invalid">${t('q.numeric.invalid')}</p>`;
   }
 
@@ -52,6 +58,7 @@
     Question: Question,
     canSubmit: canSubmit,
     initialState: function () { return { text: '' }; },
-    Extra: Extra
+    Extra: Extra,
+    inputMode: inputMode
   });
 })(typeof self !== 'undefined' ? self : this);

@@ -1,5 +1,7 @@
 pub(crate) mod add;
 pub(crate) mod build;
+pub(crate) mod build_audio;
+pub(crate) mod build_io;
 pub(crate) mod import_progress;
 pub(crate) mod init;
 pub(crate) mod lock;

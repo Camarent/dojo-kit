@@ -101,7 +101,7 @@ test('override restores every member before regrading', async () => {
   const t = await setup(true, { m1a: rec(3, NOW - 1), m1b: rec(3, NOW - 1) });
   const s = t.engine.start('practice', { units: ['g'] });
   while (s.current().item.id !== 'm1a') s.next();
-  s.answer({ text: 'x' });
+  s.answer({ text: 'am1' });
   assert.strictEqual(t.doc.items.m1c.s, 2, 'inherited member written');
   assert.ok(s.canOverride());
   s.overrideLast();
@@ -113,10 +113,10 @@ test('override of the first wrong clears the session drop flag', async () => {
   const t = await setup(true, dueAll(['m1a', 'm1b', 'm1c'], 3));
   const s = t.engine.start('practice', { units: ['g'] });
   while (s.current().item.id !== 'm1a') s.next();
-  s.answer({ text: 'x' });
+  s.answer({ text: 'am1' });
   s.overrideLast();
   s.next();
-  s.answer({ text: 'x' });
+  s.answer({ text: 'am1' });
   assert.deepStrictEqual(['m1a', 'm1b', 'm1c'].map(id => t.doc.items[id].s), [3, 3, 3], 'drops again after the override undid the first');
 });
 

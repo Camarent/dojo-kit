@@ -27,6 +27,8 @@
       })
     ]).then(function (parts) {
       content = parts[1];
+      var ac = content.course && content.course.audio;
+      if (ac && root.DojoAudio) root.DojoAudio.configure({ override: root.DOJO_AUDIO_BASE, base: ac.base, win: root });
       return DojoApp.start({
         root: rootEl,
         dojo: parts[0],

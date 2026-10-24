@@ -3,7 +3,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-use super::{ItemType, NewOrder, SpeechConfig};
+use super::{AudioConfig, ItemType, NewOrder, SpeechConfig, TimerConfig};
 
 /// One exam section: how many items to draw and from where. `None` filters match everything.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -39,6 +39,9 @@ pub struct Unit {
     /// Declarative detail rendering config from item.meta for this unit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub detail: Option<DetailConfig>,
+    /// Per-question timer settings; overrides course.timer if present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timer: Option<TimerConfig>,
 }
 
 /// Spaced-repetition settings; `ladder` holds intervals in milliseconds, indexed by stage.
@@ -57,6 +60,10 @@ pub struct SrsConfig {
     /// Items asked per entity slot when `scope` is `"entity"` (1..=5, default 1).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub drill: Option<u32>,
+    /// Scheduling mode: `"ladder"` (default) or `"errorWeighted"`.
+    /// Not allowed in `srsByType` (mode_by_type).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<super::media::SrsMode>,
 }
 
 /// Scheduling scope of a unit.
@@ -302,6 +309,15 @@ pub struct Course {
     /// Kanji/Han breakdown config: dotted paths into item for key, meaning, and readings.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub breakdown: Option<BreakdownConfig>,
+    /// Audio configuration: manifest path and optional base URL.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audio: Option<AudioConfig>,
+    /// Default per-question timer settings for the course.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timer: Option<TimerConfig>,
+    /// Whether to track confusions (wrong answer patterns) in progress records.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub confusions: Option<bool>,
 }
 
 /// Kanji/Han breakdown configuration for kanjiIndex/kanjiBreakdown.

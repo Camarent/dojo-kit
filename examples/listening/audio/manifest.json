@@ -1,0 +1,81 @@
+{
+  "v": 1,
+  "packs": [
+    {
+      "file": "pack-00.mp3",
+      "bytes": 62840
+    }
+  ],
+  "clips": {
+    "d0": {
+      "pack": 0,
+      "off": 0,
+      "len": 4844,
+      "ms": 600,
+      "mime": "audio/wav"
+    },
+    "d1": {
+      "pack": 0,
+      "off": 4844,
+      "len": 1324,
+      "ms": 160,
+      "mime": "audio/wav"
+    },
+    "d2": {
+      "pack": 0,
+      "off": 6168,
+      "len": 2604,
+      "ms": 320,
+      "mime": "audio/wav"
+    },
+    "d3": {
+      "pack": 0,
+      "off": 8772,
+      "len": 3884,
+      "ms": 480,
+      "mime": "audio/wav"
+    },
+    "d4": {
+      "pack": 0,
+      "off": 12656,
+      "len": 5164,
+      "ms": 640,
+      "mime": "audio/wav"
+    },
+    "d5": {
+      "pack": 0,
+      "off": 17820,
+      "len": 6444,
+      "ms": 800,
+      "mime": "audio/wav"
+    },
+    "d6": {
+      "pack": 0,
+      "off": 24264,
+      "len": 7724,
+      "ms": 960,
+      "mime": "audio/wav"
+    },
+    "d7": {
+      "pack": 0,
+      "off": 31988,
+      "len": 9004,
+      "ms": 1120,
+      "mime": "audio/wav"
+    },
+    "d8": {
+      "pack": 0,
+      "off": 40992,
+      "len": 10284,
+      "ms": 1280,
+      "mime": "audio/wav"
+    },
+    "d9": {
+      "pack": 0,
+      "off": 51276,
+      "len": 11564,
+      "ms": 1440,
+      "mime": "audio/wav"
+    }
+  }
+}

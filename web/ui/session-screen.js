@@ -28,6 +28,10 @@
   var renderIntroBody = DojoDetail.renderIntroBody;
 
   var createShared = (root.DojoSessionFeedback || (typeof require !== 'undefined' ? require('./session-feedback.js') : {})).createShared;
+  var QTimer = (root.DojoQuestionTimer || (typeof require !== 'undefined' ? require('./question-timer.js') : null));
+  var QuestionTimer = QTimer ? QTimer.create().QuestionTimer : null;
+  var Dictation = root.DojoDictation || (typeof require !== 'undefined' ? require('./dictation.js') : null);
+  var SessionFocus = (root.DojoSessionFocus || (typeof require !== 'undefined' ? require('./session-focus.js') : {}));
 
   function create(deps) {
     var Stimulus = deps.Stimulus;
@@ -100,7 +104,7 @@
       var session = this.props.session;
       var card = cur && session.introFor ? session.introFor(cur.item) : null;
       var showIntro = !card && !!(cur && session.shouldShowIntro(cur.item));
-      return { cur: cur, result: null, picked: null, qstate: this.initialQState(cur), error: null, guard: null, retry: false, speechFail: false, showIntro: showIntro, introCard: card };
+      return { cur: cur, result: null, picked: null, qstate: this.initialQState(cur), error: null, guard: null, retry: false, speechFail: false, showIntro: showIntro, introCard: card, audioMark: root.DojoAudio && root.DojoAudio.mark ? root.DojoAudio.mark() : 0 };
     }
     componentDidMount() {
       var self = this;
@@ -122,6 +126,7 @@
         this._onVoices = function () { self.forceUpdate(); };
         ss.addEventListener('voiceschanged', this._onVoices);
       }
+      if (Dictation) Dictation.sync(this);
       this.focusSoon();
     }
     componentWillUnmount() {
@@ -129,6 +134,7 @@
       this.props.win.removeEventListener('pointerdown', this.onModality);
       if (Speech) Speech.stop(this.props.win);
       if (this.timer) clearInterval(this.timer);
+      if (this.dict) this.dict.stop();
       if (this.onHide) {
         this.props.win.removeEventListener('visibilitychange', this.onHide);
         this.props.win.removeEventListener('pagehide', this.onHide);
@@ -137,51 +143,12 @@
       if (ss && ss.removeEventListener && this._onVoices) ss.removeEventListener('voiceschanged', this._onVoices);
       if (this.props.session.release) this.props.session.release();
     }
-    componentDidUpdate() { this.focusSoon(); }
-    onModality(e) {
-      this.kbd = e.type === 'keydown';
-      var box = this.qbox;
-      if (this.kbd && box && box.querySelectorAll) {
-        var marked = box.querySelectorAll('[data-nofocusring]');
-        for (var i = 0; i < marked.length; i++) marked[i].removeAttribute('data-nofocusring');
-      }
-    }
-    focusSoon() {
-      var self = this;
-      setTimeout(function () { self.applyFocus(); }, 0);
-    }
-    refocusLost(s, box, doc, active, had) {
-      var lost = doc && (!active || active === doc.body);
-      if (!(had && lost && !s.result && box && box.querySelector)) return;
-      var re = box.querySelector('[data-refocus]');
-      if (re && re.focus) { re.focus(); this.hadFocus = true; }
-    }
-    focusTarget(s, box) {
-      var el = s.introCard ? this.introBtn : s.result ? this.nextBtn : this.input;
-      if (!el && !s.result && box && box.querySelector) el = box.querySelector('[data-autofocus]');
-      return el;
-    }
-    applyFocus() {
-      var s = this.state;
-      if (s.confirm) return;
-      var last = this.lastFocus;
-      var box = this.qbox;
-      var doc = this.props.win && this.props.win.document;
-      var active = doc && doc.activeElement;
-      var had = this.hadFocus;
-      this.hadFocus = !!(box && active && box.contains && box.contains(active));
-      if (last && last.cur === s.cur && last.answered === !!s.result && last.intro === !!s.introCard) {
-        this.refocusLost(s, box, doc, active, had);
-        return;
-      }
-      this.lastFocus = { cur: s.cur, answered: !!s.result, intro: !!s.introCard };
-      var el = this.focusTarget(s, box);
-      if (el && el.focus) {
-        if (!this.kbd && el.setAttribute) el.setAttribute('data-nofocusring', '');
-        el.focus();
-        this.hadFocus = !s.result;
-      }
-    }
+    componentDidUpdate() { if (Dictation) Dictation.sync(this); this.focusSoon(); }
+    onModality(e) { SessionFocus.onModality(this,e); }
+    focusSoon() { SessionFocus.focusSoon(this); }
+    refocusLost(s,box,doc,active,had) { SessionFocus.refocusLost(this,s,box,doc,active,had); }
+    focusTarget(s,box) { return SessionFocus.focusTarget(this,s,box); }
+    applyFocus() { SessionFocus.applyFocus(this); }
     tick() {
       var session = this.props.session;
       if (this.finishing) return;
@@ -198,37 +165,35 @@
       } else if (left <= 0) { this.setState({ remaining: 0 }); this.finish(); return; }
       this.setState({ remaining: Math.max(0, left) });
     }
-    isExamMode() { return this.props.session.mode === 'exam'; }
-    isExam() { return this.props.session.mode === 'exam' && !this.props.session.training; }
-    onInputNav(e) {
-      var s = this.state;
-      if (s.result || !s.cur) return;
-      var tag = e.target && e.target.tagName;
-      if (tag !== 'INPUT') return;
-      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-      var box = this.qbox;
-      if (!box) return;
-      var controls = [];
-      var collect = function (node) {
-        var on = function (n) { var a = n.getAttribute(n.tagName === 'INPUT' ? 'readonly' : 'disabled'); return a === true || a === '' || a === 'true'; };
-        if ((node.tagName === 'INPUT' || node.tagName === 'BUTTON') && !on(node)) controls.push(node);
-        if (node.childNodes) node.childNodes.forEach(function (c) { collect(c); });
-      };
-      collect(box);
-      var currentIndex = -1;
-      for (var i = 0; i < controls.length; i++) {
-        if (controls[i] === e.target) { currentIndex = i; break; }
-      }
-      if (currentIndex === -1) return;
-      var nextIndex = e.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
-      if (nextIndex < 0 || nextIndex >= controls.length) return;
-      controls[nextIndex].focus();
-      e.preventDefault();
+    timeout() {
+      var q = this.state.qstate;
+      if (this.state.result || !this.state.cur) return;
+      var r = this.props.session.answerTimed({ text: q && typeof q.text === 'string' ? q.text : '' });
+      if (r.error || r.retry) return;
+      this.answeredOn = this.state.cur;
+      this.setState({ result: r, picked: q && q.text, error: null, guard: null, answered: this.state.answered + 1 });
     }
+    renderQTimer(p, s, audio) {
+      var self = this;
+      var session = p.session;
+      var item = s.cur.item;
+      var limit = session.timerLimit && !s.showIntro ? session.timerLimit(item) : null;
+      if (!limit || !QuestionTimer || s.result) return null;
+      var st = s.cur.stimulus;
+      var pids = ['i:' + item.id].concat(st ? ['s:' + st.id] : []);
+      var hasAudio = !!audio && ((root.DojoAudio && root.DojoAudio.ready() && !!st && !!st.audio && st.audio.length > 0) || (audio.status === 'ok' && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))))));
+      var canStart = function () { return !hasAudio || pids.some(function (k) { return (self.played && self.played[k]) || (self.released && self.released[k]); }); };
+      return h(QuestionTimer, { key: 'qt' + s.cur.position, now: p.now, limitMs: limit, canStart: canStart,
+        onStart: function () { session.timerStart(item); }, onExpire: function () { self.timeout(); }, stopped: !!s.result, t: p.t });
+    }
+    isExamMode() { return this.props.session.mode==='exam'; }
+    isExam() { return this.props.session.mode==='exam'&&!this.props.session.training; }
+    onInputNav(e) { SessionFocus.onInputNav(this,e); }
     onKey(e) {
       this.onModality(e);
       var s = this.state;
       if (s.confirm || !s.cur || DojoTypes.keyBlocked(e, {allowInput: true})) return;
+      if (this.dict && this.dict.onKey(e)) return;
       var tag = e.target && e.target.tagName;
       var advance = e.key === 'Enter' || e.key === 'ArrowRight';
       if (s.introCard) { this.onIntroKey(e, tag, advance); return; }
@@ -289,7 +254,7 @@
     questionProps(p, s) {
       var self = this;
       return {
-        item: s.cur.item, view: s.cur.view, result: s.result, picked: s.picked, exam: this.isExam(), t: p.t,
+        item: s.cur.item, view: s.cur.view, stimulus: s.cur.stimulus, result: s.result, picked: s.picked, exam: this.isExam(), t: p.t,
         state: s.qstate,
         setState: function (patch) { self.setState({ qstate: Object.assign({}, self.state.qstate, patch) }); },
         onSubmit: function (input, picked) { self.answer(input, picked); },
@@ -313,7 +278,7 @@
             <span style=${{ width: Math.round(100 * (cur.position - (s.result ? 0 : 1)) / cur.total) + '%' }}></span>
           </div>
           <span class="count" data-testid="progress">${Math.min(cur.position, session.initialTotal)} / ${session.initialTotal}</span>
-          ${session.retryCount() > 0 ? html`<span class="badge retry" data-testid="retry-badge">${t('session.retries', { n: session.retryCount() })}</span>` : null}
+          <span class=${cls('badge retry', session.retryCount() === 0 && 'empty')} data-testid="retry-badge">${t('session.retries', { n: session.retryCount() })}</span>
           ${session.group && session.group.count > 1 ? html`<span class="count" data-testid="group">${t('session.group', { n: session.group.index + 1, total: session.group.count })}</span>` : null}
           ${s.remaining !== null ? html`<span class=${cls('timer', s.remaining < 60000 && 'low')} data-testid="timer">${fmtClock(s.remaining)}</span>` : null}
         </div>`;
@@ -349,14 +314,15 @@
       var def = DojoTypes.get(cur.item.type);
       var showPlainPrompt = !def || !def.ownsPrompt || !def.ownsPrompt(cur.item, cur.view);
       var plainPrompt = typeof cur.item.prompt === 'string' ? (DojoExt.plain ? DojoExt.plain(cur.item.prompt) : cur.item.prompt) : '';
+      if (cur.item.type === 'numeric' && showPlainPrompt && plainPrompt.length > 0 && !(p.course && p.course.captions && p.course.captions.numeric)) caption = '';
       var bigPrompt = plainPrompt.length > 0 && plainPrompt.length <= 6 && plainPrompt.indexOf('\n') < 0;
       return html`<article class="qcard">
           ${s.showIntro && introText(cur.item) ? html`<div class="intro" data-testid="intro">${renderText(introText(cur.item))}</div>` : null}
-          <${Stimulus} stimulus=${cur.stimulus} audio=${audio} />
+          <${Stimulus} stimulus=${cur.stimulus} audio=${audio} dict=${this.dict} />
           ${caption ? html`<p class="qcaption" data-testid="caption">${caption}</p>` : null}
           ${showPlainPrompt ? renderPromptLine(renderPromptEl(cur.item, bigPrompt), cur.item, audio, itemLines)
             : renderPromptLine(null, cur.item, audio, itemLines)}
-          <div style="display: contents" ref=${function (el) { self.qbox = el; }}>${this.renderQuestion(p, s)}</div>
+          <div style="display: contents" ref=${function (el) { self.qbox = el; }}>${QTimer ? QTimer.slot(h, p.session.timerLimit && p.session.timerLimit(cur.item), this.renderQTimer(p, s, audio)) : null}${this.renderQuestion(p, s)}</div>
         </article>`;
     }
     renderActions(p, s) {
@@ -368,7 +334,7 @@
       return html`<div class="row actions-row">
           ${this.renderDontKnow(p, s)}
           ${examMode ? html`<button type="button" class="btn" data-testid="btn-finish" onClick=${function () { self.setState({ confirm: 'finish' }); }}>${t('session.finish')}</button>` : null}
-          <button type="button" class="btn primary" disabled=${!exam && !s.result} data-testid="btn-next"
+          <button type="button" class="btn primary big" disabled=${!exam && !s.result} data-testid="btn-next"
             ref=${function (el) { self.nextBtn = el; }}
             title=${t('session.next.withArrow')} aria-label=${t('session.next.withArrow')}
             onClick=${function () { if (examMode && last) self.setState({ confirm: 'finish' }); else self.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>

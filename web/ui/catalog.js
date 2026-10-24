@@ -238,13 +238,19 @@
 
     renderTopicList(p, s, t, items) {
       var self = this;
+      var titles = items.map(function (r) { return topicTitle(r.item, self.introOf(r.item)); });
+      var keyOf = function (i) { return items[i].item.unit + '\u0000' + titles[i]; };
+      var total = new Map(), seen = new Map();
+      items.forEach(function (r, i) { var k = keyOf(i); total.set(k, (total.get(k) || 0) + 1); });
       return html`<ul class="catalog-list" data-testid="catalog-list">
-        ${items.map(function (r) {
+        ${items.map(function (r, i) {
+          var k = keyOf(i);
+          var ord = total.get(k) > 1 ? seen.set(k, (seen.get(k) || 0) + 1).get(k) : 0;
           var state = topicState(r.es);
           return html`<li key=${'topic-' + r.id} data-testid=${'topic-' + r.id} class="catalog-item">
             <button type="button" class="catalog-btn" onClick=${function () { self.setState({ detailItem: r.item }); }}>
               <span class=${'catalog-state ' + state} data-testid=${'topic-state-' + r.id}>${t('catalog.state.' + state)}</span>
-              <span class="catalog-prompt" data-testid=${'topic-label-' + r.id}>${renderText(topicTitle(r.item, self.introOf(r.item)))}</span>
+              <span class="catalog-prompt" data-testid=${'topic-label-' + r.id}>${renderText(titles[i])}${ord ? html`<span class="muted catalog-ord"> #${ord}</span>` : null}</span>
               <span class="muted catalog-mastery" data-testid=${'topic-mastery-' + r.id}>${topicMastery(r.es)}%</span>
             </button>
           </li>`;
@@ -293,7 +299,8 @@
               var okN = rec.ok || 0, badN = rec.bad || 0, stepN = rec.s || 0;
               return html`<p class="muted" data-testid="detail-step">${t('catalog.step', { s: stepN })} · ${dueText()}</p>
                 <p class="muted" data-testid="detail-due">${t('catalog.due')}: ${dueText()}</p>
-                <p class="muted" data-testid="detail-counts">${t('catalog.counts', { ok: okN, bad: badN })}</p>`;
+                <p class="muted" data-testid="detail-counts">${t('catalog.counts', { ok: okN, bad: badN })}</p>
+                ${DojoDetail.renderExtrasStats(rec, t)}`;
             })()}
             ${detailHookOut ? html`<div data-testid="detail-hook">${detailHookOut}</div>` : null}
           </article>

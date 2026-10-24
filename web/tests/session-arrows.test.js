@@ -50,7 +50,7 @@ test('ArrowRight after a result on nextBtn advances; on other buttons does not',
   ]);
   await startSession(m2);
   const inp = q(m2.rootEl, 'gap-input');
-  inp.value = 'wrong';
+  inp.value = 'tent';
   inp.fire('input', { target: inp });
   await m2.flush();
   q(m2.rootEl, 'gap-form').fire('submit');

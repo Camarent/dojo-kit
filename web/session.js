@@ -27,6 +27,9 @@
   var countsMod = root.DojoSessionCounts || (typeof require === 'function' ? require('./session/counts.js') : null);
   var examMod = root.DojoSessionExam || (typeof require === 'function' ? require('./session/exam.js') : null);
   var runMod = root.DojoSessionRun || (typeof require === 'function' ? require('./session/run.js') : null);
+  var qtimerMod = root.DojoSessionQtimer || (typeof require === 'function' ? require('./session/qtimer.js') : null);
+  var weightedMod = root.DojoSessionWeightedQueue || (typeof require === 'function' ? require('./session/weighted-queue.js') : null);
+  var clipFlagsMod = root.DojoSessionClipFlags || (typeof require === 'function' ? require('./session/clip-flags.js') : null);
   var overridesMod = root.DojoSessionOverrides || (typeof require === 'function' ? require('./session/overrides.js') : null);
   var isRetired = util.isRetired;
   var ensureObject = util.ensureObject;
@@ -75,6 +78,13 @@
         placement: placement
       }
     };
+    var flags = clipFlagsMod.create(ctx);
+    var qtimer = qtimerMod ? qtimerMod.create(ctx) : null;
+    ctx.fn.qtimerAfter = qtimer ? qtimer.afterVerdict : function () {};
+    ctx.fn.qtimerClear = qtimer ? qtimer.clear : function () {};
+    ctx.fn.qtimerSnapshot = qtimer ? qtimer.snapshot : function () { return null; };
+    ctx.fn.qtimerRestore = qtimer ? qtimer.restore : function () {};
+    ctx.fn.qtimerPending = qtimer ? qtimer.pending : function () { return false; };
     var overrides = overridesMod.create(ctx);
     Object.assign(ctx.fn, overrides);
     var unitConfig = overrides.unitConfig;
@@ -83,6 +93,7 @@
     var ladderForUnit = overrides.ladderForUnit;
     var groupSettings = overrides.groupSettings;
     var setGroupSetting = overrides.setGroupSetting;
+    Object.assign(ctx.fn, weightedMod.create(ctx));
     var queues = queuesMod.create(ctx);
     Object.assign(ctx.fn, queues);
     var placementQueueApi = placementQueueMod.create(ctx);
@@ -112,7 +123,8 @@
       return (course.placement && course.placement.mode) || 'check';
     }
     function stimulusOf(item) {
-      return item && item.stimulus && Object.prototype.hasOwnProperty.call(stimById, item.stimulus) ? stimById[item.stimulus] : null;
+      var st = item && item.stimulus && Object.prototype.hasOwnProperty.call(stimById, item.stimulus) ? stimById[item.stimulus] : null;
+      return flags.filterStimulus(st);
     }
 
     function hasAudioLines(item) {
@@ -196,7 +208,9 @@
         return { error: 'engine' };
       }
       if (!plan.ids.length) return { error: 'empty' };
-      return createSession(mode, plan);
+      var session = createSession(mode, plan);
+      if (qtimer && !session.error && (mode === 'daily' || mode === 'practice' || mode === 'weak')) qtimer.attach(session);
+      return session;
     }
     function newSessionId(mode) {
       return mode + '-' + now() + '-' + Math.floor(random() * 4294967296).toString(36);
@@ -228,7 +242,7 @@
 
     Object.freeze(ctx.fn);
 
-    return { counts: counts, entityStates: entityStates, start: start, exams: exams, placement: placement, moreNew: moreNew, stage: stage, record: record, expected: expectedFor, examDraft: examDraft, discardDraft: discardDraft, unitSettings: unitSettings, unitLadder: ladderForUnit, unitConfig: unitConfig, globalNewPerDay: globalNewPerDay, setUnitSetting: setUnitSetting, groupSettings: groupSettings, setGroupSetting: setGroupSetting, weakList: weakList };
+    return { counts: counts, entityStates: entityStates, start: start, exams: exams, placement: placement, moreNew: moreNew, stage: stage, record: record, expected: expectedFor, examDraft: examDraft, discardDraft: discardDraft, unitSettings: unitSettings, unitLadder: ladderForUnit, unitConfig: unitConfig, globalNewPerDay: globalNewPerDay, setUnitSetting: setUnitSetting, groupSettings: groupSettings, setGroupSetting: setGroupSetting, weakList: weakList, flagClip: flags.setFlag, isClipFlagged: flags.isFlagged, flaggedClips: flags.flagged };
   }
 
   /** Display info for a tag from course.tagLabels (string or {label?, kind?}): { label, internal }; label defaults to the uppercased tag. */

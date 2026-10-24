@@ -1,5 +1,5 @@
 /*
- * ui/home.js — GroupCard and Home components
+ * ui/home.js — Home component (GroupCard lives in ui/group-card.js)
  * Globals expected: preact, htm, DojoStorage, DojoSession, DojoTypes, DojoExt, DojoCommon.
  */
 (function (root) {
@@ -12,6 +12,8 @@
   var DojoExt = root.DojoExt || {};
   var DojoSession = root.DojoSession || (typeof require !== 'undefined' ? require('./session.js') : null) || {};
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
+  var DojoGroupCard = root.DojoGroupCard || (typeof require !== 'undefined' ? require('./group-card.js') : null) || {};
+  var GroupCard = DojoGroupCard.GroupCard;
 
   // Alias from DojoCommon
   var renderText = DojoCommon.renderText;
@@ -49,63 +51,6 @@
     return ids;
   }
 
-  // ---------- GroupCard ----------
-
-  function GroupCard(p) {
-    var t = p.t;
-    var g = p.group;
-    var isExtraNew = g.extraNew === true;
-    var total = g.total || 0;
-    var due = g.due || 0;
-    var fresh = g.fresh || 0;
-    var newToday = g.newToday || 0;
-    var canStart = due + newToday > 0;
-    var randomLabel = t('home.group.randomOrder');
-    var onlyTagsLabel = g.extraTags && g.extraTags.length > 0
-      ? t('home.group.onlyTags', { tag: g.extraTags.map(function (tag) { return tagInfo({ tagLabels: p.tagLabels }, tag).label; }).join(', ') })
-      : '';
-    return html`<li key=${g.id} class="group-card" data-testid=${'group-' + g.id}>
-      <h3 class="group-title">${renderText(g.title)}</h3>
-      <div class="group-counts">
-        <span class="group-stat" data-testid=${'group-' + g.id + '-due'}>${t('home.group.stat.due')} <b class="group-due">${due}</b></span>
-        <span class="group-stat" data-testid=${'group-' + g.id + '-new'}>${t('home.group.stat.new')} <b>${newToday}</b></span>
-      </div>
-      <p class="muted group-notstarted" data-testid=${'group-' + g.id + '-notstarted'}>${t('home.group.notStarted', { n: fresh, total: total })}</p>
-      <div class="group-actions">
-        <button type="button" class="btn primary" disabled=${!canStart} 
-          data-testid=${'btn-start-group-' + g.id}
-          onClick=${function () { p.onStart('daily', { groupId: g.id }); }}>
-          ${t('home.group.start')}${due + newToday > 0 ? html`<span class="group-start-count"> · ${due + newToday}</span>` : null}
-        </button>
-        ${isExtraNew ? html`<div class="row wrap extra-new-buttons" data-testid=${'group-' + g.id + '-extra'}>
-          <button type="button" class="btn small" data-testid=${'btn-extra-5-' + g.id} onClick=${function () { p.onMoreNew(5); }}>${t('home.moreNew', { n: 5 })}</button>
-          <button type="button" class="btn small" data-testid=${'btn-extra-10-' + g.id} onClick=${function () { p.onMoreNew(10); }}>${t('home.moreNew', { n: 10 })}</button>
-          <button type="button" class="btn small" data-testid=${'btn-extra-20-' + g.id} onClick=${function () { p.onMoreNew(20); }}>${t('home.moreNew', { n: 20 })}</button>
-        </div>` : null}
-      </div>
-      ${isExtraNew || (g.extraTags && g.extraTags.length > 0) ? html`<div class="group-toggles">
-        ${isExtraNew ? html`<label class="chip toggles" data-testid=${'toggle-random-' + g.id}>
-          <input type="checkbox"
-            checked=${g.extraRandom === true}
-            id=${'group-toggle-random-' + g.id}
-            aria-label=${randomLabel}
-            name=${'random-' + g.id}
-            onChange=${function () { p.onGroupSetting(g.id, 'extraRandom', g.extraRandom === true ? null : true); }} />
-          <span>${randomLabel}</span>
-        </label>` : null}
-        ${g.extraTags && g.extraTags.length > 0 ? html`<label class="chip toggles" data-testid=${'toggle-onlyTags-' + g.id}>
-          <input type="checkbox"
-            checked=${g.onlyTags === true}
-            id=${'group-toggle-onlyTags-' + g.id}
-            aria-label=${onlyTagsLabel}
-            name=${'onlyTags-' + g.id}
-            onChange=${function () { p.onGroupSetting(g.id, 'onlyTags', g.onlyTags === true ? null : true); }} />
-          <span>${onlyTagsLabel}</span>
-        </label>` : null}
-      </div>` : null}
-    </li>`;
-  }
-
   // ---------- Home ----------
 
   function Home(p) {
@@ -141,7 +86,7 @@
       ${hasGroups ? renderGroupsSection(p, t, course, groups) : null}
       ${exams.length ? renderExamsSection(t, exams, p) : null}
       ${hasBars ? renderBarsSection(t, bars) : null}
-      ${!hasGroups ? renderUnitsSection(p, t, course, c) : null}
+      ${!hasGroups ? renderUnitsSection(p, t, course, c, hasBars) : null}
       ${hasGroups ? renderOtherSection(p, t, course, groups, c) : null}
     </main>`;
   }
@@ -173,10 +118,20 @@
   }
 
   // Helper: actions section
+  function stimShared() { return (root.DojoStimulus || (typeof require !== 'undefined' ? require('./stimulus.js') : null)).create(); }
+  function weakDupes(list) { return stimShared().dupeSet(list.map(function (w) { return w.prompt; })); }
+  function weakLabel(w, dupes) {
+    return stimShared().itemLabel({ prompt: w.prompt || '', answer: w.answer }, w.stimText, dupes) || '';
+  }
+
   function renderActionsSection(o) {
     var p = o.p, t = o.t, c = o.c, weakList = o.weakList;
     var hasWeak = weakList.length > 0;
+    var dupes = weakDupes(weakList);
     var hasPlacement = o.hasPlacement, placementDone = o.placementDone, canReview = o.canReview, hasGroups = o.hasGroups;
+    var placementOpen = hasPlacement && !placementDone;
+    var reviewPrimary = c.due > 0 && !placementOpen;
+    var practicePrimary = !reviewPrimary && !placementOpen;
     return html`<section class="actions">
       ${c.fresh > c.newToday && !hasGroups ? html`<div class="row wrap more-new" data-testid="more-new">
         <button type="button" class="btn" data-testid="btn-more-5" onClick=${function () { p.onMoreNew(5); }}>${t('home.moreNew', { n: 5 })}</button>
@@ -185,13 +140,15 @@
       </div>` : null}
       ${hasPlacement && !placementDone ? html`<button type="button" class="btn primary big" data-testid="btn-placement"
         onClick=${function () { p.onPlacement(); }}>${t('home.placement')}</button>` : null}
-      <button type="button" class="btn primary big" disabled=${!canReview} data-testid="btn-review"
+      <button type="button" class=${'btn big' + (reviewPrimary ? ' primary' : '')} disabled=${!canReview} data-testid="btn-review"
         onClick=${function () { p.onStart('daily', {}); }}>${t('home.review')}</button>
       ${canReview ? null : html`<p class="muted" data-testid="review-hint">${t('home.review.empty')}</p>`}
       <div class="row wrap">
-        <button type="button" class="btn" data-testid="btn-practice" onClick=${function () { p.go('practice'); }}>${t('home.practice')}</button>
+        <button type="button" class=${'btn' + (practicePrimary ? ' primary' : '')} data-testid="btn-practice" onClick=${function () { p.go('practice'); }}>${t('home.practice')}</button>
         ${hasWeak ? html`<button type="button" class="btn" data-testid="btn-weak" aria-label=${t('home.weak') + ' ' + t('home.weak.count', { n: weakList.length })}
           onClick=${function () { p.onStart('weak', {}); }}>${t('home.weak')}</button>` : null}
+      </div>
+      <div class="row pair" data-testid="secondary-actions">
         <button type="button" class="btn" data-testid="btn-settings" onClick=${function () { p.go('settings'); }}>${t('home.settings')}</button>
         <button type="button" class="btn" data-testid="btn-catalog" onClick=${function () { p.go('catalog'); }}>${t('home.catalog')}</button>
       </div>
@@ -199,7 +156,7 @@
         <h3 class="weak-title" id="weak-title" data-testid="weak-title">${t('home.weakspots')}</h3>
         <ul class="chips weak-chips" data-testid="weak-chips" aria-labelledby="weak-title">
           ${weakList.map(function (item) {
-            var plain = DojoExt.plain(item.prompt || '');
+            var plain = DojoExt.plain(weakLabel(item, dupes));
             var truncated = plain.length > 24 ? plain.slice(0, 24) + '\u2026' : plain;
             return html`<li><span class="chip" title=${plain}><span class="chip-text">${truncated}</span></span></li>`;
           })}
@@ -264,11 +221,11 @@
   }
 
   // Helper: units section
-  function renderUnitsSection(p, t, course, c) {
+  function renderUnitsSection(p, t, course, c, hasBars) {
     return html`<section aria-labelledby="units-title">
       <h2 id="units-title">${t('home.units')}</h2>
       ${c.active === 0 ? html`<p class="muted" data-testid="empty-course">${t('home.empty')}</p>` : html`<ul class="units" data-testid="units">
-        ${c.totals && c.totals.total > 0 ? html`<li class="total-progress" data-testid="total-progress">
+        ${c.totals && c.totals.total > 0 && !hasBars ? html`<li class="total-progress" data-testid="total-progress">
           <${ProgressBar} counts=${c.totals} ariaLabel=${t('progress.aria', c.totals)} />
         </li>` : null}
         ${(course.units || []).map(function (u) {

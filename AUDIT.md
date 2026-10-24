@@ -33,7 +33,7 @@ Not installed: cargo-udeps (needs nightly; only stable present; cargo-machete co
 | Licenses/bans/sources | `cargo deny check` (deny.toml in repo; at setup fails only on foldhash = Zlib, flagged) |
 | Unused deps | `cargo machete --with-metadata` (exit 1 = found) |
 | Binary size | `cargo bloat --release -n 20 -p dojo-cli` ; `--crates` (no WASM support) |
-| Secrets | `gitleaks git --redact --no-banner .; gitleaks dir --redact --no-banner .` (clean at setup); fallback `git grep -nEi "(api[_-]?key\|secret\|token\|password)\s*[:=]"` |
+| Secrets | `GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks git --redact --no-banner .; GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks dir --redact --no-banner .` (clean at setup); check scanned bytes > 0: a refused repo prints no leaks after 0 bytes; fallback `git grep -nEi "(api[_-]?key\|secret\|token\|password)\s*[:=]"` |
 | ESLint | copy of flat config from js.md into <tools dir>/proj/eslint.config.js; `cd <tools dir>/proj && $B/eslint -c eslint.config.js web tools` (proj has symlinks web, tools) |
 | Dead code JS | `cd <tools dir>/proj && $B/knip --no-config-hints` (needs the package.json there; ran, exit 0) |
 | Duplicates JS | `$B/jscpd web --min-lines 10 --min-tokens 70 --threshold 5 --ignore "**/vendor/**,**/tests/**,**/n5/**"` |
@@ -60,8 +60,28 @@ Measured 2026-10-22 on dev @ 98b22b5. Tool: cargo-llvm-cov 0.9.1 (crates.io, `ca
 Baseline Rust (lines): total 92.96% (regions 92.62%, functions 85.28%); dojo-core ~93.5% lines (lowest: api.rs 81.5%, content.rs 89.1%, validate.rs 91.1%); dojo-cli ~88.5% lines (main.rs 84.4%, import_progress.rs 90.5%, add.rs 93.1%, build.rs 96.1%); dojo-wasm: 0 tests, not in the report (no instrumented code run).
 Baseline JS (1086 tests, 1085 pass, 1 todo): all files 93.10% lines / 89.56% branch / 93.46% funcs; session.js 98.79 / 91.40 / 98.63; ext.js 96.54 / 88.18 / 92.00; storage.js 98.17; speech.js 78.57; dojo-wasm.js 84.21; tools/reference/srs.js 43.33.
 
+Current @7256c6d: JS 93.17 / 87.05 / 90.01 (lines / branch / funcs); Rust 95.48 / 94.63 / 87.54 (lines / regions / funcs). Baseline above is the target.
+
 Exclusions / not measured:
 - tests/ and web/tests files appear in the JS report but are not product code; web/vendor, tests/vectors, web/bundle.json, generated files and pkg/ are excluded by intent.
 - web/ui/app.js and web/types/{choice,gap,card}.js are NOT in the JS report: app-harness.js runs them via `vm.runInContext` and node coverage does not track vm scripts, so their real coverage is unknown (the 93% overstates nothing, but omits them).
 - The WASM boundary (dojo-wasm crate, wasm32 build) has no Rust coverage; it is exercised only by JS tests through loader.js, uncounted.
 - Branch coverage for Rust is not produced (stable toolchain, 0 branches reported).
+
+## Machine-readable tool list
+
+Read by `/root/.claude/tools/audit_run.py` (`name | cwd | command | parser`; cwd relative to the repo or absolute).
+
+```audit-tools
+clippy | . | cargo clippy --workspace --all-targets --message-format=json -- -W clippy::too_many_lines -W clippy::cognitive_complexity -W clippy::too_many_arguments -W clippy::type_complexity -W clippy::excessive_nesting -W clippy::fn_params_excessive_bools -W clippy::struct_excessive_bools -W clippy::unwrap_used -W clippy::expect_used -W clippy::indexing_slicing -W clippy::panic | clippy
+cargo-audit | . | cargo audit --json | cargo-audit
+cargo-deny | . | cargo deny --format json check | cargo-deny
+cargo-machete | . | cargo machete --with-metadata | cargo-machete
+eslint | /opt/jstools/proj | /opt/jstools/node_modules/.bin/eslint -c eslint.config.js -f json web tools | eslint
+knip | /opt/jstools/proj | /opt/jstools/node_modules/.bin/knip --no-config-hints --reporter json | knip
+jscpd | . | d=$(mktemp -d) && /opt/jstools/node_modules/.bin/jscpd web --min-lines 10 --min-tokens 70 --ignore "**/vendor/**,**/tests/**,**/n5/**" --silent --reporters json --output $d >/dev/null; cat $d/jscpd-report.json | jscpd
+madge | . | /opt/jstools/node_modules/.bin/madge --circular --extensions js --json web | madge
+gitleaks | . | GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks dir --redact --no-banner --report-format json --report-path /dev/stdout . | gitleaks
+```
+
+Secrets history (G1): `gitleaks git --redact --no-banner --log-opts=--all .`

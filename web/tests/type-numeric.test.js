@@ -204,8 +204,8 @@ test('Question does not show state class in exam mode', () => {
 test('Extra shows readAs when parsed is not null', () => {
   const def = load();
   const t = (k, v) => k === 'q.numeric.readAs' ? 'Read as {value}' : 'translated-' + k;
-  const result = { correct: true, expected: '42', explanation: '', detail: { parsed: 42 } };
-  const props = { result, exam: false, t };
+  const result = { correct: false, expected: '43', explanation: '', detail: { parsed: 42 } };
+  const props = { result, exam: false, t, raw: '042' };
   const vnode = def.Extra(props);
   
   assert.ok(vnode !== null, 'Extra should render');

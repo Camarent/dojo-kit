@@ -66,7 +66,7 @@
           <${Stepper} testid="count" label=${t('practice.count')} value=${s.count} min=${5} max=${50} step=${5}
             decLabel=${t('stepper.dec')} incLabel=${t('stepper.inc')} onChange=${function (v) { self.setState({ count: v }); }} />
         </div>
-        <div class="row">
+        <div class="row setup-actions">
           <button type="button" class="btn" data-testid="btn-back" onClick=${function () { p.go('home'); }}>${t('back')}</button>
           <button type="button" class="btn primary" data-testid="btn-start" onClick=${function () {
             var opts = { limit: s.count };

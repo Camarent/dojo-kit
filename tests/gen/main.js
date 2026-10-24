@@ -4,6 +4,9 @@ const fs = require('fs');
 const path = require('path');
 
 const { toJson, assertUnique } = require('./utils.js');
+const { makeTimerCases } = require('./cases/timer.js');
+const { makeExtrasCases } = require('./cases/extras.js');
+const { makeWeightedCases } = require('./cases/weighted.js');
 const { makeSrsCases, makeSanitizeCases, makeMergeCases, makeDaysCases, makeCheckCases, makeExamCases, makeGroupsCases } = require('./builders.js');
 
 function writeVectors(vectorsDir, data) {
@@ -15,6 +18,15 @@ function writeVectors(vectorsDir, data) {
   fs.writeFileSync(path.join(vectorsDir, 'check.json'), toJson(checkData));
   fs.writeFileSync(path.join(vectorsDir, 'exam.json'), toJson(examData));
   fs.writeFileSync(path.join(vectorsDir, 'groups.json'), toJson(groupsData));
+  writeNewVectors(vectorsDir);
+}
+
+function writeNewVectors(vectorsDir) {
+  const files = { timer: makeTimerCases(), extras: makeExtrasCases(), weighted: makeWeightedCases() };
+  for (const [name, doc] of Object.entries(files)) {
+    for (const group of doc.groups) assertUnique(group.cases, `${name}/${group.fn}`);
+    fs.writeFileSync(path.join(vectorsDir, name + '.json'), toJson(doc));
+  }
 }
 
 function countAllCases(data) {

@@ -1,0 +1,15 @@
+{
+  "id": "listening",
+  "title": "Listening example",
+  "uiLanguage": "en",
+  "contentLanguage": "en",
+  "audio": { "manifest": "audio/manifest.json" },
+  "units": [
+    {
+      "id": "beeps",
+      "title": "Count the beeps",
+      "timer": { "baseMs": 8000, "adaptive": true, "replays": 1 },
+      "srs": { "mode": "errorWeighted" }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{"type":"numeric","id":"beeps-0","unit":"beeps","stimulus":"s0","prompt":"How many beeps? (a low tone means 0)","answer":0,"explanation":"There were 0 beeps."}
+{"type":"numeric","id":"beeps-1","unit":"beeps","stimulus":"s1","prompt":"How many beeps? (a low tone means 0)","answer":1,"explanation":"There was 1 beep."}
+{"type":"numeric","id":"beeps-2","unit":"beeps","stimulus":"s2","prompt":"How many beeps? (a low tone means 0)","answer":2,"explanation":"There were 2 beeps."}
+{"type":"numeric","id":"beeps-3","unit":"beeps","stimulus":"s3","prompt":"How many beeps? (a low tone means 0)","answer":3,"explanation":"There were 3 beeps."}
+{"type":"numeric","id":"beeps-4","unit":"beeps","stimulus":"s4","prompt":"How many beeps? (a low tone means 0)","answer":4,"explanation":"There were 4 beeps."}
+{"type":"numeric","id":"beeps-5","unit":"beeps","stimulus":"s5","prompt":"How many beeps? (a low tone means 0)","answer":5,"explanation":"There were 5 beeps."}
+{"type":"numeric","id":"beeps-6","unit":"beeps","stimulus":"s6","prompt":"How many beeps? (a low tone means 0)","answer":6,"explanation":"There were 6 beeps."}
+{"type":"numeric","id":"beeps-7","unit":"beeps","stimulus":"s7","prompt":"How many beeps? (a low tone means 0)","answer":7,"explanation":"There were 7 beeps."}
+{"type":"numeric","id":"beeps-8","unit":"beeps","stimulus":"s8","prompt":"How many beeps? (a low tone means 0)","answer":8,"explanation":"There were 8 beeps."}
+{"type":"numeric","id":"beeps-9","unit":"beeps","stimulus":"s9","prompt":"How many beeps? (a low tone means 0)","answer":9,"explanation":"There were 9 beeps."}

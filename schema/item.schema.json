@@ -174,6 +174,16 @@
             }
           ]
         },
+        "inputMode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "meta": true,
         "stimulus": {
           "type": [
@@ -818,6 +828,15 @@
         }
       },
       "additionalProperties": false
+    },
+    "InputMode": {
+      "description": "Soft-keyboard hint for a gap input; display only, never graded.",
+      "type": "string",
+      "enum": [
+        "numeric",
+        "decimal",
+        "text"
+      ]
     },
     "Pair": {
       "description": "One left/right pair of a `match` item.",

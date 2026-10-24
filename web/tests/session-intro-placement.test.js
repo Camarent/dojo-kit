@@ -16,7 +16,7 @@ const tr = (k, v) => k + (v ? JSON.stringify(v) : '');
 function mkItems(n) {
   const out = [];
   for (let i = 1; i <= n; i++) {
-    out.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: 'P' + i, answers: ['x'], explanation: 'E' + i, tags: ['a'] });
+    out.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: 'P' + i, answers: ['x', 'xy'], explanation: 'E' + i, tags: ['a'] });
   }
   out[0].retry = ['y'];
   return out;
@@ -63,7 +63,7 @@ function load(markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });
     sb.DojoExt.use('ruby');
   }
-  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app.js']) });
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app.js']) });
   return sb;
 }
 
@@ -253,7 +253,7 @@ test('requeue counter UI: shows position / initial total and a +N badge', async 
   const sb = load();
   const t = await setup(null, { n: 3 });
   const ui = sessionScreen(sb, t.engine.start('daily'));
-  assert.strictEqual(find(ui.view(), 'retry-badge'), null);
+  assert.match(find(ui.view(), 'retry-badge').props.class, /\bempty\b/);
   assert.strictEqual(texts(find(ui.view(), 'progress')).join('').replace(/\s+/g, ''), '1/3');
   ui.answer({ text: 'zzz' });
   ui.next(); ui.answer({ text: 'x' });
@@ -343,7 +343,7 @@ test('Catalog: search matches every alternate answer of a gap item', async () =>
 test('override after a wrong answer: record equals a correct answer (ok, stage, bad) and the wrong-answer record is not kept', async () => {
   const wrong = await setup(null, { n: 3 });
   const s = wrong.engine.start('daily');
-  s.answer({ text: 'zzz' });
+  s.answer({ text: 'xz' });
   const synced = J(wrong.doc);
   assert.strictEqual(synced.items.g1.bad, 1);
   s.overrideLast();
@@ -355,7 +355,7 @@ test('override after a wrong answer: record equals a correct answer (ok, stage, 
 test('override restores the pre-answer record, applies the right verdict once, never double counts', async () => {
   const wrong = await setup(null, { n: 3 });
   const s = wrong.engine.start('daily');
-  s.answer({ text: 'zzz' });
+  s.answer({ text: 'xz' });
   const wrongRec = J(wrong.doc.items.g1);
   assert.strictEqual(s.canOverride(), true);
   assert.strictEqual(s.retryCount(), 1);
@@ -382,7 +382,7 @@ test('override restores the pre-answer record, applies the right verdict once, n
 test('override: off when course.allowOverride is false, for non-typed answers, in every exam', async () => {
   const off = await setup({ allowOverride: false }, { n: 3 });
   const so = off.engine.start('daily');
-  so.answer({ text: 'zzz' });
+  so.answer({ text: 'xz' });
   assert.strictEqual(so.canOverride(), false);
   assert.strictEqual(so.overrideLast().error, 'no_override');
 
@@ -396,7 +396,7 @@ test('override: off when course.allowOverride is false, for non-typed answers, i
   for (const training of [false, true]) {
     const e = await setup({ exam: EXAM }, { n: 4 });
     const se = e.engine.start('exam', { training });
-    se.answer({ text: 'zzz' });
+    se.answer({ text: 'xz' });
     assert.strictEqual(se.canOverride(), false);
     assert.strictEqual(se.overrideLast().error, 'no_override');
   }
@@ -406,7 +406,7 @@ test('override UI: button after a wrong typed answer outside exams, absent in ex
   const sb = load();
   const t = await setup(null, { n: 3 });
   const ui = sessionScreen(sb, t.engine.start('daily'));
-  ui.answer({ text: 'zzz' });
+  ui.answer({ text: 'xz' });
   assert.ok(find(ui.view(), 'feedback').props.class.includes('wrong'));
   const btn = find(ui.view(), 'btn-override');
   assert.ok(btn);

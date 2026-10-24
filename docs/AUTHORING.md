@@ -17,7 +17,7 @@ Common: `type`, `prompt` (required); optional `tags`, `explanation`, `source`, `
 |---|---|---|---|
 | `choice` | `options` (2+; use 3-5), `answer` (0-based index) | | true/false is `["True","False"]`; the app shuffles options |
 | `multi` | `options` (3+), `correct` (indices, non-empty, fewer than options) | | prompt says several answers are right |
-| `gap` | `answers` (all accepted forms) | `retry`, `normalize` | `retry` = readings that are close but not correct; must differ from `answers` |
+| `gap` | `answers` (all accepted forms) | `retry`, `normalize`, `inputMode` | `retry` = readings that are close but not correct; must differ from `answers`. `inputMode` = `numeric` \| `decimal` \| `text` sets the input's `inputmode` attribute (keyboard hint only, grading unchanged); any other value is a parse error |
 | `cloze` | `parts`: strings (text) and arrays of strings (blank + alternatives) | `normalize` | 1-5 blanks (more warns, over 10 errors) |
 | `numeric` | `answer` | `tolerance` (absolute), `unitLabel` (display) | |
 | `match` | `pairs` `[{left,right}]` (2-6; 2-8 allowed) | `distractors` | lefts distinct, rights (and distractors) distinct |
@@ -96,7 +96,7 @@ Pass rule:
 - `pass: {mode?: percent|points, basis?: official|author, source?, scaled?}`. `mode` defaults to `points` when `scoring` is set, else `percent` (`crates/dojo-core/src/exam/`). In points mode `passMark` is ignored (`pass_mark_ignored` warning); `mode: points` without `scoring` is an error (`bad_pass_rule`). `basis: official` without `source` warns (`pass_rule_no_source`). `scaled: true` sets the result's `estimate` flag, points mode only (`crates/dojo-core/src/exam/`).
 Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
 - Ideally mock-exam questions differ from training questions: put them in units with `examOnly: true` (unit field above) and point the exam sections at those units.
-- Each exam section needs at least 20% of its `count` (rounded up) from `examOnly` units; below that `exam_few_unique` warns (`crates/dojo-core/src/validate/exam.rs:279`).
+- Each exam section needs at least 20% of its `count` (rounded up) from `examOnly` units; below that `exam_few_unique` warns (`crates/dojo-core/src/validate/exam.rs`).
 - Decide the split once the materials are known (e.g. past papers or chapter tests kept for the exam only); ask the user if unclear. If materials are scarce, overlap is allowed: accept the warning and mention it in the final report.
 - `timing: [{sections:[section titles], minutes}]` - timer groups; a section is in at most one group.
 - `scoring: [{title, sections:[...], points, minPoints?}]` - score parts; `passPoints` = points needed to pass. Section titles must be unique (`unknown_section`, `bad_exam`).
@@ -124,7 +124,7 @@ Course tests that need the framework find it with `tools/fw-root.js`; set `DOJO_
   ```json
   "ruby": { "skipTag": "core", "skipKey": "meta.kanji" }
   ```
-- `dictKeys`: dotted item paths holding `{w, r}` word-reading entries for the ruby dictionary (default `meta.examples`, `meta.irregular`; `web/ext/registry.js:166`); `skipKey` defaults to `meta.kanji`. Course `breakdown`: `{key, meaning, readings:[...]}` dotted paths into the item for the kanji breakdown. `speech.lang` picks the voice language.
+- `dictKeys`: dotted item paths holding `{w, r}` word-reading entries for the ruby dictionary (default `meta.examples`, `meta.irregular`; `web/ext/registry.js`); `skipKey` defaults to `meta.kanji`. Course `breakdown`: `{key, meaning, readings:[...]}` dotted paths into the item for the kanji breakdown. `speech.lang` picks the voice language.
 - Core types both fields but does not validate them, so a wrong value is found only in the browser. Keys and paths are generic: they name your own tags and `meta` fields.
 
 ## Declarative detail rendering from item.meta
@@ -136,8 +136,8 @@ Field types:
 - `text`: render as plain text (with course markup applied).
 - `list`: render as `<ul>` with each element as a list item.
 - `objects`: render as a table with rows of "key: value".
-- `table`: value `{head: [..], rows: [[..],..], title?}` renders a table with header cells and an optional caption (`web/ui/detail.js:79`).
-- `pairs`: value is a list of objects; two columns are read from `keys: [left, right]` (default `a`, `b`); entries missing either key are skipped (`web/ui/detail.js:96`). `keys` on any other type is `bad_detail_keys`.
+- `table`: value `{head: [..], rows: [[..],..], title?}` renders a table with header cells and an optional caption (`web/ui/detail.js`).
+- `pairs`: value is a list of objects; two columns are read from `keys: [left, right]` (default `a`, `b`); entries missing either key are skipped (`web/ui/detail.js`). `keys` on any other type is `bad_detail_keys`.
 
 Rules:
 - `key` is a dot-separated path into `item.meta` (e.g., `"meta.meaning"`, `"meta.readings.kanji"`).
@@ -167,6 +167,16 @@ This renders for items with `meta: {meaning: "test", readings: ["a", "b"], info:
 - Readings: (as unordered list)
 - Info: (as table with row "level: N5")
 
+## Listening, timed and weighted drills
+Reference course: `examples/listening/` (synthetic tones, `make-audio.js` regenerates `audio/`).
+- Audio: course.json `"audio": { "manifest": "audio/manifest.json" }` (optional `base`). The manifest lists packs (`file`, `bytes`) and clips (`pack`, `off`, `len`, `ms`, `mime`). Stimuli list clip ids: `{"id":"s0","text":"Listen and count the beeps.","hideText":true,"audio":["d0"]}`. Field rules: CONTRACT 12.1.
+- Manifest `sha256` (per pack) and clip `credit` are optional. `sha256` is informative: the framework does not verify it, course tools do. `credit` is the only per-clip provenance that ships. The source record `audio/sources.jsonl` stays in the course and is not published.
+- Listening dictation (CONTRACT 12.5): a stimulus with `hideText: true` and `audio` must sit on a numeric item (`numeric` type; the unit needs a `timer`, see CONTRACT 12.5).
+- Timer on a unit: `"timer": { "baseMs": 8000, "adaptive": true, "replays": 1 }` (`baseMs` 2000..30000, `replays` 0..3). Course-level `timer` applies when a unit has none. Exams are not timed by it.
+- Weighted scheduling on a unit: `"srs": { "mode": "errorWeighted" }`; any other mode value is a parse error. Record and queue rules: CONTRACT 12.3 and 12.4.
+- Example unit: `{"id":"beeps","title":"Count the beeps","timer":{"baseMs":8000,"adaptive":true,"replays":1},"srs":{"mode":"errorWeighted"}}`.
+- Build limits for packs: CONTRACT 12.1 (keep each pack under 15 MB; `dojo build` fails above 16 MiB per file).
+
 ## Copyright
 Write your own questions and short explanations. Quote at most a short phrase. No long passages, full tables or whole exercises. `source` points to file and page/section; it does not copy.
 
@@ -176,7 +186,7 @@ Leave the item out and tell the user when: the materials give no answer or two r
 ## Superseding retired items
 When a retired item is replaced by a new one, list the retired ids on the live item: `"supersedes": ["old-1", "old-2"]` (optional, any item type). Learners' saved progress is then carried over automatically at load; no document marker is written.
 - Validator error `bad_supersedes`: field on a retired item, empty list, duplicate id, the item itself, an id that is not retired, or an id listed by two successors. For a chain, list all transitive predecessors.
-- Fold rule (`crates/dojo-core/src/migrate.rs:44` `migrate_progress`): the successor is folded only if some predecessor has a record and the successor has none or an older `last`. Result: `s` and `due` = min, `ok` and `bad` = max, `last` = max over successor and predecessors (predecessors with `last` before `resetAt` are ignored). Retired records are never changed. Re-running is a no-op, so it is idempotent.
+- Fold rule (`crates/dojo-core/src/migrate.rs` `migrate_progress`): the successor is folded only if some predecessor has a record and the successor has none or an older `last`. Result: `s` and `due` = min, `ok` and `bad` = max, `last` = max over successor and predecessors (predecessors with `last` before `resetAt` are ignored). Retired records are never changed. Re-running is a no-op, so it is idempotent.
 - Content using `supersedes` needs a framework build that knows the field (unknown fields are rejected).
 
 ## Legacy progress import

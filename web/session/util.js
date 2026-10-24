@@ -39,6 +39,25 @@
   function ensureObject(v) {
     return v && typeof v === 'object' && !Array.isArray(v) ? v : {};
   }
+  function editDistance(a, b) {
+    var prev = [], cur, i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i];
+      for (j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+
+  function isTypo(given, answers) {
+    var g = given.trim().toLowerCase();
+    return g.length >= 2 && (answers || []).some(function (a) {
+      var e = String(a).trim().toLowerCase();
+      return e.length >= 2 && editDistance(g, e) <= 1;
+    });
+  }
+
   function expectedFor(item) {
     if (item.type === 'choice') return optionText(item, correctIndexes(item)[0]);
     if (item.type === 'gap') return item.answers[0];
@@ -104,7 +123,7 @@
   var api = {
     K: K,
     hashString: hashString, mulberry32: mulberry32, shuffledIndexes: shuffledIndexes, isRetired: isRetired,
-    ensureObject: ensureObject, expectedFor: expectedFor, isIdList: isIdList, orderPerm: orderPerm,
+    ensureObject: ensureObject, isTypo: isTypo, expectedFor: expectedFor, isIdList: isIdList, orderPerm: orderPerm,
     clozeBlanks: clozeBlanks, correctIndexes: correctIndexes, optionText: optionText
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -1,5 +1,5 @@
 use dojo_core::lock::{self, IdLock};
-use dojo_core::validate::{Diagnostic, Severity, SourceFile, validate_all};
+use dojo_core::validate::{check_audio_files, Diagnostic, Severity, SourceFile, validate_all};
 use std::fs;
 use std::path::Path;
 use crate::build;
@@ -119,6 +119,13 @@ pub(crate) fn i18n_check(dir: &Path, web: Option<&Path>) -> Vec<Diagnostic> {
 /// Core validation, the UI-file checks and the plugin file checks that need the filesystem.
 pub(crate) fn validate_course(dir: &Path, course: &CourseFiles, web: Option<&Path>) -> Vec<Diagnostic> {
     let mut diags = validate_all(&course.course_text, &course.files, course.lock.as_ref(), course.stimuli.as_ref(), course.intros.as_ref());
+    
+    // Parse course to get audio config
+    let parsed_course: Result<dojo_core::content::Course, _> = serde_json::from_str(&course.course_text);
+    if let Ok(ref c) = parsed_course {
+        diags.extend(check_audio_files(c, dir, &course.stimuli));
+    }
+    
     diags.extend(i18n_check(dir, web));
     let root = match fs::canonicalize(dir) {
         Ok(r) => r,
