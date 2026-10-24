@@ -7,7 +7,7 @@ const path = require('path');
 const assert = require('assert');
 const { test, afterEach } = require('node:test');
 
-const { readJson, readJsonl } = require('../tools/jsonl.js');
+const { readJson, readJsonl, writeJsonl } = require('../tools/jsonl.js');
 
 const tmpDirs = [];
 
@@ -23,8 +23,8 @@ afterEach(() => {
   }
 });
 
-test('exports exactly readJson and readJsonl', () => {
-  assert.deepStrictEqual(Object.keys(require('../tools/jsonl.js')).sort(), ['readJson', 'readJsonl']);
+test('exports exactly readJson, readJsonl and writeJsonl', () => {
+  assert.deepStrictEqual(Object.keys(require('../tools/jsonl.js')).sort(), ['readJson', 'readJsonl', 'writeJsonl']);
 });
 
 test('readJson parses an existing file', () => {
@@ -62,4 +62,25 @@ test('readJsonl error names the file and the 1-based line number of a bad line',
     () => readJsonl(file),
     (err) => err.message.includes(file) && err.message.includes(':3:')
   );
+});
+
+test('writeJsonl then readJsonl round-trips unicode and nested rows', () => {
+  const file = path.join(mkTmp(), 'rt.jsonl');
+  const rows = [{ word: '日本語', tags: ['n5', 'ü'] }, { a: { b: [1, 2, { c: 'x' }] } }];
+  writeJsonl(file, rows);
+  assert.deepStrictEqual(readJsonl(file), rows);
+});
+
+test('writeJsonl ends the file with exactly one newline', () => {
+  const file = path.join(mkTmp(), 'nl.jsonl');
+  writeJsonl(file, [{ a: 1 }, { a: 2 }]);
+  const text = fs.readFileSync(file, 'utf8');
+  assert.strictEqual(text, '{"a":1}\n{"a":2}\n');
+  assert.ok(!text.endsWith('\n\n'));
+});
+
+test('writeJsonl with an empty array writes an empty file', () => {
+  const file = path.join(mkTmp(), 'empty.jsonl');
+  writeJsonl(file, []);
+  assert.strictEqual(fs.readFileSync(file, 'utf8'), '');
 });

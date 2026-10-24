@@ -34,4 +34,14 @@ function readJsonl(file) {
   return rows;
 }
 
-module.exports = { readJson, readJsonl };
+/**
+ * Writes rows to a JSONL file, one JSON.stringify(row) per line.
+ *
+ * Overwrites the file. Each line ends with "\n"; no rows writes an empty file.
+ */
+function writeJsonl(file, rows) {
+  const text = rows.map((row) => JSON.stringify(row) + '\n').join('');
+  fs.writeFileSync(file, text, 'utf8');
+}
+
+module.exports = { readJson, readJsonl, writeJsonl };
