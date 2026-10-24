@@ -98,6 +98,35 @@ test('next button exists after answering gap correctly', async () => {
   assert.ok(nextBtn, 'next button exists after correct answer');
 });
 
+test('focusing an input does not set data-nofocusring', async () => {
+  const m = await mount([GAP]);
+  await start(m);
+  const input = q(m.rootEl, 'gap-input');
+  assert.ok(input, 'gap input is shown');
+  assert.ok(input.getAttribute('data-nofocusring') == null, 'input has no data-nofocusring');
+});
+
+test('focusing a button still sets data-nofocusring', async () => {
+  const m = await mount([GAP]);
+  await start(m);
+  m.win.fire('pointerdown', { type: 'pointerdown' });
+  await m.flush();
+  q(m.rootEl, 'gap-input').fire('input', { target: { value: 'test' } });
+  await m.flush();
+  q(m.rootEl, 'gap-form').fire('submit', { preventDefault() {} });
+  await m.flush();
+  await m.flush();
+  const nextBtn = q(m.rootEl, 'btn-next');
+  assert.ok(doc.activeElement === nextBtn, 'next button is focused');
+  assert.ok(nextBtn.getAttribute('data-nofocusring') != null, 'button has data-nofocusring');
+});
+
+test('app.css has input focus-visible ring and no break-all on stimulus text', () => {
+  const css = require('node:fs').readFileSync(require('node:path').join(__dirname, '../styles/app.css'), 'utf8');
+  assert.ok(/input:focus-visible,\s*textarea:focus-visible\s*\{[^}]*outline:\s*2px solid/.test(css), 'input focus ring rule present');
+  assert.ok(!/\.qbody\.stimulus-text\s*\{[^}]*word-break:\s*break-all/.test(css), 'no break-all on stimulus text');
+});
+
 // Test 3: no focus ring after pointer interaction
 test('no focus ring after pointer click on next button', async () => {
   const m = await mount([GAP]);

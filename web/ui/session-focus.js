@@ -57,7 +57,8 @@
     screen.lastFocus = { cur: s.cur, answered: !!s.result, intro: !!s.introCard };
     var el = screen.focusTarget(s, box);
     if (el && el.focus) {
-      if (!screen.kbd && el.setAttribute) el.setAttribute('data-nofocusring', '');
+      var isText = el.tagName === 'INPUT' || el.tagName === 'TEXTAREA';
+      if (!screen.kbd && !isText && el.setAttribute) el.setAttribute('data-nofocusring', '');
       el.focus();
       screen.hadFocus = !s.result;
     }

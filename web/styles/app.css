@@ -351,7 +351,8 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .qcaption { margin: 0; text-align: center; font-size: var(--fs-sm); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); }
 .session .qtext { text-align: center; font-size: 1.5rem; font-weight: 700; line-height: 1.35; }
 .session .qtext.big { font-size: 3rem; line-height: 1.2; }
-.qline { display: flex; gap: var(--space-2); align-items: flex-start; }
+.qline { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-start; }
+.qbody.stimulus-text { overflow-wrap: normal; word-break: normal; hyphens: manual; flex: 1 1 12ch; }
 .qline .qtext { flex: 1 1 auto; min-width: 0; text-align: left; }
 .qline .qbody { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .session .opt { min-height: 3.25rem; font-size: var(--fs-lg); justify-content: center; text-align: center; }
@@ -370,6 +371,7 @@ html.dojo-no-scroll { overflow: hidden !important; }
   .session { max-width: 640px; margin-inline: auto; }
 }
 [data-nofocusring]:focus-visible { outline: none; }
+input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }
 .detail-table, .detail-pairs { border-collapse: collapse; width: 100%; }
 .detail-table th, .detail-table td, .detail-pairs td { border: 1px solid var(--border); padding: var(--space-1) var(--space-2); }
 .ptrack { position: relative; height: 1.1rem; margin-top: var(--space-1); background: var(--surface-2); border-radius: 999px; overflow: hidden; font-size: 0.75rem; }
