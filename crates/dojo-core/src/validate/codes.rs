@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 102] = [
+pub const CODES: [(&str, Severity, &str); 105] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -46,6 +46,9 @@ pub const CODES: [(&str, Severity, &str); 102] = [
     ("numeric_bad_tolerance", Severity::Error, "numeric tolerance is negative or not finite"),
     ("duplicate_prompt", Severity::Warning, "same type and prompt as an earlier active item"),
     ("answer_in_prompt", Severity::Warning, "an answer of >= 3 chars appears in the prompt"),
+    ("bad_topic", Severity::Error, "item topic is present but empty"),
+    ("topic_too_long", Severity::Warning, "topic longer than 80 characters"),
+    ("topic_is_prompt", Severity::Warning, "topic equals the prompt; the catalog must not show the question"),
     ("prompt_too_long", Severity::Warning, "prompt longer than 600 characters"),
     ("unit_empty", Severity::Warning, "unit has no active items"),
     ("cloze_many_blanks", Severity::Warning, "cloze has more than 5 blanks"),

@@ -86,6 +86,12 @@
             "string",
             "null"
           ]
+        },
+        "topic": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false,
@@ -202,6 +208,12 @@
             "string",
             "null"
           ]
+        },
+        "topic": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false,
@@ -284,6 +296,12 @@
           ]
         },
         "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "topic": {
           "type": [
             "string",
             "null"
@@ -385,6 +403,12 @@
             "string",
             "null"
           ]
+        },
+        "topic": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false,
@@ -481,6 +505,12 @@
             "string",
             "null"
           ]
+        },
+        "topic": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false,
@@ -566,6 +596,12 @@
           ]
         },
         "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "topic": {
           "type": [
             "string",
             "null"
@@ -669,6 +705,12 @@
             "string",
             "null"
           ]
+        },
+        "topic": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false,
@@ -765,6 +807,12 @@
           ]
         },
         "entity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "topic": {
           "type": [
             "string",
             "null"

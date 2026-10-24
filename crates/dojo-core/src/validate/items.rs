@@ -3,6 +3,8 @@ use crate::check::{Normalize, normalize};
 use crate::content::{ClozePart, Item, ItemType};
 use std::collections::{BTreeMap, HashSet};
 
+const MAX_TOPIC_CHARS: usize = 80;
+
 fn contains_leak(norm_prompt: &str, norm_answer: &str) -> bool {
     norm_answer.chars().count() >= MIN_LEAK_CHARS && norm_prompt.contains(norm_answer)
 }
@@ -33,6 +35,7 @@ pub(super) fn check_item_body(item: &Item, file: &str, line: usize, sink: &mut S
     if item.prompt().trim().is_empty() {
         sink.error("empty_prompt", file, line, format!("item '{id}' has an empty prompt"));
     }
+    check_topic(item, file, line, sink);
     match item {
         Item::Choice(c) => check_choice(c, id, file, line, sink),
         Item::Gap(g) => check_gap(g, id, file, line, sink),
@@ -45,6 +48,22 @@ pub(super) fn check_item_body(item: &Item, file: &str, line: usize, sink: &mut S
     }
     if item.prompt().chars().count() > MAX_PROMPT_CHARS {
         sink.warning("prompt_too_long", file, line, format!("item '{id}' prompt is longer than {MAX_PROMPT_CHARS} characters"));
+    }
+}
+
+fn check_topic(item: &Item, file: &str, line: usize, sink: &mut Sink) {
+    let Some(topic) = item.topic() else { return };
+    let id = item.id();
+    if topic.trim().is_empty() {
+        sink.error("bad_topic", file, line, format!("item '{id}' has an empty topic"));
+        return;
+    }
+    if topic.chars().count() > MAX_TOPIC_CHARS {
+        sink.warning("topic_too_long", file, line, format!("item '{id}' topic is longer than {MAX_TOPIC_CHARS} characters"));
+    }
+    let norm = Normalize::default();
+    if normalize(topic, &norm) == normalize(item.prompt(), &norm) {
+        sink.warning("topic_is_prompt", file, line, format!("item '{id}' topic repeats the prompt"));
     }
 }
 

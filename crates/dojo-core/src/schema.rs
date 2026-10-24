@@ -41,7 +41,7 @@ pub const EXAMPLE_LINES: [&str; 8] = [
 pub fn brief() -> String {
     let ladder: Vec<String> = DEFAULT_LADDER.iter().map(i64::to_string).collect();
     let n = Normalize::default();
-    let common = "id string REQUIRED; unit string REQUIRED (unit id); tags [string] optional; prompt string REQUIRED; explanation string optional; source string optional; status \"active\"|\"retired\" optional; stimulus string optional (id from stimuli.jsonl); entity string optional (learning record id)";
+    let common = "id string REQUIRED; unit string REQUIRED (unit id); tags [string] optional; prompt string REQUIRED; explanation string optional; source string optional; status \"active\"|\"retired\" optional; stimulus string optional (id from stimuli.jsonl); entity string optional (learning record id); topic string optional (catalog/topic label shown instead of the question; never the prompt)";
     let mut s = String::new();
     s.push_str("dojo content format (one JSON object per line in content/<unit>.jsonl is preferred, objects may also span several lines; unknown fields are rejected)\n\n");
     s.push_str("COMMON FIELDS (every item)\n  type \"choice\"|\"gap\"|\"card\"|\"multi\"|\"match\"|\"order\"|\"cloze\"|\"numeric\" REQUIRED\n");

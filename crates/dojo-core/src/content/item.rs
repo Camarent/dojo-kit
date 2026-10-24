@@ -32,6 +32,8 @@ pub struct ChoiceItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// Typed-answer item; any entry of `answers` is accepted after normalization.
@@ -66,6 +68,8 @@ pub struct GapItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// Self-rated flash card; the front is `prompt`.
@@ -94,6 +98,8 @@ pub struct CardItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// Multiple-answer item; `correct` lists the indices into `options` that must all be selected.
@@ -123,6 +129,8 @@ pub struct MultiItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// One left/right pair of a `match` item.
@@ -161,6 +169,8 @@ pub struct MatchItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// Ordering item; `steps` are listed in the correct order.
@@ -189,6 +199,8 @@ pub struct OrderItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// A cloze part: literal text, or a blank listing its accepted alternatives.
@@ -227,6 +239,8 @@ pub struct ClozeItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// Numeric-answer item; `tolerance` is absolute, `unit_label` (wire `unitLabel`) is display only.
@@ -259,6 +273,8 @@ pub struct NumericItem {
     pub speak: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// One line of a content JSONL file, tagged by `"type"`.
@@ -322,4 +338,5 @@ impl Item {
     pub fn tags(&self) -> &[String] { common_field!(self, i => &i.tags) }
 
     pub fn entity(&self) -> Option<&str> { common_field!(self, i => i.entity.as_deref()) }
+    pub fn topic(&self) -> Option<&str> { common_field!(self, i => i.topic.as_deref()) }
 }

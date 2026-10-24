@@ -58,6 +58,7 @@ fn choice_item(id: &str, unit: &str) -> Item {
         stimulus: None,
         speak: None,
         entity: None,
+        topic: None,
     })
 }
 
@@ -79,6 +80,7 @@ fn gap_item(id: &str, unit: &str) -> Item {
         stimulus: None,
         speak: None,
         entity: None,
+        topic: None,
     })
 }
 
@@ -97,6 +99,7 @@ fn card_item(id: &str, unit: &str, retired: bool) -> Item {
         stimulus: None,
         speak: None,
         entity: None,
+        topic: None,
     })
 }
 
