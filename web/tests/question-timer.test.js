@@ -242,3 +242,14 @@ test('session screen: no timer after the answer, timer while the question is ope
   assert.ok(scr.renderQTimer({ session: scr.props.session, now: () => 0 }, open, null));
   assert.strictEqual(scr.renderQTimer({ session: scr.props.session, now: () => 0 }, done, null), null);
 });
+
+test('same base time for items of different complexity within a unit', async () => {
+  const env = await run({ timer: T });
+  const items = [
+    { id: 'u1-1', unit: 'u1', type: 'gap', prompt: 'x', answers: ['1'] },
+    { id: 'u1-2', unit: 'u1', type: 'gap', prompt: 'a much longer prompt with 123456 digits and more words', answers: ['a', 'b', 'c', 'd'] },
+  ];
+  const limits = items.map((it) => env.s.timerLimit(it));
+  assert.strictEqual(limits[0], 8000);
+  assert.strictEqual(limits[1], limits[0]);
+});
