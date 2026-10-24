@@ -109,6 +109,8 @@ fn text_problem(s: &str) -> Option<&'static str> {
         Some("longer than 400 characters")
     } else if s.chars().any(|c| c.is_control() && (c as u32) < 0x20 || c == '\u{7f}') {
         Some("contains a control character")
+    } else if s.chars().any(|c| matches!(c, '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}')) {
+        Some("contains a bidi control character")
     } else {
         None
     }

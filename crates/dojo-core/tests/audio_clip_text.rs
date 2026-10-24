@@ -122,3 +122,20 @@ fn diagnostics_follow_clip_id_order() {
     assert_eq!(d.len(), 2);
     assert!(d[0].contains("'a'") && d[1].contains("'b'"), "{d:?}");
 }
+
+#[test]
+fn bidi_control_code_points_are_rejected_at_range_edges() {
+    for cp in ['\u{202A}', '\u{202E}', '\u{2066}', '\u{2069}'] {
+        let m = msgs(&format!(r#","text":"a{cp}b""#));
+        assert_eq!(m.len(), 1, "U+{:04X}", cp as u32);
+        assert!(m[0].contains("contains a bidi control character"), "{}", m[0]);
+        let m = msgs(&format!(r#","text":"ok","tr":{{"ru":"a{cp}b"}}"#));
+        assert_eq!(m.len(), 1, "tr U+{:04X}", cp as u32);
+    }
+}
+
+#[test]
+fn code_points_next_to_bidi_ranges_and_french_diacritics_pass() {
+    assert!(msgs(r#","text":"Où est l'élève ? À l'école, ça va \u2029\u2065\u206A""#).is_empty());
+    assert!(msgs(r#","text":"Où est l'élève ? Ça va très bien""#).is_empty());
+}
