@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Whole framework check chain, run from the repo root. Stops at the first red step.
-# Usage: scripts/check-all.sh [--with-gate]
-#   --with-gate  also run the n5 regression gate, default off. The gate script path comes from
-#                DOJO_N5_GATE (required with --with-gate).
+# Usage: scripts/check-all.sh [--with-course-gate]
+#   --with-course-gate  also run the course regression gate, default off. The gate script path
+#                comes from DOJO_COURSE_GATE (required with --with-course-gate).
+#                Alias: --with-gate and DOJO_N5_GATE work the same (kept for older callers).
 # Env read by this script:
 #   DOJO_QRUN   path to qrun.py. Set: each step runs as python3 -I "$DOJO_QRUN" -- <step>
 #               (one OK line, or the failing pieces with the log path). Unset or missing: each step
 #               runs directly, output not trimmed. Exit code decides red/green either way.
-#   DOJO_N5_GATE  path to the n5 gate script (only with --with-gate).
+#   DOJO_COURSE_GATE  path to the course gate script (only with --with-course-gate).
+#                 DOJO_N5_GATE is an alias, used when DOJO_COURSE_GATE is unset.
 # Env set by this script (only when not already set):
 #   GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*'  (git in the repo and worktrees)
 # Env read by the gate (passed through from the caller): N5_DIR, N5_BASELINE, N5_EXPORTS.
@@ -15,12 +17,12 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QRUN="${DOJO_QRUN:-}"
-GATE="${DOJO_N5_GATE:-}"
+GATE="${DOJO_COURSE_GATE:-${DOJO_N5_GATE:-}}"
 
 WITH_GATE=0
 for arg in "$@"; do
     case "$arg" in
-        --with-gate) WITH_GATE=1 ;;
+        --with-course-gate|--with-gate) WITH_GATE=1 ;;
         *) echo "check-all: unknown argument: $arg" >&2; exit 2 ;;
     esac
 done

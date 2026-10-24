@@ -14,6 +14,8 @@ Reference implementation of the progress document and SRS logic (taken from the 
 
 - `tools/fw-root.js` `frameworkRoot(startDir)` (`module.exports`) - returns the dojo-kit root: `DOJO_KIT_ROOT` if set (must contain `web/dojo-wasm.js`, else throws), otherwise the first ancestor of `startDir` containing `web/dojo-wasm.js`, else throws. Used by course tests that need the framework.
 - `tools/reference/srs.js` exports only generic functions (no kanji or N5 helpers); pinned by `tests/reference-no-n5.test.js`.
+- `tools/jsonl.js` `writeJsonl(file, rows)` (`module.exports`, line 42) - overwrites `file` with one `JSON.stringify(row)` per line; no rows gives an empty file. Companions `readJson`, `readJsonl`.
+- `tools/review-audio.js` `buildReviewPage({ manifestPath, rows, base })` (line 64) returns the HTML of a self-contained audio review page; `esc` is also exported. CLI: `node tools/review-audio.js <manifest.json> <rows.json> <out.html>` (`main`, line 79). The page inlines `web/audio.js`, plays only through `DojoAudio.configure/play`, and its flag export is `{"v":1,"ids":[...]}`, the shape of `audio/blocklist.json`.
 
 ## Key files
 - `reference/progress.js` - progress sanitize, merge, stable JSON.
