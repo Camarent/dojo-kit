@@ -21,7 +21,7 @@ function write(obj) {
 function content(items, extra = {}) {
   const ids = items.map((it) => it.id).sort();
   const types = Object.fromEntries(items.map((it) => [it.id, it.type]));
-  return { v: 1, course: { id: 'fr-numbers' }, items, lock: { v: 1, ids, retired: [], types }, ...extra };
+  return { v: 1, course: { id: 'demo-course' }, items, lock: { v: 1, ids, retired: [], types }, ...extra };
 }
 
 const L1 = [
@@ -75,7 +75,7 @@ test('answer change fails', () => {
 
 test('export with unknown id fails', () => {
   const newFile = write(content(L1));
-  const exp = write({ v: 1, course: 'fr-numbers', items: { 'n-1': {}, 'n-99': {} } });
+  const exp = write({ v: 1, course: 'demo-course', items: { 'n-1': {}, 'n-99': {} } });
   const r = run(['--content', newFile, '--export', exp]);
   assert.strictEqual(r.code, 1);
   assert.match(r.out, /unknown id in export: n-99/);
