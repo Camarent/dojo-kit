@@ -38,19 +38,19 @@ function engine(flagged = [], log = []) {
 
 test('button absent in exam', () => {
   setHeard('c1');
-  assert.strictEqual(FLAG(host(true), { t, session: engine() }, S), null);
+  assert.strictEqual(FLAG(host(true), { t, engine: engine() }, S), null);
 });
 
 test('button absent without a heard clip', () => {
   setHeard(null);
-  assert.strictEqual(FLAG(host(false), { t, session: engine() }, S), null);
+  assert.strictEqual(FLAG(host(false), { t, engine: engine() }, S), null);
 });
 
 test('button present in non-exam and toggles the flag with its label', () => {
   setHeard('c1');
   const log = [];
   const hst = host(false);
-  const p = { t, session: engine([], log) };
+  const p = { t, engine: engine([], log) };
   let btn = find(FLAG(hst, p, S), 'btn-flag-clip');
   assert.strictEqual(text(btn), 'session.flagClip');
   btn.props.onClick();

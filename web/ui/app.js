@@ -51,7 +51,7 @@
   // ---------- screen routing ----------
 
   function sessionProps(self, p, s) {
-    return { t: p.t, lang: p.lang, session: s.session, now: p.now, win: p.win, course: p.course, store: p.store,
+    return { t: p.t, lang: p.lang, session: s.session, engine: p.engine, now: p.now, win: p.win, course: p.course, store: p.store,
       onEnd: function (sum) { self.endSession(sum); }, onExit: function () { self.exitSession(); } };
   }
   function sessionScreen(self, p, s) {

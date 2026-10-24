@@ -34,7 +34,7 @@
     var t = p.t;
     var A = root.DojoAudio;
     var st = s.cur && s.cur.stimulus;
-    var engine = p.session;
+    var engine = p.engine;
     if (host.isExam() || !st || !A || !A.heardClip || !engine || !engine.flagClip) return null;
     var id = A.heardClip(st.id, s.audioMark);
     if (!id) return null;
