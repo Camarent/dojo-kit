@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Whole framework check chain, run from the repo root. Stops at the first red step.
-# Usage: scripts/check-all.sh [--with-course-gate]
+# Usage: scripts/check-all.sh [--with-course-gate] [--with-courses]
 #   --with-course-gate  also run the course regression gate, default off. The gate script path
 #                comes from DOJO_COURSE_GATE (required with --with-course-gate).
 #                Alias: --with-gate and DOJO_N5_GATE work the same (kept for older callers).
+#   --with-courses  after the framework steps, run scripts/course-test.sh for every workspace/*/ with
+#                course.json, one step each, default off. DOJO_KIT_ROOT, DOJO_KIT_ROOT_PY, DOJO_GIT_SAFE pass through.
 # Env read by this script:
 #   DOJO_QRUN   path to qrun.py. Set: each step runs as python3 -I "$DOJO_QRUN" -- <step>
 #               (one OK line, or the failing pieces with the log path). Unset or missing: each step
@@ -20,9 +22,11 @@ QRUN="${DOJO_QRUN:-}"
 GATE="${DOJO_COURSE_GATE:-${DOJO_N5_GATE:-}}"
 
 WITH_GATE=0
+WITH_COURSES=0
 for arg in "$@"; do
     case "$arg" in
         --with-course-gate|--with-gate) WITH_GATE=1 ;;
+        --with-courses) WITH_COURSES=1 ;;
         *) echo "check-all: unknown argument: $arg" >&2; exit 2 ;;
     esac
 done
@@ -60,6 +64,17 @@ if [ "$WITH_GATE" -eq 1 ]; then
         exit 1
     fi
     step "n5 gate (--with-gate)" bash "$GATE"
+fi
+
+if [ "$WITH_COURSES" -eq 1 ]; then
+    found=0
+    for cj in workspace/*/course.json; do
+        [ -f "$cj" ] || continue
+        found=1
+        cdir="$(dirname "$cj")"
+        step "course-test $cdir (--with-courses)" scripts/course-test.sh "$cdir"
+    done
+    [ "$found" -eq 1 ] || echo "check-all: no courses under workspace/"
 fi
 
 echo "CHECK-ALL OK"
