@@ -65,3 +65,19 @@ Exclusions / not measured:
 - web/ui/app.js and web/types/{choice,gap,card}.js are NOT in the JS report: app-harness.js runs them via `vm.runInContext` and node coverage does not track vm scripts, so their real coverage is unknown (the 93% overstates nothing, but omits them).
 - The WASM boundary (dojo-wasm crate, wasm32 build) has no Rust coverage; it is exercised only by JS tests through loader.js, uncounted.
 - Branch coverage for Rust is not produced (stable toolchain, 0 branches reported).
+
+## Machine-readable tool list
+
+Read by `/root/.claude/tools/audit_run.py` (`name | cwd | command | parser`; cwd relative to the repo or absolute).
+
+```audit-tools
+clippy | . | cargo clippy --workspace --all-targets --message-format=json -- -W clippy::too_many_lines -W clippy::cognitive_complexity -W clippy::too_many_arguments -W clippy::type_complexity -W clippy::excessive_nesting -W clippy::fn_params_excessive_bools -W clippy::struct_excessive_bools -W clippy::unwrap_used -W clippy::expect_used -W clippy::indexing_slicing -W clippy::panic | clippy
+cargo-audit | . | cargo audit --json | cargo-audit
+cargo-deny | . | cargo deny --format json check | cargo-deny
+cargo-machete | . | cargo machete --with-metadata | cargo-machete
+eslint | /opt/jstools/proj | /opt/jstools/node_modules/.bin/eslint -c eslint.config.js -f json web tools | eslint
+knip | /opt/jstools/proj | /opt/jstools/node_modules/.bin/knip --no-config-hints --reporter json | knip
+jscpd | . | d=$(mktemp -d) && /opt/jstools/node_modules/.bin/jscpd web --min-lines 10 --min-tokens 70 --ignore "**/vendor/**,**/tests/**,**/n5/**" --silent --reporters json --output $d >/dev/null; cat $d/jscpd-report.json | jscpd
+madge | . | /opt/jstools/node_modules/.bin/madge --circular --extensions js --json web | madge
+gitleaks | . | GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks dir --redact --no-banner --report-format json --report-path /dev/stdout . | gitleaks
+```
