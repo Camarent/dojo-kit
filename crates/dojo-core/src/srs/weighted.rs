@@ -7,7 +7,7 @@ const DAY_MS: f64 = 86_400_000.0;
 const WORST_MAX: usize = 5;
 const WORST_MIN_E: f64 = 0.3;
 /// Box factors, a table because `powf` may differ by 1 ulp across platforms.
-pub const BOXF: [f64; 6] = [1.0, 0.7071067811865476, 0.5, 0.35355339059327373, 0.25, 0.17677669529663687];
+pub const BOXF: [f64; 6] = [1.0, std::f64::consts::FRAC_1_SQRT_2, 0.5, 0.35355339059327373, 0.25, 0.17677669529663687];
 
 pub struct WeightedIn<'a> {
     pub ids: Vec<&'a str>,

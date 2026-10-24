@@ -48,7 +48,8 @@ fn add_confusion(cf: Option<&Value>, key: &str) -> Value {
                 drop = Some(i);
             }
         }
-        list.remove(drop.expect("more than one entry"));
+        let Some(d) = drop else { unreachable!("more than one entry") };
+        list.remove(d);
     }
     Value::Array(list.into_iter().map(|(k, n)| Value::Array(vec![Value::from(k), Value::from(n)])).collect())
 }
