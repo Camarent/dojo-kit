@@ -178,7 +178,7 @@
       var session = p.session;
       var item = s.cur.item;
       var limit = session.timerLimit && !s.showIntro ? session.timerLimit(item) : null;
-      if (!limit || !QuestionTimer) return null;
+      if (!limit || !QuestionTimer || s.result) return null;
       var st = s.cur.stimulus;
       var pids = ['i:' + item.id].concat(st ? ['s:' + st.id] : []);
       var hasAudio = !!audio && ((root.DojoAudio && root.DojoAudio.ready() && !!st && !!st.audio && st.audio.length > 0) || (audio.status === 'ok' && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))))));

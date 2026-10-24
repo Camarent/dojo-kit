@@ -229,3 +229,16 @@ test('session screen: clock waits for the stimulus playback only when audio can 
   assert.strictEqual(mk(st, { status: 'unavailable' }).vnode.props.canStart(), true);
   assert.strictEqual(mk(null, { status: 'ok' }).vnode.props.canStart(), true);
 });
+
+test('session screen: no timer after the answer, timer while the question is open', () => {
+  const sb = { console };
+  const only = bundleScripts().filter((f) => /^(vendor\/p|vendor\/h|ext|types\/(registry|gap)|ui\/)/.test(f));
+  loadBundle(sb, { only });
+  const item = { id: 'i1', unit: 'u', type: 'gap' };
+  const scr = new sb.DojoApp._SessionScreen({ session: { mode: 'daily', timerLimit: () => 5000, timerStart() {}, current: () => null }, now: () => 0, win: {} });
+  scr.played = {};
+  const open = { cur: { item, stimulus: null, position: 1 }, result: null };
+  const done = { cur: { item, stimulus: null, position: 1 }, result: { correct: true } };
+  assert.ok(scr.renderQTimer({ session: scr.props.session, now: () => 0 }, open, null));
+  assert.strictEqual(scr.renderQTimer({ session: scr.props.session, now: () => 0 }, done, null), null);
+});
