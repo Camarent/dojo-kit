@@ -296,6 +296,23 @@ fn pack_named_manifest_json_is_rejected() {
 }
 
 #[test]
+fn pack_with_path_separator_in_file_name_is_rejected() {
+    let e = env("packsep");
+    add_audio(&e, &[4]);
+    let path = e.course.join("audio/manifest.json");
+    let mut m = json_file(&path);
+    m["packs"][0]["file"] = json!("sub/pack-00.bin");
+    for _ in 0..3 {
+        put(&path, &m.to_string());
+        m["packs"][0]["bytes"] = json!(fs::metadata(&path).unwrap().len());
+    }
+    let o = build(&e, &e.root.join("dist"));
+    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
+    let out = String::from_utf8_lossy(&o.stdout);
+    assert!(out.contains("audio_bad_manifest") && out.contains("must match"), "{out}");
+}
+
+#[test]
 fn null_timer_builds_like_no_timer() {
     let e = env("nulltimer");
     edit_course(&e, |v| v["timer"] = Value::Null);
