@@ -29,6 +29,19 @@
     return html`<p data-testid="revealed-text">${t('session.revealed')} <span class="pre">${st.text}</span></p>`;
   }
 
+  // Flag button for the heard clip: never in exam mode, only when a clip was heard for this item.
+  function flagButton(host, p, s) {
+    var t = p.t;
+    var A = root.DojoAudio;
+    var st = s.cur && s.cur.stimulus;
+    var engine = p.session;
+    if (host.isExam() || !st || !A || !A.heardClip || !engine || !engine.flagClip) return null;
+    var id = A.heardClip(st.id, s.audioMark);
+    if (!id) return null;
+    var on = !!(engine.isClipFlagged && engine.isClipFlagged(id));
+    return html`<button type="button" class="btn secondary" data-testid="btn-flag-clip" onClick=${function () { engine.flagClip(id, !on); host.setState({}); }}>${t(on ? 'session.flagClipDone' : 'session.flagClip')}</button>`;
+  }
+
   function createShared(deps) {
     var kanjiRows = deps.kanjiRows;
     var tagInfo = deps.tagInfo;
@@ -127,6 +140,7 @@
           ${this.feedbackDetail(p, s)}
           ${kanjiRows(p, s, this.isExamMode())}
           ${showOverride ? html`<button type="button" class="btn" data-testid="btn-override" onClick=${function () { self.overrideAnswer(); }}>${t('session.override')}</button>` : null}
+          ${flagButton(this, p, s)}
         </div>`;
       } else if (s.retry) {
         body = html`<div class="feedback retry" data-testid="feedback-retry" role="status"><b>${t('session.retry')}</b> <span data-testid="retry-message">${t('session.retry.message')}</span></div>`;
@@ -136,7 +150,7 @@
     };
   }
 
-  var api = { createShared: createShared };
+  var api = { createShared: createShared, flagButton: flagButton };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.DojoSessionFeedback = api;
 })(typeof self !== 'undefined' ? self : this);

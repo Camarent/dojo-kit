@@ -46,6 +46,7 @@
     "ui/home.js",
     "ui/stimulus.js",
     "ui/clip-text.js",
+    "ui/clip-flags-section.js",
     "ui/session-feedback.js",
     "ui/session-focus.js",
     "ui/question-timer.js",

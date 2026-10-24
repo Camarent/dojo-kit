@@ -12,6 +12,7 @@
   var Speech = root.DojoSpeech || null;
   var DojoSettingsSections = root.DojoSettingsSections || (typeof require !== 'undefined' ? require('./settings-sections.js') : null) || {};
   var DojoSettingsDialogs = root.DojoSettingsDialogs || (typeof require !== 'undefined' ? require('./settings-dialogs.js') : null) || {};
+  var DojoClipFlagsSection = root.DojoClipFlagsSection || (typeof require !== 'undefined' ? require('./clip-flags-section.js') : null) || {};
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
   var StatusChip = DojoCommon.StatusChip;
   var Notice = DojoCommon.Notice;
@@ -163,6 +164,7 @@
         ${sectionReset(s, t, self)}
         ${renderSpeechSettings(p, self)}
         ${renderPluginSettings(p, self)}
+        ${DojoClipFlagsSection.render ? DojoClipFlagsSection.render(p, t, self) : null}
         ${sectionAbout(p, t)}
         <div class="row"><button type="button" class="btn" data-testid="btn-back" onClick=${function () { p.go('home'); }}>${t('back')}</button></div>
         ${unitDialogView(s, t, self)}
