@@ -8,7 +8,7 @@ const ITEMS = [num('n1', '11', 's1'), num('n2', '11', 's2'), num('n3', '7', 's3'
 const STIMULI = [
   { id: 's1', text: 'onze', hideText: true, audio: ['c1'] },
   { id: 's2', text: 'onze', hideText: true, audio: ['c2'] },
-  { id: 's3', text: 'sept', hideText: true }
+  { id: 's3', text: 'seven', hideText: true }
 ];
 
 async function open(clips) {
