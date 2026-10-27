@@ -55,7 +55,7 @@
         <header class="head"><h1>${t('practice.title')}</h1></header>
         <${Notice} text=${p.notice} />
         <p class="muted">${t('practice.hint')}</p>
-        ${group(t('practice.units'), 'units', (p.course.units || []).map(function (u) { return u.id; }), function (id) {
+        ${group(t('practice.units'), 'units', DojoCommon.visibleUnits(p.course.units, DojoCommon.countActiveByUnit(p.content.items)).map(function (u) { return u.id; }), function (id) {
           var u = (p.course.units || []).filter(function (x) { return x.id === id; })[0];
           return u ? renderText(u.title) : id;
         })}

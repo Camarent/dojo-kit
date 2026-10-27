@@ -147,7 +147,7 @@ test('counts() includes learning and learned in totals', async () => {
   assert.strictEqual(c.totals.fresh + c.totals.learning + c.totals.learned, c.totals.total);
 });
 
-test('Home render: empty unit has no bar', async () => {
+test('Home render: unit without active items is not listed', async () => {
   const sb = { console: { warn() {}, log: console.log } };
   loadBundle(sb, { skip: ['dojo-wasm.js', 'storage.js', 'boot.js'] });
   
@@ -186,8 +186,8 @@ test('Home render: empty unit has no bar', async () => {
   
   const htmlStr = JSON.stringify(html);
   
-  assert.ok(htmlStr.includes('U2'), 'Should have U2 unit');
-  assert.ok(!htmlStr.includes('u2') || !htmlStr.includes('progress-bar') || htmlStr.indexOf('u2') > htmlStr.lastIndexOf('progress-bar'), 'Empty unit u2 should not have a bar');
+  assert.ok(htmlStr.includes('U1'), 'Should have U1 unit');
+  assert.ok(!htmlStr.includes('U2') && !htmlStr.includes('unit-u2'), 'Empty unit u2 should not be listed');
 });
 
 test('Home render: total bar aria-label shows exact numbers', async () => {

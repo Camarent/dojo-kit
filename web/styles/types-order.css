@@ -37,4 +37,12 @@
 .order-slot.wrong { background: var(--bad-soft); border-color: var(--bad); }
 .order-slot:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .order-slot:disabled { cursor: default; }
+.order-slot { position: relative; }
+.order-star {
+  position: absolute; top: 1px; right: 3px;
+  font-size: 0.7em; line-height: 1; color: var(--accent);
+  pointer-events: none;
+}
 .order.sentence .order-unplaced { flex-direction: row; flex-wrap: wrap; }
+.order-actions { align-items: stretch; }
+.order-actions .btn { height: auto; white-space: normal; }

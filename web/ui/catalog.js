@@ -85,9 +85,10 @@
   class CatalogScreen extends Component {
     constructor(props) {
       super(props);
-      var units = props.course.units || [];
+      var tabUnits = DojoCommon.visibleUnits(props.course.units, DojoCommon.countActiveByUnit(props.content.items));
+      this.tabUnits = tabUnits;
       this.ca = CatalogAudio ? CatalogAudio.create(props.content) : null;
-      this.state = { search: '', selectedUnit: units.length ? units[0].id : null, selectedTags: [], selectedStages: [], tagsOpen: false, limit: CATALOG_PAGE, detailItem: null };
+      this.state = { search: '', selectedUnit: tabUnits.length ? tabUnits[0].id : null, selectedTags: [], selectedStages: [], tagsOpen: false, limit: CATALOG_PAGE, detailItem: null };
       this.items = props.content.items.filter(function (it) { return it.status !== 'retired'; });
       this.introById = Object.create(null);
       var ib = this.introById;
@@ -225,7 +226,7 @@
         <button type="button" key="__all" class=${cls('btn', !s.selectedUnit && 'primary')}
           data-testid="tab-all" role="tab" aria-selected=${!s.selectedUnit}
           onClick=${function () { self.filter({ selectedUnit: null, selectedTags: [] }); }}>${t('catalog.all')}</button>
-        ${(p.course.units || []).map(function (unit) {
+        ${this.tabUnits.map(function (unit) {
           return html`<button type="button" key=${unit.id} class=${cls('btn', s.selectedUnit === unit.id && 'primary')}
             data-testid=${'tab-' + unit.id} role="tab" aria-selected=${s.selectedUnit === unit.id}
             onClick=${function () { self.filter({ selectedUnit: unit.id, selectedTags: [] }); }}>${renderText(unit.title)}</button>`;

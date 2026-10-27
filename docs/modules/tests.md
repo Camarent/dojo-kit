@@ -16,6 +16,7 @@ Holds the shared golden data (`tests/vectors/*.json`) that pins progress, SRS, c
 - `tests/vectors/` - `check.json`, `days.json`, `exam.json`, `merge.json`, `sanitize.json`, `srs.json`.
 
 - New node tests (run after `scripts/build-wasm.sh` with `node --test web/tests/*.test.js tests/*.test.js`): `tests/fw-root.test.js` (4 tests: `DOJO_KIT_ROOT` set, missing `web/dojo-wasm.js`, walk-up, not found), `tests/reference-no-n5.test.js` (2 tests: `tools/reference/srs.js` has no `kanjiChars`/`isN5Readable`/`relatedWords`, keeps the generic functions), `tests/build-wasm-paths.test.js` (2 tests: space-path guard and guard text in `scripts/build-wasm.sh`), `tests/hooks-test.sh` (POSIX sh test of the `.githooks` guards in a scratch repo; run with `bash tests/hooks-test.sh`).
+- `tests/real-exports.test.js` (9 tests) - `tools/real-exports.js`: env override, sorted directory listing, legacy fallback, `REAL_GATE_STRICT`, `summarizeGate` verdicts.
 
 ## Key files
 - `gen/` - generator modules behind `gen-vectors.js`; reads `tools/reference/*.js` through `gen/ref.js`.

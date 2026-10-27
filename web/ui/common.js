@@ -206,6 +206,21 @@
 
   // ---------- API ----------
 
+  /** {unitId: {total}} counting non-retired items only. */
+  function countActiveByUnit(items) {
+    var by = Object.create(null);
+    (items || []).forEach(function (it) {
+      if (it.status === 'retired') return;
+      (by[it.unit] || (by[it.unit] = { total: 0 })).total++;
+    });
+    return by;
+  }
+
+  /** Units with at least one non-retired item; byUnit is {unitId: {total}}. */
+  function visibleUnits(units, byUnit) {
+    return (units || []).filter(function (u) { return ((byUnit || {})[u.id] || {}).total > 0; });
+  }
+
   var api = {
     // render helpers
     renderText: renderText,
@@ -230,6 +245,8 @@
     Loading: Loading,
     // utilities
     daysLeft: daysLeft,
+    countActiveByUnit: countActiveByUnit,
+    visibleUnits: visibleUnits,
     applyTheme: applyTheme
   };
 

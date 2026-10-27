@@ -12,6 +12,7 @@
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
   var renderText = DojoCommon.renderText;
   var cls = DojoCommon.cls;
+  var Notice = DojoCommon.Notice;
 
   function label(t, value) {
     return value === 'known' ? t('session.known') : value === 'again' ? t('session.again') : value === '-' ? t('session.dontKnow') : value;
@@ -128,6 +129,7 @@
         ${exam && sum.note ? note('exam-note', sum.note) : null}
         ${exam && sum.short && sum.short.length ? html`<p class="notice">${t('session.short')}</p>` : null}
         ${first ? missedSection(p, t, sum, missed) : null}
+        <${Notice} text=${p.notice} />
         ${actions(p, t, isPlacement)}
       </main>`;
     }
