@@ -115,14 +115,15 @@
     var session = p.session;
     if (!item) return null;
     var correct = !!(s.result && s.result.correct);
-    var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h, feedback: true, correct: correct, timedOut: !!(s.result && s.result.timedOut), expected: s.result ? s.result.expected : undefined };
+    var intro = null;
+    try { intro = session.entityIntro ? session.entityIntro(item) : null; } catch (e) { intro = null; }
+    var ctx = { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: p.t, h: h, feedback: true, correct: correct, timedOut: !!(s.result && s.result.timedOut), expected: s.result ? s.result.expected : undefined, intro: intro };
     if (correct) {
       var shown = DojoExt.detail ? DojoExt.detail(item, ctx) : null;
       return shown ? html`<section class="feedback-detail" data-testid="feedback-detail"><div data-testid="detail-hook">${shown}</div></section>` : null;
     }
     var unit = (p.course.units || []).filter(function (u) { return u.id === item.unit; })[0] || null;
     var decl = renderDeclarativeDetail(p.course, unit, item, p.t, true);
-    var intro = session.entityIntro ? session.entityIntro(item) : null;
     var body = null;
     if (intro) {
       body = renderIntroBody({ intro: intro, item: item, ctx: ctx, decl: decl, all: true });
