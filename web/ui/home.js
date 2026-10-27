@@ -245,15 +245,17 @@
 
   // Helper: other section (ungrouped units)
   function renderOtherSection(p, t, course, groups, c) {
+    var inGroup = {};
+    (course.groups || []).forEach(function (g) {
+      (g.units || []).forEach(function (u) { inGroup[u] = true; });
+    });
+    var ungroupedUnits = (course.units || []).filter(function (u) {
+      return !inGroup[u.id] && ((c.byUnit[u.id] || {}).total > 0);
+    });
+    if (ungroupedUnits.length === 0) return null;
     return html`<section aria-labelledby="other-title">
       <h2 id="other-title">${t('home.ungrouped')}</h2>
       ${(function () {
-        var inGroup = {};
-        (course.groups || []).forEach(function (g) {
-          (g.units || []).forEach(function (u) { inGroup[u] = true; });
-        });
-        var ungroupedUnits = (course.units || []).filter(function (u) { return !inGroup[u.id]; });
-        if (ungroupedUnits.length === 0) return null;
         var row = function (u) {
           var r = c.byUnit[u.id] || { total: 0, due: 0, fresh: 0, learning: 0, learned: 0 };
           return html`<li key=${u.id} class="bar-item" data-testid=${'unit-' + u.id}>
