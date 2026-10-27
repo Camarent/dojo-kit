@@ -85,9 +85,7 @@
   class CatalogScreen extends Component {
     constructor(props) {
       super(props);
-      var active = Object.create(null);
-      props.content.items.forEach(function (it) { if (it.status !== 'retired') active[it.unit] = true; });
-      var tabUnits = (props.course.units || []).filter(function (u) { return active[u.id]; });
+      var tabUnits = DojoCommon.visibleUnits(props.course.units, DojoCommon.countActiveByUnit(props.content.items));
       this.tabUnits = tabUnits;
       this.ca = CatalogAudio ? CatalogAudio.create(props.content) : null;
       this.state = { search: '', selectedUnit: tabUnits.length ? tabUnits[0].id : null, selectedTags: [], selectedStages: [], tagsOpen: false, limit: CATALOG_PAGE, detailItem: null };

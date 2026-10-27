@@ -55,3 +55,12 @@ test('mixed: only the unit with active items is listed', async () => {
   assert.ok(find(tree, 'unit-other'));
   assert.strictEqual(find(tree, 'unit-kana'), null);
 });
+
+test('course without groups: a unit with only retired items is not listed', async () => {
+  const items = [gap('g1', 'grammar'), gap('r1', 'kana', 'retired'), gap('r2', 'kana', 'retired')];
+  const course = { learnedStage: 1, units: [{ id: 'grammar', title: 'Grammar' }, { id: 'kana', title: 'Kana' }] };
+  const m = await home({ g1: due }, items, course);
+  const tree = m.tree();
+  assert.notStrictEqual(find(tree, 'unit-grammar'), null);
+  assert.strictEqual(find(tree, 'unit-kana'), null);
+});

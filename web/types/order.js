@@ -52,12 +52,12 @@
           var star = html`<span class="order-star" aria-hidden="true">★</span>`;
           if (id !== undefined && byId[id]) {
             var label = t('q.order.position', { n: k + 1 });
-            return html`<button type="button" class=${cls('order-slot', mark(k), isStar && 'star')}
+            return html`<button type="button" class=${cls('order-slot', mark(k))}
               data-testid=${'order-slot-' + k} aria-label=${label + ': ' + byId[id].label}
               disabled=${!!res} onClick=${function () { ctx.unplace(k); }}>
               ${isStar ? star : null}<span class="order-text">${renderText(byId[id].label)}</span></button>`;
           } else {
-            return html`<span class=${cls('order-slot', 'empty', isStar && 'star')} data-testid=${'order-slot-' + k} role="img" aria-label=${t('q.order.position', { n: k + 1 })}>${isStar ? star : null}</span>`;
+            return html`<span class=${cls('order-slot', 'empty')} data-testid=${'order-slot-' + k} role="img" aria-label=${t('q.order.position', { n: k + 1 })}>${isStar ? star : null}</span>`;
           }
         } else {
           return html`<span class="order-text">${renderText(piece)}</span>`;
@@ -98,7 +98,7 @@
   // Render action buttons (reset, check)
   function renderActions(ctx) {
     var t = ctx.t, res = ctx.res, checkDisabled = ctx.checkDisabled;
-    return html`<div class="row">
+    return html`<div class="row pair order-actions">
       <button type="button" class="btn" disabled=${!!res} data-testid="order-reset"
         onClick=${function () { ctx.setState({ placed: [] }); }}>${t('q.order.reset')}</button>
       <button type="button" class="btn primary" disabled=${checkDisabled} data-testid="btn-submit"

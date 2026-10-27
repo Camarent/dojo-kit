@@ -228,7 +228,7 @@
         ${c.totals && c.totals.total > 0 && !hasBars ? html`<li class="total-progress" data-testid="total-progress">
           <${ProgressBar} counts=${c.totals} ariaLabel=${t('progress.aria', c.totals)} />
         </li>` : null}
-        ${(course.units || []).map(function (u) {
+        ${DojoCommon.visibleUnits(course.units, c.byUnit).map(function (u) {
           var r = c.byUnit[u.id] || { total: 0, due: 0, fresh: 0, learning: 0, learned: 0 };
           return html`<li key=${u.id} data-testid=${'unit-' + u.id}>
             <span class="unit-title">${renderText(u.title)}</span>
@@ -249,9 +249,7 @@
     (course.groups || []).forEach(function (g) {
       (g.units || []).forEach(function (u) { inGroup[u] = true; });
     });
-    var ungroupedUnits = (course.units || []).filter(function (u) {
-      return !inGroup[u.id] && ((c.byUnit[u.id] || {}).total > 0);
-    });
+    var ungroupedUnits = DojoCommon.visibleUnits(course.units, c.byUnit).filter(function (u) { return !inGroup[u.id]; });
     if (ungroupedUnits.length === 0) return null;
     return html`<section aria-labelledby="other-title">
       <h2 id="other-title">${t('home.ungrouped')}</h2>
