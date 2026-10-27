@@ -23,11 +23,17 @@
     if (typeof prompt !== 'string') return null;
     var parts = prompt.split('___');
     if (parts.length !== n + 1) return null;
-    var result = [];
+    var result = [], starSlot = -1;
     for (var i = 0; i < parts.length; i++) {
       if (i > 0) result.push(null); // slot marker
-      if (parts[i].length > 0) result.push(parts[i]);
+      var piece = parts[i];
+      if (i > 0 && starSlot < 0 && piece.charAt(0) === '★') { // star right after slot
+        starSlot = i - 1;
+        piece = piece.slice(1);
+      }
+      if (piece.length > 0) result.push(piece);
     }
+    result.starSlot = starSlot;
     return result;
   }
 
@@ -42,14 +48,16 @@
         if (piece === null) {
           var k = slots[idx];
           var id = placed[k];
+          var isStar = sentencePieces.starSlot === k;
+          var star = html`<span class="order-star" aria-hidden="true">★</span>`;
           if (id !== undefined && byId[id]) {
             var label = t('q.order.position', { n: k + 1 });
-            return html`<button type="button" class=${cls('order-slot', mark(k))}
+            return html`<button type="button" class=${cls('order-slot', mark(k), isStar && 'star')}
               data-testid=${'order-slot-' + k} aria-label=${label + ': ' + byId[id].label}
               disabled=${!!res} onClick=${function () { ctx.unplace(k); }}>
-              <span class="order-text">${renderText(byId[id].label)}</span></button>`;
+              ${isStar ? star : null}<span class="order-text">${renderText(byId[id].label)}</span></button>`;
           } else {
-            return html`<span class="order-slot empty" data-testid=${'order-slot-' + k} role="img" aria-label=${t('q.order.position', { n: k + 1 })}></span>`;
+            return html`<span class=${cls('order-slot', 'empty', isStar && 'star')} data-testid=${'order-slot-' + k} role="img" aria-label=${t('q.order.position', { n: k + 1 })}>${isStar ? star : null}</span>`;
           }
         } else {
           return html`<span class="order-text">${renderText(piece)}</span>`;
