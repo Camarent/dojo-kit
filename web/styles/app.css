@@ -185,7 +185,7 @@ summary { cursor: pointer; min-height: var(--tap); display: list-item; padding-b
 }
 
 /* Catalog screen */
-.catalog-tabs { display: flex; gap: var(--space-2); overflow-x: auto; padding: 3px 3px var(--space-2); scrollbar-width: none;
+.catalog-tabs { display: flex; gap: var(--space-2); overflow-x: auto; padding: 5px 5px var(--space-2); scrollbar-width: none;
   background: linear-gradient(to right, var(--bg, #fff) 30%, transparent) left / 24px 100% no-repeat local, linear-gradient(to left, var(--bg, #fff) 30%, transparent) right / 24px 100% no-repeat local, linear-gradient(to right, rgba(0,0,0,.18), transparent) left / 12px 100% no-repeat scroll, linear-gradient(to left, rgba(0,0,0,.18), transparent) right / 12px 100% no-repeat scroll; }
 .catalog-tabs::-webkit-scrollbar { display: none; }
 .catalog-tabs .btn { flex-shrink: 0; white-space: nowrap; }
