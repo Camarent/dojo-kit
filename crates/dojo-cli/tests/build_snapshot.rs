@@ -93,8 +93,8 @@ fn sha256(bytes: &[u8]) -> String {
     }
 
     let mut result = String::with_capacity(64);
-    for i in 0..8 {
-        result.push_str(&format!("{:08x}", h[i]));
+    for v in h.iter().take(8) {
+        result.push_str(&format!("{:08x}", v));
     }
     result
 }
@@ -108,7 +108,7 @@ fn mask_html(html: &str) -> String {
 
     while i < bytes.len() {
         // Check for <script or <style (case-insensitive opening tag)
-        if i + 1 <= bytes.len() && bytes[i] == b'<' {
+        if i < bytes.len() && bytes[i] == b'<' {
             let mut j = i + 1;
             // Skip whitespace
             while j < bytes.len() && bytes[j].is_ascii_whitespace() {
@@ -117,20 +117,20 @@ fn mask_html(html: &str) -> String {
 
             // Check for script
             let is_script = j + 6 <= bytes.len()
-                && bytes[j].to_ascii_lowercase() == b's'
-                && bytes[j + 1].to_ascii_lowercase() == b'c'
-                && bytes[j + 2].to_ascii_lowercase() == b'r'
-                && bytes[j + 3].to_ascii_lowercase() == b'i'
-                && bytes[j + 4].to_ascii_lowercase() == b'p'
-                && bytes[j + 5].to_ascii_lowercase() == b't';
+                && bytes[j].eq_ignore_ascii_case(&b's')
+                && bytes[j + 1].eq_ignore_ascii_case(&b'c')
+                && bytes[j + 2].eq_ignore_ascii_case(&b'r')
+                && bytes[j + 3].eq_ignore_ascii_case(&b'i')
+                && bytes[j + 4].eq_ignore_ascii_case(&b'p')
+                && bytes[j + 5].eq_ignore_ascii_case(&b't');
 
             // Check for style
             let is_style = j + 5 <= bytes.len()
-                && bytes[j].to_ascii_lowercase() == b's'
-                && bytes[j + 1].to_ascii_lowercase() == b't'
-                && bytes[j + 2].to_ascii_lowercase() == b'y'
-                && bytes[j + 3].to_ascii_lowercase() == b'l'
-                && bytes[j + 4].to_ascii_lowercase() == b'e';
+                && bytes[j].eq_ignore_ascii_case(&b's')
+                && bytes[j + 1].eq_ignore_ascii_case(&b't')
+                && bytes[j + 2].eq_ignore_ascii_case(&b'y')
+                && bytes[j + 3].eq_ignore_ascii_case(&b'l')
+                && bytes[j + 4].eq_ignore_ascii_case(&b'e');
 
             if is_script || is_style {
                 // Find the '>'
@@ -156,7 +156,7 @@ fn mask_html(html: &str) -> String {
                 while i + closing_len <= bytes.len() {
                     let mut matches = true;
                     for (k, &b) in closing_tag.as_bytes().iter().enumerate() {
-                        if bytes[i + k].to_ascii_lowercase() != b.to_ascii_lowercase() {
+                        if !bytes[i + k].eq_ignore_ascii_case(&b) {
                             matches = false;
                             break;
                         }

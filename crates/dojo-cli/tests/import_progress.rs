@@ -59,8 +59,7 @@ fn create_test_course(dir: &Path, scope: &str) {
     // item1 and item2 belong to entity1
     // item3 and item4 belong to entity2
     // item5 has no entity (defaults to its own ID)
-    let items = vec![
-        json!({
+    let items = [json!({
             "type": "gap",
             "prompt": "Item 1",
             "answers": ["a"],
@@ -99,8 +98,7 @@ fn create_test_course(dir: &Path, scope: &str) {
             "prompt": "Item 6",
             "answers": ["f"],
             "id": "item6"
-        }),
-    ];
+        })];
     
     let content_text: String = items.iter().map(|i| { let mut i = i.clone(); i["unit"] = json!("unit1"); serde_json::to_string(&i).unwrap() }).collect::<Vec<_>>().join("\n") + "\n";
     fs::write(dir.join("content/unit1.jsonl"), content_text).unwrap();

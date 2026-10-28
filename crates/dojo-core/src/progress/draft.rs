@@ -30,9 +30,7 @@ pub(super) fn bound_closed_sids(list: &[Value]) -> Vec<Value> {
     if list.len() <= CLOSED_SIDS_BOUND {
         return list.to_vec();
     }
-    let mut entries: Vec<(&Value, f64)> = list.iter().filter_map(|e| {
-        is_valid_draft(e).then(|| (e, draft_updated_at(e)))
-    }).collect();
+    let mut entries: Vec<(&Value, f64)> = list.iter().filter(|&e| is_valid_draft(e)).map(|e| (e, draft_updated_at(e))).collect();
     entries.sort_by(|a, b| {
         b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal).then_with(|| draft_sid(b.0).cmp(draft_sid(a.0)))
     });

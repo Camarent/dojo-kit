@@ -60,7 +60,7 @@ pub(crate) fn write_outputs(o: &OutArgs) -> Step<u8> {
         "lang": lang,
     });
     for f in audio {
-        manifest["files"].as_array_mut().map(|a| a.push(json!({"path": f.rel, "bytes": f.bytes})));
+        if let Some(a) = manifest.get_mut("files").and_then(|v| v.as_array_mut()) { a.push(json!({"path": f.rel, "bytes": f.bytes})) }
     }
     failed(check_out_disjoint(out.join(course_id).as_path(), dir))?;
     let manifest_text = fatal(serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string()))? + "\n";

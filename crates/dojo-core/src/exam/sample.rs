@@ -49,7 +49,7 @@ fn matches_section(c: &Candidate, section: &Section) -> bool {
 /// Returns (picked_indices, remaining_count)
 // Contract: `reach` has `units.len() + 1` rows of `effective_count + 1` columns; `i < units.len()`, `s <= effective_count`, `size <= s` before `s - size`; `units[i]` bounded by `n`.
 #[allow(clippy::indexing_slicing)]
-fn draw_tier(units: &mut Vec<Vec<usize>>, count: usize, state: &mut u64) -> (Vec<usize>, usize) {
+fn draw_tier(units: &mut [Vec<usize>], count: usize, state: &mut u64) -> (Vec<usize>, usize) {
     seeded_shuffle(units, state);
     let pool_size: usize = units.iter().map(|u| u.len()).sum();
     let mut remaining = count;

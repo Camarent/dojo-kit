@@ -16,11 +16,10 @@ fn dojo() -> Command {
 /// Normalise an absolute path to be repo-relative.
 fn to_rel(path: &str, repo_root: &Path) -> String {
     let p = Path::new(path);
-    if let Ok(canonical) = fs::canonicalize(p) {
-        if let Ok(stripped) = canonical.strip_prefix(repo_root) {
+    if let Ok(canonical) = fs::canonicalize(p)
+        && let Ok(stripped) = canonical.strip_prefix(repo_root) {
             return stripped.to_string_lossy().to_string();
         }
-    }
     path.to_string()
 }
 
@@ -91,7 +90,7 @@ fn stdout(out: &Output) -> String {
 /// Name for snapshot files: replace / with _ and add .txt
 fn snapshot_name(dir: &Path, repo_root: &Path) -> String {
     let rel = to_rel(&dir.display().to_string(), repo_root);
-    rel.replace('/', "_").replace('\\', "_") + ".txt"
+    rel.replace(['/', '\\'], "_") + ".txt"
 }
 
 /// Check path is relative or normalise it.
@@ -307,15 +306,14 @@ fn create_temp_course(tag: &str, files: &[(String, Vec<u8>)]) -> PathBuf {
 /// Extract diagnostic codes from JSON output.
 fn extract_codes(output: &str) -> BTreeSet<String> {
     let mut codes = BTreeSet::new();
-    if let Ok(v) = serde_json::from_str::<Value>(output) {
-        if let Some(diags) = v.get("diagnostics").and_then(|d| d.as_array()) {
+    if let Ok(v) = serde_json::from_str::<Value>(output)
+        && let Some(diags) = v.get("diagnostics").and_then(|d| d.as_array()) {
             for d in diags {
                 if let Some(code) = d.get("code").and_then(|c| c.as_str()) {
                     codes.insert(code.to_string());
                 }
             }
         }
-    }
     codes
 }
 
@@ -335,10 +333,8 @@ fn test_all_course_dirs() {
         if update {
             write_snapshot(&snap_name, actual_exit, &actual_out);
         } else {
-            let expected = read_snapshot(&snap_name).expect(&format!(
-                "missing snapshot for {} (run with UPDATE_SNAPSHOT=1 to create)",
-                dir.display()
-            ));
+            let expected = read_snapshot(&snap_name).unwrap_or_else(|| panic!("missing snapshot for {} (run with UPDATE_SNAPSHOT=1 to create)",
+                dir.display()));
             assert_snapshot(dir, expected, (actual_exit, actual_out));
         }
     }
@@ -392,9 +388,9 @@ fn test_synthetic_courses() {
     
     // Collect all codes
     let all_codes: BTreeSet<String> = codes1.into_iter()
-        .chain(codes2.into_iter())
-        .chain(codes3.into_iter())
-        .chain(codes4.into_iter())
+        .chain(codes2)
+        .chain(codes3)
+        .chain(codes4)
         .collect();
     
     // Assert we have >= 25 distinct codes
@@ -419,10 +415,8 @@ fn test_synthetic_courses() {
             (exit4, out4, dir4),
         ].iter().enumerate() {
             let snap_name = format!("synthetic-{}.txt", i + 1);
-            let expected = read_snapshot(&snap_name).expect(&format!(
-                "missing snapshot for synthetic-{}.txt (run with UPDATE_SNAPSHOT=1 to create)",
-                i + 1
-            ));
+            let expected = read_snapshot(&snap_name).unwrap_or_else(|| panic!("missing snapshot for synthetic-{}.txt (run with UPDATE_SNAPSHOT=1 to create)",
+                i + 1));
             let normalised = normalise_output(out, &repo);
             assert_snapshot(dir, expected, (*exit, normalised));
         }

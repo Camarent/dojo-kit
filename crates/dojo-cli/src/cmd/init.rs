@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use crate::USAGE;
 
 fn default_title_from_id(id: &str) -> String {
-    let replaced = id.replace('-', " ").replace('_', " ");
+    let replaced = id.replace(['-', '_'], " ");
     let mut chars = replaced.chars();
     let first = chars.next().unwrap_or(' ').to_uppercase().collect::<String>();
     let rest: String = chars.collect();

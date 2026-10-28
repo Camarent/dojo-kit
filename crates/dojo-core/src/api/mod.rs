@@ -34,7 +34,7 @@ fn field<'a>(args: &'a Value, key: &str) -> Result<&'a Value, CallError> {
     args.get(key).ok_or_else(|| bad(format!("missing argument `{key}`")))
 }
 
-fn rec<'a>(args: &'a Value) -> Option<&'a Value> {
+fn rec(args: &Value) -> Option<&Value> {
     args.get("rec").filter(|v| !v.is_null())
 }
 

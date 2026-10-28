@@ -95,10 +95,10 @@ pub fn build_queue_with_caps(
         .filter(|id| is_new(items.get(id.as_str())))
         .filter_map(|id| {
             // Check per-unit cap if provided
-            if let Some(ref item_units_map) = item_units {
-                if let Some(unit_id) = item_units_map.get(id.as_str()) {
-                    if let Some(ref caps) = unit_new_caps {
-                        if let Some(&cap) = caps.get(unit_id.as_str()) {
+            if let Some(item_units_map) = item_units
+                && let Some(unit_id) = item_units_map.get(id.as_str())
+                    && let Some(caps) = unit_new_caps
+                        && let Some(&cap) = caps.get(unit_id.as_str()) {
                             let cap_usize = cap as usize;
                             let current_count = unit_counts.entry(unit_id.clone()).or_insert(0);
                             if *current_count >= cap_usize {
@@ -106,9 +106,6 @@ pub fn build_queue_with_caps(
                             }
                             *current_count += 1;
                         }
-                    }
-                }
-            }
             Some(id.clone())
         })
         .take(allowance)

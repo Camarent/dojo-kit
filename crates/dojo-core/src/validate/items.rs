@@ -258,11 +258,10 @@ fn check_numeric(n: &crate::content::NumericItem, id: &str, file: &str, line: us
     if !n.answer.is_finite() {
         sink.error("numeric_bad_answer", file, line, format!("item '{id}' answer is not finite"));
     }
-    if let Some(tol) = n.tolerance {
-        if !tol.is_finite() || tol < 0.0 {
+    if let Some(tol) = n.tolerance
+        && (!tol.is_finite() || tol < 0.0) {
             sink.error("numeric_bad_tolerance", file, line, format!("item '{id}' tolerance is negative or not finite"));
         }
-    }
 }
 
 pub(super) fn fold_norm<'a>(item_norm: Option<&'a Normalize>, course_norm: Option<&'a Normalize>) -> Option<&'a Normalize> {
@@ -271,11 +270,10 @@ pub(super) fn fold_norm<'a>(item_norm: Option<&'a Normalize>, course_norm: Optio
 
 pub(super) fn check_leak(item: &Item, file: &str, line: usize, sink: &mut Sink, course_norm: Option<&Normalize>, stimulus_hide_text: &HashSet<String>) {
     // Skip leak check if the item has a stimulus with hideText: true
-    if let Some(stim_id) = item.stimulus() {
-        if stimulus_hide_text.contains(stim_id) {
+    if let Some(stim_id) = item.stimulus()
+        && stimulus_hide_text.contains(stim_id) {
             return;
         }
-    }
     let leaked = match item {
         Item::Gap(g) => {
             let opts = fold_norm(g.normalize.as_ref(), course_norm).cloned().or_else(|| g.normalize.clone()).unwrap_or_default();
@@ -365,10 +363,9 @@ pub(super) fn check_stimulus_groups(items: &[(&str, usize, &Item)], sink: &mut S
         if stim_items.len() < 2 {
             continue;
         }
-        if let Some(message) = stimulus_split_message(stim_id, stim_items) {
-            if let Some((file, line, _)) = items.iter().find(|(_, _, item)| item.stimulus() == Some(*stim_id)) {
+        if let Some(message) = stimulus_split_message(stim_id, stim_items)
+            && let Some((file, line, _)) = items.iter().find(|(_, _, item)| item.stimulus() == Some(*stim_id)) {
                 sink.warning("stimulus_group_split", file, *line, message);
             }
-        }
     }
 }

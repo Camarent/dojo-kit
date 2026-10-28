@@ -11,12 +11,12 @@ fn opts(i: &Value) -> Normalize {
 }
 
 fn indices(v: &Value, what: &str) -> Vec<usize> {
-    let list = v.as_array().expect(&format!("`{what}` must be an array"));
-    list.iter().map(|n| n.as_u64().expect(&format!("`{what}` must be integer")) as usize).collect()
+    let list = v.as_array().unwrap_or_else(|| panic!("`{what}` must be an array"));
+    list.iter().map(|n| n.as_u64().unwrap_or_else(|| panic!("`{what}` must be integer")) as usize).collect()
 }
 
 fn count(v: &Value, what: &str) -> usize {
-    v.as_u64().expect(&format!("`{what}` must be a number")) as usize
+    v.as_u64().unwrap_or_else(|| panic!("`{what}` must be a number")) as usize
 }
 
 #[test]

@@ -3,6 +3,9 @@ use crate::check::{Normalize, normalize};
 use crate::content::{ClozePart, Item, ItemType};
 use std::collections::BTreeMap;
 
+/// An item with its source file and line.
+type Located<'a> = (&'a str, usize, &'a Item);
+
 /// Normalize answer sets for comparison
 fn normalize_answer_set(item: &Item, course_norm: Option<&Normalize>) -> Vec<Vec<String>> {
     let norm_opts = effective_norm(item, course_norm);
@@ -77,13 +80,13 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
     }
     
     // For each prompt with multiple items, check if they have different answer sets
-    for (_prompt, prompt_items) in &by_prompt {
+    for prompt_items in by_prompt.values() {
         if prompt_items.len() < 2 {
             continue;
         }
         
         // Group items by their normalized answer sets
-        let mut by_answers: BTreeMap<Vec<Vec<String>>, Vec<(&str, usize, &Item)>> = BTreeMap::new();
+        let mut by_answers: BTreeMap<Vec<Vec<String>>, Vec<Located>> = BTreeMap::new();
         
         for (file, line, item) in prompt_items {
             let answers = normalize_answer_set(item, course_norm);

@@ -160,7 +160,7 @@ fn exam_few_unique_exactly_20_percent() {
     let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"},{"id":"e","title":"E","examOnly":true}],"exam":{"passMark":0.5,"sections":[{"title":"s","count":5}]}}"#;
     let exam_item = r#"{"type":"choice","id":"e-1","unit":"e","prompt":"Exam","options":["a","b"],"answer":0}"#;
     let normal_item = CHOICE;
-    let d = run(&c, &[exam_item, normal_item, normal_item, normal_item, normal_item]);
+    let d = run(c, &[exam_item, normal_item, normal_item, normal_item, normal_item]);
     assert!(!codes(&d).contains(&"exam_few_unique"), "should not warn at exactly 20%");
 }
 
@@ -170,7 +170,7 @@ fn exam_few_unique_19_percent() {
     let exam_item = r#"{"type":"choice","id":"e-1","unit":"e","prompt":"Exam","options":["a","b"],"answer":0}"#;
     let normal_item = CHOICE;
     let items: Vec<&str> = vec![exam_item, normal_item, normal_item, normal_item, normal_item, normal_item, normal_item, normal_item, normal_item, normal_item];
-    let d = run(&c, &items);
+    let d = run(c, &items);
     assert!(codes(&d).contains(&"exam_few_unique"), "should warn at 10% (need 20% = 2)");
 }
 
@@ -178,14 +178,14 @@ fn exam_few_unique_19_percent() {
 fn exam_few_unique_retired_exam_only_not_counted() {
     let retired_exam = r#"{"type":"choice","id":"e-1","unit":"e","prompt":"Retired Exam","options":["a","b"],"answer":0,"status":"retired"}"#;
     let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"},{"id":"e","title":"E","examOnly":true}],"exam":{"passMark":0.5,"sections":[{"title":"s","count":5}]}}"#;
-    let d = run(&c, &[retired_exam, CHOICE, CHOICE, CHOICE, CHOICE, CHOICE]);
+    let d = run(c, &[retired_exam, CHOICE, CHOICE, CHOICE, CHOICE, CHOICE]);
     assert!(codes(&d).contains(&"exam_few_unique"), "retired examOnly item should not count");
 }
 
 #[test]
 fn exam_few_unique_in_exams_array() {
     let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"}],"exams":[{"id":"n1","passMark":0.5,"sections":[{"title":"s","count":5}]}]}"#;
-    let d = run(&c, &[CHOICE]);
+    let d = run(c, &[CHOICE]);
     assert!(codes(&d).contains(&"exam_few_unique"), "should warn for exams[] too");
 }
 

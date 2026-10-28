@@ -1,15 +1,12 @@
 //! Tests for audio, timer, and srs.mode validation.
 
-use dojo_core::content::{Course, SrsConfig, Unit};
-use dojo_core::validate::{check_audio_files, Diagnostic, Severity, SourceFile, validate_all};
+use dojo_core::content::{Course, Unit};
+use dojo_core::validate::{check_audio_files, Diagnostic, Severity, SourceFile};
 use std::fs;
 use std::path::Path;
 
 mod common;
 use common::*;
-
-/// Minimal valid course without new fields
-const BASE_COURSE: &str = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"}]}"#;
 
 /// Minimal valid item
 const BASE_ITEM: &str = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["a","b"],"answer":0}"#;

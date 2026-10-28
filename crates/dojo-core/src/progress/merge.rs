@@ -197,11 +197,10 @@ pub fn merge(a: &Value, b: &Value) -> Result<Value, super::MergeError> {
     let (Some(ao), Some(bo)) = (a.as_object(), b.as_object()) else {
         return Err(super::MergeError::InvalidDocument);
     };
-    if let (Some(Value::String(ca)), Some(Value::String(cb))) = (ao.get("course"), bo.get("course")) {
-        if ca != cb {
+    if let (Some(Value::String(ca)), Some(Value::String(cb))) = (ao.get("course"), bo.get("course"))
+        && ca != cb {
             return Err(super::MergeError::CourseMismatch);
         }
-    }
 
     let (a_t, b_t) = (field_f64(ao, "t"), field_f64(bo, "t"));
     let (older, newer) = if a_t > b_t { (bo, ao) } else { (ao, bo) };

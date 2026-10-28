@@ -9,11 +9,10 @@ fn print_stats_text(stats: &Stats) {
     for unit in &stats.units {
         let mut active_counts: Vec<(&str, usize)> = Vec::new();
         for t in &ItemType::ALL {
-            if let Some(&count) = unit.active.get(t.as_str()) {
-                if count > 0 {
+            if let Some(&count) = unit.active.get(t.as_str())
+                && count > 0 {
                     active_counts.push((t.as_str(), count));
                 }
-            }
         }
         active_counts.sort_by(|a, b| a.0.cmp(b.0));
         let active_str: String = active_counts.iter().map(|(t, c)| format!("{t}:{c}")).collect::<Vec<_>>().join(", ");
@@ -26,11 +25,10 @@ fn print_stats_text(stats: &Stats) {
 
     let mut total_active_counts: Vec<(&str, usize)> = Vec::new();
     for t in &ItemType::ALL {
-        if let Some(&count) = stats.totals.active.get(t.as_str()) {
-            if count > 0 {
+        if let Some(&count) = stats.totals.active.get(t.as_str())
+            && count > 0 {
                 total_active_counts.push((t.as_str(), count));
             }
-        }
     }
     total_active_counts.sort_by(|a, b| a.0.cmp(b.0));
     let total_active_str: String = total_active_counts.iter().map(|(t, c)| format!("{t}:{c}")).collect::<Vec<_>>().join(", ");

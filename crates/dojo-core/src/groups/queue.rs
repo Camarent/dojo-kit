@@ -102,17 +102,15 @@ fn emit_fresh<'g>(
         if ungrouped >= allowance {
             continue;
         }
-        if let (Some(units), Some(caps)) = (item_units, unit_new_caps) {
-            if let Some(unit) = units.get(id.as_str()) {
-                if let Some(&cap) = caps.get(unit.as_str()) {
+        if let (Some(units), Some(caps)) = (item_units, unit_new_caps)
+            && let Some(unit) = units.get(id.as_str())
+                && let Some(&cap) = caps.get(unit.as_str()) {
                     let n = unit_counts.entry(unit.as_str()).or_insert(0);
                     if *n >= cap as usize {
                         continue;
                     }
                     *n += 1;
                 }
-            }
-        }
         ungrouped += 1;
         fresh.push(id.clone());
     }

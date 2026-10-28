@@ -73,7 +73,7 @@ fn init_creates_required_files() {
 #[test]
 fn init_refuses_existing_directory() {
     let dir = unique_dir("init-exists");
-    fs::create_dir_all(&dir.join("test-course")).unwrap();
+    fs::create_dir_all(dir.join("test-course")).unwrap();
     let out = dojo().arg("init").arg("test-course").arg("--workspace").arg(&dir).output().unwrap();
     assert_eq!(code(&out), Some(1));
     assert!(stderr(&out).contains("already exists"));
@@ -126,7 +126,7 @@ fn init_created_course_passes_validate_except_unit_empty() {
     let out = dojo().arg("init").arg("valid-test").arg("--workspace").arg(&dir).output().unwrap();
     assert_eq!(code(&out), Some(0));
     
-    let validate_out = dojo().arg("validate").arg(&dir.join("valid-test")).output().unwrap();
+    let validate_out = dojo().arg("validate").arg(dir.join("valid-test")).output().unwrap();
     let text = stdout(&validate_out);
     assert!(text.contains("warning[unit_empty]"));
     assert!(text.contains("0 errors"));
@@ -136,7 +136,7 @@ fn init_created_course_passes_validate_except_unit_empty() {
 
 #[test]
 fn stats_demo_counts() {
-    let out = dojo().arg("stats").arg(&demo()).output().unwrap();
+    let out = dojo().arg("stats").arg(demo()).output().unwrap();
     assert_eq!(code(&out), Some(0));
     let text = stdout(&out);
     
@@ -154,8 +154,8 @@ fn stats_demo_counts() {
 
 #[test]
 fn stats_json_demo_deterministic() {
-    let out1 = dojo().arg("stats").arg(&demo()).arg("--json").output().unwrap();
-    let out2 = dojo().arg("stats").arg(&demo()).arg("--json").output().unwrap();
+    let out1 = dojo().arg("stats").arg(demo()).arg("--json").output().unwrap();
+    let out2 = dojo().arg("stats").arg(demo()).arg("--json").output().unwrap();
     assert_eq!(code(&out1), Some(0));
     assert_eq!(code(&out2), Some(0));
     assert_eq!(stdout(&out1), stdout(&out2));
@@ -174,7 +174,7 @@ fn stats_json_demo_deterministic() {
 
 #[test]
 fn stats_json_structure() {
-    let out = dojo().arg("stats").arg(&demo()).arg("--json").output().unwrap();
+    let out = dojo().arg("stats").arg(demo()).arg("--json").output().unwrap();
     assert_eq!(code(&out), Some(0));
     
     let v: Value = serde_json::from_str(&stdout(&out)).unwrap();

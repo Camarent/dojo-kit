@@ -164,11 +164,10 @@ pub(crate) fn validate_course(dir: &Path, course: &CourseFiles, web: Option<&Pat
                 Ok(real) if !real.is_file() => Some(format!("plugins.{kind} path '{path}' is not a file")),
                 Ok(_) => None,
             };
-            if let Some(message) = problem {
-                if !diags.iter().any(|d| d.code == "bad_plugin_path" && d.message.contains(&format!("'{path}'"))) {
+            if let Some(message) = problem
+                && !diags.iter().any(|d| d.code == "bad_plugin_path" && d.message.contains(&format!("'{path}'"))) {
                     diags.push(Diagnostic { severity: Severity::Error, code: "bad_plugin_path", file: "course.json".to_string(), line: 0, message });
                 }
-            }
         }
     }
     diags

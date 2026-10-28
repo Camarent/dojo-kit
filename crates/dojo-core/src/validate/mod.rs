@@ -18,6 +18,7 @@ mod files;
 mod groups;
 mod items;
 mod course;
+mod lang;
 mod order_split;
 mod quality;
 mod speech;
@@ -90,11 +91,10 @@ impl Sink {
 fn check_detail_config(config: &Option<DetailConfig>, file: &str, sink: &mut Sink) {
     if let Some(cfg) = config {
         check_detail_fields(&cfg.fields, file, sink);
-        if let Some(ref glyph) = cfg.glyph {
-            if glyph.is_empty() {
+        if let Some(ref glyph) = cfg.glyph
+            && glyph.is_empty() {
                 sink.error("empty_detail_glyph", file, 0, "detail glyph path must not be empty".to_string());
             }
-        }
     }
 }
 
@@ -105,11 +105,10 @@ fn check_detail_fields(fields: &[DetailField], file: &str, sink: &mut Sink) {
             sink.error("empty_detail_key", file, 0, "detail field key must not be empty".to_string());
         }
         
-        if let Some(ref typ) = field.r#type {
-            if !matches!(typ.as_str(), "text" | "list" | "objects" | "table" | "pairs") {
+        if let Some(ref typ) = field.r#type
+            && !matches!(typ.as_str(), "text" | "list" | "objects" | "table" | "pairs") {
                 sink.error("unknown_detail_type", file, 0, format!("detail field `{}` has unknown type `{}`", field.key, typ));
             }
-        }
 
         if let Some(ref keys) = field.keys {
             if field.r#type.as_deref() != Some("pairs") {

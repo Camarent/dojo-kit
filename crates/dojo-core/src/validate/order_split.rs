@@ -3,25 +3,12 @@
 use super::Sink;
 use crate::content::{Course, Item};
 
-/// Verb/adjective endings and sentence-final particles that are never a chunk on their own.
-/// A separate です/でした/でしょう/だ after a noun is an accepted split and is not listed.
-const ENDINGS: &[&str] = &[
-    "ます", "ません", "ませ", "ん", "まし", "ました", "ましょう", "ませんか", "た", "ない", "なかった", "たい", "て", "か", "よ", "ね",
-];
-
-/// Case particles that must stay attached to their noun.
-const PARTICLES: &[&str] = &["も", "を", "は", "が", "に", "へ", "と"];
-
-fn is_fragment(text: &str) -> bool {
-    ENDINGS.contains(&text) || PARTICLES.contains(&text)
-}
-
-/// Warn for every order step (index >= 1) that is a bare ending or case particle. Only for `contentLanguage` `ja`.
+/// Warn for every order step (index >= 1) that is a bare ending or case particle. Only for a `contentLanguage` with a table in `lang/`.
 pub(super) fn check_order_split(item: &Item, course: Option<&Course>, sink: &mut Sink, file: &str, line: usize) {
     let Item::Order(o) = item else { return };
-    if course.and_then(|c| c.content_language.as_deref()) != Some("ja") {
+    let Some(is_fragment) = course.and_then(|c| c.content_language.as_deref()).and_then(super::lang::fragment_check) else {
         return;
-    }
+    };
     for (k, step) in o.steps.iter().enumerate().skip(1) {
         if is_fragment(step.trim()) {
             sink.warning(
