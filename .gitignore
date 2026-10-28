@@ -45,3 +45,5 @@ PLAN*.md
 web/*.wasm
 /target
 *[Pp]rogress*.json
+# local code index (claude-safe local.py find)
+.code-index/
