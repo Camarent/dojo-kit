@@ -243,7 +243,7 @@ pub(super) fn check_ids_and_lock(all: &AllItems, lock: Option<&IdLock>, out: &mu
             let present: HashSet<&str> = all.iter().map(|(_, _, i)| i.id()).collect();
         let retired: HashSet<&str> = lock.retired.iter().map(String::as_str).collect();
         let mut found: Vec<(&str, Diagnostic)> = Vec::new();
-        for id in lock.ids.iter().filter(|id| !present.contains(id.as_str())) {
+        for id in lock.ids.iter().filter(|id| !present.contains(id.as_str()) && !retired.contains(id.as_str())) {
             let message = format!("id '{id}' is in ids.lock but missing from the content");
             found.push((id, Diagnostic { severity: Severity::Error, code: "id_removed", file: LOCK_FILE.to_string(), line: 0, message }));
         }

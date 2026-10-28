@@ -55,7 +55,7 @@ pub const CODES: [(&str, Severity, &str); 105] = [
     ("match_many_pairs", Severity::Warning, "match has more than 6 pairs"),
     ("order_many_steps", Severity::Warning, "order has more than 7 steps"),
     ("item_type_changed", Severity::Warning, "item type changed from the locked type"),
-    ("id_removed", Severity::Error, "id in ids.lock is missing from the content"),
+    ("id_removed", Severity::Error, "non-retired id in ids.lock is missing from the content"),
     ("bad_supersedes", Severity::Error, "supersedes is invalid (empty, duplicate, self, not retired, or shared)"),
     ("retired_id_reused", Severity::Error, "active item uses an id retired in ids.lock"),
     ("bad_plugin_path", Severity::Error, "plugin path is absolute or contains '..'"),
