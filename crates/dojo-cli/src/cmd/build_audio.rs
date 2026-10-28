@@ -15,7 +15,8 @@ pub(crate) struct AudioFile {
 }
 
 /// Lists the manifest and packs of `course.audio`; empty when the course has none.
-/// Fails on a symlink, an unsafe pack name or a file over the per-file limit.
+/// Fails on a symlink, a pack named `manifest.json` or a file over the per-file limit.
+/// Pack names are checked beforehand by `dojo-core` manifest validation.
 pub(crate) fn collect(dir: &Path, course_json: &Value) -> Result<Vec<AudioFile>, String> {
     let Some(manifest_rel) = course_json.get("audio").and_then(|a| a.get("manifest")).and_then(Value::as_str) else {
         return Ok(Vec::new());
