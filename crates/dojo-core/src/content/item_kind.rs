@@ -54,7 +54,7 @@ impl std::hash::Hash for ItemType {
     }
 }
 
-/// Lifecycle state of an item; retired items stay in shipped data and are skipped by queues.
+/// Lifecycle state of an item; a retired id may leave the content if listed in ids.lock `retired` (see CONTRACT.md:64) and is skipped by queues.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum Status {

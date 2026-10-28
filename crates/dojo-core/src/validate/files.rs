@@ -72,10 +72,12 @@ pub(super) struct ItemCtx<'a> {
     pub(super) stimuli: &'a StimulusInfo,
 }
 
+type PromptKey<'a> = (&'a str, &'a str, Option<&'a str>, String, String);
+
 #[derive(Default)]
 pub(super) struct Seen<'a> {
     first_id: HashMap<&'a str, (&'a str, usize)>,
-    first_prompt: HashMap<(&'a str, &'a str, Option<&'a str>, String, String), (&'a str, usize)>,
+    first_prompt: HashMap<PromptKey<'a>, (&'a str, usize)>,
 }
 
 pub(super) fn check_item_files<'a>(files: &'a [SourceFile], parsed: &'a [ParsedItems], ctx: &ItemCtx) -> Vec<Vec<Diagnostic>> {
