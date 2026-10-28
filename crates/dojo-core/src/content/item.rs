@@ -3,7 +3,7 @@ use crate::check::Normalize;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::item_kind::{ItemType, NewOrder, Status};
+use super::item_kind::{ItemType, Status};
 
 /// Multiple-choice item; `answer` is the index into `options`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
