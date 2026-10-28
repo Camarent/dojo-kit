@@ -75,7 +75,7 @@ pub(super) struct ItemCtx<'a> {
 #[derive(Default)]
 pub(super) struct Seen<'a> {
     first_id: HashMap<&'a str, (&'a str, usize)>,
-    first_prompt: HashMap<(&'a str, String, String), (&'a str, usize)>,
+    first_prompt: HashMap<(&'a str, &'a str, Option<&'a str>, String, String), (&'a str, usize)>,
 }
 
 pub(super) fn check_item_files<'a>(files: &'a [SourceFile], parsed: &'a [ParsedItems], ctx: &ItemCtx) -> Vec<Vec<Diagnostic>> {
@@ -156,7 +156,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
     let course_norm = ctx.course.and_then(|c| c.normalize.as_ref());
     let default_norm = Normalize::default();
     let norm_opts = fold_norm(item_norm, course_norm).unwrap_or(&default_norm);
-    let key = (item.item_type().as_str(), normalize(item.prompt(), norm_opts), item_body(item));
+    let key = (item.unit(), item.item_type().as_str(), item.stimulus(), normalize(item.prompt(), norm_opts), item_body(item));
     match seen.first_prompt.get(&key) {
         Some((f, l)) => sink.warning("duplicate_prompt", name, line, format!("item '{id}' repeats the prompt at {f}:{l}")),
         None => {

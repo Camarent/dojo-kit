@@ -137,7 +137,9 @@ pub(super) fn check_ambiguous_answer(item: &Item, sink: &mut Sink, file: &str, l
     match item {
         Item::Gap(g) => {
             // (a) gap with several accepted answers in a non-ASCII script (readings, meanings), unless the prompt contains a disambiguation hint
-            if g.answers.len() > 1 && g.answers.iter().any(|a| !a.is_ascii()) {
+            if g.answers.len() > 1 && g.answers.iter().any(|a| !a.is_ascii())
+                && g.answers.iter().any(|a| a.chars().any(char::is_alphabetic))
+            {
                 let prompt_lower = g.prompt.to_lowercase();
                 let has_disambiguation = g.prompt.chars().any(|c| c.is_ascii_digit()) 
                     || prompt_lower.contains("любой")
