@@ -7,7 +7,7 @@ description: Build a practice trainer (quizzes, spaced repetition, mock exam) fr
 
 1. Read `AGENTS.md` at the repository root and follow it from section 1 to section 6. It is the single source of truth for the procedure, the content rules and the commands; do not work from memory. With a mock exam, settle the pass rule and the exam-only split with the user first (section 1, items 3 and 7).
 2. If the course `uiLanguage` has no `web/i18n/<lang>.json` (only `en` and `ru` ship), translate `web/i18n/en.json` into `workspace/<course-id>/i18n/<lang>.json` (AGENTS.md section 9: keep keys and `{placeholders}`, keep plural suffixes), then run validate. Do not edit the framework for this.
-3. Build with `./dojo build workspace/<course-id>` (section 7).
+3. Build with `./dojo build workspace/<course-id> --strict` (section 7).
 4. Publish with the Artifact tool, privately:
    - `file_path`: `dist/<course-id>/index.html`
    - `files`: `{"data/content.json": "dist/<course-id>/data/content.json"}`
