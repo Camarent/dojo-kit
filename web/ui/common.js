@@ -8,6 +8,7 @@
   var Component = preact.Component;
   var html = htm.bind(h);
   var DojoExt = root.DojoExt || {};
+  var sessionUtil = root.DojoSessionUtil || (typeof require === 'function' ? require('../session/util.js') : null);
 
   // ---------- helpers ----------
 
@@ -206,11 +207,17 @@
 
   // ---------- API ----------
 
+  /** True when the item is not retired (missing status counts as active). */
+  function isActive(item) {
+    // sessionUtil is absent in sandboxes that load common.js alone.
+    return sessionUtil ? !sessionUtil.isRetired(item) : item.status !== 'retired';
+  }
+
   /** {unitId: {total}} counting non-retired items only. */
   function countActiveByUnit(items) {
     var by = Object.create(null);
     (items || []).forEach(function (it) {
-      if (it.status === 'retired') return;
+      if (!isActive(it)) return;
       (by[it.unit] || (by[it.unit] = { total: 0 })).total++;
     });
     return by;
@@ -232,6 +239,7 @@
     speechLines: speechLines,
     speechCfg: speechCfg,
     cls: cls,
+    isActive: isActive,
     // components
     PlayButton: PlayButton,
     Playback: Playback,

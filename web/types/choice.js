@@ -20,7 +20,7 @@
 
   function Question(p) {
     var right = correctIndexes(p.item);
-    return html`<ul class="opts" data-testid="options">${p.view.options.map(function (o, i) {
+    return html`<ul class="opts" data-testid="options" data-arrow-own>${p.view.options.map(function (o, i) {
       var state = '';
       if (p.result) {
         if (p.exam) state = o.index === p.picked ? 'picked' : '';

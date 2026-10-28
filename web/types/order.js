@@ -152,14 +152,14 @@
     var sentencePieces = p.item && p.item.prompt ? splitPrompt(p.item.prompt, steps.length) : null;
 
     if (sentencePieces !== null) {
-      return html`<div class="order sentence" data-testid="order">
+      return html`<div class="order sentence" data-testid="order" data-arrow-own>
         <p class="muted order-hint">${t('q.order.hint')}</p>
         ${renderSentence(ctx, sentencePieces)}
         ${renderPool(ctx)}
         ${renderActions(ctx)}
       </div>`;
     }
-    return html`<div class="order" data-testid="order">
+    return html`<div class="order" data-testid="order" data-arrow-own>
       <p class="muted order-hint">${t('q.order.hint')}</p>
       ${renderPool(ctx)}
       ${renderList(ctx)}
@@ -176,7 +176,8 @@
 
   function onKey(e, p) {
     if (p.result || DojoTypes.keyBlocked(e)) return null;
-    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return null;
+    var fwd = e.key === 'ArrowDown' || e.key === 'ArrowRight';
+    if (!fwd && e.key !== 'ArrowUp' && e.key !== 'ArrowLeft') return null;
     var container = e.target.closest('[data-testid="order"]');
     if (!container) return null;
     var buttons = container.querySelectorAll('button');
@@ -184,7 +185,7 @@
     for (var i = 0; i < buttons.length; i++) if (!buttons[i].disabled) enabled.push(buttons[i]);
     if (enabled.length === 0) return null;
     var cur = enabled.indexOf(e.target);
-    var next = cur < 0 ? 0 : (cur + (e.key === 'ArrowDown' ? 1 : enabled.length - 1)) % enabled.length;
+    var next = cur < 0 ? 0 : (cur + (fwd ? 1 : enabled.length - 1)) % enabled.length;
     enabled[next].focus(); e.preventDefault();
     return null;
   }

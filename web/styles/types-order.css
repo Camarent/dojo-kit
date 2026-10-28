@@ -35,6 +35,7 @@
 .order-slot:not(.empty):hover:not(:disabled) { border-color: var(--accent); }
 .order-slot.right { background: var(--good-soft); border-color: var(--good); }
 .order-slot.wrong { background: var(--bad-soft); border-color: var(--bad); }
+/* focus ring 2px: no width token has this value */
 .order-slot:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .order-slot:disabled { cursor: default; }
 .order-slot { position: relative; }

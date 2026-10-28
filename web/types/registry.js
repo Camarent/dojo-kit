@@ -40,6 +40,7 @@
     opts = opts || {};
     var t = e.target;
     var tag = t && t.tagName;
+    if (e.defaultPrevented) return true;
     if (e.isComposing === true || e.keyCode === 229) return true;
     if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return true;
     if (t && t.isContentEditable) return true;

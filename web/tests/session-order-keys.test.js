@@ -393,3 +393,51 @@ test('ArrowDown on a non-button element focuses first button', () => {
   assert.strictEqual(result, null);
   assert.strictEqual(doc.activeElement, step0, 'focuses first button when target is not a button');
 });
+
+function orderDom(checkDisabled) {
+  const c = new Node_(1, 'DIV');
+  c.attrs['data-testid'] = 'order';
+  doc.root = c;
+  const bs = ['order-item-0', 'order-item-1', 'order-reset', 'btn-submit'].map((id) => {
+    const b = new Node_(1, 'BUTTON');
+    b.attrs['data-testid'] = id;
+    c.appendChild(b);
+    return b;
+  });
+  if (checkDisabled) bs[3].attrs.disabled = true;
+  return bs;
+}
+
+test('ArrowRight moves to next, ArrowLeft to previous, both wrap, disabled skipped', () => {
+  const def = load().DojoTypes.get('order');
+  const bs = orderDom(true);
+  const r = key('ArrowRight', bs[0]);
+  def.onKey(r, mkProps());
+  assert.strictEqual(doc.activeElement, bs[1]);
+  assert.ok(r.prevented);
+  def.onKey(key('ArrowRight', bs[2]), mkProps());
+  assert.strictEqual(doc.activeElement, bs[0], 'wraps, skips disabled check');
+  def.onKey(key('ArrowLeft', bs[0]), mkProps());
+  assert.strictEqual(doc.activeElement, bs[2], 'wraps back, skips disabled check');
+  def.onKey(key('ArrowLeft', bs[2]), mkProps());
+  assert.strictEqual(doc.activeElement, bs[1]);
+});
+
+test('Up/Down still alias Left/Right', () => {
+  const def = load().DojoTypes.get('order');
+  const bs = orderDom(false);
+  def.onKey(key('ArrowDown', bs[0]), mkProps());
+  assert.strictEqual(doc.activeElement, bs[1]);
+  def.onKey(key('ArrowUp', bs[1]), mkProps());
+  assert.strictEqual(doc.activeElement, bs[0]);
+});
+
+test('After a result Left/Right do nothing (session advance stays)', () => {
+  const def = load().DojoTypes.get('order');
+  const bs = orderDom(false);
+  doc.activeElement = null;
+  const e = key('ArrowRight', bs[0]);
+  def.onKey(e, mkProps({ result: { correct: true } }));
+  assert.strictEqual(doc.activeElement, null);
+  assert.ok(!e.prevented);
+});
