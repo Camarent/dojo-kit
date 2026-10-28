@@ -264,7 +264,7 @@
             disabled=${!!s.result} onClick=${function () { self.answer(false); }}>${t('placement.unknown')}</button>
         </div>
         <div class="row end" style=${s.result ? '' : 'opacity: 0;'}>
-          <button type="button" class="btn primary" data-testid="btn-next"
+          <button type="button" class="btn primary" data-testid="btn-next" data-arrow-own
             onClick=${function () { if (last) self.setState({ confirm: 'finish' }); else self.next(); }}>${last ? t('placement.finish') : t('session.next')}</button>
         </div>
         ${s.confirm === 'exit' ? html`<${Dialog} testid="dlg-exit" title=${t('session.exit.title')} body=${t('session.exit.body')}
@@ -302,7 +302,7 @@
         ${s.error ? html`<p class="notice bad" role="alert" data-testid="session-error">${t('session.error', { code: s.error })}</p>` : null}
         ${this.renderDontKnow(p, s)}
         ${s.result ? html`<div class="row end">
-          <button type="button" class="btn primary" data-testid="btn-next" ref=${function (el) { self.nextBtn = el; }}
+          <button type="button" class="btn primary" data-testid="btn-next" data-arrow-own ref=${function (el) { self.nextBtn = el; }}
             onClick=${function () { if (last) self.setState({ confirm: 'finish' }); else self.next(); }}>${last ? t('placement.finish') : t('session.next')}</button>
         </div>` : null}
         ${s.confirm === 'exit' ? html`<${Dialog} testid="dlg-exit" title=${t('session.exit.title')} body=${t('session.exit.body')}

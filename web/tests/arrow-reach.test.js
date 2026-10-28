@@ -31,7 +31,11 @@ function el(tag, attrs) {
     tagName: tag, attrs: attrs || {}, childNodes: [], parentNode: null,
     get disabled() { return !!this.attrs.disabled; },
     getAttribute(k) { return this.attrs[k] === undefined ? null : this.attrs[k]; },
-    closest() { return null; },
+    closest(sel) {
+      const m = /^\[([\w-]+)\]$/.exec(sel);
+      for (let n = this; n; n = n.parentNode) if (m && n.attrs && n.attrs[m[1]] !== undefined) return n;
+      return null;
+    },
     focus() { el.active = this; },
     add(c) { c.parentNode = this; this.childNodes.push(c); return c; }
   };
@@ -65,7 +69,7 @@ test('disabled skipped; inputs, modifiers, own-handler buttons ignored', () => {
   assert.ok(!nav.onKey(press('ArrowRight', inp), win));
   const m = press('ArrowRight', a); m.shiftKey = true;
   assert.ok(!nav.onKey(m, win));
-  const n = p.add(el('BUTTON', { 'data-testid': 'btn-next' }));
+  const n = p.add(el('BUTTON', { 'data-testid': 'btn-next', 'data-arrow-own': '' }));
   assert.ok(!nav.onKey(press('ArrowRight', n), win), 'btn-next keeps session advance');
 });
 

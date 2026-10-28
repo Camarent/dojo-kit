@@ -126,3 +126,9 @@ test('Escape with modifier does not close the detail', async () => {
     assert.strictEqual(c.id(), 'a', mod);
   }
 });
+
+test('ArrowRight already prevented by arrow-nav does not switch topic', async () => {
+  const c = await open(ABC, 'a');
+  c.win.fire(key('ArrowRight', { tagName: 'BUTTON' }, { defaultPrevented: true }));
+  assert.strictEqual(c.id(), 'a');
+});

@@ -152,14 +152,14 @@
     var sentencePieces = p.item && p.item.prompt ? splitPrompt(p.item.prompt, steps.length) : null;
 
     if (sentencePieces !== null) {
-      return html`<div class="order sentence" data-testid="order">
+      return html`<div class="order sentence" data-testid="order" data-arrow-own>
         <p class="muted order-hint">${t('q.order.hint')}</p>
         ${renderSentence(ctx, sentencePieces)}
         ${renderPool(ctx)}
         ${renderActions(ctx)}
       </div>`;
     }
-    return html`<div class="order" data-testid="order">
+    return html`<div class="order" data-testid="order" data-arrow-own>
       <p class="muted order-hint">${t('q.order.hint')}</p>
       ${renderPool(ctx)}
       ${renderList(ctx)}

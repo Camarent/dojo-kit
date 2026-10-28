@@ -301,7 +301,7 @@
           ${body}
         </article>
         <div class="row end">
-          <button type="button" class="btn primary" data-testid="btn-intro-done" ref=${function (el) { self.introBtn = el; }}
+          <button type="button" class="btn primary" data-testid="btn-intro-done" data-arrow-own ref=${function (el) { self.introBtn = el; }}
             onClick=${function () { self.introDone(); }}>${t('intro.gotit')}</button>
         </div>`;
     }
@@ -334,7 +334,7 @@
       return html`<div class="row actions-row">
           ${this.renderDontKnow(p, s)}
           ${examMode ? html`<button type="button" class="btn" data-testid="btn-finish" onClick=${function () { self.setState({ confirm: 'finish' }); }}>${t('session.finish')}</button>` : null}
-          <button type="button" class="btn primary big" disabled=${!exam && !s.result} data-testid="btn-next"
+          <button type="button" class="btn primary big" disabled=${!exam && !s.result} data-testid="btn-next" data-arrow-own
             ref=${function (el) { self.nextBtn = el; }}
             title=${t('session.next.withArrow')} aria-label=${t('session.next.withArrow')}
             onClick=${function () { if (examMode && last) self.setState({ confirm: 'finish' }); else self.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>

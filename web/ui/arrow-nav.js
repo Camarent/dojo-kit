@@ -3,27 +3,22 @@
  * Globals expected: none (self-installs a document keydown listener when a document exists).
  * Group = enabled BUTTON children of the target's parent. Axis comes from the parent's
  * computed flex-direction: row layouts use Left/Right, column or non-flex layouts use Up/Down.
- * Inputs, textareas, selects, modified keys, and controls with their own handler are skipped.
+ * Grid parents are horizontal when the first two group buttons share offsetTop.
+ * Inputs, textareas, selects, modified keys, and anything inside [data-arrow-own] are skipped.
+ * Key layer: arrow-nav runs on document first and calls preventDefault; window handlers must
+ * honour defaultPrevented via DojoTypes.keyBlocked.
  */
 (function (root) {
   'use strict';
 
-  var OWN = ['order', 'btn-next', 'btn-intro-done'];
-
   function ownHandler(t) {
-    var id = t.getAttribute && t.getAttribute('data-testid');
-    if (OWN.indexOf(id) >= 0) return true;
-    if (t.closest && t.closest('[data-testid="order"]')) return true;
-    // choice options have their own Up/Down handler; multi options (class multi-opt) do not
-    var multi = /(^|\s)multi-opt(\s|$)/.test((t.getAttribute && t.getAttribute('class')) || '');
-    return !multi && !!(t.closest && t.closest('[data-testid="options"]'));
+    return !!(t.closest && t.closest('[data-arrow-own]'));
   }
 
-  function horizontal(parent, win) {
-    var cs = win && win.getComputedStyle ? win.getComputedStyle(parent) : null;
-    if (!cs) return false;
-    var d = cs.display || '';
-    return d.indexOf('flex') >= 0 && (cs.flexDirection || 'row').indexOf('column') < 0;
+  function keyAccepted(e) {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return false;
+    var k = e.key;
+    return k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowUp' || k === 'ArrowDown';
   }
 
   function buttonsOf(node) {
@@ -35,30 +30,54 @@
     return out;
   }
 
+  // Sibling buttons, or the first button of each LI sibling when the target sits in a list item.
+  function groupOf(t) {
+    var scope = t.parentNode;
+    if (scope.tagName !== 'LI' || !scope.parentNode) return { scope: scope, group: buttonsOf(scope) };
+    scope = scope.parentNode;
+    var group = [];
+    var items = scope.childNodes || [];
+    for (var j = 0; j < items.length; j++) {
+      var bs = buttonsOf(items[j]);
+      if (bs.length) group.push(bs[0]);
+    }
+    return { scope: scope, group: group };
+  }
+
+  function gridHorizontal(cs, group) {
+    if (group.length > 1 && group[0].offsetTop !== undefined && group[1].offsetTop !== undefined) {
+      return group[0].offsetTop === group[1].offsetTop;
+    }
+    var cols = (cs.gridTemplateColumns || '').split(' ').filter(Boolean);
+    return cols.length > 1;
+  }
+
+  function horizontal(parent, win, group) {
+    var cs = win && win.getComputedStyle ? win.getComputedStyle(parent) : null;
+    if (!cs) return false;
+    var d = cs.display || '';
+    if (d.indexOf('flex') >= 0) return (cs.flexDirection || 'row').indexOf('column') < 0;
+    return d.indexOf('grid') >= 0 && gridHorizontal(cs, group || []);
+  }
+
+  function axisMatches(scope, key, win, group) {
+    return horizontal(scope, win, group) === (key === 'ArrowLeft' || key === 'ArrowRight');
+  }
+
+  function step(group, cur, fwd) {
+    return group[(cur + (fwd ? 1 : group.length - 1)) % group.length];
+  }
+
   // Move focus within the group; returns true when focus moved.
   function onKey(e, win) {
-    var k = e.key;
-    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return false;
-    if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'ArrowUp' && k !== 'ArrowDown') return false;
+    if (!keyAccepted(e)) return false;
     var t = e.target;
     if (!t || t.tagName !== 'BUTTON' || !t.parentNode || ownHandler(t)) return false;
-    var scope = t.parentNode;
-    var group = buttonsOf(scope);
-    // one button per list item: the group is the list's items
-    if (scope.tagName === 'LI' && scope.parentNode) {
-      scope = scope.parentNode;
-      group = [];
-      var items = scope.childNodes || [];
-      for (var j = 0; j < items.length; j++) {
-        var bs = buttonsOf(items[j]);
-        if (bs.length) group.push(bs[0]);
-      }
-    }
-    if (horizontal(scope, win) !== (k === 'ArrowLeft' || k === 'ArrowRight')) return false;
-    var cur = group.indexOf(t);
-    if (cur < 0 || group.length < 2) return false;
-    var fwd = k === 'ArrowRight' || k === 'ArrowDown';
-    group[(cur + (fwd ? 1 : group.length - 1)) % group.length].focus();
+    var g = groupOf(t);
+    if (!axisMatches(g.scope, e.key, win, g.group)) return false;
+    var cur = g.group.indexOf(t);
+    if (cur < 0 || g.group.length < 2) return false;
+    step(g.group, cur, e.key === 'ArrowRight' || e.key === 'ArrowDown').focus();
     if (e.preventDefault) e.preventDefault();
     return true;
   }
