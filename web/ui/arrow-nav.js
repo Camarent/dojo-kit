@@ -3,6 +3,7 @@
  * Globals expected: none (self-installs a document keydown listener when a document exists).
  * Group = enabled BUTTON children of the target's parent. Axis comes from the parent's
  * computed flex-direction: row layouts use Left/Right, column or non-flex layouts use Up/Down.
+ * Landing exception: Up/Down from a row inside a column `.actions` walks all its buttons in DOM order.
  * Grid parents are horizontal when the first two group buttons share offsetTop.
  * Inputs, textareas, selects, modified keys, and anything inside [data-arrow-own] are skipped.
  * Key layer: arrow-nav runs on document first and calls preventDefault; window handlers must
@@ -44,6 +45,28 @@
     return { scope: scope, group: group };
   }
 
+  function allButtons(node, out) {
+    var kids = node.childNodes || [];
+    for (var i = 0; i < kids.length; i++) {
+      if (kids[i].tagName === 'BUTTON' && !kids[i].disabled) out.push(kids[i]);
+      else allButtons(kids[i], out);
+    }
+    return out;
+  }
+
+  function isActions(n) {
+    var cls = (n && n.getAttribute && n.getAttribute('class')) || '';
+    return /(^|\s)actions(\s|$)/.test(cls);
+  }
+
+  // Landing: Up/Down in a column `.actions` (from its buttons or a nested row) walks every button in DOM order.
+  function landingGroup(g, key, win) {
+    if (key !== 'ArrowUp' && key !== 'ArrowDown') return null;
+    var box = isActions(g.scope) ? g.scope : g.scope.parentNode;
+    if (!isActions(box) || horizontal(box, win, [])) return null;
+    return allButtons(box, []);
+  }
+
   function gridHorizontal(cs, group) {
     if (group.length > 1 && group[0].offsetTop !== undefined && group[1].offsetTop !== undefined) {
       return group[0].offsetTop === group[1].offsetTop;
@@ -74,7 +97,9 @@
     var t = e.target;
     if (!t || t.tagName !== 'BUTTON' || !t.parentNode || ownHandler(t)) return false;
     var g = groupOf(t);
-    if (!axisMatches(g.scope, e.key, win, g.group)) return false;
+    var lg = landingGroup(g, e.key, win);
+    if (lg) g = { scope: g.scope, group: lg };
+    else if (!axisMatches(g.scope, e.key, win, g.group)) return false;
     var cur = g.group.indexOf(t);
     if (cur < 0 || g.group.length < 2) return false;
     step(g.group, cur, e.key === 'ArrowRight' || e.key === 'ArrowDown').focus();

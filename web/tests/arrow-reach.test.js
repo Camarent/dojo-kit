@@ -79,3 +79,28 @@ test('list-item buttons (multi) group across li siblings', () => {
   nav.onKey(press('ArrowDown', bs[0]), winFor('block', ''));
   assert.strictEqual(el.active, bs[1]);
 });
+
+test('landing: Up/Down reach buttons inside row containers in DOM order', () => {
+  const actions = el('DIV', { class: 'actions' });
+  const placement = actions.add(el('BUTTON', { 'data-testid': 'btn-placement' }));
+  const review = actions.add(el('BUTTON', { 'data-testid': 'btn-review' }));
+  const row1 = actions.add(el('DIV', { class: 'row wrap' }));
+  const practice = row1.add(el('BUTTON', { 'data-testid': 'btn-practice' }));
+  const row2 = actions.add(el('DIV', { class: 'row' }));
+  const settings = row2.add(el('BUTTON', { 'data-testid': 'btn-settings' }));
+  const catalog = row2.add(el('BUTTON', { 'data-testid': 'btn-catalog' }));
+  const win = { getComputedStyle: (n) => (n === actions ? { display: 'flex', flexDirection: 'column' } : { display: 'flex', flexDirection: 'row' }) };
+  assert.ok(nav.onKey(press('ArrowDown', review), win));
+  assert.strictEqual(el.active, practice, 'Practice reached from Repeat');
+  const order = [placement, review, practice, settings, catalog];
+  let cur = placement;
+  for (let i = 1; i <= order.length; i++) {
+    nav.onKey(press('ArrowDown', cur), win);
+    cur = el.active;
+    assert.strictEqual(cur, order[i % order.length]);
+  }
+  nav.onKey(press('ArrowUp', placement), win);
+  assert.strictEqual(el.active, catalog);
+  assert.ok(nav.onKey(press('ArrowRight', settings), win));
+  assert.strictEqual(el.active, catalog, 'Left/Right row unchanged');
+});
