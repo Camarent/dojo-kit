@@ -140,6 +140,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
     check_prompt_type_mismatch(item.prompt(), item.item_type(), sink, name, line, id);
     check_ambiguous_answer(item, sink, name, line);
     check_order_blanks_mismatch(item, sink, name, line);
+    super::order_split::check_order_split(item, ctx.course, sink, name, line);
 
     if let Some(c) = ctx.course {
         let whitelisted_scripts: HashSet<String> = c.scripts.iter().cloned().collect();
