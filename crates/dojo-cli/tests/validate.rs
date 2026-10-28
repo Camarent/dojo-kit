@@ -259,6 +259,23 @@ fn i18n_missing_keys_warn_and_fail_only_with_strict() {
 }
 
 #[test]
+fn i18n_framework_file_covers_missing_keys() {
+    let (dir, web) = i18n_setup("i18n-fw", r#"{"hi":"Salut {name}"}"#);
+    std::fs::write(web.join("i18n/xx.json"), r#"{"hi":"A {name}","bye":"B","lang":"C {lang}"}"#).unwrap();
+    let out = validate_i18n(&dir, &web, &["--strict"]);
+    assert_eq!(code(&out), Some(0), "{}", stdout(&out));
+    assert!(!stdout(&out).contains("i18n_missing_key"));
+}
+
+#[test]
+fn i18n_framework_file_missing_a_family_still_warns() {
+    let (dir, web) = i18n_setup("i18n-fw-partial", r#"{"hi":"Salut {name}"}"#);
+    std::fs::write(web.join("i18n/xx.json"), r#"{"hi":"A {name}","bye":"B"}"#).unwrap();
+    let text = stdout(&validate_i18n(&dir, &web, &[]));
+    assert!(text.contains("warning[i18n_missing_key]") && text.contains("lang") && !text.contains("bye"), "{text}");
+}
+
+#[test]
 fn i18n_lost_placeholder_is_an_error() {
     let (dir, web) = i18n_setup("i18n-ph", r#"{"hi":"Salut","bye":"Ciao","lang":"Langue"}"#);
     let out = validate_i18n(&dir, &web, &[]);

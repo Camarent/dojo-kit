@@ -95,7 +95,7 @@ pub(crate) fn load(dir: &Path) -> Result<CourseFiles, String> {
     Ok(CourseFiles { course_text, files, lock, stimuli, intros })
 }
 
-/// Checks `<dir>/i18n/*.json` against `<web>/i18n/en.json`; nothing when the reference is unavailable.
+/// Checks `<dir>/i18n/*.json` against `<web>/i18n/en.json`, counting `<web>/i18n/<lang>.json` as covering missing keys; nothing when the reference is unavailable.
 pub(crate) fn i18n_check(dir: &Path, web: Option<&Path>) -> Vec<Diagnostic> {
     let Some(web) = web else { return Vec::new() };
     let Ok(text) = fs::read_to_string(web.join("i18n/en.json")) else { return Vec::new() };
@@ -107,8 +107,12 @@ pub(crate) fn i18n_check(dir: &Path, web: Option<&Path>) -> Vec<Diagnostic> {
     let mut diags = Vec::new();
     for lang in langs {
         let file = format!("i18n/{lang}.json");
+        let framework = fs::read_to_string(web.join(&file)).ok().and_then(|t| match serde_json::from_str::<serde_json::Value>(&t) {
+            Ok(serde_json::Value::Object(m)) => Some(m),
+            _ => None,
+        });
         match build::read_i18n_json(&dir.join(&file), &file) {
-            Ok(Some(value)) => diags.extend(build::i18n_diagnostics(&reference, &file, &value)),
+            Ok(Some(value)) => diags.extend(build::i18n_diagnostics(&reference, &file, &value, framework.as_ref())),
             Ok(None) => {}
             Err(message) => diags.push(Diagnostic { severity: Severity::Error, code: "i18n_bad_file", file, line: 0, message }),
         }

@@ -119,7 +119,9 @@ fn i18n_diag(severity: crate::Severity, code: &'static str, file_name: &str, mes
 
 /// Compares a course UI file with the English reference: placeholder mismatches (error),
 /// missing keys and unknown keys (warnings), non-string values and non-object files (errors).
-pub fn i18n_diagnostics(reference: &Map<String, Value>, file_name: &str, course: &Value) -> Vec<crate::Diagnostic> {
+/// `framework` is the framework file of the same language: its key families count as covered
+/// for the missing-key check only.
+pub fn i18n_diagnostics(reference: &Map<String, Value>, file_name: &str, course: &Value, framework: Option<&Map<String, Value>>) -> Vec<crate::Diagnostic> {
     use crate::Severity::{Error, Warning};
     let Some(map) = course.as_object() else {
         return vec![i18n_diag(Error, "i18n_bad_file", file_name, "must be a JSON object of string values".to_string())];
@@ -149,6 +151,9 @@ pub fn i18n_diagnostics(reference: &Map<String, Value>, file_name: &str, course:
             }
             None => {}
         }
+    }
+    if let Some(fw) = framework {
+        course_families.extend(fw.keys().map(|k| family(k)));
     }
     let missing: Vec<&str> = ref_families.iter().filter(|f| !course_families.contains(*f)).copied().collect();
     if !missing.is_empty() {
@@ -210,7 +215,7 @@ mod i18n_tests {
     }
 
     fn codes(course: Value) -> Vec<&'static str> {
-        i18n_diagnostics(&en(), "i18n/x.json", &course).iter().map(|d| d.code).collect()
+        i18n_diagnostics(&en(), "i18n/x.json", &course, None).iter().map(|d| d.code).collect()
     }
 
     #[test]
@@ -223,9 +228,25 @@ mod i18n_tests {
     #[test]
     fn missing_list_is_capped_at_twenty() {
         let reference: Map<String, Value> = (0..25).map(|i| (format!("k{i:02}"), json!("v"))).collect();
-        let d = i18n_diagnostics(&reference, "i18n/x.json", &json!({}));
+        let d = i18n_diagnostics(&reference, "i18n/x.json", &json!({}), None);
         assert_eq!(d.len(), 1);
         assert!(d[0].message.contains("k19") && !d[0].message.contains("k20") && d[0].message.ends_with("and 5 more"), "{}", d[0].message);
+    }
+
+    #[test]
+    fn framework_file_covers_missing_families_only() {
+        let fw = json!({"n.other": "x", "n.one": "y", "plain": "z"});
+        let fw = fw.as_object().unwrap();
+        let course = json!({"solo.other": "{n}"});
+        assert!(i18n_diagnostics(&en(), "i18n/x.json", &course, Some(fw)).is_empty());
+        let partial = json!({"plain": "z"});
+        let d = i18n_diagnostics(&en(), "i18n/x.json", &json!({}), Some(partial.as_object().unwrap()));
+        assert_eq!(d.len(), 1);
+        assert!(d[0].message.starts_with("2 keys missing") && !d[0].message.contains("plain"), "{}", d[0].message);
+        // framework keys never trigger placeholder or unknown-key checks
+        let fw = json!({"bogus": "{q}"});
+        assert!(!i18n_diagnostics(&en(), "i18n/x.json", &json!({"plain":"a","n.other":"{n}","solo.other":"{n}"}), Some(fw.as_object().unwrap()))
+            .iter().any(|d| d.code != "i18n_missing_key"));
     }
 
     #[test]
