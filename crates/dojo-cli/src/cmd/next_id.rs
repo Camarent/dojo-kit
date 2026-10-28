@@ -72,11 +72,10 @@ pub(crate) fn run_next_id(args: &[String]) -> Result<u8, String> {
     let mut existing_numbers: BTreeSet<usize> = BTreeSet::new();
     for f in &course.files {
         for line in f.text.lines().filter(|l| !l.trim().is_empty()) {
-            if let Ok(item) = serde_json::from_str::<Item>(line) {
-                if let Some(num) = extract_number_from_id(item.id(), prefix) {
+            if let Ok(item) = serde_json::from_str::<Item>(line)
+                && let Some(num) = extract_number_from_id(item.id(), prefix) {
                     existing_numbers.insert(num);
                 }
-            }
         }
     }
 

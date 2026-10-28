@@ -50,7 +50,7 @@ fn create_minimal_course(dir: &PathBuf) {
     )
     .unwrap();
 
-    let items = vec![serde_json::json!({
+    let items = [serde_json::json!({
         "type": "gap",
         "prompt": "Q1",
         "answers": ["a"],

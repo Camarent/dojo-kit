@@ -32,7 +32,7 @@ fn fires_empty_detail_key() {
     
     // detail field with empty key at unit level
     let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U","detail":{"fields":[{"key":""}]}}]}"#;
-    fires(&c, &[CHOICE], "empty_detail_key");
+    fires(c, &[CHOICE], "empty_detail_key");
     
     // clean: detail field with non-empty key
     let c = with_course(r#""detail":{"fields":[{"key":"test"}]}"#);
@@ -46,11 +46,11 @@ fn fires_entity_spans_groups() {
     let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u1","title":"U1"},{"id":"u2","title":"U2"}],"groups":[{"id":"g1","title":"G1","units":["u1"]},{"id":"g2","title":"G2","units":["u2"]}]}"#;
     let item1 = r#"{"type":"choice","id":"e-1","unit":"u1","prompt":"Pick 1","options":["a","b"],"answer":0,"entity":"shared"}"#;
     let item2 = r#"{"type":"choice","id":"e-2","unit":"u2","prompt":"Pick 2","options":["a","b"],"answer":0,"entity":"shared"}"#;
-    fires(&c, &[item1, item2], "entity_spans_groups");
+    fires(c, &[item1, item2], "entity_spans_groups");
     
     // clean: entity in same group
     let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u1","title":"U1"},{"id":"u2","title":"U2"}],"groups":[{"id":"g1","title":"G1","units":["u1","u2"]}]}"#;
-    let d = run(&c, &[item1, item2]);
+    let d = run(c, &[item1, item2]);
     assert!(!d.iter().any(|d| d.code == "entity_spans_groups"));
 }
 

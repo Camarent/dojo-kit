@@ -615,7 +615,7 @@ fn course_i18n_symlink_rejected() {
     std::fs::write(&path, text).unwrap();
     std::fs::create_dir_all(e.course.join("i18n")).unwrap();
     // Create a symlink to the web ru.json
-    std::os::unix::fs::symlink(&e.web.join("i18n/ru.json"), e.course.join("i18n/ru.json")).unwrap();
+    std::os::unix::fs::symlink(e.web.join("i18n/ru.json"), e.course.join("i18n/ru.json")).unwrap();
     let o = build(&e, &e.root.join("dist"));
     assert_eq!(o.status.code(), Some(1));
     let stderr = String::from_utf8_lossy(&o.stderr);

@@ -5,10 +5,12 @@ use std::collections::HashMap;
 
 /// Aggregation method for multiple old records mapping to the same new ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum Aggregate {
     /// Take the minimum value
     Min,
     /// Take the mean value
+    #[default]
     Mean,
     /// Take the maximum value
     Max,
@@ -16,11 +18,6 @@ pub enum Aggregate {
     First,
 }
 
-impl Default for Aggregate {
-    fn default() -> Self {
-        Aggregate::Mean
-    }
-}
 
 /// Configuration from id-map.json
 #[derive(Debug, Clone)]

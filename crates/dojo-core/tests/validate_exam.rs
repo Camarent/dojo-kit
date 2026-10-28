@@ -125,7 +125,7 @@ fn stimulus_group_split_different_unit() {
     const STIM: &str = r#"{"id":"u-1","unit":"u","type":"gap","prompt":"P","answers":["a"],"stimulus":"s1"}"#;
     const STIM2: &str = r#"{"id":"u-2","unit":"v","type":"gap","prompt":"P","answers":["a"],"stimulus":"s1"}"#;
     let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"},{"id":"v","title":"V"}]}"#;
-    let d = run(&c, &[STIM, STIM2]);
+    let d = run(c, &[STIM, STIM2]);
     assert!(d.iter().any(|d| d.code == "stimulus_group_split"));
 }
 

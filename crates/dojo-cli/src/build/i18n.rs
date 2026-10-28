@@ -16,31 +16,27 @@ pub fn collect_course_languages(course_dir: &Path) -> Result<BTreeSet<String>, S
         return Ok(langs);
     }
     if let Ok(entries) = fs::read_dir(&i18n_dir) {
-        for entry in entries {
-            if let Ok(entry) = entry {
+        for entry in entries.flatten() {
+            {
                 let path = entry.path();
                 // Check for symlinks before processing
                 #[cfg(unix)]
                 {
-                    if let Ok(metadata) = fs::symlink_metadata(&path) {
-                        if metadata.file_type().is_symlink() {
-                            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    if let Ok(metadata) = fs::symlink_metadata(&path)
+                        && metadata.file_type().is_symlink()
+                            && let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                                 return Err(format!("i18n/{}: symlinks are not allowed", name));
                             }
-                        }
-                    }
                 }
-                if path.is_file() {
-                    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                        if let Some(stem) = name.strip_suffix(".json") {
+                if path.is_file()
+                    && let Some(name) = path.file_name().and_then(|n| n.to_str())
+                        && let Some(stem) = name.strip_suffix(".json") {
                             if stem.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
                                 langs.insert(stem.to_string());
                             } else {
                                 eprintln!("warning: ignoring invalid i18n filename: {}", path.display());
                             }
                         }
-                    }
-                }
             }
         }
     }
