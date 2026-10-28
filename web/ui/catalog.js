@@ -89,7 +89,7 @@
       this.tabUnits = tabUnits;
       this.ca = CatalogAudio ? CatalogAudio.create(props.content) : null;
       this.state = { search: '', selectedUnit: tabUnits.length ? tabUnits[0].id : null, selectedTags: [], selectedStages: [], tagsOpen: false, limit: CATALOG_PAGE, detailItem: null };
-      this.items = props.content.items.filter(function (it) { return it.status !== 'retired'; });
+      this.items = props.content.items.filter(DojoCommon.isActive);
       this.introById = Object.create(null);
       var ib = this.introById;
       (props.content.intros || []).forEach(function (i) { if (i && typeof i.id === 'string') ib[i.id] = i; });

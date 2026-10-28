@@ -35,7 +35,7 @@
       super(props);
       this.state = { units: [], tags: [], types: [], count: 20 };
       // Content is immutable for this screen: compute the chip sources once.
-      var active = props.content.items.filter(function (it) { return it.status !== 'retired'; });
+      var active = props.content.items.filter(DojoCommon.isActive);
       var tagSet = new Set();
       active.forEach(function (it) { (it.tags || []).forEach(function (tag) { tagSet.add(tag); }); });
       this.tags = uniqueSorted(Array.from(tagSet)).filter(function (tag) { return !tagInfo(props.course, tag).internal; });

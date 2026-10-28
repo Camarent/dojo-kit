@@ -7,6 +7,7 @@
   'use strict';
 
   var DojoExt = root.DojoExt || {};
+  var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
 
   function create() {
   class SettingsDialogs {
@@ -21,7 +22,7 @@
       if (field === 'dropOnWrong') {
         // srsByType is per item type: a unit whose items share one type shows that type's drop.
         var types = {};
-        p.content.items.forEach(function (it) { if (it.unit === unitId && it.status !== 'retired') types[it.type] = true; });
+        p.content.items.forEach(function (it) { if (it.unit === unitId && DojoCommon.isActive(it)) types[it.type] = true; });
         var names = Object.keys(types);
         if (names.length === 1 && typeof resolved.dropByType[names[0]] === 'number') return resolved.dropByType[names[0]];
       }

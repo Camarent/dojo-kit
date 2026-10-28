@@ -189,7 +189,7 @@
   }
 
   function sectionAbout(p, t) {
-    var retired = p.content.items.filter(function (it) { return it.status === 'retired'; }).length;
+    var retired = p.content.items.filter(function (it) { return !DojoCommon.isActive(it); }).length;
     return html`<section class="group" data-testid="about">
           <h2>${t('settings.about')}</h2>
           <dl class="about">
