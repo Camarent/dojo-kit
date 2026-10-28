@@ -229,11 +229,25 @@
     </div>`;
   }
 
+  // Step, due and counts lines for a record; null when no record.
+  function renderRecordStats(rec, now, t) {
+    if (!rec) return null;
+    var due = rec.due;
+    var days = due > now ? Math.ceil((due - now) / 86400000) : 0;
+    var dueText = function () { return due <= now ? t('catalog.dueNow') : t('catalog.dueIn', { n: days }); };
+    var okN = rec.ok || 0, badN = rec.bad || 0, stepN = rec.s || 0;
+    return html`<p class="muted" data-testid="detail-step">${t('catalog.step', { s: stepN })} · ${dueText()}</p>
+      <p class="muted" data-testid="detail-due">${t('catalog.due')}: ${dueText()}</p>
+      <p class="muted" data-testid="detail-counts">${t('catalog.counts', { ok: okN, bad: badN })}</p>
+      ${renderExtrasStats(rec, t)}`;
+  }
+
   // Public API
   var api = {
     renderIntroBody: renderIntroBody,
     renderDeclarativeDetail: renderDeclarativeDetail,
     renderExtrasStats: renderExtrasStats,
+    renderRecordStats: renderRecordStats,
     getMetaValue: getMetaValue,
     resolvePath: resolvePath,
     topicStage: topicStage,

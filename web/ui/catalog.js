@@ -286,6 +286,7 @@
 
     renderDetail(p, s, t, d) {
       var self = this;
+      var rec = p.engine.record(d);
       var dIntro = d ? this.introOf(d) : null;
       var dIntroOut = dIntro && DojoExt.intro ? DojoExt.intro(dIntro, d, this.hookCtx()) : null;
       var detailHookOut = d ? DojoExt.detail(d, this.hookCtx({ introRendered: !!dIntroOut })) : null;
@@ -315,19 +316,7 @@
             <p data-testid="detail-answers"><b>${t('session.expected')}</b> <span class="pre">${renderText(p.engine.expected(d))}</span></p>
             ${d.explanation ? html`<p class="pre" data-testid="detail-explanation">${renderText(d.explanation)}</p>` : null}
             <p class="muted" data-testid="detail-stage">${t('catalog.stage')}: ${t('catalog.stage.' + p.engine.stage(d))}</p>
-            ${(function () {
-              var rec = p.engine.record(d);
-              if (!rec) return null;
-              var now = p.now();
-              var due = rec.due;
-              var days = due > now ? Math.ceil((due - now) / 86400000) : 0;
-              var dueText = function () { return due <= now ? t('catalog.dueNow') : t('catalog.dueIn', { n: days }); };
-              var okN = rec.ok || 0, badN = rec.bad || 0, stepN = rec.s || 0;
-              return html`<p class="muted" data-testid="detail-step">${t('catalog.step', { s: stepN })} · ${dueText()}</p>
-                <p class="muted" data-testid="detail-due">${t('catalog.due')}: ${dueText()}</p>
-                <p class="muted" data-testid="detail-counts">${t('catalog.counts', { ok: okN, bad: badN })}</p>
-                ${DojoDetail.renderExtrasStats(rec, t)}`;
-            })()}
+            ${DojoDetail.renderRecordStats(rec, rec ? p.now() : 0, t)}
             ${detailHookOut ? html`<div data-testid="detail-hook">${detailHookOut}</div>` : null}
           </article>
         </div>

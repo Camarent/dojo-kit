@@ -162,3 +162,14 @@ test('record without ok/bad/s renders no undefined', async () => {
     assert.ok(!/undefined|NaN/.test(H.text(H.find(v, id))), id);
   }
 });
+
+test('detail without record does not call p.now and renders', async () => {
+  const items = [choice('a', 'u1')];
+  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }] } });
+  m.app.go('catalog');
+  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
+  const p = { t: (k) => k, engine: { record: () => null, expected: () => 'x', stage: () => 'new' }, now: () => { throw new Error('p.now called'); } };
+  const real = cat.props || {};
+  const base = Object.assign({}, real);
+  assert.doesNotThrow(() => cat.renderDetail(Object.assign(base, p, { engine: Object.assign(Object.create(real.engine || null), p.engine) }), { }, p.t, items[0]));
+});

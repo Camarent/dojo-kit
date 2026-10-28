@@ -135,6 +135,14 @@ fn bidi_control_code_points_are_rejected_at_range_edges() {
 }
 
 #[test]
+fn lrm_rlm_alm_marks_are_allowed() {
+    for cp in ['\u{200E}', '\u{200F}', '\u{061C}'] {
+        assert!(msgs(&format!(r#","text":"a{cp}b""#)).is_empty(), "U+{:04X}", cp as u32);
+        assert!(msgs(&format!(r#","text":"ok","tr":{{"ru":"a{cp}b"}}"#)).is_empty(), "tr U+{:04X}", cp as u32);
+    }
+}
+
+#[test]
 fn code_points_next_to_bidi_ranges_and_french_diacritics_pass() {
     assert!(msgs(r#","text":"Où est l'élève ? À l'école, ça va \u2029\u2065\u206A""#).is_empty());
     assert!(msgs(r#","text":"Où est l'élève ? Ça va très bien""#).is_empty());
