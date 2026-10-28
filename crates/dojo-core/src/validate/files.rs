@@ -72,10 +72,12 @@ pub(super) struct ItemCtx<'a> {
     pub(super) stimuli: &'a StimulusInfo,
 }
 
+type PromptKey<'a> = (&'a str, &'a str, Option<&'a str>, String, String);
+
 #[derive(Default)]
 pub(super) struct Seen<'a> {
     first_id: HashMap<&'a str, (&'a str, usize)>,
-    first_prompt: HashMap<(&'a str, String, String), (&'a str, usize)>,
+    first_prompt: HashMap<PromptKey<'a>, (&'a str, usize)>,
 }
 
 pub(super) fn check_item_files<'a>(files: &'a [SourceFile], parsed: &'a [ParsedItems], ctx: &ItemCtx) -> Vec<Vec<Diagnostic>> {
@@ -140,6 +142,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
     check_prompt_type_mismatch(item.prompt(), item.item_type(), sink, name, line, id);
     check_ambiguous_answer(item, sink, name, line);
     check_order_blanks_mismatch(item, sink, name, line);
+    super::order_split::check_order_split(item, ctx.course, sink, name, line);
 
     if let Some(c) = ctx.course {
         let whitelisted_scripts: HashSet<String> = c.scripts.iter().cloned().collect();
@@ -156,7 +159,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
     let course_norm = ctx.course.and_then(|c| c.normalize.as_ref());
     let default_norm = Normalize::default();
     let norm_opts = fold_norm(item_norm, course_norm).unwrap_or(&default_norm);
-    let key = (item.item_type().as_str(), normalize(item.prompt(), norm_opts), item_body(item));
+    let key = (item.unit(), item.item_type().as_str(), item.stimulus(), normalize(item.prompt(), norm_opts), item_body(item));
     match seen.first_prompt.get(&key) {
         Some((f, l)) => sink.warning("duplicate_prompt", name, line, format!("item '{id}' repeats the prompt at {f}:{l}")),
         None => {
@@ -243,7 +246,7 @@ pub(super) fn check_ids_and_lock(all: &AllItems, lock: Option<&IdLock>, out: &mu
             let present: HashSet<&str> = all.iter().map(|(_, _, i)| i.id()).collect();
         let retired: HashSet<&str> = lock.retired.iter().map(String::as_str).collect();
         let mut found: Vec<(&str, Diagnostic)> = Vec::new();
-        for id in lock.ids.iter().filter(|id| !present.contains(id.as_str())) {
+        for id in lock.ids.iter().filter(|id| !present.contains(id.as_str()) && !retired.contains(id.as_str())) {
             let message = format!("id '{id}' is in ids.lock but missing from the content");
             found.push((id, Diagnostic { severity: Severity::Error, code: "id_removed", file: LOCK_FILE.to_string(), line: 0, message }));
         }

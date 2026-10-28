@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 105] = [
+pub const CODES: [(&str, Severity, &str); 106] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -44,7 +44,7 @@ pub const CODES: [(&str, Severity, &str); 105] = [
     ("cloze_empty_parts", Severity::Error, "cloze has no non-empty text or alternatives"),
     ("numeric_bad_answer", Severity::Error, "numeric answer is not finite"),
     ("numeric_bad_tolerance", Severity::Error, "numeric tolerance is negative or not finite"),
-    ("duplicate_prompt", Severity::Warning, "same type and prompt as an earlier active item"),
+    ("duplicate_prompt", Severity::Warning, "same unit, type, prompt and stimulus as an earlier active item"),
     ("answer_in_prompt", Severity::Warning, "an answer of >= 3 chars appears in the prompt"),
     ("bad_topic", Severity::Error, "item topic is present but empty"),
     ("topic_too_long", Severity::Warning, "topic longer than 80 characters"),
@@ -55,7 +55,7 @@ pub const CODES: [(&str, Severity, &str); 105] = [
     ("match_many_pairs", Severity::Warning, "match has more than 6 pairs"),
     ("order_many_steps", Severity::Warning, "order has more than 7 steps"),
     ("item_type_changed", Severity::Warning, "item type changed from the locked type"),
-    ("id_removed", Severity::Error, "id in ids.lock is missing from the content"),
+    ("id_removed", Severity::Error, "non-retired id in ids.lock is missing from the content"),
     ("bad_supersedes", Severity::Error, "supersedes is invalid (empty, duplicate, self, not retired, or shared)"),
     ("retired_id_reused", Severity::Error, "active item uses an id retired in ids.lock"),
     ("bad_plugin_path", Severity::Error, "plugin path is absolute or contains '..'"),
@@ -75,8 +75,9 @@ pub const CODES: [(&str, Severity, &str); 105] = [
     ("foreign_script", Severity::Warning, "text contains letters from a script that is not Latin, Cyrillic, Hiragana, Katakana, or CJK"),
     ("prompt_type_mismatch", Severity::Warning, "prompt asks to write/type but item type has no text input, or asks to choose/pick on a gap item"),
     ("same_prompt_different_answers", Severity::Warning, "two non-stimulus gap/cloze/numeric items share the same normalized prompt but have different normalized answer sets"),
-    ("ambiguous_answer", Severity::Warning, "gap with several non-ASCII answers and no disambiguation hint in the prompt, choice/multi option with '/' outside brackets, or duplicate options"),
+    ("ambiguous_answer", Severity::Warning, "gap with several answers (some non-ASCII, some alphabetic; number formats are skipped) and no disambiguation hint in the prompt, choice/multi option with '/' outside brackets, or duplicate options"),
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
+    ("order_split_word", Severity::Warning, "order step in a Japanese course is a bare ending or case particle, not a whole chunk"),
     ("unknown_unit_in_group", Severity::Error, "group references a unit id that does not exist"),
     ("unit_in_two_groups", Severity::Error, "unit is in two groups"),
     ("two_extra_new_groups", Severity::Error, "more than one group has extraNew: true"),

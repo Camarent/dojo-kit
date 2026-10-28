@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Generic course test runner: all node and python tests of one course, from any cwd.
 # Usage: scripts/course-test.sh <course-dir> [node|python|all]   (default: all)
+# Before the node suites (modes node and all), when course.json exists, runs `dojo validate <course-dir> --strict`: any warning or error sets exit 1.
 # Discovers all tests in the course: *.test.js (node) and every dir with test_*.py (python).
 # Skipped paths: any component named node_modules, .git, fixtures, dist, __pycache__, .venv, venv or site-packages.
-# Exit: 0 green (or nothing to run in mode all), 1 a suite failed, 2 usage error or unknown dir
+# Exit: 0 green (or nothing to run in mode all and validate clean), 1 a suite failed, 2 usage error or unknown dir
 #       or explicit mode with nothing found.
 # Env read by this script:
 #   DOJO_KIT_ROOT     framework root for the node tests (default: this framework's root).
@@ -63,6 +64,11 @@ if [ "$MODE" = "python" ] || [ "$MODE" = "all" ]; then
     mapfile -t py_dirs < <(find_tests -type f -name 'test_*.py' -printf '%h\n' | sort -u)
 fi
 
+if [ "$MODE" = "node" ] || [ "$MODE" = "all" ]; then
+    if [ -f course.json ]; then
+        run_suite "$FW_ROOT/dojo" validate "$COURSE" --strict || rc=1
+    fi
+fi
 if [ "${#node_files[@]}" -gt 0 ]; then
     ran=1
     run_suite node --test "${node_files[@]}" || rc=1
@@ -76,7 +82,7 @@ done
 if [ "$ran" -eq 0 ]; then
     if [ "$MODE" = "all" ]; then
         echo "course-test: no tests found in $COURSE"
-        exit 0
+        exit $rc
     fi
     echo "course-test: no $MODE tests found in $COURSE" >&2
     exit 2

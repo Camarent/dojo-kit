@@ -831,7 +831,7 @@
   ],
   "$defs": {
     "Status": {
-      "description": "Lifecycle state of an item; retired items stay in shipped data and are skipped by queues.",
+      "description": "Lifecycle state of an item; a retired id may leave the content if listed in ids.lock `retired` (see CONTRACT.md:64) and is skipped by queues.",
       "type": "string",
       "enum": [
         "active",

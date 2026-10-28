@@ -70,7 +70,7 @@ Before `./dojo build`:
 - Ids are permanent: never reuse, renumber or delete. Remove an item with `"status":"retired"`.
 - Changing an item's type or correct answer = retire it and add a new item (progress belongs to the id). Wording and typo fixes keep the id.
 - `./dojo lock workspace/<course-id>` records ids in `ids.lock` (refuses on errors); `./dojo build` updates it too.
-- Validator guards: `id_removed` (locked id missing), `retired_id_reused`, `item_type_changed`, `duplicate_id`.
+- Validator guards: `id_removed` (locked NON-retired id missing), `retired_id_reused`, `item_type_changed`, `duplicate_id`.
 
 ## Units and per-unit settings
 `course.json` `units`: `[{id, title, ...}]` (id `^[a-z0-9][a-z0-9_-]{0,47}$`; aim for 10-40 items per unit; drop empty units). Unit-level optional fields:

@@ -9,7 +9,7 @@ const web = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 const en = JSON.parse(read('i18n/en.json'));
 const ru = JSON.parse(read('i18n/ru.json'));
-const FORMS = { en: ['one', 'other'], ru: ['one', 'few', 'many'] };
+const FORMS = { en: ['one', 'other'], ru: ['one', 'few', 'many', 'other'] };
 const PLURAL = /^(.*)\.(one|few|many|other)$/;
 
 function bases(dict) {

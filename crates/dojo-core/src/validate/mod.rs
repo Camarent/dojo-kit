@@ -18,6 +18,7 @@ mod files;
 mod groups;
 mod items;
 mod course;
+mod order_split;
 mod quality;
 mod speech;
 mod dupes;

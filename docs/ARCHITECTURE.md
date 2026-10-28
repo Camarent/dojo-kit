@@ -57,7 +57,7 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `dojo` wrapper, `tests/wr
 
 ## Constraints that cut across modules
 - Frozen before users have data: progress doc shape `v:1`, localStorage key, artifact db path, id strings, `exams[].id` once published, timestamps in ms, day keys `YYYY-MM-DD`. Schema changes are additive only (CONTRACT section 5).
-- Item ids are opaque and append-only; `ids.lock` records them and their types; retired items stay in shipped data.
+- Item ids are opaque and append-only; `ids.lock` records them and their types; a retired id may leave the content if listed in ids.lock `retired` (see CONTRACT.md:64).
 - Output limits: 8 MiB warning, 16 MiB hard limit on the artifact build; WASM budget 512 KiB. Audio packs: `dojo build` fails above 16 MiB per file, 60 MiB per dist, 250 files (`crates/dojo-cli/src/cmd/build_audio.rs`).
 - Audio and timers (CONTRACT section 12): packs are served as raw bytes; the framework ships no audio; `data/content.json` carries materialised timer defaults; the web reads them and falls back to 8000 only when `baseMs` is missing or not finite (`web/session/qtimer.js`). Module map in `modules/web.md` and `modules/crates.md`.
 - Artifact sandbox: no network at runtime; Preact and htm are vendored and inlined.

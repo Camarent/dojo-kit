@@ -90,7 +90,7 @@ Re-read a random sample (10-15%) of the items as a learner would: is each answer
 
 ## 7. Build and publish (target: Claude artifact)
 ```
-./dojo build workspace/<course-id>
+./dojo build workspace/<course-id> --strict
 ```
 This validates (errors refuse the build; add `--strict` to refuse on warnings), updates `ids.lock`, and writes `dist/<course-id>/index.html`, `dist/<course-id>/data/content.json` and `manifest.json`. A size over 8 MiB prints a warning, over 16 MiB is an error.
 Publishing needs an assistant that can publish Claude artifacts (Claude Code with the Artifact tool, or the `make-trainer` skill). Publish `dist/<course-id>/index.html` as the page and `data/content.json` as a supporting file at the same relative path, with capabilities `{"db":{},"user":{}}`. The page loads `data/content.json` itself. Publish privately (the default) and give the user the link. If your tool cannot publish artifacts, stop after the build, tell the user exactly where `dist/<course-id>/` is, and say they need to publish it with Claude Code.
