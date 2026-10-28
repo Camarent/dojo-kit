@@ -34,13 +34,19 @@
     constructor(props) {
       super(props);
       this.state = { units: [], tags: [], types: [], count: 20 };
+      // Content is immutable for this screen: compute the chip sources once.
+      var active = props.content.items.filter(function (it) { return it.status !== 'retired'; });
+      var tagSet = new Set();
+      active.forEach(function (it) { (it.tags || []).forEach(function (tag) { tagSet.add(tag); }); });
+      this.tags = uniqueSorted(Array.from(tagSet)).filter(function (tag) { return !tagInfo(props.course, tag).internal; });
+      this.types = uniqueSorted(active.map(function (it) { return it.type; }));
+      this.unitIds = DojoCommon.visibleUnits(props.course.units, DojoCommon.countActiveByUnit(props.content.items)).map(function (u) { return u.id; });
+      this.unitById = Object.create(null);
+      (props.course.units || []).forEach(function (u) { if (!this.unitById[u.id]) this.unitById[u.id] = u; }, this);
     }
     render(p, s) {
       var t = p.t;
       var self = this;
-      var active = p.content.items.filter(function (it) { return it.status !== 'retired'; });
-      var tags = uniqueSorted(active.reduce(function (a, it) { return a.concat(it.tags || []); }, [])).filter(function (tag) { return !tagInfo(p.course, tag).internal; });
-      var types = uniqueSorted(active.map(function (it) { return it.type; }));
       function group(title, key, values, label) {
         if (!values.length) return null;
         return html`<fieldset class="group" data-testid=${'group-' + key}>
@@ -55,12 +61,12 @@
         <header class="head"><h1>${t('practice.title')}</h1></header>
         <${Notice} text=${p.notice} />
         <p class="muted">${t('practice.hint')}</p>
-        ${group(t('practice.units'), 'units', DojoCommon.visibleUnits(p.course.units, DojoCommon.countActiveByUnit(p.content.items)).map(function (u) { return u.id; }), function (id) {
-          var u = (p.course.units || []).filter(function (x) { return x.id === id; })[0];
+        ${group(t('practice.units'), 'units', self.unitIds, function (id) {
+          var u = self.unitById[id];
           return u ? renderText(u.title) : id;
         })}
-        ${group(t('practice.tags'), 'tags', tags, function (x) { return tagInfo(p.course, x).label; })}
-        ${group(t('practice.types'), 'types', types, function (x) { return t('type.' + x); })}
+        ${group(t('practice.tags'), 'tags', self.tags, function (x) { return tagInfo(p.course, x).label; })}
+        ${group(t('practice.types'), 'types', self.types, function (x) { return t('type.' + x); })}
         <div class="group">
           <label class="legend-like">${t('practice.count')}</label>
           <${Stepper} testid="count" label=${t('practice.count')} value=${s.count} min=${5} max=${50} step=${5}
