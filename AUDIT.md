@@ -81,7 +81,7 @@ eslint | /opt/jstools/proj | /opt/jstools/node_modules/.bin/eslint -c eslint.con
 knip | /opt/jstools/proj | /opt/jstools/node_modules/.bin/knip --no-config-hints --reporter json | knip
 jscpd | . | d=$(mktemp -d) && /opt/jstools/node_modules/.bin/jscpd web --min-lines 10 --min-tokens 70 --ignore "**/vendor/**,**/tests/**,**/n5/**" --silent --reporters json --output $d >/dev/null; cat $d/jscpd-report.json | jscpd
 madge | . | /opt/jstools/node_modules/.bin/madge --circular --extensions js --json web | madge
-gitleaks | . | GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks dir --redact --no-banner --report-format json --report-path /dev/stdout . | gitleaks
+gitleaks | . | GITLEAKS_CONFIG_TOML=$'[extend]\nuseDefault = true\n[[allowlists]]\npaths = ["^target/", "^workspace/"]' GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks dir --redact --no-banner --report-format json --report-path /dev/stdout . | gitleaks
 ```
 
 Secrets history (G1): `gitleaks git --redact --no-banner --log-opts=--all .`
