@@ -312,6 +312,51 @@ fn pack_with_path_separator_in_file_name_is_rejected() {
     assert!(out.contains("audio_bad_manifest") && out.contains("must match"), "{out}");
 }
 
+fn build_with_pack_name(tag: &str, name: &str) -> Output {
+    let e = env(tag);
+    add_audio(&e, &[4]);
+    let path = e.course.join("audio/manifest.json");
+    let mut m = json_file(&path);
+    m["packs"][0]["file"] = json!(name);
+    for _ in 0..3 {
+        put(&path, &m.to_string());
+        m["packs"][0]["bytes"] = json!(fs::metadata(&path).unwrap().len());
+    }
+    build(&e, &e.root.join("dist"))
+}
+
+#[test]
+fn empty_pack_file_name_is_rejected() {
+    let o = build_with_pack_name("packempty", "");
+    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
+    let out = String::from_utf8_lossy(&o.stdout);
+    assert!(out.contains("audio_bad_manifest") && out.contains("must match"), "{out}");
+}
+
+#[test]
+fn dot_prefixed_pack_file_name_is_rejected() {
+    let o = build_with_pack_name("packdot", ".hidden.bin");
+    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
+    let out = String::from_utf8_lossy(&o.stdout);
+    assert!(out.contains("audio_bad_manifest") && out.contains("must match"), "{out}");
+}
+
+#[test]
+fn parent_traversal_pack_file_name_is_rejected() {
+    let o = build_with_pack_name("packup", "../pack-00.bin");
+    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
+    let out = String::from_utf8_lossy(&o.stdout);
+    assert!(out.contains("audio_bad_manifest") && out.contains("must match"), "{out}");
+}
+
+#[test]
+fn backslash_pack_file_name_is_rejected() {
+    let o = build_with_pack_name("packbs", "sub\\pack-00.bin");
+    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
+    let out = String::from_utf8_lossy(&o.stdout);
+    assert!(out.contains("audio_bad_manifest") && out.contains("must match"), "{out}");
+}
+
 #[test]
 fn null_timer_builds_like_no_timer() {
     let e = env("nulltimer");
