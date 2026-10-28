@@ -57,11 +57,10 @@ fn check_exam_ids(course: &Course, sink: &mut Sink) {
 }
 
 fn check_exam_pass(id: &str, exam: &ExamConfig, sink: &mut Sink) {
-    if let Some(pm) = exam.pass_mark {
-        if !(0.0..=1.0).contains(&pm) {
+    if let Some(pm) = exam.pass_mark
+        && !(0.0..=1.0).contains(&pm) {
             sink.error("bad_pass_mark", COURSE_FILE, 0, format!("exam '{id}': passMark {} is not within 0..=1", pm));
         }
-    }
     
     // Validate pass rule
     let has_scoring = !exam.scoring.is_empty();
@@ -71,11 +70,10 @@ fn check_exam_pass(id: &str, exam: &ExamConfig, sink: &mut Sink) {
     // pass_mark_ignored: resolve_mode(..) == points and pass_mark is Some
     // Check these together since they both use the mode
     if let Some(pass) = &exam.pass {
-        if let Some(mode) = pass.mode {
-            if mode == PassMode::Points && exam.scoring.is_empty() {
+        if let Some(mode) = pass.mode
+            && mode == PassMode::Points && exam.scoring.is_empty() {
                 sink.error("bad_pass_rule", COURSE_FILE, 0, format!("exam '{id}': pass.mode is points but scoring is empty"));
             }
-        }
         
         // pass_mark_ignored: check when pass is present
         if resolved_mode == PassMode::Points && exam.pass_mark.is_some() {
@@ -83,13 +81,11 @@ fn check_exam_pass(id: &str, exam: &ExamConfig, sink: &mut Sink) {
         }
         
         // pass_rule_no_source: basis == official and source is None or trim() is empty
-        if let Some(basis) = pass.basis {
-            if basis == PassBasis::Official {
-                if pass.source.as_ref().map_or(true, |s| s.trim().is_empty()) {
+        if let Some(basis) = pass.basis
+            && basis == PassBasis::Official
+                && pass.source.as_ref().is_none_or(|s| s.trim().is_empty()) {
                     sink.warning("pass_rule_no_source", COURSE_FILE, 0, format!("exam '{id}': pass.basis is official but source is missing"));
                 }
-            }
-        }
     } else {
         // pass_mark_ignored: also check when pass is not present but mode defaults to points
         if resolved_mode == PassMode::Points && exam.pass_mark.is_some() {
@@ -177,11 +173,10 @@ fn check_exam_scoring(id: &str, exam: &ExamConfig, check_known: &mut KnownCheck,
         if part.points == 0 {
             sink.error("bad_exam", COURSE_FILE, 0, format!("exam '{id}': scoring[{part_idx}].points is 0"));
         }
-        if let Some(min_p) = part.min_points {
-            if min_p > part.points {
+        if let Some(min_p) = part.min_points
+            && min_p > part.points {
                 sink.error("bad_exam", COURSE_FILE, 0, format!("exam '{id}': scoring[{part_idx}].minPoints {min_p} > points {}", part.points));
             }
-        }
         if part.sections.is_empty() {
             sink.error("bad_exam", COURSE_FILE, 0, format!("exam '{id}': scoring[{part_idx}].sections is empty"));
         }
@@ -193,11 +188,10 @@ fn check_exam_scoring(id: &str, exam: &ExamConfig, check_known: &mut KnownCheck,
         }
     }
 
-    if let Some(pp) = exam.pass_points {
-        if pp < 0 {
+    if let Some(pp) = exam.pass_points
+        && pp < 0 {
             sink.error("bad_exam", COURSE_FILE, 0, format!("exam '{id}': passPoints {pp} is negative"));
         }
-    }
 }
 
 fn check_exam_sections(course: &Course, exam: &ExamConfig, sink: &mut Sink) {
@@ -228,8 +222,8 @@ fn check_exam_sections(course: &Course, exam: &ExamConfig, sink: &mut Sink) {
 
 fn check_breakdown(course: &Course, sink: &mut Sink) {
     if let Some(breakdown) = &course.breakdown {
-        if breakdown.key.as_ref().map_or(true, |k| k.trim().is_empty()) ||
-           breakdown.meaning.as_ref().map_or(true, |m| m.trim().is_empty()) {
+        if breakdown.key.as_ref().is_none_or(|k| k.trim().is_empty()) ||
+           breakdown.meaning.as_ref().is_none_or(|m| m.trim().is_empty()) {
             sink.error("bad_breakdown", COURSE_FILE, 0, "breakdown key and meaning must be non-empty strings".to_string());
         }
         for (i, reading) in breakdown.readings.iter().enumerate() {
@@ -275,7 +269,7 @@ pub(super) fn check_exam_sizes(course: &Course, items: &[(&str, usize, &Item)], 
             
             // Check if we have enough examOnly items (at least 20% of section.count)
             if section.count > 0 {
-                let target = (section.count * 20 + 99) / 100;
+                let target = (section.count * 20).div_ceil(100);
                 if exam_only_count < target {
                     sink.warning(
                         "exam_few_unique",

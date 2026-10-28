@@ -102,8 +102,8 @@ fn is_valid_numeric_string(s: &str) -> bool {
         return false;
     }
     
-    if i < n {
-        if bytes[i] == b'e' || bytes[i] == b'E' {
+    if i < n
+        && (bytes[i] == b'e' || bytes[i] == b'E') {
             i += 1;
             if i < n && (bytes[i] == b'+' || bytes[i] == b'-') {
                 i += 1;
@@ -115,7 +115,6 @@ fn is_valid_numeric_string(s: &str) -> bool {
                 i += 1;
             }
         }
-    }
     
     i == n
 }

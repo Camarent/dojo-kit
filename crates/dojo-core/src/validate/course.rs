@@ -45,11 +45,10 @@ fn check_units(course: &Course, sink: &mut Sink) {
         if unit.new_per_day.is_some_and(|n| n < 0) {
             sink.error("bad_unit_settings", COURSE_FILE, 0, format!("unit '{}' has a negative newPerDay", unit.id));
         }
-        if let Some(ladder) = unit.srs.as_ref().and_then(|s| s.ladder.as_ref()) {
-            if let Some(problem) = ladder_problem(ladder) {
+        if let Some(ladder) = unit.srs.as_ref().and_then(|s| s.ladder.as_ref())
+            && let Some(problem) = ladder_problem(ladder) {
                 sink.error("bad_unit_settings", COURSE_FILE, 0, format!("unit '{}' srs.ladder {problem}", unit.id));
             }
-        }
         if unit.placement == Some(false) && !has_placement {
             sink.warning("placement_unused", COURSE_FILE, 0, format!("unit '{}' has placement:false but course.placement is absent", unit.id));
         }
@@ -86,13 +85,11 @@ fn check_course_misc(course: &Course, sink: &mut Sink) {
     }
     if let Some(labels) = &course.tag_labels {
         for (tag, label) in labels {
-            if let TagLabel::Detail(d) = label {
-                if let Some(kind) = d.kind.as_deref() {
-                    if kind != "public" && kind != "internal" {
+            if let TagLabel::Detail(d) = label
+                && let Some(kind) = d.kind.as_deref()
+                    && kind != "public" && kind != "internal" {
                         sink.warning("unknown_tag_kind", COURSE_FILE, 0, format!("tagLabels.{tag}.kind '{kind}' is not 'public' or 'internal'"));
                     }
-                }
-            }
         }
     }
     if let Some(placement) = &course.placement {
@@ -103,11 +100,10 @@ fn check_course_misc(course: &Course, sink: &mut Sink) {
             sink.error("bad_placement", COURSE_FILE, 0, format!("placement.mode must be 'check' or 'self', got '{}'", placement.mode));
         }
     }
-    if let Some(ls) = course.learned_stage {
-        if ls < 1 {
+    if let Some(ls) = course.learned_stage
+        && ls < 1 {
             sink.error("bad_learned_stage", COURSE_FILE, 0, format!("learnedStage must be >= 1, got {}", ls));
         }
-    }
     
     // Validate groups
     check_groups(course, sink);
@@ -132,11 +128,10 @@ fn check_course_misc(course: &Course, sink: &mut Sink) {
 }
 
 fn check_srs(course: &Course, sink: &mut Sink) {
-    if let Some(ladder) = course.srs.as_ref().and_then(|s| s.ladder.as_ref()) {
-        if let Some(problem) = ladder_problem(ladder) {
+    if let Some(ladder) = course.srs.as_ref().and_then(|s| s.ladder.as_ref())
+        && let Some(problem) = ladder_problem(ladder) {
             sink.error("bad_ladder", COURSE_FILE, 0, format!("srs.ladder {problem}"));
         }
-    }
     if let Some(map) = &course.srs_by_type {
         for (key, cfg) in map {
             if parse_type(key).is_none() {

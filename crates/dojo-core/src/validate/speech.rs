@@ -60,11 +60,10 @@ pub(super) fn regex_problem(pat: &str) -> Option<String> {
 }
 
 pub(super) fn validate_speech_config(speech: &SpeechConfig, file: &str, sink: &mut Sink) {
-    if let Some(rate) = speech.rate {
-        if !(0.1..=10.0).contains(&rate) {
+    if let Some(rate) = speech.rate
+        && !(0.1..=10.0).contains(&rate) {
             sink.error("bad_speech", file, 0, format!("speech.rate {} is outside 0.1..10", rate));
         }
-    }
     if let Some(voices) = &speech.voices {
         for (label, voice) in voices {
             if label.is_empty() {
@@ -78,16 +77,14 @@ pub(super) fn validate_speech_config(speech: &SpeechConfig, file: &str, sink: &m
                     sink.error("bad_voice_pattern", file, 0, format!("speech.voices.{}.prefer[{}] '{}': {}", label, i, pat, why));
                 }
             }
-            if let Some(pitch) = voice.pitch {
-                if pitch < 0.0 || pitch > 2.0 {
+            if let Some(pitch) = voice.pitch
+                && (pitch < 0.0 || pitch > 2.0) {
                     sink.error("bad_speech", file, 0, format!("speech.voices.{}.pitch {} is outside 0..2", label, pitch));
                 }
-            }
-            if let Some(rate) = voice.rate {
-                if !(0.1..=10.0).contains(&rate) {
+            if let Some(rate) = voice.rate
+                && !(0.1..=10.0).contains(&rate) {
                     sink.error("bad_speech", file, 0, format!("speech.voices.{}.rate {} is outside 0.1..10", label, rate));
                 }
-            }
         }
     }
 }

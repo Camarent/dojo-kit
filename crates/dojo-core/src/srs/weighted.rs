@@ -94,7 +94,7 @@ fn worst_first<'a>(cands: &[&'a str], records: Option<&Map<String, Value>>) -> V
     worst.into_iter().take(WORST_MAX).map(|x| x.1).collect()
 }
 
-fn sample<'a>(mut pool: Vec<&'a str>, mut weights: Vec<f64>, mut state: u64, want: usize) -> Vec<&'a str> {
+fn sample(mut pool: Vec<&str>, mut weights: Vec<f64>, mut state: u64, want: usize) -> Vec<&str> {
     let mut out = Vec::new();
     while out.len() < want && !pool.is_empty() {
         let at = draw_index(&weights, unit_random(splitmix64(&mut state)));

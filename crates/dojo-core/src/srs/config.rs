@@ -29,15 +29,12 @@ pub fn ladder_for_unit_json(course: &Value, unit_id: &str, item_type: Option<&st
         return ladder;
     }
     // Try srsByType[item_type]
-    if let Some(type_name) = item_type {
-        if let Some(srs_by_type) = course.get("srsByType").and_then(Value::as_object) {
-            if let Some(type_srs) = srs_by_type.get(type_name) {
-                if let Some(ladder) = json_ladder(Some(type_srs)) {
+    if let Some(type_name) = item_type
+        && let Some(srs_by_type) = course.get("srsByType").and_then(Value::as_object)
+            && let Some(type_srs) = srs_by_type.get(type_name)
+                && let Some(ladder) = json_ladder(Some(type_srs)) {
                     return ladder;
                 }
-            }
-        }
-    }
     // Fall back to course ladder
     json_ladder(course.get("srs"))
         .unwrap_or_else(|| DEFAULT_LADDER.to_vec())

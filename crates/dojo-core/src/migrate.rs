@@ -67,11 +67,10 @@ pub fn migrate_progress(doc: &Value, links: &Links) -> Result<Migration, Migrate
             skipped.push(succ.clone());
             continue;
         }
-        if let Some(s) = own_valid {
-            if !pred_recs.iter().any(|p| num(p, "last") > num(s, "last")) {
+        if let Some(s) = own_valid
+            && !pred_recs.iter().any(|p| num(p, "last") > num(s, "last")) {
                 continue;
             }
-        }
         let mut recs: Vec<&Map<String, Value>> = own_valid.into_iter().collect();
         recs.extend(pred_recs);
         let mut out = recs[0].clone();

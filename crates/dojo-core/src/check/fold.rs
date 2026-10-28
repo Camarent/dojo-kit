@@ -52,14 +52,12 @@ pub fn apply_fold(text: &str, fold: &[(String, String)]) -> String {
                     result.push_str(to);
                     continue 'chars;
                 }
-            } else if let (Some((f1, f2)), Some((t1, _))) = (fold_range(from), fold_range(to)) {
-                if c >= f1 && c <= f2 {
-                    if let Some(m) = char::from_u32(t1 as u32 + (c as u32 - f1 as u32)) {
+            } else if let (Some((f1, f2)), Some((t1, _))) = (fold_range(from), fold_range(to))
+                && c >= f1 && c <= f2
+                    && let Some(m) = char::from_u32(t1 as u32 + (c as u32 - f1 as u32)) {
                         result.push(m);
                         continue 'chars;
                     }
-                }
-            }
         }
         result.push(c);
     }

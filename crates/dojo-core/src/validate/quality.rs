@@ -79,11 +79,10 @@ pub(super) fn check_char_script(c: char) -> Option<String> {
 /// Check if text contains characters from non-whitelisted scripts
 pub(super) fn has_foreign_script(text: &str, whitelisted_scripts: &HashSet<String>) -> bool {
     for c in text.chars() {
-        if let Some(script_name) = check_char_script(c) {
-            if !whitelisted_scripts.contains(&script_name) {
+        if let Some(script_name) = check_char_script(c)
+            && !whitelisted_scripts.contains(&script_name) {
                 return true;
             }
-        }
     }
     false
 }
@@ -119,11 +118,10 @@ pub(super) fn has_slash_outside_brackets(s: &str) -> bool {
         match c {
             '(' | '（' => depth += 1,
             ')' | '）' => depth = depth.saturating_sub(1),
-            '/' | '／' => {
-                if depth == 0 {
+            '/' | '／'
+                if depth == 0 => {
                     return true;
                 }
-            }
             _ => {}
         }
     }

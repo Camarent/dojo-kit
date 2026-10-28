@@ -67,11 +67,10 @@ pub(super) fn check_bars(course: &Course, sink: &mut Sink) {
         }
         
         // Check learned_stage if present
-        if let Some(ls) = bar.learned_stage {
-            if ls < 1 {
+        if let Some(ls) = bar.learned_stage
+            && ls < 1 {
                 sink.error("bad_learned_stage", COURSE_FILE, 0, format!("bar learnedStage must be >= 1, got {}", ls));
             }
-        }
     }
 }
 
@@ -159,7 +158,7 @@ pub(super) fn check_bar_matches(
         // Check if bar matches any items
         let mut matches_any = false;
         
-        for (_item_id, (unit_id, tags)) in &item_meta {
+        for (unit_id, tags) in item_meta.values() {
             // Check unit filter
             if !bar.units.is_empty() && !bar.units.iter().any(|u| u == unit_id) {
                 continue;
@@ -194,7 +193,7 @@ pub(super) fn check_bar_matches(
             // Check if extraTags match any items
             let mut matches_any = false;
             
-            for (_item_id, (unit_id, tags)) in &item_meta {
+            for (unit_id, tags) in item_meta.values() {
                 // Only check items in this group's units
                 if !group.units.iter().any(|u| u == unit_id) {
                     continue;
