@@ -172,7 +172,7 @@ test('clip failure shows audio.failed and falls back to speech when lines exist'
   assert.ok(findProp(btn.render(vn.props, btn.state), 'data-testid') || JSON.stringify(btn.render(vn.props, btn.state)).includes('p-failed'));
 });
 
-test('clip failure without speech lines reports onFail; hidden text shows once status is unavailable', async () => {
+test('clip failure without speech lines reports onFail; hidden text stays hidden when status is unavailable', async () => {
   const sb = sandboxUi({ ready: () => true, unlock() {}, stop() {}, pick: (s, ids) => ids[0], play: () => Promise.reject(new Error('x')) });
   let failed = 0;
   const a = UI_AUDIO({ onFail() { failed++; } });
@@ -185,7 +185,7 @@ test('clip failure without speech lines reports onFail; hidden text shows once s
   const S = sb.DojoStimulus.create().Stimulus;
   const st = { id: 's', hideText: true, text: 'secret', audio: ['a-1'] };
   assert.strictEqual(findProp(S({ stimulus: st, audio: UI_AUDIO() }), 'data-testid') && JSON.stringify(S({ stimulus: st, audio: UI_AUDIO() })).includes('stimulus-text'), false);
-  assert.ok(JSON.stringify(S({ stimulus: st, audio: UI_AUDIO({ status: 'unavailable' }) })).includes('stimulus-text'));
+  assert.strictEqual(JSON.stringify(S({ stimulus: st, audio: UI_AUDIO({ status: 'unavailable' }) })).includes('stimulus-text'), false);
 });
 
 function stickySetup() {

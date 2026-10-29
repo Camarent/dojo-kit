@@ -215,6 +215,7 @@
   "speech.playing": "Playing",
   "speech.played": "Played",
   "speech.novoice": "This device has no voice for \"{lang}\". Install one in your system speech settings.",
+  "speech.unavailable": "This browser has no speech synthesis. Open the course in Chrome.",
   "audio.failed": "Audio could not be played.",
   "audio.track": "Playback progress",
   "audio.replays.one": "Replays left: {n}",

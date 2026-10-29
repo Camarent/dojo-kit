@@ -53,9 +53,7 @@
     }
 
     function stimulusTextVisible(st, audio, hasClip, speakable) {
-      if (!st.hideText) return true;
-      if (!speakable) return false;
-      return hasClip ? audio.status === 'unavailable' : audio.status !== 'ok';
+      return !st.hideText;
     }
 
     function Stimulus(p) {
