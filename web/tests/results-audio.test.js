@@ -78,3 +78,20 @@ test('two Results renders share no failed/played state', async () => {
   assert.notStrictEqual(playNode(b.v).props.audio.status, 'failed');
   assert.strictEqual(Object.keys(playNode(b.v).props.audio.played).length, 0);
 });
+
+// Mutation: dropping local.rerender() in onFail fails this test.
+test('mounted Results: onFail re-renders and shows the audio.failed notice', async () => {
+  const a = await renderClips({ isClipFlagged: () => false }, REV);
+  const R = a.m.sb.DojoApp._Results;
+  a.m.sb.DojoAudio = { ready: () => false }; // no clip: Playback shows notices instead of the button
+  const win = { SpeechSynthesisUtterance: function () {}, speechSynthesis: { getVoices: () => [], addEventListener() {}, removeEventListener() {} } };
+  const p = { win, store: a.m.store, t: a.m.t, byId: { n1: Object.assign({}, item, { stimulus: 's2' }) }, stimuli: [CLIPS], engine: { isClipFlagged: () => false }, course: { id: 'c', title: 'C', uiLanguage: 'en' }, go() {}, onAgain() {}, summary: { mode: 'practice', raw: 0, total: 1, pct: 0, durationMs: 0, review: REV, skipped: [], fraction: 0, correct: 0, answered: 1 } };
+  let renders = 0;
+  const inst = { forceUpdate: () => { renders++; } }; // stands in for the preact component instance
+  const render = () => H.expand(R.call(inst, p));
+  const v1 = render();
+  assert.strictEqual(H.find(v1, 'play-missed-n1-notice'), null);
+  playNode(v1).props.audio.onFail();
+  assert.strictEqual(renders, 1);
+  assert.ok(H.find(render(), 'play-missed-n1-notice'));
+});

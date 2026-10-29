@@ -65,7 +65,7 @@
       if (!Speech || !DojoCommon.speechCfg) return null;
       var cfg = DojoCommon.speechCfg(p.course, p.store);
       return { t: t, win: p.win, cfg: cfg, exam: false, uiLang: p.lang, played: local.played, released: {},
-        status: local.failed ? 'failed' : Speech.status(cfg, p.win), onFail: function () { local.failed = true; } };
+        status: local.failed ? 'failed' : Speech.status(cfg, p.win), onFail: function () { local.failed = true; if (local.rerender) local.rerender(); } };
     }
 
     function playControl(p, t, item, r) {
@@ -138,8 +138,9 @@
       </div>`;
     }
 
-    function Results(p0) {
-      var p = Object.assign({}, p0, { local: { failed: false, played: {} } });
+    // Plain call: stateless tree. Mounted by preact (new Results): local state persists and onFail re-renders.
+    function view(p0, local) {
+      var p = Object.assign({}, p0, { local: local || { failed: false, played: {} } });
       var t = p.t;
       var sum = p.summary;
       var exam = sum.mode === 'exam';
@@ -161,6 +162,14 @@
         <${Notice} text=${p.notice} />
         ${actions(p, t, isPlacement)}
       </main>`;
+    }
+
+    // preact calls a function component with its instance as `this`; a plain call has none.
+    function Results(props) {
+      var self = this;
+      if (!self || typeof self.forceUpdate !== 'function') return view(props);
+      if (!self.local) self.local = { failed: false, played: {}, rerender: function () { self.forceUpdate(); } };
+      return view(props, self.local);
     }
 
     return { Results: Results };
