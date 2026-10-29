@@ -14,6 +14,12 @@
   var speechLines = DojoCommon.speechLines;
   var Playback = DojoCommon.Playback;
 
+  function hasPlayableSource(st) {
+    if (!st) return false;
+    if (speechLines(st).length > 0) return true;
+    return Array.isArray(st.audio) && st.audio.length > 0 && !!root.DojoAudio && root.DojoAudio.ready();
+  }
+
   function create() {
     function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -63,6 +69,7 @@
       var lines = audio ? speechLines(st) : [];
       var clip = audio && Array.isArray(st.audio) && st.audio.length && root.DojoAudio && root.DojoAudio.ready() ? { sid: st.id, ids: st.audio } : null;
       var speakable = lines.length > 0 || !!clip;
+      var noSource = !!audio && !!st.hideText && !hasPlayableSource(st);
       var showText = stimulusTextVisible(st, audio, !!clip, speakable);
       return html`<section class="stimulus" data-testid="stimulus">
         ${st.title ? html`<h2 class="stimulus-title" data-testid="stimulus-title">${renderText(st.title)}</h2>` : null}
@@ -74,6 +81,7 @@
         ` : null}
         ${showText && !speakable ? html`<p class="stimulus-text" data-testid="stimulus-text">${renderText(st.text)}</p>` : null}
         ${speakable && !showText ? html`<div class="qline centred"><${Playback} audio=${audio} lines=${lines} clip=${clip} testid="play-stimulus" pid=${'s:' + st.id} dict=${p.dict} /></div>` : null}
+        ${noSource ? html`<p class="notice" role="status" data-testid="stimulus-nosource-notice">${audio.t('speech.unavailable')}</p>` : null}
       </section>`;
     }
 
@@ -121,7 +129,7 @@
     return { itemLabel: itemLabel, dupeSet: dupeSet, Stimulus: Stimulus, kanjiRows: kanjiRows, tagInfo: tagInfo, captionFor: captionFor, fmtClock: fmtClock, percent: percent, uniqueSorted: uniqueSorted, toggle: toggle, localDay: localDay };
   }
 
-  var api = { create: create };
+  var api = { create: create, hasPlayableSource: hasPlayableSource };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.DojoStimulus = api;
 })(typeof self !== 'undefined' ? self : this);

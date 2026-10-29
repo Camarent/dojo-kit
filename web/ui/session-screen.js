@@ -21,6 +21,7 @@
   var renderPromptEl = DojoCommon.renderPromptEl;
   var renderPromptLine = DojoCommon.renderPromptLine;
   var speechLines = DojoCommon.speechLines;
+  var hasPlayableSource = function (st) { return (root.DojoStimulus || require('./stimulus.js')).hasPlayableSource(st); };
   var Playback = DojoCommon.Playback;
   var cls = DojoCommon.cls;
   var Dialog = DojoCommon.Dialog;
@@ -181,7 +182,7 @@
       if (!limit || !QuestionTimer || s.result) return null;
       var st = s.cur.stimulus;
       var pids = ['i:' + item.id].concat(st ? ['s:' + st.id] : []);
-      var hasAudio = !!audio && ((root.DojoAudio && root.DojoAudio.ready() && !!st && !!st.audio && st.audio.length > 0) || ((audio.status === 'ok' || (!!st && !!st.hideText)) && (speechLines(item).length > 0 || (st && (speechLines(st).length > 0 || (st.audio && st.audio.length > 0))))));
+      var hasAudio = !!audio && (hasPlayableSource(st) || ((audio.status === 'ok' || (!!st && !!st.hideText)) && (speechLines(item).length > 0 || (!!st && !st.hideText && st.audio && st.audio.length > 0))));
       var canStart = function () { return !hasAudio || pids.some(function (k) { return (self.played && self.played[k]) || (self.released && self.released[k]); }); };
       return h(QuestionTimer, { key: 'qt' + s.cur.position, now: p.now, limitMs: limit, canStart: canStart,
         onStart: function () { session.timerStart(item); }, onExpire: function () { self.timeout(); }, stopped: !!s.result, t: p.t });

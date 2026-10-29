@@ -44,7 +44,6 @@
       if (!st || !Array.isArray(st.audio) || !st.audio.some(isFlagged)) return st;
       var copy = Object.assign({}, st);
       copy.audio = st.audio.filter(function (id) { return !isFlagged(id); });
-      if (copy.audio.length === 0 && copy.hideText && !(Speech && Speech.lines(st).length)) delete copy.hideText;
       return copy;
     }
 
