@@ -86,7 +86,7 @@ test('filterStimulus: partial, all flagged with speak, without speak, unflagged 
   flags.setFlag('c-1', true);
   const ns = flags.filterStimulus(STIMS[2]);
   assert.deepStrictEqual(ns.audio, []);
-  assert.strictEqual(ns.hideText, undefined);
+  assert.strictEqual(ns.hideText, true);
   assert.strictEqual(STIMS[2].hideText, true);
 });
 

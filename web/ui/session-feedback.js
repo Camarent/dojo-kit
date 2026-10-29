@@ -75,7 +75,7 @@
       if (!Speech) return null;
       var cfg = speechCfg(p.course, p.store);
       return { t: p.t, win: p.win, cfg: cfg, exam: this.isExam(), uiLang: p.lang, debug: !!(p.store && p.store.doc && p.store.doc.settings && p.store.doc.settings.debug), played: this.played || (this.played = {}), released: this.released || (this.released = {}),
-        status: s.speechFail ? 'unavailable' : Speech.status(cfg, p.win),
+        status: s.speechFail ? 'failed' : Speech.status(cfg, p.win),
         onFail: function () { self.setState({ speechFail: true }); } };
     },
     renderDontKnow: function (p, s) {

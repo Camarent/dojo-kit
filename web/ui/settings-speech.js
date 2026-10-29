@@ -17,18 +17,28 @@
     return Array.prototype.slice.call(list || []);
   }
 
+  function diagLine(p, course) {
+    var t = p.t;
+    var d = Speech.diag({ speech: course.speech, lang: course.contentLanguage }, p.win);
+    return html`<p class="muted" data-testid="speech-diag">${t('speech.diag', { api: t(d.api ? 'speech.diag.yes' : 'speech.diag.no'), n: d.voices, lang: d.lang, m: d.matching })}</p>`;
+  }
+
+  function noVoices(p, course) {
+    var t = p.t;
+    return html`<section class="group" data-testid="speech-settings">
+      <h2>${t('settings.speech')}</h2>
+      <p class="notice" role="status" data-testid="speech-novoices">${t('settings.speech.novoices')}</p>
+      ${diagLine(p, course)}
+    </section>`;
+  }
+
   function renderSpeechSettings(p, self) {
     var course = p.course || {};
     if (!Speech || !(course.speech || course.contentLanguage)) return null;
     var t = p.t;
     var settings = (p.store.doc && p.store.doc.settings) || {};
     var voices = speechVoices(p.win);
-    if (voices.length === 0) {
-      return html`<section class="group" data-testid="speech-settings">
-        <h2>${t('settings.speech')}</h2>
-        <p class="notice" role="status" data-testid="speech-novoices">${t('settings.speech.novoices')}</p>
-      </section>`;
-    }
+    if (voices.length === 0) return noVoices(p, course);
     var lang = String(Speech.langOf({ speech: course.speech, lang: course.contentLanguage }) || '').toLowerCase().split(/[-_]/)[0];
     var pool = lang ? voices.filter(function (v) { return String(v.lang || '').toLowerCase().split(/[-_]/)[0] === lang; }) : voices;
     if (pool.length === 0) pool = voices;
@@ -63,6 +73,7 @@
     return html`<section class="group speech-settings" data-testid="speech-settings">
       <h2>${t('settings.speech')}</h2>
       <p class="muted">${t('settings.speech.hint')}</p>
+      ${diagLine(p, course)}
       ${voiceRow('speech:voice', t('settings.speech.voice.default'), null)}
       ${roles.map(function (role) { return voiceRow('speech:voice:' + role, t('settings.speech.voice.role', { role: role }), role); })}
       ${rangeRow('speech:rate', t('settings.speech.rate'), 0.5, 1.5)}

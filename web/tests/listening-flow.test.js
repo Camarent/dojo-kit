@@ -32,9 +32,9 @@ test('hidden stimulus text stays hidden when speech voices are missing but the c
   assert.strictEqual(find(Stimulus({ stimulus: ST, audio: audioWith('no_voice') }), 'stimulus-text'), null);
 });
 
-test('hidden stimulus text appears once the clip failed (status unavailable)', () => {
+test('hidden stimulus text stays hidden when speech is unavailable (clip item)', () => {
   const { _Stimulus: Stimulus } = loadApp(true);
-  assert.ok(find(Stimulus({ stimulus: ST, audio: audioWith('unavailable') }), 'stimulus-text'));
+  assert.strictEqual(find(Stimulus({ stimulus: ST, audio: audioWith('unavailable') }), 'stimulus-text'), null);
 });
 
 function qtimerGate(status, played) {

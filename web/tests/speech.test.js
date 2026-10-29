@@ -235,23 +235,23 @@ test('UI: hideText stimulus hides text when speech works', () => {
   assert.ok(m.find('play-stimulus'));
 });
 
-test('UI: no API or no voice => notice and text shown for hideText, no button', () => {
+test('UI: no API or no voice => notice and text stays hidden for hideText, no button', () => {
   const sb = load();
   for (const win of [fakeWin([], { noApi: true }), fakeWin([V('Fr', 'fr-FR')])]) {
     const m = ui(sb, win, [{ item: item('a'), stimulus: stim({ hideText: true }) }], 'exam');
-    assert.ok(m.find('stimulus-text'));
+    assert.strictEqual(m.find('stimulus-text'), null);
     assert.ok(m.find('play-stimulus-notice'));
     assert.strictEqual(m.find('play-stimulus'), null);
   }
 });
 
-test('UI: playback failure at click time reveals text and notice', () => {
+test('UI: playback failure at click time shows notice, text stays hidden', () => {
   const sb = load();
   const win = JA();
   win.speechSynthesis.speak = () => { throw new Error('boom'); };
   const m = ui(sb, win, [{ item: item('a'), stimulus: stim({ hideText: true }) }]);
   m.click('play-stimulus');
-  assert.ok(m.find('stimulus-text'));
+  assert.strictEqual(m.find('stimulus-text'), null);
   assert.ok(m.find('play-stimulus-notice'));
 });
 
