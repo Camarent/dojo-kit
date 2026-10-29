@@ -85,3 +85,13 @@ gitleaks | . | GITLEAKS_CONFIG_TOML=$'[extend]\nuseDefault = true\n[[allowlists]
 ```
 
 Secrets history (G1): `gitleaks git --redact --no-banner --log-opts=--all .`
+
+## UX review (project part)
+
+Read by the wave pipeline: the `audit-ux` step and the `ux_shots.js` run exist only when this block is present. `serve` starts the app (build first), `url` is where it answers.
+
+```ux
+build: ./dojo build workspace/<course> --out dist
+serve: node web/dev/serve.js dist/<course> 8765
+url: http://127.0.0.1:8765/
+```
