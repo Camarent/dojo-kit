@@ -96,7 +96,9 @@
 
     function recordGrade(item, verdict) {
       graded[item.id] = verdict.correct;
-      review.push({ id: item.id, correct: verdict.correct, given: verdict.given, expected: util.expectedFor(item) });
+      var entry = { id: item.id, correct: verdict.correct, given: verdict.given, expected: util.expectedFor(item) };
+      if (verdict.timedOut === true) entry.timedOut = true;
+      review.push(entry);
       var rk = requeueKey(item);
       if (!verdict.correct && mode !== 'exam' && !requeued[rk]) {
         requeued[rk] = true;

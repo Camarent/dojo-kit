@@ -147,6 +147,8 @@
   "results.missed": "Missed",
   "results.none": "Nothing missed.",
   "results.given": "Your answer",
+  "results.timed_out": "time ran out, no answer",
+  "results.play": "Play",
   "results.home": "Home",
   "results.again": "Do again",
   "results.skipped": "Skipped (timer expired)",

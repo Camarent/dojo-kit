@@ -159,6 +159,8 @@
   "results.missed": "Ошибки",
   "results.none": "Ошибок нет.",
   "results.given": "Ваш ответ",
+  "results.timed_out": "время вышло, ответа нет",
+  "results.play": "Прослушать",
   "results.home": "Домой",
   "results.again": "Ещё раз",
   "results.skipped": "Пропущено (время вышло)",

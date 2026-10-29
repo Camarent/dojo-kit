@@ -44,6 +44,8 @@
     var percent = deps.percent;
     var fmtClock = deps.fmtClock;
     var itemLabel = deps.itemLabel || function (it) { return it.prompt; };
+    var failed = false;
+    var played = {};
 
     function stats(t, sum, raw, total, pct) {
       return html`<section class="stats">
@@ -58,12 +60,38 @@
       return itemLabel(item, st, p.dupes);
     }
 
+    // Playback props for the per-item play button (never an exam: no once-only lock).
+    function audioProps(p, t) {
+      var Speech = root.DojoSpeech;
+      if (!Speech || !DojoCommon.speechCfg) return null;
+      var cfg = DojoCommon.speechCfg(p.course, p.store);
+      return { t: t, win: p.win, cfg: cfg, exam: false, uiLang: p.lang, played: played, released: {},
+        status: failed ? 'unavailable' : Speech.status(cfg, p.win), onFail: function () { failed = true; } };
+    }
+
+    function playControl(p, t, item, r) {
+      var st = item && item.stimulus && p.stimuli ? p.stimuli.filter(function (s) { return s.id === item.stimulus; })[0] : null;
+      var audio = st && st.hideText ? audioProps(p, t) : null;
+      if (!audio) return null;
+      var A = root.DojoAudio;
+      var clip = st.audio && st.audio.length && A && A.ready && A.ready() ? { sid: st.id, ids: st.audio } : null;
+      var lines = DojoCommon.speechLines ? DojoCommon.speechLines(st) : [];
+      if (!clip && !lines.length) return null;
+      return html`<p class="qline" data-testid=${'play-missed-wrap-' + r.id}><span class="muted">${t('results.play')}</span> <${DojoCommon.Playback} audio=${audio} lines=${lines} clip=${clip} testid=${'play-missed-' + r.id} pid=${'m:' + r.id} /></p>`;
+    }
+
+    function givenLine(t, r) {
+      if ((r.given === '' || r.given === undefined) && r.timedOut) return html`<span class="muted" data-testid="timed-out-label">${t('results.timed_out')}</span>`;
+      return renderText(label(t, r.given));
+    }
+
     function missedItem(p, t, r) {
       var item = p.byId[r.id];
       return html`<li key=${r.id} data-testid=${'missed-' + r.id}>
         <p class="qtext">${item ? renderText(labelOf(p, item)) : r.id}</p>
-        <p class="pre"><span class="muted">${t('results.given')}:</span> ${renderText(label(t, r.given))}</p>
+        <p class="pre"><span class="muted">${t('results.given')}:</span> ${givenLine(t, r)}</p>
         <p class="pre"><span class="muted">${t('session.expected')}</span> ${renderText(r.expected)}</p>
+        ${playControl(p, t, item, r)}
       </li>`;
     }
 
