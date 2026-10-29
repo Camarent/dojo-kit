@@ -6,6 +6,7 @@
  *     open({ stimulus, timer, onEnd }): resets the replay count; plays the clip once when the stimulus is a listening
  *       stimulus, audio is ready and the user has made a gesture
  *     replay() -> bool: plays again while replays < replayBudget; the first play (autoplay or manual) is free, else false
+ *     clip(sid, ids) -> id: the one clip of the open question (picked once); markAnswered(): replays become free
  *     remaining() -> number|null: replays left once the first play started, null before it or without a limit
  *     onKey(event) -> bool: any key counts as a gesture; "r" without modifiers replays (true when handled)
  *   sync(screen[, audio]): opens/closes the controller kept on a session screen as screen.dict when screen.state.cur changes
@@ -55,6 +56,7 @@
     }
 
     function claim() {
+      if (cur.answered) return true;
       if (!started) { started = true; return true; }
       if (uses >= cur.budget) return false;
       uses++;
@@ -67,7 +69,14 @@
       return true;
     }
 
-    function exhausted() { return !!cur && started && uses >= cur.budget; }
+    function exhausted() { return !!cur && !cur.answered && started && uses >= cur.budget; }
+
+    function markAnswered() { if (cur) cur.answered = true; }
+
+    function clip(sid, ids) {
+      if (!cur) return audio.pick(sid, ids, random);
+      return cur.clip || (cur.clip = audio.pick(sid, ids, random));
+    }
 
     function remaining() {
       if (!cur || !started || !isFinite(cur.budget)) return null;
@@ -93,7 +102,7 @@
       if (audio && audio.stop) audio.stop();
     }
 
-    return { open: open, replay: replay, onKey: onKey, stop: stop, take: take, exhausted: exhausted, remaining: remaining };
+    return { open: open, replay: replay, onKey: onKey, stop: stop, take: take, clip: clip, markAnswered: markAnswered, exhausted: exhausted, remaining: remaining };
   }
 
   function timerOf(course, item) {
@@ -104,7 +113,7 @@
   // Opens the dictation controller of a session screen whenever its current question changes.
   function sync(screen, audio) {
     var s = screen.state;
-    if (s.cur === screen.dictCur) return;
+    if (s.cur === screen.dictCur) { if (s.result && screen.dict && screen.dict.markAnswered) screen.dict.markAnswered(); return; }
     screen.dictCur = s.cur;
     var A = audio || root.DojoAudio;
     if (!A) return;

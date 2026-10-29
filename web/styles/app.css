@@ -356,6 +356,7 @@ input[type="range"].field { box-sizing: border-box; max-width: 100%; margin-inli
 .session .qtext { text-align: center; font-size: 1.5rem; font-weight: 700; line-height: 1.35; }
 .session .qtext.big { font-size: 3rem; line-height: 1.2; }
 .qline { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-start; }
+[data-testid="results"] .qline { align-items: center; }
 .qbody.stimulus-text { overflow-wrap: normal; word-break: normal; hyphens: manual; flex: 1 1 12ch; }
 .qline .qtext { flex: 1 1 auto; min-width: 0; text-align: left; }
 .qline .qbody { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }

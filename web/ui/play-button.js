@@ -48,9 +48,14 @@
       if (!btn.gone) btn.setState({ playing: false, played: ok || btn.state.played, failed: !ok, track: null });
     };
     var onStart = function (info) { if (!btn.gone) btn.setState({ track: { ms: info.ms, at: Date.now() } }); };
-    var key = p.clip.sid + '|' + p.clip.ids.join(',');
-    if (btn.stickyKey !== key) { btn.stickyKey = key; btn.stickyId = A.pick(p.clip.sid, p.clip.ids, Math.random); }
-    A.play(btn.stickyId, { onStart: onStart }).then(function (r) { fin(true, !!(r && r.superseded)); }, function () {
+    var id;
+    if (p.dict && p.dict.clip) id = p.dict.clip(p.clip.sid, p.clip.ids);
+    else {
+      var key = p.clip.sid + '|' + p.clip.ids.join(',');
+      if (btn.stickyKey !== key) { btn.stickyKey = key; btn.stickyId = A.pick(p.clip.sid, p.clip.ids, Math.random); }
+      id = btn.stickyId;
+    }
+    A.play(id, { onStart: onStart }).then(function (r) { fin(true, !!(r && r.superseded)); }, function () {
       fin(false);
       if (!p.lines.length) p.audio.onFail();
       else Speech.play(p.lines, p.audio.cfg, { onEnd: function () {}, onError: function () {} }, p.audio.win);
