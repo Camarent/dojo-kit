@@ -33,8 +33,8 @@ function text(v) {
 }
 
 const audioWith = (status) => ({ t: (k) => k, status, played: {}, exam: false, cfg: { lang: 'fr' }, onFail() {} });
-const CLIP = { id: 's', text: 'dix-sept', hideText: true, audio: ['c1'] };
-const SPEECH = { id: 'p', text: 'dix-sept', hideText: true, speak: { lines: [{ text: 'dix-sept' }] } };
+const CLIP = { id: 's', text: 'hello world', hideText: true, audio: ['c1'] };
+const SPEECH = { id: 'p', text: 'hello world', hideText: true, speak: { lines: [{ text: 'hello world' }] } };
 
 test('hideText + clip + status unavailable: no stimulus-text', () => {
   const sb = loadApp(true);
