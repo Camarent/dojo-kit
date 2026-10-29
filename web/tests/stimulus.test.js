@@ -113,6 +113,18 @@ test('Stimulus without title omits the title; hideText omits the text', () => {
   assert.strictEqual(find(v, 'stimulus-text'), null);
 });
 
+test('hideText stimulus with no playable source shows stimulus.nosource notice', () => {
+  const Stimulus = loadApp();
+  const audio = { t: (k) => k };
+  const v = Stimulus({ stimulus: { id: 's', text: 'secret', hideText: true, audio: [] }, audio });
+  const n = find(v, 'stimulus-nosource-notice');
+  assert.ok(n);
+  assert.strictEqual(String(n.props.children), 'stimulus.nosource');
+  const en = JSON.parse(read('i18n/en.json'));
+  assert.ok(en['stimulus.nosource']);
+  assert.notStrictEqual(en['stimulus.nosource'], en['speech.unavailable']);
+});
+
 test('stimulus CSS class is defined', () => {
   assert.match(read('styles/app.css'), /\.stimulus\s*\{/);
 });
