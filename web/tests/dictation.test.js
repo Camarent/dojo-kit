@@ -220,3 +220,53 @@ test('the session screen passes its controller to the stimulus play button', asy
   assert.ok(btn, 'play button rendered');
   assert.strictEqual(btn.props.dict, ss.dict);
 });
+
+test('one clip per question across button path and key r', () => {
+  const a = fakeAudio();
+  let n = 0;
+  a.pick = (sid, ids) => ids[n++ % ids.length];
+  const d = Dictation.create({ win: gestureWin(true), audio: a });
+  d.open({ stimulus: LISTEN, timer: { replays: 5 } });
+  const first = d.clip('s1', ['c1', 'c2']);
+  d.replay();
+  d.onKey({ key: 'r' });
+  assert.strictEqual(d.clip('s1', ['c1', 'c2']), first);
+  assert.deepStrictEqual(a.plays, [first, first, first]);
+});
+
+test('PlayButton clip path uses dict.clip, not its own pick', () => {
+  const sb = loadApp();
+  const C = sb.DojoCommon;
+  const picks = [];
+  const A = { unlock() {}, pick() { picks.push('own'); return 'own'; }, play(id) { A.last = id; return new Promise(() => {}); } };
+  sb.DojoAudio = A;
+  const audio = { t: (k) => k, played: {}, win: {}, cfg: {}, onFail() {} };
+  const btn = new C.PlayButton({ lines: ['x'], pid: 'p', audio, testid: 'p', clip: { sid: 's1', ids: ['c1', 'c2'] }, dict: { take: () => true, exhausted: () => false, clip: () => 'dictclip' } });
+  btn.setState = function (s) { this.state = Object.assign({}, this.state, s); };
+  btn.click();
+  assert.strictEqual(A.last, 'dictclip');
+  assert.deepStrictEqual(picks, []);
+});
+
+test('answered before first play does not start the count', () => {
+  const d = Dictation.create({ win: gestureWin(false), audio: fakeAudio() });
+  d.open({ stimulus: LISTEN, timer: T1 });
+  d.markAnswered();
+  assert.strictEqual(d.replay(), true);
+  assert.strictEqual(d.remaining(), null);
+});
+
+test('after answer replays are unlimited and remaining() is unchanged', () => {
+  const a = fakeAudio();
+  const d = Dictation.create({ win: gestureWin(true), audio: a });
+  d.open({ stimulus: LISTEN, timer: T1 });
+  assert.strictEqual(d.replay(), true);
+  assert.strictEqual(d.replay(), false);
+  assert.strictEqual(d.exhausted(), true);
+  d.markAnswered();
+  assert.strictEqual(d.exhausted(), false);
+  assert.strictEqual(d.replay(), true);
+  assert.strictEqual(d.replay(), true);
+  assert.strictEqual(d.take(), true);
+  assert.strictEqual(d.remaining(), 0);
+});
