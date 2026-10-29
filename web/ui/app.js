@@ -66,7 +66,7 @@
   }
   function resultsScreen(self, p, s, common) {
     var isPlacement = s.summary && s.summary.mode === 'placement';
-    return h(Results, Object.assign({ summary: s.summary, byId: p.byId, stimuli: p.content && p.content.stimuli, win: p.win, store: p.store, lang: p.lang, onAgain: function () { self.again(); }, isPlacement: isPlacement }, common));
+    return h(Results, Object.assign({ summary: s.summary, byId: p.byId, stimuli: p.content && p.content.stimuli, win: p.win, store: p.store, engine: p.engine, lang: p.lang, onAgain: function () { self.again(); }, isPlacement: isPlacement }, common));
   }
   function settingsScreen(self, p, s, common) {
     return h(SettingsScreen, Object.assign({ lang: p.lang, store: p.store, content: p.content, engine: p.engine, now: p.now, win: p.win,

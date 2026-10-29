@@ -44,8 +44,6 @@
     var percent = deps.percent;
     var fmtClock = deps.fmtClock;
     var itemLabel = deps.itemLabel || function (it) { return it.prompt; };
-    var failed = false;
-    var played = {};
 
     function stats(t, sum, raw, total, pct) {
       return html`<section class="stats">
@@ -62,11 +60,12 @@
 
     // Playback props for the per-item play button (never an exam: no once-only lock).
     function audioProps(p, t) {
+      var local = p.local;
       var Speech = root.DojoSpeech;
       if (!Speech || !DojoCommon.speechCfg) return null;
       var cfg = DojoCommon.speechCfg(p.course, p.store);
-      return { t: t, win: p.win, cfg: cfg, exam: false, uiLang: p.lang, played: played, released: {},
-        status: failed ? 'unavailable' : Speech.status(cfg, p.win), onFail: function () { failed = true; } };
+      return { t: t, win: p.win, cfg: cfg, exam: false, uiLang: p.lang, played: local.played, released: {},
+        status: local.failed ? 'failed' : Speech.status(cfg, p.win), onFail: function () { local.failed = true; } };
     }
 
     function playControl(p, t, item, r) {
@@ -74,7 +73,8 @@
       var audio = st && st.hideText ? audioProps(p, t) : null;
       if (!audio) return null;
       var A = root.DojoAudio;
-      var clip = st.audio && st.audio.length && A && A.ready && A.ready() ? { sid: st.id, ids: st.audio } : null;
+      var ids = st.audio && st.audio.length ? st.audio.filter(function (id) { return !(p.engine && p.engine.isClipFlagged && p.engine.isClipFlagged(id)); }) : [];
+      var clip = ids.length && A && A.ready && A.ready() ? { sid: st.id, ids: ids } : null;
       var lines = DojoCommon.speechLines ? DojoCommon.speechLines(st) : [];
       if (!clip && !lines.length) return null;
       return html`<p class="qline" data-testid=${'play-missed-wrap-' + r.id}><span class="muted">${t('results.play')}</span> <${DojoCommon.Playback} audio=${audio} lines=${lines} clip=${clip} testid=${'play-missed-' + r.id} pid=${'m:' + r.id} /></p>`;
@@ -138,7 +138,8 @@
       </div>`;
     }
 
-    function Results(p) {
+    function Results(p0) {
+      var p = Object.assign({}, p0, { local: { failed: false, played: {} } });
       var t = p.t;
       var sum = p.summary;
       var exam = sum.mode === 'exam';

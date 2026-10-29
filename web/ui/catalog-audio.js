@@ -32,7 +32,8 @@
       var C = root.DojoCommon;
       if (!st || !audio || !C) return null;
       var A = root.DojoAudio;
-      var clip = hasClips(st) && A && A.ready && A.ready() ? { sid: st.id, ids: st.audio } : null;
+      var ids = hasClips(st) ? st.audio.filter(function (id) { return !(p.engine && p.engine.isClipFlagged && p.engine.isClipFlagged(id)); }) : [];
+      var clip = ids.length && A && A.ready && A.ready() ? { sid: st.id, ids: ids } : null;
       var lines = C.speechLines ? C.speechLines(st) : [];
       if (!clip && !lines.length) return null;
       return html`<div class="qline centred" data-testid="detail-play"><${C.Playback} audio=${audio} lines=${lines} clip=${clip} testid="play-detail" pid=${'d:' + st.id} /></div>`;
@@ -45,7 +46,7 @@
       var cfg = C.speechCfg(p.course, p.store);
       this.played = this.played || {};
       return { t: p.t, win: p.win, cfg: cfg, exam: false, uiLang: p.lang, played: this.played, released: {},
-        status: failed ? 'unavailable' : Speech.status(cfg, p.win), onFail: setFail };
+        status: failed ? 'failed' : Speech.status(cfg, p.win), onFail: setFail };
     }
 
     return { audioProps: audioProps, stimulusOf: stimulusOf, isAudioNumeric: isAudioNumeric, label: label, playButton: playButton };

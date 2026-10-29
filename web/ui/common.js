@@ -68,7 +68,7 @@
           displayLang = new Intl.DisplayNames([a.uiLang], { type: 'language' }).of(spoken);
         } catch (e) { /* ignore */ }
       }
-      return html`<p class="notice" role="status" data-testid=${p.testid + '-notice'}>${a.status === 'unavailable' ? a.t('speech.unavailable') : a.t('speech.novoice', { lang: displayLang })}</p>`;
+      return html`<p class="notice" role="status" data-testid=${p.testid + '-notice'}>${a.status === 'failed' ? a.t('audio.failed') : a.status === 'unavailable' ? a.t('speech.unavailable') : a.t('speech.novoice', { lang: displayLang })}</p>`;
     }
     return h(PlayButton, { key: p.pid, pid: p.pid, lines: p.lines, clip: p.clip, audio: a, testid: p.testid, dict: p.dict });
   }
