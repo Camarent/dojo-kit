@@ -2049,6 +2049,16 @@
                 }
               },
               {
+                "type": "p",
+                "props": {
+                  "data-testid": "speech-diag",
+                  "class": "muted",
+                  "children": [
+                    "Speech synthesis: yes; voices: 1; for ja: 1"
+                  ]
+                }
+              },
+              {
                 "type": "div",
                 "props": {
                   "class": "setting-row",
@@ -3014,6 +3024,16 @@
                   "class": "muted",
                   "children": [
                     "Voice, speed and pitch for audio. Course defaults apply when left on Auto."
+                  ]
+                }
+              },
+              {
+                "type": "p",
+                "props": {
+                  "data-testid": "speech-diag",
+                  "class": "muted",
+                  "children": [
+                    "Speech synthesis: yes; voices: 1; for ja: 1"
                   ]
                 }
               },
@@ -4360,6 +4380,16 @@
                   "class": "muted",
                   "children": [
                     "Voice, speed and pitch for audio. Course defaults apply when left on Auto."
+                  ]
+                }
+              },
+              {
+                "type": "p",
+                "props": {
+                  "data-testid": "speech-diag",
+                  "class": "muted",
+                  "children": [
+                    "Speech synthesis: yes; voices: 1; for ja: 1"
                   ]
                 }
               },

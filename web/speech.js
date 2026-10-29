@@ -7,6 +7,7 @@
  *   play(lines, cfg, cb, win)      queues one utterance per line; cb = { onEnd(), onError(err) }; returns { ok: true } or { ok: false, reason: 'unavailable' | 'no_voice' | 'empty' }; a watchdog calls onError if no start event arrives within ~2.5 s
   *   stop(win)                      cancels playback; callbacks of the cancelled playback are not called
  *   pickVoice(voices, lang, match, opts) best voice for lang; opts = { name, role, prefer: [regex source] } (course speech.voices[role].prefer, case-insensitive, earlier = better, invalid skipped). Order: exact voice name (any language), name|lang substring match, then the best of the language pool by prefer match then DojoExt.voiceRank(voice, role), then localService === true, then list order
+ *   diag(cfg, win)                 { api, voices, lang, matching } for the settings line: api as available(win); voices = voice count (0 without API); lang = langOf(cfg) or ''; matching = voices for lang. Never throws
  *   effective(course, settings)    cfg for play/status from course.speech and learner settings: "speech:rate" and "speech:pitch" (numbers, multiply the course values; rate 0.5..1.5, pitch 0..2), "speech:voice" (name for lines without a role), "speech:voice:<role>" (name for that role); null/invalid = course default. Does not modify its input
  */
 (function (root, factory) {
@@ -86,6 +87,19 @@
       return 'ok';
     }
     return langVoices(voices, langOf(cfg)).length === 0 ? 'no_voice' : 'ok';
+  }
+
+  function diag(cfg, win) {
+    var out = { api: false, voices: 0, lang: '', matching: 0 };
+    try {
+      out.api = !!synth(win);
+      var s = synth(win);
+      var list = s ? voiceList(s) : [];
+      out.voices = list.length;
+      out.lang = String(langOf(cfg) || '');
+      out.matching = langVoices(list, out.lang).length;
+    } catch { /* keep defaults */ }
+    return out;
   }
 
   function extRank(voice, role) {
@@ -248,5 +262,5 @@
     return { ok: true };
   }
 
-  return { available: available, lines: lines, status: status, play: play, stop: stop, pickVoice: pickVoice, effective: effective, langOf: langOf };
+  return { available: available, lines: lines, status: status, diag: diag, play: play, stop: stop, pickVoice: pickVoice, effective: effective, langOf: langOf };
 });
