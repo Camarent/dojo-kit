@@ -1,6 +1,7 @@
 /* session/clip-flags.js — user flags on bad audio clips of the study session engine.
  * Exports DojoSessionClipFlags: create(ctx) -> { flagged(), isFlagged(id), setFlag(id, on), filterStimulus(st) }.
  * Flag = settings["clipFlag:<clipId>"] === true; un-flag writes the null tombstone with settings.ts[key] = now.
+ * Read-through: optional ctx.clipMeta(id) -> {supersedes:[ids]}|null; while settings has no own key for an id (null tombstone counts), isFlagged = any predecessor flagged, heardAt = max predecessor heardAt. No writes.
  * Heard = settings["heard:<clipId>"] = strictly increasing number (ms-based) of the last playback start; heardAt(id) -> number|undefined, markHeard(id).
  */
 (function (root) {
@@ -16,8 +17,16 @@
       return ctx.store.doc.settings || {};
     }
 
+    function preds(id) {
+      var m = typeof ctx.clipMeta === 'function' ? ctx.clipMeta(id) : null;
+      return m && Array.isArray(m.supersedes) ? m.supersedes : [];
+    }
+
     function isFlagged(id) {
-      return typeof id === 'string' && settings()[PREFIX + id] === true;
+      if (typeof id !== 'string') return false;
+      var s = settings();
+      if (Object.prototype.hasOwnProperty.call(s, PREFIX + id)) return s[PREFIX + id] === true;
+      return preds(id).some(function (p) { return s[PREFIX + p] === true; });
     }
 
     function flagged() {
@@ -48,8 +57,15 @@
     }
 
     function heardAt(id) {
-      var v = settings()[HEARD + id];
-      return typeof v === 'number' ? v : undefined;
+      var s = settings();
+      var v = s[HEARD + id];
+      if (typeof v === 'number') return v;
+      var best;
+      preds(id).forEach(function (p) {
+        var h = s[HEARD + p];
+        if (typeof h === 'number' && (best === undefined || h > best)) best = h;
+      });
+      return best;
     }
 
     function markHeard(id) {
