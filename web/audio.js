@@ -244,7 +244,7 @@
   }
   function clipMeta(id) {
     var m = st && (st.mdone || st.manifest), c = m && m.clips && m.clips[id];
-    return c ? { text: c.text, tr: c.tr, mt: !!c.mt } : null;
+    return c ? { text: c.text, tr: c.tr, mt: !!c.mt, supersedes: Array.isArray(c.supersedes) ? c.supersedes.filter(function (s) { return typeof s === 'string'; }) : [] } : null;
   }
   function duration(clipId) {
     if (!st) return null;
