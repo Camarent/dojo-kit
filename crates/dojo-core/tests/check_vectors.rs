@@ -20,6 +20,13 @@ fn count(v: &Value, what: &str) -> usize {
 }
 
 #[test]
+fn check_order_huge_step_count_does_not_allocate() {
+    let r = check_order(1usize << 40, &[0, 1, 2], &[]);
+    assert!(!r.correct);
+    assert_eq!(r.first_wrong, Some(3));
+}
+
+#[test]
 fn check_vectors() {
     let mut failures = vec![];
     for (f, cases) in groups(&load("check.json")) {

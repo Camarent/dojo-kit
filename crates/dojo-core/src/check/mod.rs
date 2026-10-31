@@ -146,11 +146,19 @@ fn order_first_diff(expected: &[usize], sequence: &[usize]) -> Option<usize> {
     (0..max_len).find(|&p| expected.get(p) != sequence.get(p))
 }
 
+/// First position where `sequence` differs from `0..step_count`, without materialising the range.
+fn canonical_first_diff(step_count: usize, sequence: &[usize]) -> Option<usize> {
+    let shared = step_count.min(sequence.len());
+    if let Some(p) = sequence[..shared].iter().enumerate().position(|(p, &s)| s != p) {
+        return Some(p);
+    }
+    if step_count == sequence.len() { None } else { Some(shared) }
+}
+
 /// Correct iff `sequence` is exactly `0..step_count` or exactly one of `alt`.
 /// `first_wrong` is measured against the accepted order sharing the longest prefix with `sequence` (tie: canonical).
 pub fn check_order(step_count: usize, sequence: &[usize], alt: &[Vec<usize>]) -> OrderResult {
-    let canonical: Vec<usize> = (0..step_count).collect();
-    let mut best_diff = order_first_diff(&canonical, sequence);
+    let mut best_diff = canonical_first_diff(step_count, sequence);
     let mut best_idx: Option<usize> = None;
     for (i, a) in alt.iter().enumerate() {
         let d = order_first_diff(a, sequence);
