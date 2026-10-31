@@ -25,7 +25,7 @@ test('configure: base normalisation, manifest meta and duration', () => {
   const A = fresh();
   A.configure({ base: 'x', manifest: { clips: { a: { text: 't', tr: 'r', mt: 1, ms: 500 }, b: { ms: 0 } }, packs: [] } });
   assert.ok(A.ready());
-  assert.deepStrictEqual(A.clipMeta('a'), { text: 't', tr: 'r', mt: true });
+  assert.deepStrictEqual(A.clipMeta('a'), { text: 't', tr: 'r', mt: true, supersedes: [] });
   assert.strictEqual(A.clipMeta('zz'), null);
   assert.strictEqual(A.duration('a'), 500);
   assert.strictEqual(A.duration('b'), null);

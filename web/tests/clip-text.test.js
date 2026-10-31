@@ -81,7 +81,7 @@ test('heardClip is null before playback started; clipMeta reads the manifest', (
   const A = audioEnv();
   A.pick('s', ['a'], () => 0);
   assert.strictEqual(A.heardClip('s', A.mark()), null);
-  assert.strictEqual(JSON.stringify(A.clipMeta('a')), JSON.stringify({ text: 'T', tr: { ru: 'Т' }, mt: true }));
+  assert.strictEqual(JSON.stringify(A.clipMeta('a')), JSON.stringify({ text: 'T', tr: { ru: 'Т' }, mt: true, supersedes: [] }));
   assert.strictEqual(A.clipMeta('zz'), null);
 });
 test('a clip heard in an earlier item does not leak into the next', async () => {
