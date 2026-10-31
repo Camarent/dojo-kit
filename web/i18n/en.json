@@ -204,6 +204,7 @@
   "q.order.hint": "Tap the steps in the correct order.",
   "q.order.reset": "Reset order",
   "q.order.position": "Position {n}",
+  "q.order.alsoCorrect": "Also correct: {order}",
   "q.cloze.hint": "Fill in the blanks.",
   "q.cloze.blank": "Blank {n}",
   "q.numeric.readAs": "Your answer: {value}",

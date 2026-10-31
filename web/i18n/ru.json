@@ -218,6 +218,7 @@
   "q.order.hint": "Нажимайте шаги в правильном порядке.",
   "q.order.reset": "Сбросить порядок",
   "q.order.position": "Позиция {n}",
+  "q.order.alsoCorrect": "Также верно: {order}",
   "q.cloze.hint": "Заполните пропуски.",
   "q.cloze.blank": "Пропуск {n}",
   "q.numeric.readAs": "Ваш ответ: {value}",

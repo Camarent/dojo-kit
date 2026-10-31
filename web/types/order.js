@@ -169,9 +169,14 @@
 
   function Extra(p) {
     var d = p.result && p.result.detail;
-    return d && d.firstWrong !== null && d.firstWrong !== undefined
+    var fw = d && d.firstWrong !== null && d.firstWrong !== undefined
       ? html`<p data-testid="order-first-wrong">${p.t('q.result.firstWrong', { n: d.firstWrong + 1 })}</p>`
       : null;
+    var alts = d && Array.isArray(d.alsoCorrect) ? d.alsoCorrect : [];
+    if (!alts.length) return fw;
+    return html`<div>${fw}${alts.map(function (o, i) {
+      return html`<p data-testid=${'order-also-correct-' + i}>${p.t('q.order.alsoCorrect', { order: o })}</p>`;
+    })}</div>`;
   }
 
   function onKey(e, p) {
