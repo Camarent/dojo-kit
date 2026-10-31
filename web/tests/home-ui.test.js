@@ -100,7 +100,7 @@ test('stat labels never break mid-word; new-today note explains other sections',
   assert.ok(/overflow-wrap: normal/.test(rule) && /hyphens: none/.test(rule) && !/anywhere|break-all/.test(rule), rule);
   const m = await home('en');
   assert.ok(text(find(m.tree(), 'stats-note')).length > 0);
-  assert.ok(JSON.parse(read('i18n/ru.json'))['home.stat.newHint'].length > 0);
+  assert.ok(JSON.parse(read('i18n/ru.json'))['home.stat.newSplit'].length > 0);
 });
 
 for (const lang of ['en', 'ru']) {

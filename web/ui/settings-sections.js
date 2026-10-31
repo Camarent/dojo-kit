@@ -63,7 +63,7 @@
     var perDay = p.store.doc.settings && typeof p.store.doc.settings.newPerDay === 'number' ? p.store.doc.settings.newPerDay : p.engine.globalNewPerDay();
     return html`<section class="group">
           <h2>${t('settings.newperday')}</h2>
-          <p class="muted">${t('settings.newperday.hint')}</p>
+          <p class="muted">${t(p.course && p.course.groups && p.course.groups.length ? 'settings.newperday.hintGroups' : 'settings.newperday.hint')}</p>
           <${Stepper} testid="newperday" label=${t('settings.newperday')} value=${perDay} min=${0} max=${50} step=${1}
             decLabel=${t('stepper.dec')} incLabel=${t('stepper.inc')} onChange=${function (v) { self.setNewPerDay(v); }} />
         </section>`;

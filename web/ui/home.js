@@ -80,7 +80,7 @@
       ${p.examDaysLeft !== null ? renderCountdown(p, t) : null}
       ${resume ? renderResumeSection(p, t, resume) : null}
       ${renderStatsSection(t, d, sumDue, sumNew)}
-      ${c.summary && hasGroups ? html`<p class="muted stats-note" data-testid="stats-note">${t('home.stat.newHint')}</p>` : null}
+      ${c.summary && hasGroups && newSplit(t, c.summary.parts) ? html`<p class="muted stats-note" data-testid="stats-note">${newSplit(t, c.summary.parts)}</p>` : null}
       ${c.summary ? html`<p class="muted session-count" data-testid="session-count">${t('home.session.count', { n: c.summary.queue })}</p>` : null}
       ${renderActionsSection({ p: p, t: t, c: c, hasPlacement: hasPlacement, placementDone: placementDone, canReview: canReview, weakList: weakList, hasGroups: hasGroups })}
       ${hasGroups ? renderGroupsSection(p, t, course, groups) : null}
@@ -89,6 +89,14 @@
       ${!hasGroups ? renderUnitsSection(p, t, course, c, hasBars) : null}
       ${hasGroups ? renderOtherSection(p, t, course, groups, c) : null}
     </main>`;
+  }
+
+  function newSplit(t, parts) {
+    if (!parts || !parts.length) return '';
+    var list = parts.map(function (x) {
+      return (x.id === 'other' ? t('home.stat.newOther') : x.title) + ' ' + x.newToday;
+    }).join(' · ');
+    return t('home.stat.newSplit', { list: list });
   }
 
   function renderCountdown(p, t) {
@@ -113,7 +121,7 @@
     return html`<section class="stats" aria-label=${t('home.stats')}>
       <div class="stat" data-testid="stat-streak"><b>${d.streak}</b><span>${t('n.days', { n: d.streak })}</span></div>
       <div class="stat" data-testid="stat-due"><b>${sumDue}</b><span>${t('n.due', { n: sumDue })}</span></div>
-      <div class="stat" data-testid="stat-new" title=${t('home.stat.newHint')}><b>${sumNew}</b><span>${t('n.new', { n: sumNew })}</span></div>
+      <div class="stat" data-testid="stat-new"><b>${sumNew}</b><span>${t('n.new', { n: sumNew })}</span></div>
     </section>`;
   }
 

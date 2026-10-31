@@ -164,7 +164,6 @@
                       "props": {
                         "data-testid": "stat-new",
                         "class": "stat",
-                        "title": "Today's new items include those from other sections (e.g. kana).",
                         "children": [
                           {
                             "type": "b",
@@ -194,7 +193,7 @@
                   "data-testid": "stats-note",
                   "class": "muted stats-note",
                   "children": [
-                    "Today's new items include those from other sections (e.g. kana)."
+                    "New today: Group 1 1 · other sections 3"
                   ]
                 }
               },
@@ -1467,7 +1466,7 @@
                 "props": {
                   "class": "muted",
                   "children": [
-                    "How many unseen items Review adds each day."
+                    "Applies only to sections outside groups. Group limits are set under \"By group\"."
                   ]
                 }
               },
@@ -2446,7 +2445,7 @@
                 "props": {
                   "class": "muted",
                   "children": [
-                    "How many unseen items Review adds each day."
+                    "Applies only to sections outside groups. Group limits are set under \"By group\"."
                   ]
                 }
               },
@@ -3802,7 +3801,7 @@
                 "props": {
                   "class": "muted",
                   "children": [
-                    "How many unseen items Review adds each day."
+                    "Applies only to sections outside groups. Group limits are set under \"By group\"."
                   ]
                 }
               },
