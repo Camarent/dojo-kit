@@ -266,6 +266,12 @@
     }).then(function () {}, function () {});
   }
 
+  // Manifest only (no packs); never rejects.
+  function loadManifest() {
+    if (!st) return Promise.resolve();
+    try { return manifest().then(function () {}, function () {}); } catch (e) { return Promise.resolve(); }
+  }
+
   function stop() { if (st) { st.seq++; if (st.stopFn) st.stopFn(); } }
 
   var SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
@@ -295,5 +301,5 @@
     } catch (e) { /* ignore */ }
   }
 
-  return { configure: configure, ready: ready, bindHeard: bindHeard, pick: pick, play: play, duration: duration, status: status, mark: mark, heardClip: heardClip, clipMeta: clipMeta, preload: preload, stop: stop, unlock: unlock };
+  return { configure: configure, ready: ready, bindHeard: bindHeard, pick: pick, play: play, duration: duration, status: status, mark: mark, heardClip: heardClip, clipMeta: clipMeta, preload: preload, loadManifest: loadManifest, stop: stop, unlock: unlock };
 });

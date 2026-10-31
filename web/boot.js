@@ -16,6 +16,13 @@
     }
   }
 
+  // Loads the audio manifest before start so clip supersedes are known on first play; failure or 3 s timeout continues.
+  function manifestWithTimeout() {
+    var timer;
+    var wait = new Promise(function (resolve) { timer = root.setTimeout(resolve, 3000); });
+    return Promise.race([root.DojoAudio.loadManifest(), wait]).then(function () { root.clearTimeout(timer); }, function () { root.clearTimeout(timer); });
+  }
+
   function boot() {
     var rootEl = root.document.getElementById('dojo-root');
     var content = null;
@@ -28,8 +35,12 @@
     ]).then(function (parts) {
       content = parts[1];
       var ac = content.course && content.course.audio;
-      if (ac && root.DojoAudio) root.DojoAudio.configure({ override: root.DOJO_AUDIO_BASE, base: ac.base, win: root });
-      return DojoApp.start({
+      var pre = null;
+      if (ac && root.DojoAudio) {
+        root.DojoAudio.configure({ override: root.DOJO_AUDIO_BASE, base: ac.base, win: root });
+        pre = manifestWithTimeout();
+      }
+      return Promise.resolve(pre).then(function () { return DojoApp.start({
         root: rootEl,
         dojo: parts[0],
         content: content,
@@ -38,7 +49,7 @@
         claude: root.claude || null,
         localStorage: safeLocalStorage(),
         win: root
-      });
+      }); });
     }).catch(function (err) {
       if (typeof DojoApp !== 'undefined') DojoApp.fail(rootEl, err);
     });
