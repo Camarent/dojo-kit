@@ -103,6 +103,30 @@
     return item.options[index];
   }
 
+  function normLeak(s) {
+    return String(s).normalize('NFKC').toLowerCase();
+  }
+  function leaksAnswer(item, text) {
+    if (!item || typeof text !== 'string' || !text) return false;
+    var forms = [text.replace(/\{([^|}]*)\|([^}]*)\}/g, '$1'), text.replace(/\{([^|}]*)\|([^}]*)\}/g, '$2')].map(normLeak);
+    var cands = [];
+    var opts = function (idxs) { return idxs.map(function (i) { return item.options && item.options[i]; }); };
+    if (item.type === 'gap') cands = item.answers || [];
+    else if (item.type === 'choice') cands = opts(correctIndexes(item));
+    else if (item.type === 'multi') cands = opts(item.correct || []);
+    else if (item.type === 'cloze') cands = (item.parts || []).filter(function (p) { return typeof p !== 'string'; }).map(function (p) { return p[0]; });
+    else if (item.type === 'numeric') cands = [item.answer];
+    else if (item.type === 'order') cands = (item.steps || []).filter(function (s) { return String(s).length >= 2; });
+    else if (item.type === 'match') cands = (item.pairs || []).map(function (p) { return p.right; });
+    return cands.some(function (a) {
+      if (a === undefined || a === null) return false;
+      var n = normLeak(a).trim();
+      if (!n.length) return false;
+      if (/^[a-z0-9]+$/.test(n)) return forms.some(function (f) { return new RegExp('(^|[^a-z0-9])' + n + '($|[^a-z0-9])').test(f); });
+      return forms.some(function (f) { return f.indexOf(n) >= 0; });
+    });
+  }
+
   var K = {
     UNIT_NEW_PREFIX: 'newBy:',
     GROUP_NEW_PREFIX: 'newBy:g:',
@@ -124,7 +148,7 @@
     K: K,
     hashString: hashString, mulberry32: mulberry32, shuffledIndexes: shuffledIndexes, isRetired: isRetired,
     ensureObject: ensureObject, isTypo: isTypo, expectedFor: expectedFor, isIdList: isIdList, orderPerm: orderPerm,
-    clozeBlanks: clozeBlanks, correctIndexes: correctIndexes, optionText: optionText
+    clozeBlanks: clozeBlanks, correctIndexes: correctIndexes, optionText: optionText, leaksAnswer: leaksAnswer
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DojoSessionUtil = api;

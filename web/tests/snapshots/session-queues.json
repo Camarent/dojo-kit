@@ -104,6 +104,18 @@
       "summary": {
         "due": 2,
         "newToday": 6,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 3
+          },
+          {
+            "id": "g2",
+            "title": "G2",
+            "newToday": 3
+          }
+        ],
         "queue": 8
       }
     },
@@ -200,6 +212,13 @@
       "summary": {
         "due": 1,
         "newToday": 2,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 2
+          }
+        ],
         "queue": 6
       }
     },
@@ -283,6 +302,18 @@
       "summary": {
         "due": 0,
         "newToday": 8,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 5
+          },
+          {
+            "id": "other",
+            "title": null,
+            "newToday": 3
+          }
+        ],
         "queue": 8
       }
     },
@@ -360,6 +391,13 @@
       "summary": {
         "due": 0,
         "newToday": 5,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 5
+          }
+        ],
         "queue": 5
       }
     },
@@ -434,6 +472,13 @@
       "summary": {
         "due": 1,
         "newToday": 3,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 3
+          }
+        ],
         "queue": 8
       }
     },
@@ -514,6 +559,13 @@
       "summary": {
         "due": 0,
         "newToday": 7,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 7
+          }
+        ],
         "queue": 7
       }
     },
@@ -664,6 +716,18 @@
       "summary": {
         "due": 0,
         "newToday": 7,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 3
+          },
+          {
+            "id": "other",
+            "title": null,
+            "newToday": 4
+          }
+        ],
         "queue": 7
       }
     },
@@ -803,6 +867,18 @@
       "summary": {
         "due": 0,
         "newToday": 4,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 2
+          },
+          {
+            "id": "other",
+            "title": null,
+            "newToday": 2
+          }
+        ],
         "queue": 4
       }
     },
@@ -873,6 +949,13 @@
       "summary": {
         "due": 0,
         "newToday": 1,
+        "parts": [
+          {
+            "id": "g1",
+            "title": "G1",
+            "newToday": 1
+          }
+        ],
         "queue": 1
       }
     },
