@@ -71,6 +71,10 @@
   root.DojoTypes.register('choice', {
     Question: Question,
     canSubmit: function () { return true; },
+    answerTexts: function (item) {
+      var idxs = Array.isArray(item.answer) ? item.answer : [item.answer];
+      return idxs.map(function (i) { return item.options && item.options[i]; });
+    },
     initialState: function () { return {}; },
     onKey: onKey
   });

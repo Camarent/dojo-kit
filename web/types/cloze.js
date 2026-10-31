@@ -133,6 +133,9 @@
   root.DojoTypes.register('cloze', {
     Question: Question,
     canSubmit: canSubmit,
+    answerTexts: function (item) {
+      return (item.parts || []).filter(function (p) { return typeof p !== 'string'; }).map(function (p) { return p[0]; });
+    },
     initialState: initialState,
     onKey: onKey
   });

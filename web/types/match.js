@@ -93,6 +93,7 @@
   root.DojoTypes.register('match', {
     Question: Question,
     canSubmit: canSubmit,
+    answerTexts: function (item) { return (item.pairs || []).map(function (p) { return p.right; }); },
     initialState: initialState,
     Extra: Extra
   });

@@ -198,6 +198,9 @@
   root.DojoTypes.register('order', {
     Question: Question,
     canSubmit: canSubmit,
+    answerTexts: function (item) {
+      return (item.steps || []).filter(function (s) { return String(s).length >= 2; });
+    },
     initialState: initialState,
     Extra: Extra,
     onKey: onKey,

@@ -1,8 +1,12 @@
 'use strict';
-// Mutation coverage: drop the gap branch in leaksAnswer -> 'gap' and 'weak-6' cases fail.
+// Mutation coverage: drop gap's answerTexts in types/gap.js -> 'gap' and 'weak-6' cases fail.
 const test = require('node:test');
 const assert = require('node:assert');
-const { leaksAnswer } = require('../session/util.js');
+const { loadBundle } = require('./load-bundle.js');
+const sb = { console };
+sb.self = sb;
+loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'session/util.js', 'types/registry.js', 'types/choice.js', 'types/multi.js', 'types/match.js', 'types/order.js', 'types/card.js', 'types/gap.js', 'types/numeric.js', 'types/cloze.js'] });
+const leaksAnswer = sb.DojoSessionUtil.leaksAnswer;
 
 test('gap', () => {
   const it = { type: 'gap', answers: ['cat', ''] };
@@ -54,7 +58,7 @@ test('ruby reading form caught', () => {
 });
 
 test('leaksAnswer: a one-letter Latin answer does not match inside a longer word', () => {
-  const U = require('../session/util.js');
+  const U = sb.DojoSessionUtil;
   const item = { id: 'p', type: 'choice', prompt: 'q', options: ['a', 'b'], answer: 0 };
   assert.strictEqual(U.leaksAnswer(item, 'Explanation text'), false);
   assert.strictEqual(U.leaksAnswer(item, 'Answer: a.'), true);
