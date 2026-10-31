@@ -24,8 +24,17 @@ pub(super) fn check_call(name: &str, a: &Value) -> Result<Value, CallError> {
             Ok(json!({ "correct": r.correct, "wrong": r.wrong }))
         }
         "checkOrder" => {
-            let r = check::check_order(count(a, "stepCount")?, &indices(field(a, "sequence")?, "sequence")?);
-            Ok(json!({ "correct": r.correct, "firstWrong": r.first_wrong }))
+            let alt = match a.get("altOrders") {
+                None | Some(Value::Null) => vec![],
+                Some(v) => v
+                    .as_array()
+                    .ok_or_else(|| bad("`altOrders` must be an array of integer arrays"))?
+                    .iter()
+                    .map(|o| indices(o, "altOrders"))
+                    .collect::<Result<Vec<_>, _>>()?,
+            };
+            let r = check::check_order(count(a, "stepCount")?, &indices(field(a, "sequence")?, "sequence")?, &alt);
+            Ok(json!({ "correct": r.correct, "firstWrong": r.first_wrong, "matched": r.matched }))
         }
         "checkCloze" => {
             let blanks = field(a, "blanks")?

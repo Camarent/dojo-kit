@@ -137,27 +137,34 @@ pub fn check_match(pair_count: usize, mapping: &[usize]) -> MatchResult {
 pub struct OrderResult {
     pub correct: bool,
     pub first_wrong: Option<usize>,
+    /// `Some(i)` when alternative `i` matched exactly; `None` for the canonical order or a wrong answer.
+    pub matched: Option<usize>,
 }
 
-/// Correct iff `sequence` is exactly `0..step_count` in order.
-pub fn check_order(step_count: usize, sequence: &[usize]) -> OrderResult {
-    let max_len = step_count.max(sequence.len());
-    let mut first_wrong = None;
-    
-    for p in 0..max_len {
-        let expected_val = if p < step_count { Some(p) } else { None };
-        match (sequence.get(p), expected_val) {
-            (Some(&actual), Some(exp)) if actual == exp => {}
-            (None, None) => {}
-            _ => {
-                first_wrong = Some(p);
-                break;
-            }
+fn order_first_diff(expected: &[usize], sequence: &[usize]) -> Option<usize> {
+    let max_len = expected.len().max(sequence.len());
+    (0..max_len).find(|&p| expected.get(p) != sequence.get(p))
+}
+
+/// Correct iff `sequence` is exactly `0..step_count` or exactly one of `alt`.
+/// `first_wrong` is measured against the accepted order sharing the longest prefix with `sequence` (tie: canonical).
+pub fn check_order(step_count: usize, sequence: &[usize], alt: &[Vec<usize>]) -> OrderResult {
+    let canonical: Vec<usize> = (0..step_count).collect();
+    let mut best_diff = order_first_diff(&canonical, sequence);
+    let mut best_idx: Option<usize> = None;
+    for (i, a) in alt.iter().enumerate() {
+        let d = order_first_diff(a, sequence);
+        let better = match (d, best_diff) {
+            (None, Some(_)) => true,
+            (Some(x), Some(y)) => x > y,
+            _ => false,
+        };
+        if better {
+            best_diff = d;
+            best_idx = Some(i);
         }
     }
-    
-    let correct = first_wrong.is_none();
-    OrderResult { correct, first_wrong }
+    OrderResult { correct: best_diff.is_none(), first_wrong: best_diff, matched: best_idx.filter(|_| best_diff.is_none()) }
 }
 
 /// Result of a cloze check; `results` holds one verdict per blank.
