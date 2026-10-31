@@ -191,6 +191,9 @@ pub struct OrderItem {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub supersedes: Option<Vec<String>>,
     pub steps: Vec<String>,
+    /// Other accepted orders: each entry lists indices into `steps` in the accepted order.
+    #[serde(default, rename = "altOrders", skip_serializing_if = "Option::is_none")]
+    pub alt_orders: Option<Vec<Vec<usize>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub meta: Option<serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

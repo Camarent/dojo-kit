@@ -582,6 +582,21 @@
             "type": "string"
           }
         },
+        "altOrders": {
+          "description": "Other accepted orders: each entry lists indices into `steps` in the accepted order.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint",
+              "minimum": 0
+            }
+          }
+        },
         "meta": true,
         "stimulus": {
           "type": [

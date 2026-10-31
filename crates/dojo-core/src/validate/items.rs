@@ -36,6 +36,7 @@ pub(super) fn check_item_body(item: &Item, file: &str, line: usize, sink: &mut S
         sink.error("empty_prompt", file, line, format!("item '{id}' has an empty prompt"));
     }
     check_topic(item, file, line, sink);
+    super::order_alt::check_order_alt(item, sink, file, line);
     match item {
         Item::Choice(c) => check_choice(c, id, file, line, sink),
         Item::Gap(g) => check_gap(g, id, file, line, sink),
