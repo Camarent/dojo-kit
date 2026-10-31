@@ -61,6 +61,7 @@
       get itemEntities() { return itemEntities; }, get entityMembers() { return entityMembers; },
       get scopedMembers() { return scopedMembers; }, get scopedEntityOf() { return scopedEntityOf; },
       get scopedUnit() { return scopedUnit; }, get hasScope() { return hasScope; },
+      clipMeta: function (id) { return root.DojoAudio && root.DojoAudio.clipMeta ? root.DojoAudio.clipMeta(id) : null; },
       fn: {
         placementPerUnit: placementPerUnit,
         placementMode: placementMode,
