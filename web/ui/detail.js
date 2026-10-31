@@ -87,7 +87,7 @@
         });
         return html`<tr data-testid=${'detail-' + fieldKey + '-row-' + ri}>${cells}</tr>`;
       });
-      return html`<table class="detail-table" data-testid=${'detail-' + fieldKey + '-table'}>${value.title ? html`<caption data-testid=${'detail-' + fieldKey + '-title'}>${r(value.title)}</caption>` : null}<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+      return html`<div class="detail-table-wrap"><table class="detail-table" data-testid=${'detail-' + fieldKey + '-table'}>${value.title ? html`<caption data-testid=${'detail-' + fieldKey + '-title'}>${r(value.title)}</caption>` : null}<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
     }
     return null;
   }
