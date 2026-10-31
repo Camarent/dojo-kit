@@ -45,6 +45,10 @@ test('table field renders title, head cells, and all row cells', async () => {
   
   assert.ok(H.find(v, 'declarative-detail'), 'declarative detail section exists');
   assert.ok(H.find(v, 'detail-meta.tableData-table'), 'table field exists');
+  let wrap = null;
+  H.walk(H.find(v, 'declarative-detail'), (n) => { if (n.props.class === 'detail-table-wrap') wrap = n; });
+  assert.ok(wrap, 'table is wrapped for horizontal scroll');
+  assert.ok(H.find(wrap, 'detail-meta.tableData-table'), 'table sits inside the wrapper');
   assert.ok(H.find(v, 'detail-meta.tableData-title'), 'table title exists');
   
   // Check that title, head cells, and row cells are rendered

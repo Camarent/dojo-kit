@@ -37,6 +37,7 @@
   root.DojoTypes.register('gap', {
     Question: Question,
     canSubmit: canSubmit,
+    answerTexts: function (item) { return item.answers || []; },
     initialState: function () { return { text: '' }; },
     Extra: Extra
   });

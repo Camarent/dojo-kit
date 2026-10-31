@@ -103,6 +103,28 @@
     return item.options[index];
   }
 
+  function normLeak(s) {
+    return String(s).normalize('NFKC').toLowerCase();
+  }
+  function leaksAnswer(item, text) {
+    if (!item || typeof text !== 'string' || !text) return false;
+    var types = root.DojoTypes || (typeof require === 'function' ? require('../types/registry.js') : null);
+    var def = types && types.get(item.type);
+    if (!def || typeof def.answerTexts !== 'function') return false;
+    var cands = def.answerTexts(item) || [];
+    var forms = [text.replace(/\{([^|}]*)\|([^}]*)\}/g, '$1'), text.replace(/\{([^|}]*)\|([^}]*)\}/g, '$2')].map(normLeak);
+    return cands.some(function (a) {
+      if (a === undefined || a === null) return false;
+      var n = normLeak(a).trim();
+      if (!n.length) return false;
+      if (/^[a-z0-9]+$/.test(n)) {
+        var re = new RegExp('(^|[^a-z0-9])' + n + '($|[^a-z0-9])');
+        return forms.some(function (f) { return re.test(f); });
+      }
+      return forms.some(function (f) { return f.indexOf(n) >= 0; });
+    });
+  }
+
   var K = {
     UNIT_NEW_PREFIX: 'newBy:',
     GROUP_NEW_PREFIX: 'newBy:g:',
@@ -124,7 +146,7 @@
     K: K,
     hashString: hashString, mulberry32: mulberry32, shuffledIndexes: shuffledIndexes, isRetired: isRetired,
     ensureObject: ensureObject, isTypo: isTypo, expectedFor: expectedFor, isIdList: isIdList, orderPerm: orderPerm,
-    clozeBlanks: clozeBlanks, correctIndexes: correctIndexes, optionText: optionText
+    clozeBlanks: clozeBlanks, correctIndexes: correctIndexes, optionText: optionText, leaksAnswer: leaksAnswer
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DojoSessionUtil = api;

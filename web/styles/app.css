@@ -379,6 +379,8 @@ input[type="range"].field { box-sizing: border-box; max-width: 100%; margin-inli
 input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }
 .detail-table, .detail-pairs { border-collapse: collapse; width: 100%; }
 .detail-table th, .detail-table td, .detail-pairs td { border: 1px solid var(--border); padding: var(--space-1) var(--space-2); }
+.detail-table-wrap { overflow-x: auto; max-width: 100%; }
+.detail-table th, .detail-table td { word-break: normal; overflow-wrap: normal; }
 .ptrack { position: relative; height: 1.1rem; margin-top: var(--space-1); background: var(--surface-2); border-radius: 999px; overflow: hidden; font-size: 0.75rem; }
 .ptrack-fill { position: absolute; inset: 0 auto 0 0; background: var(--accent-soft); }
 .ptrack-text { position: relative; display: block; text-align: center; color: var(--fg); }

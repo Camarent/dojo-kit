@@ -75,6 +75,9 @@
   root.DojoTypes.register('multi', {
     Question: Question,
     canSubmit: canSubmit,
+    answerTexts: function (item) {
+      return (item.correct || []).map(function (i) { return item.options && item.options[i]; });
+    },
     initialState: function () { return { selected: [] }; },
     onKey: onKey,
     Extra: Extra

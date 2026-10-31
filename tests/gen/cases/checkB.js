@@ -85,6 +85,16 @@ function checkCheckOrderPart1(kit) {
   kit.checkOrderCases.push(vec('correct_order', { stepCount: 3, sequence: [0, 1, 2] }, { correct: true, firstWrong: null }, 'spec'));
 
   kit.checkOrderCases.push(vec('reversed_order', { stepCount: 3, sequence: [2, 1, 0] }, { correct: false, firstWrong: 0 }, 'spec'));
+
+  kit.checkOrderCases.push(vec('alt_matched', { stepCount: 3, sequence: [2, 1, 0], altOrders: [[2, 1, 0]] }, { correct: true, firstWrong: null, matched: 0 }, 'spec'));
+
+  kit.checkOrderCases.push(vec('alt_second_matched', { stepCount: 3, sequence: [1, 0, 2], altOrders: [[2, 1, 0], [1, 0, 2]] }, { correct: true, firstWrong: null, matched: 1 }, 'spec'));
+
+  kit.checkOrderCases.push(vec('alt_partial_first_wrong', { stepCount: 4, sequence: [1, 0, 3, 2], altOrders: [[1, 0, 2, 3]] }, { correct: false, firstWrong: 2, matched: null }, 'spec'));
+
+  kit.checkOrderCases.push(vec('alt_tie_uses_canonical', { stepCount: 3, sequence: [0, 0, 0], altOrders: [[0, 2, 1]] }, { correct: false, firstWrong: 1, matched: null }, 'spec'));
+
+  kit.checkOrderCases.push(vec('empty_alt_orders_same_as_before', { stepCount: 3, sequence: [0, 1, 0], altOrders: [] }, { correct: false, firstWrong: 2, matched: null }, 'spec'));
 }
 
 function checkCheckClozePart1(kit) {
@@ -104,6 +114,9 @@ function checkCheckClozePart1(kit) {
 
   kit.checkOrderCases.push(vec('empty_sequence_non_zero_step_count', { stepCount: 2, sequence: [] }, { correct: false, firstWrong: 0 }, 'spec'));
 
+  for (const c of kit.checkOrderCases) {
+    if (!('matched' in c.expect)) c.expect.matched = null;
+  }
   kit.groups.push({ fn: 'checkOrder', cases: kit.checkOrderCases });
 
   // checkCloze cases

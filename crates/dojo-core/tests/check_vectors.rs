@@ -20,6 +20,13 @@ fn count(v: &Value, what: &str) -> usize {
 }
 
 #[test]
+fn check_order_huge_step_count_does_not_allocate() {
+    let r = check_order(1usize << 40, &[0, 1, 2], &[]);
+    assert!(!r.correct);
+    assert_eq!(r.first_wrong, Some(3));
+}
+
+#[test]
 fn check_vectors() {
     let mut failures = vec![];
     for (f, cases) in groups(&load("check.json")) {
@@ -46,8 +53,12 @@ fn check_vectors() {
                 "checkOrder" => {
                     let step_count = count(&i["stepCount"], "stepCount");
                     let sequence = indices(&i["sequence"], "sequence");
-                    let r = check_order(step_count, &sequence);
-                    json!({ "correct": r.correct, "firstWrong": r.first_wrong })
+                    let alt: Vec<Vec<usize>> = match i.get("altOrders") {
+                        Some(v) => v.as_array().unwrap().iter().map(|o| indices(o, "altOrders")).collect(),
+                        None => vec![],
+                    };
+                    let r = check_order(step_count, &sequence, &alt);
+                    json!({ "correct": r.correct, "firstWrong": r.first_wrong, "matched": r.matched })
                 }
                 "checkCloze" => {
                     let blanks: Vec<Vec<String>> = i["blanks"].as_array().unwrap().iter()

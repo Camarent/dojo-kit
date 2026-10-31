@@ -14,7 +14,7 @@ Machine-readable description of the authoring format, for editors and AI agents.
 
 ## Key files
 - `course.schema.json` - top-level course fields.
-- `item.schema.json` - one object per item type, discriminated by `type`.
+- `item.schema.json` - one object per item type, discriminated by `type`. Order items accept optional `altOrders` (`schema/item.schema.json:585`).
 
 ## Invariants and gotchas
 - Regenerate after any change to `crates/dojo-core/src/content/`; commit the result. A stale file means editors accept content the validator rejects.

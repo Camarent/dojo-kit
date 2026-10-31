@@ -57,6 +57,7 @@
   root.DojoTypes.register('numeric', {
     Question: Question,
     canSubmit: canSubmit,
+    answerTexts: function (item) { return [item.answer]; },
     initialState: function () { return { text: '' }; },
     Extra: Extra,
     inputMode: inputMode

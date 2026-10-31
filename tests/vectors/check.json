@@ -946,7 +946,8 @@
           },
           "expect": {
             "correct": true,
-            "firstWrong": null
+            "firstWrong": null,
+            "matched": null
           },
           "source": "spec"
         },
@@ -962,7 +963,129 @@
           },
           "expect": {
             "correct": false,
-            "firstWrong": 0
+            "firstWrong": 0,
+            "matched": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "alt_matched",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              2,
+              1,
+              0
+            ],
+            "altOrders": [
+              [
+                2,
+                1,
+                0
+              ]
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "firstWrong": null,
+            "matched": 0
+          },
+          "source": "spec"
+        },
+        {
+          "name": "alt_second_matched",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              1,
+              0,
+              2
+            ],
+            "altOrders": [
+              [
+                2,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                2
+              ]
+            ]
+          },
+          "expect": {
+            "correct": true,
+            "firstWrong": null,
+            "matched": 1
+          },
+          "source": "spec"
+        },
+        {
+          "name": "alt_partial_first_wrong",
+          "input": {
+            "stepCount": 4,
+            "sequence": [
+              1,
+              0,
+              3,
+              2
+            ],
+            "altOrders": [
+              [
+                1,
+                0,
+                2,
+                3
+              ]
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 2,
+            "matched": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "alt_tie_uses_canonical",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              0,
+              0,
+              0
+            ],
+            "altOrders": [
+              [
+                0,
+                2,
+                1
+              ]
+            ]
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 1,
+            "matched": null
+          },
+          "source": "spec"
+        },
+        {
+          "name": "empty_alt_orders_same_as_before",
+          "input": {
+            "stepCount": 3,
+            "sequence": [
+              0,
+              1,
+              0
+            ],
+            "altOrders": []
+          },
+          "expect": {
+            "correct": false,
+            "firstWrong": 2,
+            "matched": null
           },
           "source": "spec"
         },
@@ -978,7 +1101,8 @@
           },
           "expect": {
             "correct": false,
-            "firstWrong": 0
+            "firstWrong": 0,
+            "matched": null
           },
           "source": "spec"
         },
@@ -993,7 +1117,8 @@
           },
           "expect": {
             "correct": false,
-            "firstWrong": 2
+            "firstWrong": 2,
+            "matched": null
           },
           "source": "spec"
         },
@@ -1009,7 +1134,8 @@
           },
           "expect": {
             "correct": false,
-            "firstWrong": 2
+            "firstWrong": 2,
+            "matched": null
           },
           "source": "spec"
         },
@@ -1021,7 +1147,8 @@
           },
           "expect": {
             "correct": true,
-            "firstWrong": null
+            "firstWrong": null,
+            "matched": null
           },
           "source": "spec"
         },
@@ -1038,7 +1165,8 @@
           },
           "expect": {
             "correct": false,
-            "firstWrong": 0
+            "firstWrong": 0,
+            "matched": null
           },
           "source": "spec"
         },
@@ -1054,7 +1182,8 @@
           },
           "expect": {
             "correct": false,
-            "firstWrong": 2
+            "firstWrong": 2,
+            "matched": null
           },
           "source": "spec"
         },
@@ -1068,7 +1197,8 @@
           },
           "expect": {
             "correct": true,
-            "firstWrong": null
+            "firstWrong": null,
+            "matched": null
           },
           "source": "spec"
         },
@@ -1080,7 +1210,8 @@
           },
           "expect": {
             "correct": false,
-            "firstWrong": 0
+            "firstWrong": 0,
+            "matched": null
           },
           "source": "spec"
         }

@@ -82,11 +82,17 @@
       var op = util.orderPerm(item.steps.length, seed);
       if (!util.isIdList(input.sequence, op.length, true) || input.sequence.length !== op.length) return null;
       var seq = input.sequence.map(function (id) { return op[id]; });
-      r = ctx.dojo.call('checkOrder', { stepCount: op.length, sequence: seq });
+      r = ctx.dojo.call('checkOrder', { stepCount: op.length, sequence: seq, altOrders: item.altOrders || [] });
+      var fmtOrder = function (o) { return o.map(function (i, k) { return (k + 1) + '. ' + item.steps[i]; }).join('; '); };
+      var odetail = { firstWrong: r.firstWrong === undefined ? null : r.firstWrong };
+      if (item.altOrders && item.altOrders.length) {
+        odetail.matched = r.matched === undefined ? null : r.matched;
+        odetail.alsoCorrect = r.correct ? [] : item.altOrders.map(fmtOrder);
+      }
       return {
         correct: r.correct,
-        given: seq.map(function (i, k) { return (k + 1) + '. ' + item.steps[i]; }).join('; '),
-        detail: { firstWrong: r.firstWrong === undefined ? null : r.firstWrong }
+        given: fmtOrder(seq),
+        detail: odetail
       };
     }
     if (item.type === 'cloze') {

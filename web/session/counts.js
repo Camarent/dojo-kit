@@ -71,12 +71,19 @@
     function summarize(groups, byUnit, bq) {
       var due = 0;
       var newToday = 0;
+      var parts = [];
+      ctx.groupList.forEach(function (g) {
+        var gn = groups[g.id] ? groups[g.id].newToday : 0;
+        parts.push({ id: g.id, title: g.title, newToday: gn });
+      });
       Object.keys(groups).forEach(function (id) { due += groups[id].due; newToday += groups[id].newToday; });
       var unitOf = {};
       items.forEach(function (it) { unitOf[it.id] = it.unit; });
       Object.keys(byUnit).forEach(function (u) { if (!(u in ctx.unitGroup)) due += byUnit[u].due; });
-      bq.fresh.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) newToday++; });
-      return { due: due, newToday: newToday, queue: bq.due.length + bq.fresh.length };
+      var other = 0;
+      bq.fresh.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) { newToday++; other++; } });
+      if (other > 0) parts.push({ id: 'other', title: null, newToday: other });
+      return { due: due, newToday: newToday, parts: parts, queue: bq.due.length + bq.fresh.length };
     }
 
     // Entity-level counts from WASM; the course copy carries the user's per-group newPerDay override.

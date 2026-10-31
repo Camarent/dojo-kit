@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 106] = [
+pub const CODES: [(&str, Severity, &str); 107] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -77,6 +77,7 @@ pub const CODES: [(&str, Severity, &str); 106] = [
     ("same_prompt_different_answers", Severity::Warning, "two non-stimulus gap/cloze/numeric items share the same normalized prompt but have different normalized answer sets"),
     ("ambiguous_answer", Severity::Warning, "gap with several answers (some non-ASCII, some alphabetic; number formats are skipped) and no disambiguation hint in the prompt, choice/multi option with '/' outside brackets, or duplicate options"),
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
+    ("order_alt_invalid", Severity::Error, "order altOrders entry is not a permutation of the step indices, equals the identity order, or repeats another entry"),
     ("order_split_word", Severity::Warning, "order step in a Japanese course is a bare ending or case particle, not a whole chunk"),
     ("unknown_unit_in_group", Severity::Error, "group references a unit id that does not exist"),
     ("unit_in_two_groups", Severity::Error, "unit is in two groups"),

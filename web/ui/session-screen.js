@@ -105,6 +105,11 @@
       var session = this.props.session;
       var card = cur && session.introFor ? session.introFor(cur.item) : null;
       var showIntro = !card && !!(cur && session.shouldShowIntro(cur.item));
+      if (showIntro) {
+        var pre = DojoExt.preAnswerText ? DojoExt.preAnswerText(cur.item, cur.item.explanation) : cur.item.explanation;
+        var U = root.DojoSessionUtil;
+        showIntro = !!pre && !(U && U.leaksAnswer && U.leaksAnswer(cur.item, pre));
+      }
       return { cur: cur, result: null, picked: null, qstate: this.initialQState(cur), error: null, guard: null, retry: false, speechFail: false, showIntro: showIntro, introCard: card, audioMark: root.DojoAudio && root.DojoAudio.mark ? root.DojoAudio.mark() : 0 };
     }
     componentDidMount() {
