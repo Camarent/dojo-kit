@@ -25,7 +25,7 @@ A change is ready when `npm test`, `npm run lint` and `scripts/ci.sh` all pass.
 ## Git hooks
 
 - Enable once per clone: `git config core.hooksPath .githooks`.
-- `git config dojo.owner <your-github-login>` is the intended pin to your login; the hooks do not read it yet.
+- The hooks read `git config dojo.owner <your-github-login>`. When it is set, only that login's noreply address may commit; when it is unset, any `*@users.noreply.github.com` address passes.
 - The pre-commit and pre-push hooks need `gitleaks` on PATH. Without it they refuse, unless you set `DOJO_ALLOW_NO_GITLEAKS=1` to skip the secret scan.
 - Commit subject format: `<type>(<area>): <what>` (types: feat fix refactor test docs chore perf build style).
 
