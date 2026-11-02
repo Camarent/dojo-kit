@@ -32,7 +32,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.0.0",
-    "globals": "^16.0.0",
+    "globals": "^17.13.0",
     "jscpd": "5.4.2",
     "knip": "6.42.1",
     "madge": "8.0.0"
