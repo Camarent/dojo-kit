@@ -3,6 +3,23 @@
   "version": "0.1.0",
   "description": "Generic exam-trainer framework: build offline study apps from course content.",
   "license": "MIT",
+  "author": "Camarent",
+  "homepage": "https://github.com/Camarent/dojo-kit#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Camarent/dojo-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Camarent/dojo-kit/issues"
+  },
+  "keywords": [
+    "exam",
+    "trainer",
+    "spaced-repetition",
+    "quiz",
+    "wasm",
+    "offline"
+  ],
   "private": true,
   "engines": {
     "node": ">=22"
