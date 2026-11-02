@@ -1,11 +1,19 @@
 #!/bin/sh
 # Shared checks for pre-commit and commit-msg. Enable: git config core.hooksPath .githooks
 
-# Accepted identity: the owner's GitHub noreply address only
+# Accepted identity: a GitHub noreply address (plain or <digits>+login form).
+# dojo.owner (a GitHub login) pins it to that login; unset accepts any noreply address.
 is_owner_email() {
+  owner=$(git config --get dojo.owner 2>/dev/null)
+  if [ -z "$owner" ]; then
+    case "$1" in
+      *@users.noreply.github.com) return 0 ;;
+    esac
+    return 1
+  fi
   case "$1" in
-    Camarent@users.noreply.github.com) return 0 ;;
-    [0-9]*+Camarent@users.noreply.github.com) return 0 ;;
+    "$owner@users.noreply.github.com") return 0 ;;
+    [0-9]*+"$owner@users.noreply.github.com") return 0 ;;
   esac
   return 1
 }
@@ -43,7 +51,7 @@ check_ident() {
   for kind in AUTHOR COMMITTER; do
     ident=$(git var "GIT_${kind}_IDENT" 2>/dev/null) || { echo "refused: no ${kind} identity configured" >&2; return 1; }
     email=${ident#*<}; email=${email%%>*}
-    is_owner_email "$email" || { echo "refused: $kind email '$email' is not the Camarent noreply address" >&2; return 1; }
+    is_owner_email "$email" || { echo "refused: $kind email '$email' is not the configured noreply address" >&2; return 1; }
     [ "${ident##* }" = "+0000" ] || { echo "refused: $kind date offset '${ident##* }' is not +0000 (use TZ=UTC)" >&2; return 1; }
   done
   return 0
@@ -70,8 +78,8 @@ check_commit_range() {
     ident=$(git show -s --format='%ae%n%ce%n%ai%n%ci' "$commit" 2>/dev/null)
     author_email=$(printf '%s\n' "$ident" | sed -n 1p)
     committer_email=$(printf '%s\n' "$ident" | sed -n 2p)
-    is_owner_email "$author_email" || { echo "refused: commit ${commit_short}: author email '$author_email' is not the Camarent noreply address" >&2; return 1; }
-    is_owner_email "$committer_email" || { echo "refused: commit ${commit_short}: committer email '$committer_email' is not the Camarent noreply address" >&2; return 1; }
+    is_owner_email "$author_email" || { echo "refused: commit ${commit_short}: author email '$author_email' is not the configured noreply address" >&2; return 1; }
+    is_owner_email "$committer_email" || { echo "refused: commit ${commit_short}: committer email '$committer_email' is not the configured noreply address" >&2; return 1; }
     for n in 3 4; do
       off=$(printf '%s\n' "$ident" | sed -n "${n}p")
       off=${off##* }
@@ -143,7 +151,7 @@ check_content_in_commit() {
             if echo "$line_content" | grep -qE 'workspace/[A-Za-z0-9_/-]+'; then
               # Check if file is exempt
               case "$current_file" in
-                .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                .githooks/*|tests/hooks-test.sh) ;;
                 *)
                   if [ "$found_bad" = false ]; then
                     echo "refused: commit ${commit_short}: content references private workspace:" >&2
@@ -162,7 +170,7 @@ check_content_in_commit() {
               if [ -n "$bad_email" ]; then
                 # Check if file is exempt
                 case "$current_file" in
-                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  .githooks/*|tests/hooks-test.sh) ;;
                   *)
                     if [ "$found_bad" = false ]; then
                       echo "refused: commit ${commit_short}: content contains email '$bad_email':" >&2
@@ -181,7 +189,7 @@ check_content_in_commit() {
               */root/*|*/home/*|*/Users/*)
                 # Check if file is exempt
                 case "$current_file" in
-                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  .githooks/*|tests/hooks-test.sh) ;;
                   *)
                     if [ "$found_bad" = false ]; then
                       echo "refused: commit ${commit_short}: content contains absolute path:" >&2
@@ -257,7 +265,7 @@ check_content_in_diff() {
             if echo "$line_content" | grep -qE 'workspace/[A-Za-z0-9_/-]+'; then
               # Check if file is exempt
               case "$current_file" in
-                .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                .githooks/*|tests/hooks-test.sh) ;;
                 *)
                   if [ "$found_bad" = false ]; then
                     echo "refused: staged content references private workspace:" >&2
@@ -276,7 +284,7 @@ check_content_in_diff() {
               if [ -n "$bad_email" ]; then
                 # Check if file is exempt
                 case "$current_file" in
-                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  .githooks/*|tests/hooks-test.sh) ;;
                   *)
                     if [ "$found_bad" = false ]; then
                       echo "refused: staged content contains email '$bad_email':" >&2
@@ -295,7 +303,7 @@ check_content_in_diff() {
               */root/*|*/home/*|*/Users/*)
                 # Check if file is exempt
                 case "$current_file" in
-                  .githooks/*|tests/hooks-test.sh|AUDIT.md|TEAM.md) ;;
+                  .githooks/*|tests/hooks-test.sh) ;;
                   *)
                     if [ "$found_bad" = false ]; then
                       echo "refused: staged content contains absolute path:" >&2

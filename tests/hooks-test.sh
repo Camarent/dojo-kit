@@ -19,6 +19,7 @@ git init --quiet
 git config core.hooksPath "$guard_dir"
 git config user.email "Camarent@users.noreply.github.com"
 git config user.name "Test User"
+git config dojo.owner Camarent
 
 # Create a test file and commit it
 echo "test" > test.txt
@@ -127,6 +128,7 @@ new_repo() {
   git config core.hooksPath "$guard_dir"
   git config user.email "Camarent@users.noreply.github.com"
   git config user.name "Test User"
+  git config dojo.owner Camarent
   echo "root" > root.txt
   git add root.txt
   git commit --quiet --message "chore(test): root" --no-verify
@@ -377,8 +379,10 @@ if [ $? -ne 0 ]; then echo "PASS"; else echo "FAIL: unknown remote sha skipped c
 cd "$scratch"
 rm -rf "$remote12"
 
-# Test 13: author must be the Camarent noreply address, not any noreply
-echo "Test 13: commit by other noreply address is refused"
+# Test 13: with dojo.owner=Camarent, only that login's noreply address is accepted
+# Mutation check: making is_owner_email return 0 unconditionally (guard.sh, first line of
+# its body) makes the 'other login refused' check below fail.
+echo "Test 13: commit by other noreply login is refused"
 new_repo
 echo a > a.txt
 git add a.txt
@@ -518,6 +522,21 @@ new_repo; echo s > s.txt; git add s.txt
 expect_refused "Test 27: bare subject is refused" "subject must match" git commit --quiet -m "add thing" --author="$A"
 expect_refused "Test 27b: type without area is refused" "subject must match" git commit --quiet -m "fix: thing" --author="$A"
 expect_ok "Test 27c: typed subject with area is accepted" git commit --quiet -m "feat(core): add thing" --author="$A"
+cd "$scratch"
+
+# Test 28-31: owner identity from git config dojo.owner (unset = any noreply, set = that login only)
+new_repo; echo s > s.txt; git add s.txt; git config --unset dojo.owner
+expect_ok "Test 28: unset dojo.owner accepts a plain noreply address" git -c user.email="someone@users.noreply.github.com" commit --quiet -m "feat(core): add thing"
+cd "$scratch"
+new_repo; echo s > s.txt; git add s.txt; git config --unset dojo.owner
+expect_ok "Test 28b: unset dojo.owner accepts a numeric noreply address" git -c user.email="3629354+someone@users.noreply.github.com" commit --quiet -m "feat(core): add thing"
+cd "$scratch"
+new_repo; echo s > s.txt; git add s.txt; git config --unset dojo.owner
+expect_refused "Test 29: unset dojo.owner refuses a gmail-style address" "noreply address" git -c user.email="someone@gmail.com" commit --quiet -m "feat(core): add thing"
+cd "$scratch"
+new_repo; echo s > s.txt; git add s.txt
+expect_refused "Test 30: set dojo.owner refuses another login, numeric form too" "noreply address" git -c user.email="3629354+other@users.noreply.github.com" commit --quiet -m "feat(core): add thing"
+cd "$scratch"
 
 if [ "$fail_count" -gt 0 ]; then
   echo "FAIL: $fail_count test(s) failed"
