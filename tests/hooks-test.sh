@@ -575,6 +575,19 @@ for bad in .audits/x.md .code-index/x AUDIT.md .claude/settings.local.json; do
   git clean -fdq
 done
 
+# Test: pre-push accepts a commit that only DELETES a banned path (untracking AUDIT.md must be pushable)
+new_repo
+rem=$(mktemp -d)
+git init --quiet --bare "$rem"
+git remote add origin "$rem"
+echo "x" > AUDIT.md
+git add AUDIT.md
+git commit --quiet -m "chore(test): add audit" --no-verify
+git push --quiet --no-verify origin HEAD:refs/heads/main >/dev/null 2>&1
+git rm --quiet AUDIT.md
+git commit --quiet -m "chore(test): untrack audit" --no-verify
+expect_ok "Test: pre-push accepts a delete-only commit of a banned path" git push origin HEAD:refs/heads/main
+
 if [ "$fail_count" -gt 0 ]; then
   echo "FAIL: $fail_count test(s) failed"
   exit 1
