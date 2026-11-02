@@ -27,7 +27,7 @@ Needs a Rust toolchain (https://rustup.rs) with the `wasm32-unknown-unknown` tar
 
 Required to build and run the trainer (the `./dojo` wrapper checks for `cargo`; `scripts/build-wasm.sh` also uses `rustc`, `sed` and `perl`):
 - Rust toolchain via rustup (https://rustup.rs), edition 2024 so a recent stable (`Cargo.toml`), with the WASM target (Rust 1.85+ for edition 2024; developed on 1.99). No `wasm-pack` or `npm` is used.
-- Node.js: not needed to author or build a course; used only for the web tests, the dev server (`node web/dev/serve.js`) and vectors (`tests/gen-vectors.js`). The repo states no minimum. Evidence: the tests use `node:test` including `test.describe` and `node --test` (Node 18 or newer needed); the suite was run on Node 22 only (`node --test web/tests/*.test.js`; the directory form fails on Node 22). Use Node 22 or newer; older versions are untested.
+- Node.js: not needed to author or build a course; used only for the web tests, the dev server (`node web/dev/serve.js`) and vectors (`tests/gen-vectors.js`). Node.js 22 or newer (engines in `package.json`; CI runs 22 and 24).
 
 For textbooks (`docs/FROM-TEXTBOOKS.md`; all optional, only needed for that route; the commands and package names below were not run or verified in this repo's environment, where none of them are installed):
 - `poppler-utils` (`pdftotext`, `pdfinfo`, `pdftoppm`) for PDFs.
@@ -47,7 +47,7 @@ What the user must provide or approve:
 
 ## Use it with an AI assistant
 
-Open the repo in your assistant (Claude Code or any other), put your materials into `workspace/<course>/materials/`, and paste a prompt from [docs/PROMPTS.md](docs/PROMPTS.md) (sources in `prompts/`). The assistant follows [AGENTS.md](AGENTS.md): ingest materials, write content, `dojo validate`, `dojo build`, publish. `CLAUDE.md` points Claude Code to the same procedure.
+Open the repo in your assistant (Claude Code or any other), put your materials into `workspace/<course>/materials/`, and paste a prompt from [docs/PROMPTS.md](docs/PROMPTS.md) (sources in `prompts/`). The assistant follows [AGENTS.md](AGENTS.md): ingest materials, write content, `dojo validate`, `dojo build`, publish. CLAUDE.md is a short pointer for tools that read it.
 
 ### Test prompt: textbooks in `workspace/<id>/materials/`
 
@@ -87,7 +87,7 @@ Screens of the `examples/showcase` course (`./dojo build examples/showcase`).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for tests, lint and the CI script. Run the test suite with `npm test` and lint with `npm run lint`.
 
-Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`. They refuse a commit whose author or committer email is not the owner's `users.noreply.github.com` address (plain or `<id>+` form), or that stages files under the private course folders under `workspace/`, `dist/`, `.work/`, `target/`, `cargo-target/`, or any `*.wasm` file.
+Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`. They refuse a commit whose author or committer email is not the owner's GitHub noreply address (`users.noreply.github.com`, plain or `<id>+` form), or that stages files under the private course folders under `workspace/`, `dist/`, `.work/`, `target/`, `cargo-target/`, or any `*.wasm` file. Hooks accept only the owner's GitHub noreply address; `git config dojo.owner <your-github-login>` is the intended pin to your login, but the hooks do not read it yet.
 
 ## Documentation
 

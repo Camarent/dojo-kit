@@ -22,6 +22,19 @@ A change is ready when `npm test`, `npm run lint` and `scripts/ci.sh` all pass.
 - Do not commit course content, private materials, build output or `*.wasm` files. See the README "Contributing" section for the hooks that enforce this.
 - Keep docs in step with the code.
 
+## Git hooks
+
+- Enable once per clone: `git config core.hooksPath .githooks`.
+- `git config dojo.owner <your-github-login>` is the intended pin to your login; the hooks do not read it yet.
+- The pre-commit and pre-push hooks need `gitleaks` on PATH. Without it they refuse, unless you set `DOJO_ALLOW_NO_GITLEAKS=1` to skip the secret scan.
+- Commit subject format: `<type>(<area>): <what>` (types: feat fix refactor test docs chore perf build style).
+
+## AI-assisted changes
+
+- Any AI tool is allowed to help write a change.
+- A `Co-Authored-By` trailer is optional.
+- You review and own the change: you must understand it and answer for it in review.
+
 ## Conduct
 
 Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
