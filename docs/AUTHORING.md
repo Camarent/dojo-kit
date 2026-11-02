@@ -165,10 +165,10 @@ Example:
 }
 ```
 
-This renders for items with `meta: {meaning: "test", readings: ["a", "b"], info: {level: "N5"}}` as:
+This renders for items with `meta: {meaning: "test", readings: ["a", "b"], info: {level: "B2"}}` as:
 - Meaning: test
 - Readings: (as unordered list)
-- Info: (as table with row "level: N5")
+- Info: (as table with row "level: B2")
 
 ## Listening, timed and weighted drills
 Reference course: `examples/listening/` (synthetic tones, `make-audio.js` regenerates `audio/`).

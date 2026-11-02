@@ -98,7 +98,7 @@ function examScorePart3(kit) {
       passMark: 0.5
     }, scoreJs));
 
-  // scoring cases (JLPT-shaped: s12 120 questions of 1 point, min 38; l 60 questions, min 19; passPoints 80)
+  // scoring cases (points-scored exam: s12 120 questions of 1 point, min 38; l 60 questions, min 19; passPoints 80)
   kit.jlptSections = [
     { title: 's12', start: 0, count: 120 },
     { title: 'l', start: 120, count: 60 }
