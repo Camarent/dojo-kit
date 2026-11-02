@@ -542,6 +542,7 @@ git remote remove origin >/dev/null 2>&1
 new_repo; echo s > s.txt; git add s.txt
 expect_refused "Test 27: bare subject is refused" "subject must match" git commit --quiet -m "add thing" --author="$A"
 expect_refused "Test 27b: type without area is refused" "subject must match" git commit --quiet -m "fix: thing" --author="$A"
+expect_refused "Test 27c: the old dev merge subject is no longer exempt" "subject must match" git commit --quiet -m "Merge branch 'dev' into master" --author="$A"
 expect_ok "Test 27c: typed subject with area is accepted" git commit --quiet -m "feat(core): add thing" --author="$A"
 cd "$scratch"
 

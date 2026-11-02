@@ -39,11 +39,10 @@ msg_names_job() {
 }
 
 # First line of a commit message (stdin) must be '<type>(<area>): <what>';
-# only the dev->master '--no-ff' merge subject is exempt
+# no exemptions
 subject_ok() {
   first=$(grep -v '^#' | head -n 1)
   echo "$first" | grep -qE '^(feat|fix|refactor|test|docs|chore|perf|build|style)\([^()[:space:]]+\): [^[:space:]]' && return 0
-  echo "$first" | grep -qE "^Merge branch 'dev'( into master)?$" && return 0
   return 1
 }
 
