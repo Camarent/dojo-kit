@@ -26,24 +26,12 @@ cookies*.txt
 .DS_Store
 **/materials/
 *.mp3
+# synthetic fixture made by examples/listening/make-audio.js
+!examples/listening/audio/pack-00.mp3
 *.m4a
 .api_for_tests.md
 courses/
-# internal process files: kept on disk for agents, not product
-.work/
-TEAM.md
-PLAN.md
-PLAN-R2.md
-PROGRESS.md
-notes/
-poc/
-.claude/settings.local.json
-.notes/
 *.pdf
-PLAN*.md
-.audits/
 web/*.wasm
 /target
 *[Pp]rogress*.json
-# local code index
-.code-index/
