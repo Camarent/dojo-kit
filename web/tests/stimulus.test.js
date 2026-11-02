@@ -79,6 +79,7 @@ function loadApp() {
   vm.runInContext(read('ui/settings-sections.js'), sandbox, { filename: 'ui/settings-sections.js' });
   vm.runInContext(read('ui/settings-dialogs.js'), sandbox, { filename: 'ui/settings-dialogs.js' });
   vm.runInContext(read('ui/settings.js'), sandbox, { filename: 'ui/settings.js' });
+  vm.runInContext(read('ui/app-screens.js'), sandbox, { filename: 'ui/app-screens.js' });
   vm.runInContext(read('ui/app.js'), sandbox, { filename: 'ui/app.js' });
   return sandbox.DojoApp._Stimulus;
 }

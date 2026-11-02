@@ -66,6 +66,7 @@
     "ui/settings-sections.js",
     "ui/settings-dialogs.js",
     "ui/settings.js",
+    "ui/app-screens.js",
     "ui/app.js",
     "boot.js"
   ],
