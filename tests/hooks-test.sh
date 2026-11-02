@@ -588,6 +588,20 @@ git rm --quiet AUDIT.md
 git commit --quiet -m "chore(test): untrack audit" --no-verify
 expect_ok "Test: pre-push accepts a delete-only commit of a banned path" git push origin HEAD:refs/heads/main
 
+# Test: pre-push accepts a commit that MODIFIES AUDIT.md (it was tracked in public history); pre-commit still refuses adding it
+new_repo
+rem=$(mktemp -d)
+git init --quiet --bare "$rem"
+git remote add origin "$rem"
+echo "x" > AUDIT.md
+git add AUDIT.md
+git commit --quiet -m "chore(test): add audit" --no-verify
+git push --quiet --no-verify origin HEAD:refs/heads/main >/dev/null 2>&1
+echo "y" >> AUDIT.md
+git add AUDIT.md
+git commit --quiet -m "chore(test): edit audit" --no-verify
+expect_ok "Test: pre-push accepts a commit that modifies a formerly tracked AUDIT.md" git push origin HEAD:refs/heads/main
+
 if [ "$fail_count" -gt 0 ]; then
   echo "FAIL: $fail_count test(s) failed"
   exit 1
