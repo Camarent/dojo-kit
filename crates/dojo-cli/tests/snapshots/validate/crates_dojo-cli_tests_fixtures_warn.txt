@@ -1,0 +1,3 @@
+exit: 0
+output:
+{"ok":true,"errors":0,"warnings":1,"diagnostics":[{"severity":"warning","code":"unit_empty","file":"course.json","line":0,"message":"unit 'w' has no active items"}]}

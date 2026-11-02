@@ -1,0 +1,6 @@
+{
+  "entry": ["web/**/*.js", "tests/**/*.js", "tools/**/*.js", "scripts/**/*.js", "eslint.config.mjs"],
+  "project": ["web/**/*.js", "tests/**/*.js", "tools/**/*.js"],
+  "ignore": ["web/vendor/**"],
+  "ignoreUnresolved": ["./session.js"]
+}

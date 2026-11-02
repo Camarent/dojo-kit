@@ -1,0 +1,955 @@
+{
+  "fn": "sanitize",
+  "cases": [
+    {
+      "name": "foreign_doc_v2",
+      "input": {
+        "v": 2,
+        "t": 0,
+        "items": {}
+      },
+      "expect": null,
+      "source": "reference"
+    },
+    {
+      "name": "non_object_number",
+      "input": 42,
+      "expect": null,
+      "source": "reference"
+    },
+    {
+      "name": "non_object_string",
+      "input": "hello",
+      "expect": null,
+      "source": "reference"
+    },
+    {
+      "name": "missing_items",
+      "input": {
+        "v": 1,
+        "t": 0
+      },
+      "expect": null,
+      "source": "reference"
+    },
+    {
+      "name": "valid_doc_kept",
+      "input": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "unknown_top_level_field_kept",
+      "input": {
+        "v": 1,
+        "t": 0,
+        "items": {},
+        "course": "demo"
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "items": {},
+        "course": "demo",
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "unknown_field_inside_record_kept",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0,
+            "x": 1
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0,
+            "x": 1
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "string_numeric_s_not_valid",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": "3",
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": "3",
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "item_value_null_kept",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": null
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": null
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "invalid_record_kept",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "x": 1
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "x": 1
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "negative_s_to_0",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": -1,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 0,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "fractional_s_truncated",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 2.7,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 2,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "ok_fractional_truncated",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 2.7,
+            "bad": 0,
+            "last": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 2,
+            "bad": 0,
+            "last": 0
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "bad_fractional_truncated",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 2.7,
+            "last": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 2,
+            "last": 0
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "last_missing_to_0",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "stats_day_bad_format_dropped",
+      "input": {
+        "v": 1,
+        "items": {},
+        "stats": {
+          "days": {
+            "bad-format": 5,
+            "2026-01-01": 3
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {},
+        "stats": {
+          "days": {
+            "2026-01-01": 3
+          },
+          "newByDay": {}
+        },
+        "t": 0,
+        "resetAt": 0,
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "new_per_day_99_to_50",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": 99
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": 50,
+          "placementDone": false,
+          "t": 0
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "new_per_day_neg_5_to_0",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": -5
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": 0,
+          "placementDone": false,
+          "t": 0
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "new_per_day_missing_to_10",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {}
+      },
+      "expect": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "placement_done_truthy_to_true",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "placementDone": 1
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "placementDone": true,
+          "newPerDay": 10,
+          "t": 0
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "settings_ts_non_object_removed",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "ts": "bad"
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "t": 0,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "t_as_string_12_to_12",
+      "input": {
+        "v": 1,
+        "items": {},
+        "t": "12"
+      },
+      "expect": {
+        "v": 1,
+        "items": {},
+        "t": 12,
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference"
+    },
+    {
+      "name": "no_stage_clamp",
+      "input": {
+        "v": 1,
+        "items": {
+          "a-1": {
+            "s": 9,
+            "due": 1,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {
+          "a-1": {
+            "s": 9,
+            "due": 1,
+            "ok": 0,
+            "bad": 0,
+            "last": 0
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "ps_is_unknown_field",
+      "input": {
+        "v": 1,
+        "items": {
+          "gp-1": {
+            "s": 3,
+            "due": 1,
+            "ps": 7
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {
+          "gp-1": {
+            "s": 3,
+            "due": 1,
+            "ok": 0,
+            "bad": 0,
+            "last": 0,
+            "ps": 7
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "custom_stats_map_kept",
+      "input": {
+        "v": 1,
+        "items": {},
+        "stats": {
+          "studyDays": {
+            "2026-01-02": 3,
+            "bad": 1
+          },
+          "note": "x"
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {},
+          "studyDays": {
+            "2026-01-02": 3
+          },
+          "note": "x"
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "course_field_kept",
+      "input": {
+        "v": 1,
+        "items": {},
+        "course": "demo"
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "course": "demo"
+      },
+      "source": "spec"
+    },
+    {
+      "name": "float_due_becomes_integer",
+      "input": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 2,
+            "due": 1760000000000.0,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000.0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {
+          "a": {
+            "s": 2,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "settings_newperday_not_number_string",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": "abc"
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "settings_newperday_not_number_null",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": null
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "settings_newperday_not_number_bool",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "newPerDay": true
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "settings_t_string",
+      "input": {
+        "v": 1,
+        "items": {},
+        "settings": {
+          "t": "12"
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 12
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "bad_date_keys_dropped",
+      "input": {
+        "v": 1,
+        "items": {},
+        "stats": {
+          "days": {
+            "----------": 1,
+            "20-4-01-12": 2,
+            "2026-01-02": 3
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {
+            "2026-01-02": 3
+          },
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "stats_non_daymap_object_kept",
+      "input": {
+        "v": 1,
+        "items": {},
+        "stats": {
+          "obj": {
+            "a": 1
+          },
+          "note": "x"
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {},
+          "obj": {
+            "a": 1
+          },
+          "note": "x"
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+[package]
+name = "dojo-cli"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+dojo-core = { version = "0.1.0", path = "../dojo-core" }
+serde_json = { version = "1.0.154", features = ["float_roundtrip", "preserve_order"] }
+
+[[bin]]
+name = "dojo"
+path = "src/main.rs"

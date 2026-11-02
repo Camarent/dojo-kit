@@ -1,0 +1,4219 @@
+{
+  "groups": [
+    {
+      "fn": "applyAnswer",
+      "cases": [
+        {
+          "name": "null_rec_correct",
+          "input": {
+            "rec": null,
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "null_rec_wrong",
+          "input": {
+            "rec": null,
+            "correct": false,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 0,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_0_correct",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_1_correct",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759985600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_2_correct",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 1759913600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759913600000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 3,
+            "due": 1760259200000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_3_correct",
+          "input": {
+            "rec": {
+              "s": 3,
+              "due": 1759740800000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759740800000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 4,
+            "due": 1760604800000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_4_correct",
+          "input": {
+            "rec": {
+              "s": 4,
+              "due": 1759395200000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759395200000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 5,
+            "due": 1761209600000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_5_correct",
+          "input": {
+            "rec": {
+              "s": 5,
+              "due": 1758790400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1758790400000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 6,
+            "due": 1762592000000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_6_correct_capped",
+          "input": {
+            "rec": {
+              "s": 6,
+              "due": 1757408000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1757408000000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 6,
+            "due": 1762592000000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_3_wrong_to_1",
+          "input": {
+            "rec": {
+              "s": 3,
+              "due": 1759740800000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759740800000
+            },
+            "correct": false,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_1_wrong_ok_gt_0_floor_1",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759985600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "correct": false,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_1_wrong_ok_0_bad_0_to_0",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759985600000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "correct": false,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 0,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_2_wrong_never_learned",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 1759913600000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1759913600000
+            },
+            "correct": false,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 0,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rec_with_extra_field_preserved",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759985600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000,
+              "x": 1
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000,
+            "x": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "custom_ladder_stage_2_correct",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 1759827200000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759827200000
+            },
+            "correct": true,
+            "now": 1760000000000,
+            "ladder": [
+              0,
+              86400000,
+              172800000
+            ]
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760172800000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "custom_ladder_stage_2_wrong",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 1759827200000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759827200000
+            },
+            "correct": false,
+            "now": 1760000000000,
+            "ladder": [
+              0,
+              86400000,
+              172800000
+            ]
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "custom_ladder_stage_0_correct",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "correct": true,
+            "now": 1760000000000,
+            "ladder": [
+              0,
+              86400000,
+              172800000
+            ]
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "float_due_correct",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 1759913600000.0,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759913600000.0
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 3,
+            "due": 1760259200000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "empty_ladder_null_rec_correct",
+          "input": {
+            "rec": null,
+            "correct": true,
+            "now": 1760000000000,
+            "ladder": []
+          },
+          "expect": {
+            "s": 0,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "applyPractice",
+      "cases": [
+        {
+          "name": "not_due_correct",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759913600000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "not_due_wrong",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759913600000
+            },
+            "correct": false,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "due_correct",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759996400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rec_null",
+          "input": {
+            "rec": null,
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rec_with_extra_fields",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759913600000,
+              "x": 1
+            },
+            "correct": true,
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000,
+            "x": 1
+          },
+          "source": "reference"
+        }
+      ]
+    },
+    {
+      "fn": "applyRelearn",
+      "cases": [
+        {
+          "name": "stage_0_rec_to_stage_1",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 1,
+              "last": 1760000000000
+            },
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 0,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "stage_3_rec_unchanged",
+          "input": {
+            "rec": {
+              "s": 3,
+              "due": 1759740800000,
+              "ok": 5,
+              "bad": 1,
+              "last": 1759740800000
+            },
+            "now": 1760000000000
+          },
+          "expect": {
+            "s": 3,
+            "due": 1759740800000,
+            "ok": 5,
+            "bad": 1,
+            "last": 1759740800000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rec_null",
+          "input": {
+            "rec": null,
+            "now": 1760000000000
+          },
+          "expect": null,
+          "source": "reference"
+        },
+        {
+          "name": "single_step_ladder_stage_0",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 2,
+              "bad": 1,
+              "last": 1759913600000
+            },
+            "now": 1760000000000,
+            "ladder": [
+              0
+            ]
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 2,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "isDue",
+      "cases": [
+        {
+          "name": "due_equals_now",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "now": 1760000000000
+          },
+          "expect": true,
+          "source": "reference"
+        },
+        {
+          "name": "due_lt_now",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759996400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "now": 1760000000000
+          },
+          "expect": true,
+          "source": "reference"
+        },
+        {
+          "name": "due_gt_now",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760003600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "now": 1760000000000
+          },
+          "expect": false,
+          "source": "reference"
+        },
+        {
+          "name": "rec_null",
+          "input": {
+            "rec": null,
+            "now": 1760000000000
+          },
+          "expect": false,
+          "source": "reference"
+        },
+        {
+          "name": "float_due_equals_now",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760000000000.0,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000.0
+            },
+            "now": 1760000000000
+          },
+          "expect": true,
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "isNew",
+      "cases": [
+        {
+          "name": "rec_exists",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            }
+          },
+          "expect": false,
+          "source": "reference"
+        },
+        {
+          "name": "rec_null",
+          "input": {
+            "rec": null
+          },
+          "expect": true,
+          "source": "reference"
+        }
+      ]
+    },
+    {
+      "fn": "weakest",
+      "cases": [
+        {
+          "name": "limit_3",
+          "input": {
+            "items": {
+              "i1": {
+                "s": 1,
+                "due": 1760003600000,
+                "ok": 5,
+                "bad": 1,
+                "last": 1759913600000
+              },
+              "i2": {
+                "s": 2,
+                "due": 1760007200000,
+                "ok": 3,
+                "bad": 2,
+                "last": 1759827200000
+              },
+              "i3": {
+                "s": 3,
+                "due": 1760010800000,
+                "ok": 10,
+                "bad": 3,
+                "last": 1759740800000
+              },
+              "i4": {
+                "s": 0,
+                "due": 1760014400000,
+                "ok": 2,
+                "bad": 4,
+                "last": 1759654400000
+              },
+              "i5": {
+                "s": 4,
+                "due": 1760018000000,
+                "ok": 8,
+                "bad": 5,
+                "last": 1759568000000
+              },
+              "i6": {
+                "s": 5,
+                "due": 1760021600000,
+                "ok": 15,
+                "bad": 6,
+                "last": 1759481600000
+              }
+            },
+            "limit": 3
+          },
+          "expect": [
+            "i4",
+            "i2",
+            "i5"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "limit_omitted",
+          "input": {
+            "items": {
+              "i1": {
+                "s": 1,
+                "due": 1760003600000,
+                "ok": 5,
+                "bad": 1,
+                "last": 1759913600000
+              },
+              "i2": {
+                "s": 2,
+                "due": 1760007200000,
+                "ok": 3,
+                "bad": 2,
+                "last": 1759827200000
+              },
+              "i3": {
+                "s": 3,
+                "due": 1760010800000,
+                "ok": 10,
+                "bad": 3,
+                "last": 1759740800000
+              },
+              "i4": {
+                "s": 0,
+                "due": 1760014400000,
+                "ok": 2,
+                "bad": 4,
+                "last": 1759654400000
+              },
+              "i5": {
+                "s": 4,
+                "due": 1760018000000,
+                "ok": 8,
+                "bad": 5,
+                "last": 1759568000000
+              },
+              "i6": {
+                "s": 5,
+                "due": 1760021600000,
+                "ok": 15,
+                "bad": 6,
+                "last": 1759481600000
+              }
+            }
+          },
+          "expect": [
+            "i4",
+            "i2",
+            "i5",
+            "i1",
+            "i6",
+            "i3"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "valid_ids_filter",
+          "input": {
+            "items": {
+              "i1": {
+                "s": 1,
+                "due": 1760003600000,
+                "ok": 5,
+                "bad": 1,
+                "last": 1759913600000
+              },
+              "i2": {
+                "s": 2,
+                "due": 1760007200000,
+                "ok": 3,
+                "bad": 2,
+                "last": 1759827200000
+              },
+              "i3": {
+                "s": 3,
+                "due": 1760010800000,
+                "ok": 10,
+                "bad": 3,
+                "last": 1759740800000
+              },
+              "i4": {
+                "s": 0,
+                "due": 1760014400000,
+                "ok": 2,
+                "bad": 4,
+                "last": 1759654400000
+              },
+              "i5": {
+                "s": 4,
+                "due": 1760018000000,
+                "ok": 8,
+                "bad": 5,
+                "last": 1759568000000
+              },
+              "i6": {
+                "s": 5,
+                "due": 1760021600000,
+                "ok": 15,
+                "bad": 6,
+                "last": 1759481600000
+              }
+            },
+            "limit": 3,
+            "validIds": {
+              "i1": true,
+              "i2": true,
+              "i3": true,
+              "i4": false,
+              "i5": false,
+              "i6": false
+            }
+          },
+          "expect": [
+            "i2",
+            "i1",
+            "i3"
+          ],
+          "source": "reference"
+        },
+        {
+          "name": "bad_0_excluded",
+          "input": {
+            "items": {
+              "i1": {
+                "s": 1,
+                "due": 1760003600000,
+                "ok": 5,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "i2": {
+                "s": 2,
+                "due": 1760007200000,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759827200000
+              }
+            },
+            "limit": 3
+          },
+          "expect": [],
+          "source": "reference"
+        },
+        {
+          "name": "valid_ids_zero_is_falsy",
+          "input": {
+            "items": {
+              "i1": {
+                "s": 1,
+                "due": 1760003600000,
+                "ok": 5,
+                "bad": 1,
+                "last": 1759913600000
+              },
+              "i2": {
+                "s": 2,
+                "due": 1760007200000,
+                "ok": 3,
+                "bad": 2,
+                "last": 1759827200000
+              },
+              "i3": {
+                "s": 3,
+                "due": 1760010800000,
+                "ok": 10,
+                "bad": 3,
+                "last": 1759740800000
+              },
+              "i4": {
+                "s": 0,
+                "due": 1760014400000,
+                "ok": 2,
+                "bad": 4,
+                "last": 1759654400000
+              },
+              "i5": {
+                "s": 4,
+                "due": 1760018000000,
+                "ok": 8,
+                "bad": 5,
+                "last": 1759568000000
+              },
+              "i6": {
+                "s": 5,
+                "due": 1760021600000,
+                "ok": 15,
+                "bad": 6,
+                "last": 1759481600000
+              }
+            },
+            "validIds": {
+              "i1": 0,
+              "i2": 1
+            }
+          },
+          "expect": [
+            "i2"
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "missing_s_gets_no_bonus",
+          "input": {
+            "items": {
+              "b": {
+                "s": 5,
+                "due": 1760000000000,
+                "ok": 0,
+                "bad": 1,
+                "last": 1760000000000
+              },
+              "a": {
+                "due": 1760000000000,
+                "ok": 0,
+                "bad": 1,
+                "last": 1760000000000
+              }
+            }
+          },
+          "expect": [
+            "b",
+            "a"
+          ],
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "applyPlacement",
+      "cases": [
+        {
+          "name": "known_unseen_to_stage_4",
+          "input": {
+            "rec": null,
+            "known": true,
+            "now": 1760000000000,
+            "seed": "1"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760637005153,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "known_new_rec_to_stage_4",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "1"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760637005153,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "known_stage_4_unchanged",
+          "input": {
+            "rec": {
+              "s": 4,
+              "due": 1760604800000,
+              "ok": 5,
+              "bad": 1,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "1"
+          },
+          "expect": {
+            "s": 4,
+            "due": 1760604800000,
+            "ok": 5,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "known_stage_5_unchanged",
+          "input": {
+            "rec": {
+              "s": 5,
+              "due": 1761209600000,
+              "ok": 10,
+              "bad": 2,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "1"
+          },
+          "expect": {
+            "s": 5,
+            "due": 1761209600000,
+            "ok": 10,
+            "bad": 2,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "unknown_null_rec_unchanged",
+          "input": {
+            "rec": null,
+            "known": false,
+            "now": 1760000000000,
+            "seed": "1"
+          },
+          "expect": null,
+          "source": "reference"
+        },
+        {
+          "name": "unknown_existing_rec_unchanged",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 3,
+              "bad": 1,
+              "last": 1760000000000
+            },
+            "known": false,
+            "now": 1760000000000,
+            "seed": "1"
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 3,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "known_short_ladder_to_max_stage_3",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "ladder": [
+              0,
+              14400000,
+              86400000,
+              259200000
+            ],
+            "seed": "1"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 3,
+            "due": 1760273002208,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "deterministic_spread_same_seed",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "42"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760721678751,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "deterministic_spread_diff_seed",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "99"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760489418903,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "large_seed_18446744073709551615",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "18446744073709551615"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760795405343,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "large_seed_12345678901234567890",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "12345678901234567890"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760834153195,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "large_seed_9007199254740993",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "9007199254740993"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760373015700,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "known_from_stage_1_to_4",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 2,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "7"
+          },
+          "expect": {
+            "ok": 2,
+            "bad": 0,
+            "s": 4,
+            "due": 1760551495225,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "known_from_stage_3_to_4",
+          "input": {
+            "rec": {
+              "s": 3,
+              "due": 1760000000000,
+              "ok": 2,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "7"
+          },
+          "expect": {
+            "ok": 2,
+            "bad": 0,
+            "s": 4,
+            "due": 1760551495225,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        },
+        {
+          "name": "known_keeps_extra_fields",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000,
+              "ps": 7
+            },
+            "known": true,
+            "now": 1760000000000,
+            "seed": "5"
+          },
+          "expect": {
+            "ok": 0,
+            "bad": 0,
+            "s": 4,
+            "due": 1760550013851,
+            "last": 1760000000000,
+            "ps": 7
+          },
+          "source": "spec"
+        },
+        {
+          "name": "known_single_entry_ladder_unchanged",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "known": true,
+            "now": 1760000000000,
+            "ladder": [
+              0
+            ],
+            "seed": "5"
+          },
+          "expect": {
+            "s": 0,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "buildQueue",
+      "cases": [
+        {
+          "name": "due_sorted_ascending",
+          "input": {
+            "items": {
+              "a": {
+                "s": 1,
+                "due": 1760172800000,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759985600000
+              },
+              "b": {
+                "s": 2,
+                "due": 1760086400000,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 3,
+                "due": 1760259200000,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759740800000
+              }
+            },
+            "order": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 0
+          },
+          "expect": {
+            "due": [],
+            "fresh": []
+          },
+          "source": "reference"
+        },
+        {
+          "name": "fresh_limited_by_new_allowance",
+          "input": {
+            "items": {
+              "b": {
+                "s": 2,
+                "due": 1760086400000,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 3,
+                "due": 1760259200000,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759740800000
+              }
+            },
+            "order": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 2
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a",
+              "d"
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "unknown_ids_ignored",
+          "input": {
+            "items": {
+              "a": {
+                "s": 1,
+                "due": 1760172800000,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759985600000
+              },
+              "b": {
+                "s": 2,
+                "due": 1760086400000,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "unknown": {
+                "s": 1,
+                "due": 1760432000000,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759985600000
+              }
+            },
+            "order": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 0
+          },
+          "expect": {
+            "due": [],
+            "fresh": []
+          },
+          "source": "reference"
+        },
+        {
+          "name": "new_allowance_0",
+          "input": {
+            "items": {},
+            "order": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 0
+          },
+          "expect": {
+            "due": [],
+            "fresh": []
+          },
+          "source": "reference"
+        },
+        {
+          "name": "empty_items",
+          "input": {
+            "items": {},
+            "order": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e"
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "float_due_sorted_ascending",
+          "input": {
+            "items": {
+              "a": {
+                "s": 1,
+                "due": 1759827200000.0,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 2,
+                "due": 1759740800000.0,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 3,
+                "due": 1760086400000.0,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "order": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 1
+          },
+          "expect": {
+            "due": [
+              "b",
+              "a"
+            ],
+            "fresh": [
+              "d"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "unit_cap_zero_blocks_unit",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 10,
+            "unitNewCaps": {
+              "A": 0
+            },
+            "itemUnits": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "b3": "B",
+              "c1": "C"
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "unit_cap_below_global",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 10,
+            "unitNewCaps": {
+              "A": 1,
+              "B": 2
+            },
+            "itemUnits": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "b3": "B",
+              "c1": "C"
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "b1",
+              "b2",
+              "c1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "global_cap_binding",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 2,
+            "unitNewCaps": {
+              "A": 5,
+              "B": 5
+            },
+            "itemUnits": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "b3": "B",
+              "c1": "C"
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "a2"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "unit_without_cap_unlimited",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 10,
+            "unitNewCaps": {
+              "A": 1
+            },
+            "itemUnits": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "b3": "B",
+              "c1": "C"
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "existing_records_not_counted_as_new",
+          "input": {
+            "items": {
+              "b1": {
+                "s": 1,
+                "due": 1759913600000,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759827200000
+              }
+            },
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 10,
+            "unitNewCaps": {
+              "B": 1
+            },
+            "itemUnits": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "b3": "B",
+              "c1": "C"
+            }
+          },
+          "expect": {
+            "due": [
+              "b1"
+            ],
+            "fresh": [
+              "a1",
+              "a2",
+              "a3",
+              "b2",
+              "c1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "empty_caps_unchanged",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 3,
+            "unitNewCaps": {},
+            "itemUnits": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "b3": "B",
+              "c1": "C"
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "a2",
+              "a3"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "absent_unit_caps_unchanged",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "b3",
+              "c1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 4,
+            "itemUnits": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "b3": "B",
+              "c1": "C"
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "a2",
+              "a3",
+              "b1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "group_cap_counts_entities",
+          "input": {
+            "items": {},
+            "order": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "k3a",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5,
+            "itemUnits": {
+              "k1a": "kanji",
+              "k1b": "kanji",
+              "k1c": "kanji",
+              "k1d": "kanji",
+              "k2a": "kanji",
+              "k2b": "kanji",
+              "k3a": "kanji",
+              "x1": "other"
+            },
+            "itemEntities": {
+              "k1a": "K1",
+              "k1b": "K1",
+              "k1c": "K1",
+              "k1d": "K1",
+              "k2a": "K2",
+              "k2b": "K2",
+              "k3a": "K3"
+            },
+            "groupNewCaps": {
+              "kv": 2
+            },
+            "groupUnits": {
+              "kv": [
+                "kanji"
+              ]
+            },
+            "used": {},
+            "day": "2025-01-01",
+            "courseId": "c"
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "x1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "group_cap_never_splits_entity",
+          "input": {
+            "items": {},
+            "order": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "k3a",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5,
+            "itemUnits": {
+              "k1a": "kanji",
+              "k1b": "kanji",
+              "k1c": "kanji",
+              "k1d": "kanji",
+              "k2a": "kanji",
+              "k2b": "kanji",
+              "k3a": "kanji",
+              "x1": "other"
+            },
+            "itemEntities": {
+              "k1a": "K1",
+              "k1b": "K1",
+              "k1c": "K1",
+              "k1d": "K1",
+              "k2a": "K2",
+              "k2b": "K2",
+              "k3a": "K3"
+            },
+            "groupNewCaps": {
+              "kv": 1
+            },
+            "groupUnits": {
+              "kv": [
+                "kanji"
+              ]
+            },
+            "used": {},
+            "day": "2025-01-01",
+            "courseId": "c"
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "x1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "group_used_reduces_cap",
+          "input": {
+            "items": {},
+            "order": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "k3a",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5,
+            "itemUnits": {
+              "k1a": "kanji",
+              "k1b": "kanji",
+              "k1c": "kanji",
+              "k1d": "kanji",
+              "k2a": "kanji",
+              "k2b": "kanji",
+              "k3a": "kanji",
+              "x1": "other"
+            },
+            "itemEntities": {
+              "k1a": "K1",
+              "k1b": "K1",
+              "k1c": "K1",
+              "k1d": "K1",
+              "k2a": "K2",
+              "k2b": "K2",
+              "k3a": "K3"
+            },
+            "groupNewCaps": {
+              "kv": 2
+            },
+            "groupUnits": {
+              "kv": [
+                "kanji"
+              ]
+            },
+            "used": {
+              "newBy:g:kv": 1
+            },
+            "day": "2025-01-01",
+            "courseId": "c"
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "x1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "group_started_entity_new_items_free",
+          "input": {
+            "items": {
+              "k1a": {
+                "s": 1,
+                "due": 1760086400000,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "order": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "k3a",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5,
+            "itemUnits": {
+              "k1a": "kanji",
+              "k1b": "kanji",
+              "k1c": "kanji",
+              "k1d": "kanji",
+              "k2a": "kanji",
+              "k2b": "kanji",
+              "k3a": "kanji",
+              "x1": "other"
+            },
+            "itemEntities": {
+              "k1a": "K1",
+              "k1b": "K1",
+              "k1c": "K1",
+              "k1d": "K1",
+              "k2a": "K2",
+              "k2b": "K2",
+              "k3a": "K3"
+            },
+            "groupNewCaps": {
+              "kv": 1
+            },
+            "groupUnits": {
+              "kv": [
+                "kanji"
+              ]
+            },
+            "used": {},
+            "day": "2025-01-01",
+            "courseId": "c"
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "x1"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "group_exempt_from_global_allowance",
+          "input": {
+            "items": {},
+            "order": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "k3a",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 0,
+            "itemUnits": {
+              "k1a": "kanji",
+              "k1b": "kanji",
+              "k1c": "kanji",
+              "k1d": "kanji",
+              "k2a": "kanji",
+              "k2b": "kanji",
+              "k3a": "kanji",
+              "x1": "other"
+            },
+            "itemEntities": {
+              "k1a": "K1",
+              "k1b": "K1",
+              "k1c": "K1",
+              "k1d": "K1",
+              "k2a": "K2",
+              "k2b": "K2",
+              "k3a": "K3"
+            },
+            "groupNewCaps": {
+              "kv": 1
+            },
+            "groupUnits": {
+              "kv": [
+                "kanji"
+              ]
+            },
+            "used": {},
+            "day": "2025-01-01",
+            "courseId": "c"
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "absent_group_args_unchanged",
+          "input": {
+            "items": {},
+            "order": [
+              "k1a",
+              "k1b",
+              "k1c",
+              "k1d",
+              "k2a",
+              "k2b",
+              "k3a",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 3,
+            "itemUnits": {
+              "k1a": "kanji",
+              "k1b": "kanji",
+              "k1c": "kanji",
+              "k1d": "kanji",
+              "k2a": "kanji",
+              "k2b": "kanji",
+              "k3a": "kanji",
+              "x1": "other"
+            },
+            "itemEntities": {
+              "k1a": "K1",
+              "k1b": "K1",
+              "k1c": "K1",
+              "k1d": "K1",
+              "k2a": "K2",
+              "k2b": "K2",
+              "k3a": "K3"
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "k1a",
+              "k1b",
+              "k1c"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "scoped_due_one_slot",
+          "input": {
+            "items": {
+              "a1": {
+                "s": 2,
+                "due": 1759827200000,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "a2": {
+                "s": 2,
+                "due": 1760086400000,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b1": {
+                "s": 1,
+                "due": 1759740800000,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b2": {
+                "s": 1,
+                "due": 1759740800000,
+                "ok": 1,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 0,
+            "itemEntities": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "x1": "X"
+            },
+            "day": "2025-01-01",
+            "courseId": "c",
+            "scopedMembers": {
+              "A": [
+                "a1",
+                "a2",
+                "a3"
+              ],
+              "B": [
+                "b1",
+                "b2"
+              ]
+            }
+          },
+          "expect": {
+            "due": [
+              "b2",
+              "a1"
+            ],
+            "fresh": [],
+            "drills": {
+              "B": [
+                "b2"
+              ],
+              "A": [
+                "a1"
+              ]
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "scoped_fresh_costs_one",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 1,
+            "itemEntities": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "x1": "X"
+            },
+            "day": "2025-01-01",
+            "courseId": "c",
+            "scopedMembers": {
+              "A": [
+                "a1",
+                "a2",
+                "a3"
+              ],
+              "B": [
+                "b1",
+                "b2"
+              ]
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1"
+            ],
+            "drills": {
+              "A": [
+                "a1"
+              ]
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "started_entity_new_member_not_fresh",
+          "input": {
+            "items": {
+              "a1": {
+                "s": 2,
+                "due": 1760086400000,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "a2": {
+                "s": 2,
+                "due": 1760086400000,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5,
+            "itemEntities": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "x1": "X"
+            },
+            "day": "2025-01-01",
+            "courseId": "c",
+            "scopedMembers": {
+              "A": [
+                "a1",
+                "a2",
+                "a3"
+              ],
+              "B": [
+                "b1",
+                "b2"
+              ]
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "b2",
+              "x1"
+            ],
+            "drills": {
+              "B": [
+                "b2"
+              ]
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "scoped_group_cap_entities",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 0,
+            "itemEntities": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "x1": "X"
+            },
+            "day": "2025-01-01",
+            "courseId": "c",
+            "scopedMembers": {
+              "A": [
+                "a1",
+                "a2",
+                "a3"
+              ],
+              "B": [
+                "b1",
+                "b2"
+              ]
+            },
+            "itemUnits": {
+              "a1": "U",
+              "a2": "U",
+              "a3": "U",
+              "b1": "U",
+              "b2": "U",
+              "x1": "U"
+            },
+            "groupNewCaps": {
+              "g": 1
+            },
+            "groupUnits": {
+              "g": [
+                "U"
+              ]
+            },
+            "used": {}
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1"
+            ],
+            "drills": {
+              "A": [
+                "a1"
+              ]
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "scoped_drill_2_deterministic",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5,
+            "itemEntities": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "x1": "X"
+            },
+            "day": "2025-01-01",
+            "courseId": "c",
+            "scopedMembers": {
+              "A": [
+                "a1",
+                "a2",
+                "a3"
+              ],
+              "B": [
+                "b1",
+                "b2"
+              ]
+            },
+            "scopedDrill": {
+              "A": 2
+            }
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "a2",
+              "b2",
+              "x1"
+            ],
+            "drills": {
+              "A": [
+                "a1",
+                "a2"
+              ],
+              "B": [
+                "b2"
+              ]
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "no_scope_key_absent",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 5,
+            "itemEntities": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "x1": "X"
+            },
+            "day": "2025-01-01",
+            "courseId": "c"
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2"
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "scoped_empty_members_has_drills_key",
+          "input": {
+            "items": {},
+            "order": [
+              "a1",
+              "a2",
+              "a3",
+              "b1",
+              "b2",
+              "x1"
+            ],
+            "now": 1760000000000,
+            "newAllowance": 2,
+            "itemEntities": {
+              "a1": "A",
+              "a2": "A",
+              "a3": "A",
+              "b1": "B",
+              "b2": "B",
+              "x1": "X"
+            },
+            "day": "2025-01-01",
+            "courseId": "c",
+            "scopedMembers": {}
+          },
+          "expect": {
+            "due": [],
+            "fresh": [
+              "a1",
+              "a2"
+            ],
+            "drills": {}
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "ladderForUnit",
+      "cases": [
+        {
+          "name": "unit_ladder_wins",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U",
+                  "srs": {
+                    "ladder": [
+                      0,
+                      3600000,
+                      86400000
+                    ]
+                  }
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              }
+            },
+            "unitId": "u"
+          },
+          "expect": [
+            0,
+            3600000,
+            86400000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "falls_back_to_course_ladder",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U"
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              }
+            },
+            "unitId": "u"
+          },
+          "expect": [
+            0,
+            7200000,
+            172800000,
+            432000000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "unit_with_only_new_per_day_falls_back",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U",
+                  "newPerDay": 2
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              }
+            },
+            "unitId": "u"
+          },
+          "expect": [
+            0,
+            7200000,
+            172800000,
+            432000000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "unknown_unit_uses_course_ladder",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U",
+                  "srs": {
+                    "ladder": [
+                      0,
+                      3600000,
+                      86400000
+                    ]
+                  }
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              }
+            },
+            "unitId": "zzz"
+          },
+          "expect": [
+            0,
+            7200000,
+            172800000,
+            432000000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "no_ladders_uses_default",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U"
+                }
+              ]
+            },
+            "unitId": "u"
+          },
+          "expect": [
+            0,
+            14400000,
+            86400000,
+            259200000,
+            604800000,
+            1209600000,
+            2592000000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "other_unit_keeps_own_ladder",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U",
+                  "srs": {
+                    "ladder": [
+                      0,
+                      3600000,
+                      86400000
+                    ]
+                  }
+                },
+                {
+                  "id": "v",
+                  "title": "V"
+                }
+              ]
+            },
+            "unitId": "v"
+          },
+          "expect": [
+            0,
+            14400000,
+            86400000,
+            259200000,
+            604800000,
+            1209600000,
+            2592000000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "unit_wins_over_srs_by_type",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U",
+                  "srs": {
+                    "ladder": [
+                      0,
+                      3600000,
+                      86400000
+                    ]
+                  }
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              },
+              "srsByType": {
+                "choice": {
+                  "ladder": [
+                    0,
+                    10800000,
+                    345600000
+                  ]
+                }
+              }
+            },
+            "unitId": "u",
+            "itemType": "choice"
+          },
+          "expect": [
+            0,
+            3600000,
+            86400000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "srs_by_type_wins_over_course",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U"
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              },
+              "srsByType": {
+                "choice": {
+                  "ladder": [
+                    0,
+                    10800000,
+                    345600000
+                  ]
+                }
+              }
+            },
+            "unitId": "u",
+            "itemType": "choice"
+          },
+          "expect": [
+            0,
+            10800000,
+            345600000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "srs_by_type_falls_back_to_course",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U"
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              },
+              "srsByType": {
+                "gap": {
+                  "ladder": [
+                    0,
+                    10800000,
+                    345600000
+                  ]
+                }
+              }
+            },
+            "unitId": "u",
+            "itemType": "choice"
+          },
+          "expect": [
+            0,
+            7200000,
+            172800000,
+            432000000
+          ],
+          "source": "spec"
+        },
+        {
+          "name": "srs_by_type_with_no_item_type_uses_course",
+          "input": {
+            "course": {
+              "id": "c",
+              "title": "C",
+              "uiLanguage": "en",
+              "units": [
+                {
+                  "id": "u",
+                  "title": "U"
+                }
+              ],
+              "srs": {
+                "ladder": [
+                  0,
+                  7200000,
+                  172800000,
+                  432000000
+                ]
+              },
+              "srsByType": {
+                "choice": {
+                  "ladder": [
+                    0,
+                    10800000,
+                    345600000
+                  ]
+                }
+              }
+            },
+            "unitId": "u"
+          },
+          "expect": [
+            0,
+            7200000,
+            172800000,
+            432000000
+          ],
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "entityView",
+      "cases": [
+        {
+          "name": "empty_null",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {}
+          },
+          "expect": null,
+          "source": "spec"
+        },
+        {
+          "name": "null_records_missing",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": null,
+              "b": null
+            }
+          },
+          "expect": null,
+          "source": "spec"
+        },
+        {
+          "name": "mixed_min_s_min_due_max_counts",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 3,
+                "due": 1760086400000,
+                "ok": 2,
+                "bad": 1,
+                "last": 100
+              },
+              "b": {
+                "s": 1,
+                "due": 1759999999995,
+                "ok": 5,
+                "bad": 0,
+                "last": 200
+              }
+            }
+          },
+          "expect": {
+            "s": 1,
+            "due": 1759999999995,
+            "ok": 5,
+            "bad": 1,
+            "last": 200
+          },
+          "source": "spec"
+        },
+        {
+          "name": "extras_from_latest",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 2,
+                "due": 1760000000000,
+                "ok": 1,
+                "bad": 0,
+                "last": 100,
+                "x": "old",
+                "y": 1
+              },
+              "b": {
+                "s": 2,
+                "due": 1760000000000,
+                "ok": 1,
+                "bad": 0,
+                "last": 200,
+                "x": "new"
+              }
+            }
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 200,
+            "x": "new"
+          },
+          "source": "spec"
+        },
+        {
+          "name": "retired_member_ignored",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "r",
+                "status": "retired"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 3,
+                "due": 1760000000000,
+                "ok": 3,
+                "bad": 0,
+                "last": 100
+              },
+              "r": {
+                "s": 0,
+                "due": 1759999999999,
+                "ok": 0,
+                "bad": 0,
+                "last": 900
+              }
+            }
+          },
+          "expect": {
+            "s": 3,
+            "due": 1760000000000,
+            "ok": 3,
+            "bad": 0,
+            "last": 100
+          },
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "applyEntity",
+      "cases": [
+        {
+          "name": "new_entity_correct",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {},
+            "mode": "answer",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "synced_correct",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "drift_self_heals",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 4,
+                "due": 1760086400000,
+                "ok": 5,
+                "bad": 0,
+                "last": 1759996400000
+              },
+              "b": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 4,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 4,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 6,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 6,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 6,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "wrong_drop_once",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 1,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 1,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 1,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": false,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 3,
+              "bad": 2,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 3,
+              "bad": 2,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 3,
+              "bad": 2,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "old_client_wrong_counts_once",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 1,
+                "bad": 2,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 1,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 1,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": false,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 2,
+              "bad": 3,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 2,
+              "bad": 3,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 2,
+              "bad": 3,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "new_member_inherits",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 4,
+              "due": 1760604800000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 4,
+              "due": 1760604800000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 4,
+              "due": 1760604800000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "retired_excluded",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "r",
+                "status": "retired"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "r": {
+                "s": 0,
+                "due": 1759999999999,
+                "ok": 0,
+                "bad": 0,
+                "last": 1759999999999
+              }
+            },
+            "mode": "answer",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "unknown_fields_per_member",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000,
+                "x": 1
+              },
+              "b": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000,
+              "x": 1
+            },
+            "b": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 3,
+              "due": 1760259200000,
+              "ok": 3,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "practice_not_due_correct",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 3,
+                "due": 1760086400000,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759996400000
+              },
+              "b": {
+                "s": 3,
+                "due": 1760086400000,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759996400000
+              },
+              "c": {
+                "s": 3,
+                "due": 1760086400000,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759996400000
+              }
+            },
+            "mode": "practice",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 3,
+              "due": 1760086400000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 3,
+              "due": 1760086400000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 3,
+              "due": 1760086400000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "practice_due_correct_advances",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 3,
+                "due": 1759999999999,
+                "ok": 3,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "practice",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 4,
+              "due": 1760604800000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 4,
+              "due": 1760604800000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 4,
+              "due": 1760604800000,
+              "ok": 4,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "relearn_s0",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 0,
+                "due": 1759999999999,
+                "ok": 1,
+                "bad": 2,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 0,
+                "due": 1759999999999,
+                "ok": 1,
+                "bad": 2,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 0,
+                "due": 1759999999999,
+                "ok": 1,
+                "bad": 2,
+                "last": 1759913600000
+              }
+            },
+            "mode": "relearn",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 2,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 2,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 2,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "relearn_s_gt0_noop",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "relearn",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {},
+          "source": "spec"
+        },
+        {
+          "name": "relearn_no_records_noop",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {},
+            "mode": "relearn",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {},
+          "source": "spec"
+        },
+        {
+          "name": "placement_known_same_for_all",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {},
+            "mode": "placement",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1,
+            "seed": "1"
+          },
+          "expect": {
+            "a": {
+              "ok": 0,
+              "bad": 0,
+              "s": 4,
+              "due": 1760637005153,
+              "last": 1760000000000
+            },
+            "b": {
+              "ok": 0,
+              "bad": 0,
+              "s": 4,
+              "due": 1760637005153,
+              "last": 1760000000000
+            },
+            "c": {
+              "ok": 0,
+              "bad": 0,
+              "s": 4,
+              "due": 1760637005153,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "placement_unknown_noop",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {},
+            "mode": "placement",
+            "correct": false,
+            "now": 1760000000000,
+            "dropOnWrong": 1,
+            "seed": "1"
+          },
+          "expect": {},
+          "source": "spec"
+        },
+        {
+          "name": "ladder_top_clamped",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 6,
+                "due": 1759999999999,
+                "ok": 6,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 6,
+                "due": 1759999999999,
+                "ok": 6,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 6,
+                "due": 1759999999999,
+                "ok": 6,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": true,
+            "now": 1760000000000,
+            "dropOnWrong": 1
+          },
+          "expect": {
+            "a": {
+              "s": 6,
+              "due": 1762592000000,
+              "ok": 7,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 6,
+              "due": 1762592000000,
+              "ok": 7,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 6,
+              "due": 1762592000000,
+              "ok": 7,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "custom_drop_2",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 4,
+                "due": 1759999999999,
+                "ok": 4,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 4,
+                "due": 1759999999999,
+                "ok": 4,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 4,
+                "due": 1759999999999,
+                "ok": 4,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": false,
+            "now": 1760000000000,
+            "dropOnWrong": 2
+          },
+          "expect": {
+            "a": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 4,
+              "bad": 1,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 4,
+              "bad": 1,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 4,
+              "bad": 1,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        },
+        {
+          "name": "drop_never_below_one_when_learned",
+          "input": {
+            "members": [
+              {
+                "id": "a"
+              },
+              {
+                "id": "b"
+              },
+              {
+                "id": "c"
+              }
+            ],
+            "records": {
+              "a": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "b": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              },
+              "c": {
+                "s": 2,
+                "due": 1759999999999,
+                "ok": 2,
+                "bad": 0,
+                "last": 1759913600000
+              }
+            },
+            "mode": "answer",
+            "correct": false,
+            "now": 1760000000000,
+            "dropOnWrong": 5
+          },
+          "expect": {
+            "a": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 2,
+              "bad": 1,
+              "last": 1760000000000
+            },
+            "b": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 2,
+              "bad": 1,
+              "last": 1760000000000
+            },
+            "c": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 2,
+              "bad": 1,
+              "last": 1760000000000
+            }
+          },
+          "source": "spec"
+        }
+      ]
+    }
+  ]
+}

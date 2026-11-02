@@ -1,0 +1,4675 @@
+{
+  "fn": "merge",
+  "cases": [
+    {
+      "name": "identical_docs",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "t": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 10,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "resetAt": 0
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "disjoint_ids_union",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "items": {
+            "b": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760086400000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "b": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760086400000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "resetAt": 0
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "same_id_later_last_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "items": {
+            "a": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 2,
+              "bad": 0,
+              "last": 1760086400000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "items": {
+          "a": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760086400000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "resetAt": 0
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "same_id_equal_last_higher_s_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "items": {
+            "a": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "items": {
+          "a": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "resetAt": 0
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "newer_reset_at_drops_older",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 5,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 0
+            }
+          },
+          "stats": {
+            "days": {
+              "2026-01-01": 5
+            },
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {
+            "b": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760086400000
+            }
+          },
+          "stats": {
+            "days": {
+              "2026-01-02": 3
+            },
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {
+          "b": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760086400000
+          }
+        },
+        "stats": {
+          "days": {
+            "2026-01-02": 3
+          },
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "equal_reset_at",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {
+              "2026-01-01": 5
+            },
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {
+            "b": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760086400000
+            }
+          },
+          "stats": {
+            "days": {
+              "2026-01-02": 3
+            },
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "b": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760086400000
+          }
+        },
+        "stats": {
+          "days": {
+            "2026-01-01": 5,
+            "2026-01-02": 3
+          },
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "stats_days_max_per_day",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {
+              "2026-01-01": 5
+            },
+            "newByDay": {
+              "2026-01-01": 3
+            }
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {
+              "2026-01-01": 3
+            },
+            "newByDay": {
+              "2026-01-01": 5
+            }
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {
+            "2026-01-01": 5
+          },
+          "newByDay": {
+            "2026-01-01": 5
+          }
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "settings_per_field_by_ts",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "ts": {
+              "newPerDay": 5
+            },
+            "t": 5,
+            "placementDone": false
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 20,
+            "ts": {
+              "newPerDay": 15
+            },
+            "t": 15,
+            "placementDone": false
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 20,
+          "placementDone": false,
+          "t": 15,
+          "ts": {
+            "newPerDay": 15
+          }
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "settings_tie_newer_t",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "t": 10,
+            "placementDone": false
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 20,
+            "t": 20,
+            "placementDone": false
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 20,
+          "placementDone": false,
+          "t": 20
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "placement_done_or_ed",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "placementDone": false,
+            "t": 10,
+            "newPerDay": 10
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "placementDone": true,
+            "t": 20,
+            "newPerDay": 10
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "placementDone": true,
+          "newPerDay": 10,
+          "t": 20
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "unknown_top_level_newer_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "items": {},
+          "extraField": "x",
+          "resetAt": 0,
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "items": {},
+          "extraField": "y",
+          "resetAt": 0,
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "items": {},
+        "extraField": "y",
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "exams_union_by_key",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 10,
+          "items": {},
+          "exams": {
+            "e1-100": {
+              "exam": "e1",
+              "date": 100
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {},
+          "exams": {
+            "e2-200": {
+              "exam": "e2",
+              "date": 200
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {},
+        "exams": {
+          "e1-100": {
+            "exam": "e1",
+            "date": 100
+          },
+          "e2-200": {
+            "exam": "e2",
+            "date": 200
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "exams_absent_on_both",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "empty_plus_full_a",
+      "input": {
+        "a": {
+          "v": 1,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "t": 0,
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "t": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "t": 10,
+        "resetAt": 0
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "empty_plus_full_b",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "t": 0,
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "t": 10,
+        "resetAt": 0
+      },
+      "source": "reference",
+      "commutes": true
+    },
+    {
+      "name": "non_commutative_course_tie",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 20,
+          "items": {},
+          "extraField": "x",
+          "resetAt": 0,
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "items": {},
+          "extraField": "y",
+          "resetAt": 0,
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "items": {},
+        "extraField": "y",
+        "resetAt": 0,
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "reference",
+      "commutes": false
+    },
+    {
+      "name": "merge_ps_not_special",
+      "input": {
+        "a": {
+          "v": 1,
+          "items": {
+            "a": {
+              "s": 2,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000,
+              "ps": 6
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "t": 0,
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "items": {
+            "a": {
+              "s": 3,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "t": 0,
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {
+          "a": {
+            "s": 3,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_custom_stats_map_max",
+      "input": {
+        "a": {
+          "v": 1,
+          "items": {},
+          "stats": {
+            "studyDays": {
+              "2026-01-01": 3,
+              "2026-01-02": 5
+            },
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "t": 0,
+          "resetAt": 0
+        },
+        "b": {
+          "v": 1,
+          "items": {},
+          "stats": {
+            "studyDays": {
+              "2026-01-01": 7,
+              "2026-01-03": 2
+            },
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "t": 0,
+          "resetAt": 0
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {},
+          "studyDays": {
+            "2026-01-01": 7,
+            "2026-01-02": 5,
+            "2026-01-03": 2
+          }
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_course_mismatch",
+      "input": {
+        "a": {
+          "v": 1,
+          "items": {},
+          "course": "x",
+          "t": 0,
+          "resetAt": 0,
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "items": {},
+          "course": "y",
+          "t": 0,
+          "resetAt": 0,
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "error": "course_mismatch"
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_import_never_resets",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 0,
+          "items": {
+            "a": {
+              "s": 1,
+              "due": 1760000000000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 0,
+          "items": {
+            "b": {
+              "s": 2,
+              "due": 1760086400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760086400000
+            }
+          },
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 0,
+        "items": {
+          "a": {
+            "s": 1,
+            "due": 1760000000000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "b": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760086400000
+          }
+        },
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_non_daymap_stats_newer_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {},
+            "note": "old",
+            "obj": {
+              "a": 1
+            }
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {},
+            "note": "new"
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {},
+          "note": "new",
+          "obj": {
+            "a": 1
+          }
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_non_daymap_stats_older_loses_swapped",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 20,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {},
+            "note": "old",
+            "obj": {
+              "a": 1
+            }
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {},
+            "note": "new"
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 20,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {},
+          "note": "old",
+          "obj": {
+            "a": 1
+          }
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_course_one_side_only",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "course": "demo"
+        },
+        "b": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "course": "demo"
+      },
+      "commutes": true,
+      "source": "spec"
+    },
+    {
+      "name": "merge_settings_ts_missing_field_falls_back_to_t",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 5,
+            "placementDone": false,
+            "t": 100,
+            "ts": {
+              "other": 1
+            }
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 20,
+            "placementDone": false,
+            "t": 50
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 0,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 5,
+          "placementDone": false,
+          "t": 100
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_non_object_input_null",
+      "input": {
+        "a": null,
+        "b": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "error": "invalid_document"
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_non_object_input_array",
+      "input": {
+        "a": [],
+        "b": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "error": "invalid_document"
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_fractional_t_kept",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 10.5,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 3,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 10.5,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_absent_on_both",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 5,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 7,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 7,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_one_side_only",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 9,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 9,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_one_side_only_b",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 9,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 9,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_same_sid_closed_wins_order1",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "x0"
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 50,
+            "closed": "finished"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "answers": [
+            {
+              "i": 0,
+              "c": true,
+              "g": "x0"
+            }
+          ],
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 50
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_same_sid_closed_wins_order2",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 50,
+            "closed": "finished"
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "x0"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "answers": [
+            {
+              "i": 0,
+              "c": true,
+              "g": "x0"
+            }
+          ],
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 50
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_same_sid_closed_older_clock_skew",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 9,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 1000
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 1,
+            "closed": "abandoned"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 9,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 1000,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 1
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_same_sid_later_updatedAt_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 9,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "index": 1
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 200,
+            "index": 2
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 9,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 200,
+          "index": 2
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_same_sid_tie_more_answers",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "x0"
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "x0"
+              },
+              {
+                "i": 1,
+                "c": false,
+                "g": "x1"
+              },
+              {
+                "i": 2,
+                "c": true,
+                "g": "x2"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "answers": [
+            {
+              "i": 0,
+              "c": true,
+              "g": "x0"
+            },
+            {
+              "i": 1,
+              "c": false,
+              "g": "x1"
+            },
+            {
+              "i": 2,
+              "c": true,
+              "g": "x2"
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_same_sid_full_tie_stable_json",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "index": 1
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "index": 2
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "index": 2
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_newer_updatedAt_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 200
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s2",
+          "updatedAt": 200
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_newer_open_beats_older_closed_other_sid",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "closed": "finished"
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 200
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s2",
+          "updatedAt": 200,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 100
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_tie_closed_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s9",
+            "updatedAt": 100
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 100,
+            "closed": "abandoned"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s9",
+          "updatedAt": 100,
+          "closedSids": [
+            {
+              "sid": "s2",
+              "updatedAt": 100
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_tie_larger_sid_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 100
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s2",
+          "updatedAt": 100
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_resetAt_drops_draft",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 100,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 50
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 100,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 10,
+        "resetAt": 100,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_resetAt_drops_draft_other_side_reset",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 50
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 100,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 10,
+        "resetAt": 100,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_resetAt_keeps_newer_draft",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 50
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 100,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 100
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 100,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s2",
+          "updatedAt": 100
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_resetAt_keeps_fresh_closed",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 100,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 150,
+            "closed": "finished"
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 10,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 10,
+        "resetAt": 100,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 150,
+          "closed": "finished",
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 150
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_invalid_missing_sid",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "updatedAt": 100
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "updatedAt": 100
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_invalid_missing_updatedAt",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1"
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1"
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_invalid_vs_valid_valid_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 9,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "updatedAt": 100
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 1
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 9,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 1
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_invalid_both_larger_t_wins",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": 7,
+            "updatedAt": 1
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "updatedAt": "x"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "updatedAt": "x"
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_unknown_fields_survive",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "customField": "value",
+            "anotherField": 42,
+            "nested": {
+              "k": [
+                1,
+                null
+              ]
+            }
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "customField": "value",
+          "anotherField": 42,
+          "nested": {
+            "k": [
+              1,
+              null
+            ]
+          }
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_sanitize_keeps_draft",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "answer",
+                "extra": 1
+              }
+            ],
+            "sections": [
+              {
+                "title": "T",
+                "start": 0,
+                "count": 1
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "answer",
+                "extra": 1
+              }
+            ],
+            "sections": [
+              {
+                "title": "T",
+                "start": 0,
+                "count": 1
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "answers": [
+            {
+              "i": 0,
+              "c": true,
+              "g": "answer",
+              "extra": 1
+            }
+          ],
+          "sections": [
+            {
+              "title": "T",
+              "start": 0,
+              "count": 1
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_reviewer_xyz_fold1_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100,
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 50
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 75
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 50
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_reviewer_xyz_fold2_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 75,
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 50
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 50
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_reviewer_xyz_right_nested",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 100
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 75,
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 50
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 100,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 50
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_two_closed_one_open_fold1_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 20,
+            "closed": "abandoned",
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 10
+              },
+              {
+                "sid": "s2",
+                "updatedAt": 20
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 3,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 30,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "x0"
+              },
+              {
+                "i": 1,
+                "c": false,
+                "g": "x1"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 3,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 30,
+          "answers": [
+            {
+              "i": 0,
+              "c": true,
+              "g": "x0"
+            },
+            {
+              "i": 1,
+              "c": false,
+              "g": "x1"
+            }
+          ],
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 10
+            },
+            {
+              "sid": "s2",
+              "updatedAt": 20
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_two_closed_one_open_fold2_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 3,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 30,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "x0"
+              },
+              {
+                "i": 1,
+                "c": false,
+                "g": "x1"
+              }
+            ],
+            "closedSids": [
+              {
+                "sid": "s2",
+                "updatedAt": 20
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 10,
+            "closed": "finished"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 3,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 30,
+          "answers": [
+            {
+              "i": 0,
+              "c": true,
+              "g": "x0"
+            },
+            {
+              "i": 1,
+              "c": false,
+              "g": "x1"
+            }
+          ],
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 10
+            },
+            {
+              "sid": "s2",
+              "updatedAt": 20
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_two_closed_one_open_right_nested",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 10,
+            "closed": "finished"
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 3,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 30,
+            "answers": [
+              {
+                "i": 0,
+                "c": true,
+                "g": "x0"
+              },
+              {
+                "i": 1,
+                "c": false,
+                "g": "x1"
+              }
+            ],
+            "closedSids": [
+              {
+                "sid": "s2",
+                "updatedAt": 20
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 3,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 30,
+          "answers": [
+            {
+              "i": 0,
+              "c": true,
+              "g": "x0"
+            },
+            {
+              "i": 1,
+              "c": false,
+              "g": "x1"
+            }
+          ],
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 10
+            },
+            {
+              "sid": "s2",
+              "updatedAt": 20
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_ties_and_reasons_fold1_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 5,
+            "closed": "finished",
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 5
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 5,
+            "closed": "abandoned"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 5,
+          "closed": "finished",
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 5
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_ties_and_reasons_fold2_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 5,
+            "closed": "abandoned",
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 5
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 5,
+            "closed": "finished"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 5,
+          "closed": "finished",
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 5
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_ties_and_reasons_right_nested",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 5,
+            "closed": "finished"
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 5,
+            "closed": "abandoned",
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 5
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s1",
+          "updatedAt": 5,
+          "closed": "finished",
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 5
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_with_closedSids_and_reset_fold1_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s3",
+            "updatedAt": 40,
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 30
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 0,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s3",
+            "updatedAt": 8,
+            "closed": "expired"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s3",
+          "updatedAt": 40,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 30
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_with_closedSids_and_reset_fold2_pair",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 35,
+            "closedSids": [
+              {
+                "sid": "s3",
+                "updatedAt": 8
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s3",
+            "updatedAt": 40,
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 30
+              },
+              {
+                "sid": "s2",
+                "updatedAt": 5
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s3",
+          "updatedAt": 40,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 30
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_join_with_closedSids_and_reset_right_nested",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 10,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s3",
+            "updatedAt": 40,
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 30
+              },
+              {
+                "sid": "s2",
+                "updatedAt": 5
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 2,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s1",
+            "updatedAt": 35,
+            "closedSids": [
+              {
+                "sid": "s3",
+                "updatedAt": 8
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 2,
+        "resetAt": 10,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s3",
+          "updatedAt": 40,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 30
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_closedSids_union_and_dead_slot",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 60,
+            "closedSids": [
+              {
+                "sid": "s1",
+                "updatedAt": 10
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s2",
+            "updatedAt": 20,
+            "closed": "finished"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s2",
+          "updatedAt": 60,
+          "closedSids": [
+            {
+              "sid": "s1",
+              "updatedAt": 10
+            },
+            {
+              "sid": "s2",
+              "updatedAt": 20
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    },
+    {
+      "name": "merge_examDraft_closedSids_bounded_keeps_newest",
+      "input": {
+        "a": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "s99",
+            "updatedAt": 1000,
+            "closedSids": [
+              {
+                "sid": "c00",
+                "updatedAt": 100
+              },
+              {
+                "sid": "c01",
+                "updatedAt": 101
+              },
+              {
+                "sid": "c02",
+                "updatedAt": 102
+              },
+              {
+                "sid": "c03",
+                "updatedAt": 103
+              },
+              {
+                "sid": "c04",
+                "updatedAt": 104
+              },
+              {
+                "sid": "c05",
+                "updatedAt": 105
+              },
+              {
+                "sid": "c06",
+                "updatedAt": 106
+              },
+              {
+                "sid": "c07",
+                "updatedAt": 107
+              },
+              {
+                "sid": "c08",
+                "updatedAt": 108
+              },
+              {
+                "sid": "c09",
+                "updatedAt": 109
+              },
+              {
+                "sid": "c10",
+                "updatedAt": 110
+              },
+              {
+                "sid": "c11",
+                "updatedAt": 111
+              },
+              {
+                "sid": "c12",
+                "updatedAt": 112
+              },
+              {
+                "sid": "c13",
+                "updatedAt": 113
+              },
+              {
+                "sid": "c14",
+                "updatedAt": 114
+              },
+              {
+                "sid": "c15",
+                "updatedAt": 115
+              },
+              {
+                "sid": "c16",
+                "updatedAt": 116
+              },
+              {
+                "sid": "c17",
+                "updatedAt": 117
+              },
+              {
+                "sid": "c18",
+                "updatedAt": 118
+              },
+              {
+                "sid": "c19",
+                "updatedAt": 119
+              },
+              {
+                "sid": "c20",
+                "updatedAt": 120
+              },
+              {
+                "sid": "c21",
+                "updatedAt": 121
+              },
+              {
+                "sid": "c22",
+                "updatedAt": 122
+              },
+              {
+                "sid": "c23",
+                "updatedAt": 123
+              },
+              {
+                "sid": "c24",
+                "updatedAt": 124
+              },
+              {
+                "sid": "c25",
+                "updatedAt": 125
+              },
+              {
+                "sid": "c26",
+                "updatedAt": 126
+              },
+              {
+                "sid": "c27",
+                "updatedAt": 127
+              },
+              {
+                "sid": "c28",
+                "updatedAt": 128
+              },
+              {
+                "sid": "c29",
+                "updatedAt": 129
+              },
+              {
+                "sid": "c30",
+                "updatedAt": 130
+              },
+              {
+                "sid": "c31",
+                "updatedAt": 131
+              }
+            ]
+          }
+        },
+        "b": {
+          "v": 1,
+          "t": 1,
+          "resetAt": 0,
+          "items": {},
+          "stats": {
+            "days": {},
+            "newByDay": {}
+          },
+          "settings": {
+            "newPerDay": 10,
+            "placementDone": false,
+            "t": 0
+          },
+          "examDraft": {
+            "sid": "old",
+            "updatedAt": 1,
+            "closed": "finished"
+          }
+        }
+      },
+      "expect": {
+        "v": 1,
+        "t": 1,
+        "resetAt": 0,
+        "items": {},
+        "stats": {
+          "days": {},
+          "newByDay": {}
+        },
+        "settings": {
+          "newPerDay": 10,
+          "placementDone": false,
+          "t": 0
+        },
+        "examDraft": {
+          "sid": "s99",
+          "updatedAt": 1000,
+          "closedSids": [
+            {
+              "sid": "c00",
+              "updatedAt": 100
+            },
+            {
+              "sid": "c01",
+              "updatedAt": 101
+            },
+            {
+              "sid": "c02",
+              "updatedAt": 102
+            },
+            {
+              "sid": "c03",
+              "updatedAt": 103
+            },
+            {
+              "sid": "c04",
+              "updatedAt": 104
+            },
+            {
+              "sid": "c05",
+              "updatedAt": 105
+            },
+            {
+              "sid": "c06",
+              "updatedAt": 106
+            },
+            {
+              "sid": "c07",
+              "updatedAt": 107
+            },
+            {
+              "sid": "c08",
+              "updatedAt": 108
+            },
+            {
+              "sid": "c09",
+              "updatedAt": 109
+            },
+            {
+              "sid": "c10",
+              "updatedAt": 110
+            },
+            {
+              "sid": "c11",
+              "updatedAt": 111
+            },
+            {
+              "sid": "c12",
+              "updatedAt": 112
+            },
+            {
+              "sid": "c13",
+              "updatedAt": 113
+            },
+            {
+              "sid": "c14",
+              "updatedAt": 114
+            },
+            {
+              "sid": "c15",
+              "updatedAt": 115
+            },
+            {
+              "sid": "c16",
+              "updatedAt": 116
+            },
+            {
+              "sid": "c17",
+              "updatedAt": 117
+            },
+            {
+              "sid": "c18",
+              "updatedAt": 118
+            },
+            {
+              "sid": "c19",
+              "updatedAt": 119
+            },
+            {
+              "sid": "c20",
+              "updatedAt": 120
+            },
+            {
+              "sid": "c21",
+              "updatedAt": 121
+            },
+            {
+              "sid": "c22",
+              "updatedAt": 122
+            },
+            {
+              "sid": "c23",
+              "updatedAt": 123
+            },
+            {
+              "sid": "c24",
+              "updatedAt": 124
+            },
+            {
+              "sid": "c25",
+              "updatedAt": 125
+            },
+            {
+              "sid": "c26",
+              "updatedAt": 126
+            },
+            {
+              "sid": "c27",
+              "updatedAt": 127
+            },
+            {
+              "sid": "c28",
+              "updatedAt": 128
+            },
+            {
+              "sid": "c29",
+              "updatedAt": 129
+            },
+            {
+              "sid": "c30",
+              "updatedAt": 130
+            },
+            {
+              "sid": "c31",
+              "updatedAt": 131
+            }
+          ]
+        }
+      },
+      "source": "spec"
+    }
+  ]
+}

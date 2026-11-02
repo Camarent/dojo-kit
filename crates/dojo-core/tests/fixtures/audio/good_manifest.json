@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "packs": [
+    {"file": "pack1.bin", "bytes": 1000, "enc": "raw"}
+  ],
+  "clips": {
+    "clip-1": {"pack": 0, "off": 0, "len": 500, "ms": 1000, "mime": "audio/mp3"},
+    "clip-2": {"pack": 0, "off": 500, "len": 500, "ms": 1000, "mime": "audio/mp3", "credit": "Test"}
+  }
+}

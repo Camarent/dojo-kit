@@ -1,0 +1,8 @@
+{"type":"choice","id":"geo-1","unit":"geo","tags":["capitals"],"prompt":"What is the capital of France?","options":["Paris","Rome","Madrid","Berlin"],"answer":0}
+{"type":"choice","id":"geo-2","unit":"geo","tags":["capitals"],"prompt":"What is the capital of Japan?","options":["Seoul","Tokyo","Beijing"],"answer":1,"explanation":"Tokyo has been the capital since 1868."}
+{"type":"choice","id":"geo-3","unit":"geo","tags":["oceans"],"prompt":"Which is the largest ocean?","options":["Atlantic","Indian","Pacific","Arctic"],"answer":2}
+{"type":"gap","id":"geo-4","unit":"geo","tags":["capitals"],"prompt":"The capital of Italy is ___.","answers":["Rome","Roma"]}
+{"type":"gap","id":"geo-5","unit":"geo","tags":["continents"],"prompt":"The continent that contains Egypt is ___.","answers":["Africa"],"normalize":{"caseSensitive":true}}
+{"type":"card","id":"geo-6","unit":"geo","tags":["capitals"],"prompt":"Capital of Spain","back":"Madrid"}
+{"type":"card","id":"geo-7","unit":"geo","tags":["capitals"],"prompt":"Capital of Canada","back":"Ottawa"}
+{"type":"card","id":"geo-8","unit":"geo","tags":["capitals"],"prompt":"Capital of Australia","back":"Canberra","status":"retired"}

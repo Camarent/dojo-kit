@@ -1,0 +1,28 @@
+{
+  "v": 1,
+  "ids": [
+    "beeps-0",
+    "beeps-1",
+    "beeps-2",
+    "beeps-3",
+    "beeps-4",
+    "beeps-5",
+    "beeps-6",
+    "beeps-7",
+    "beeps-8",
+    "beeps-9"
+  ],
+  "retired": [],
+  "types": {
+    "beeps-0": "numeric",
+    "beeps-1": "numeric",
+    "beeps-2": "numeric",
+    "beeps-3": "numeric",
+    "beeps-4": "numeric",
+    "beeps-5": "numeric",
+    "beeps-6": "numeric",
+    "beeps-7": "numeric",
+    "beeps-8": "numeric",
+    "beeps-9": "numeric"
+  }
+}

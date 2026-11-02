@@ -1,0 +1,185 @@
+{
+  "groups": [
+    {
+      "fn": "dayKey",
+      "cases": [
+        {
+          "name": "date_2024_01_01",
+          "input": {
+            "ms": 1704110400000
+          },
+          "expect": "2024-01-01",
+          "source": "reference"
+        },
+        {
+          "name": "date_2025_10_09",
+          "input": {
+            "ms": 1760011200000
+          },
+          "expect": "2025-10-09",
+          "source": "reference"
+        },
+        {
+          "name": "leap_day_2024_02_29_noon",
+          "input": {
+            "ms": 1709208000000
+          },
+          "expect": "2024-02-29",
+          "source": "reference"
+        },
+        {
+          "name": "year_end_2026_12_31_23_59_59",
+          "input": {
+            "ms": 1798761599000
+          },
+          "expect": "2026-12-31",
+          "source": "reference"
+        },
+        {
+          "name": "date_2026_06_15",
+          "input": {
+            "ms": 1781524800000
+          },
+          "expect": "2026-06-15",
+          "source": "reference"
+        },
+        {
+          "name": "year_end_2025_12_31_noon",
+          "input": {
+            "ms": 1767182400000
+          },
+          "expect": "2025-12-31",
+          "source": "reference"
+        },
+        {
+          "name": "offset_60_to_2026_01_01",
+          "input": {
+            "ms": 1767225599000,
+            "tzOffsetMin": 60
+          },
+          "expect": "2026-01-01",
+          "source": "spec"
+        },
+        {
+          "name": "offset_neg_300_to_2025_12_31",
+          "input": {
+            "ms": 1767225599000,
+            "tzOffsetMin": -300
+          },
+          "expect": "2025-12-31",
+          "source": "spec"
+        }
+      ]
+    },
+    {
+      "fn": "streak",
+      "cases": [
+        {
+          "name": "today_studied",
+          "input": {
+            "days": {
+              "2026-01-01": 5
+            },
+            "todayKey": "2026-01-01"
+          },
+          "expect": 1,
+          "source": "reference"
+        },
+        {
+          "name": "only_yesterday_studied",
+          "input": {
+            "days": {
+              "2025-12-31": 3
+            },
+            "todayKey": "2026-01-01"
+          },
+          "expect": 1,
+          "source": "reference"
+        },
+        {
+          "name": "neither_studied",
+          "input": {
+            "days": {
+              "2025-12-30": 2
+            },
+            "todayKey": "2026-01-01"
+          },
+          "expect": 0,
+          "source": "reference"
+        },
+        {
+          "name": "gap_in_middle",
+          "input": {
+            "days": {
+              "2026-01-01": 5,
+              "2025-12-31": 3,
+              "2025-12-29": 2
+            },
+            "todayKey": "2026-01-01"
+          },
+          "expect": 2,
+          "source": "reference"
+        },
+        {
+          "name": "month_boundary_2026_03_01",
+          "input": {
+            "days": {
+              "2026-03-01": 5,
+              "2026-02-28": 3,
+              "2026-02-27": 2
+            },
+            "todayKey": "2026-03-01"
+          },
+          "expect": 3,
+          "source": "reference"
+        },
+        {
+          "name": "year_boundary_2027_01_01",
+          "input": {
+            "days": {
+              "2027-01-01": 5,
+              "2026-12-31": 3
+            },
+            "todayKey": "2027-01-01"
+          },
+          "expect": 2,
+          "source": "reference"
+        },
+        {
+          "name": "leap_day_crossing_2024_03_01",
+          "input": {
+            "days": {
+              "2024-03-01": 5,
+              "2024-02-29": 3
+            },
+            "todayKey": "2024-03-01"
+          },
+          "expect": 2,
+          "source": "reference"
+        },
+        {
+          "name": "float_count_truthy",
+          "input": {
+            "days": {
+              "2026-01-01": 2.0
+            },
+            "todayKey": "2026-01-01"
+          },
+          "expect": 1,
+          "source": "spec"
+        },
+        {
+          "name": "zero_count_falsy",
+          "input": {
+            "days": {
+              "2026-01-01": 0
+            },
+            "todayKey": "2026-01-01"
+          },
+          "expect": 0,
+          "source": "spec"
+        }
+      ]
+    }
+  ]
+}

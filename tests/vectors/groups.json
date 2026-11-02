@@ -1,0 +1,129 @@
+{
+  "groups": [
+    {
+      "fn": "groupCounts",
+      "cases": [
+        {
+          "name": "bar_learned_stage_from_course",
+          "input": {
+            "course": {
+              "learnedStage": 2,
+              "bars": [
+                {
+                  "title": "T"
+                }
+              ]
+            },
+            "items": [
+              {
+                "id": "a1",
+                "unit": "k",
+                "entity": "a",
+                "tags": []
+              }
+            ],
+            "records": {
+              "a1": {
+                "s": 3,
+                "due": 9999
+              }
+            },
+            "now": 0
+          },
+          "expect": {
+            "groups": {},
+            "bars": [
+              {
+                "title": "T",
+                "learned": 1,
+                "started": 0,
+                "total": 1
+              }
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "bar_learned_stage_bar_wins_over_course",
+          "input": {
+            "course": {
+              "learnedStage": 5,
+              "bars": [
+                {
+                  "title": "T",
+                  "learnedStage": 3
+                }
+              ]
+            },
+            "items": [
+              {
+                "id": "a1",
+                "unit": "k",
+                "entity": "a",
+                "tags": []
+              }
+            ],
+            "records": {
+              "a1": {
+                "s": 3,
+                "due": 9999
+              }
+            },
+            "now": 0
+          },
+          "expect": {
+            "groups": {},
+            "bars": [
+              {
+                "title": "T",
+                "learned": 1,
+                "started": 0,
+                "total": 1
+              }
+            ]
+          },
+          "source": "spec"
+        },
+        {
+          "name": "bar_learned_stage_default_four",
+          "input": {
+            "course": {
+              "bars": [
+                {
+                  "title": "T"
+                }
+              ]
+            },
+            "items": [
+              {
+                "id": "a1",
+                "unit": "k",
+                "entity": "a",
+                "tags": []
+              }
+            ],
+            "records": {
+              "a1": {
+                "s": 4,
+                "due": 9999
+              }
+            },
+            "now": 0
+          },
+          "expect": {
+            "groups": {},
+            "bars": [
+              {
+                "title": "T",
+                "learned": 1,
+                "started": 0,
+                "total": 1
+              }
+            ]
+          },
+          "source": "spec"
+        }
+      ]
+    }
+  ]
+}

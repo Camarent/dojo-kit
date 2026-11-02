@@ -1,0 +1,708 @@
+{
+  "groups": [
+    {
+      "fn": "timerNext",
+      "cases": [
+        {
+          "name": "wrong from 1",
+          "input": {
+            "scale": 1,
+            "streak": 0,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "wrong resets streak",
+          "input": {
+            "scale": 1,
+            "streak": 2,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "timeout from 1",
+          "input": {
+            "scale": 1,
+            "streak": 1,
+            "outcome": "timeout",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "wrong caps at 2.0",
+          "input": {
+            "scale": 1.9,
+            "streak": 0,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "wrong at max",
+          "input": {
+            "scale": 2,
+            "streak": 0,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "wrong from min",
+          "input": {
+            "scale": 0.5,
+            "streak": 2,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 0.6,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "fast correct streak 0 to 1",
+          "input": {
+            "scale": 1,
+            "streak": 0,
+            "outcome": "correct",
+            "answerMs": 100,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "fast correct streak 1 to 2",
+          "input": {
+            "scale": 1,
+            "streak": 1,
+            "outcome": "correct",
+            "answerMs": 100,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 2
+          },
+          "source": "reference"
+        },
+        {
+          "name": "fast correct third shrinks",
+          "input": {
+            "scale": 1.2,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": 100,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.08,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "fast correct boundary 0.8",
+          "input": {
+            "scale": 1,
+            "streak": 0,
+            "outcome": "correct",
+            "answerMs": 6400,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "slightly slow correct resets",
+          "input": {
+            "scale": 1,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": 6401,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "slow correct resets streak",
+          "input": {
+            "scale": 1.3,
+            "streak": 1,
+            "outcome": "correct",
+            "answerMs": 8000,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.3,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "shrink floors at 0.5",
+          "input": {
+            "scale": 0.5,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 0.5,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "shrink near floor",
+          "input": {
+            "scale": 0.52,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 0.5,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rounding to 4 places",
+          "input": {
+            "scale": 1.1111,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "example step 1: 1 wrong",
+          "input": {
+            "scale": 1,
+            "streak": 0,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "example step 2: fast 1",
+          "input": {
+            "scale": 1.2,
+            "streak": 0,
+            "outcome": "correct",
+            "answerMs": 1000,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "example step 3: fast 2",
+          "input": {
+            "scale": 1.2,
+            "streak": 1,
+            "outcome": "correct",
+            "answerMs": 1000,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 2
+          },
+          "source": "reference"
+        },
+        {
+          "name": "example step 4: fast 3",
+          "input": {
+            "scale": 1.2,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": 1000,
+            "limitMs": 9600
+          },
+          "expect": {
+            "scale": 1.08,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "zero answerMs fast",
+          "input": {
+            "scale": 1,
+            "streak": 0,
+            "outcome": "correct",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "scale 5 slow correct clamps to 2",
+          "input": {
+            "scale": 5,
+            "streak": 0,
+            "outcome": "correct",
+            "answerMs": 9000,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "scale 0.1 wrong -> 0.6",
+          "input": {
+            "scale": 0.1,
+            "streak": 0,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 0.6,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "scale string -> 1",
+          "input": {
+            "scale": "x",
+            "streak": 0,
+            "outcome": "wrong",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "scale missing slow correct -> 1",
+          "input": {
+            "streak": 0,
+            "outcome": "correct",
+            "answerMs": 9000,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "streak 7 fast resets and shrinks",
+          "input": {
+            "scale": 1,
+            "streak": 7,
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 0.9,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "streak -1 fast -> 1",
+          "input": {
+            "scale": 1,
+            "streak": -1,
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "streak 2.5 fast resets",
+          "input": {
+            "scale": 1,
+            "streak": 2.5,
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 0.9,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "streak string -> 0",
+          "input": {
+            "scale": 1,
+            "streak": "2",
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "outcome bogus handled as wrong",
+          "input": {
+            "scale": 1,
+            "streak": 2,
+            "outcome": "bogus",
+            "answerMs": 0,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "answerMs missing is slow",
+          "input": {
+            "scale": 1,
+            "streak": 2,
+            "outcome": "correct",
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "limitMs missing is slow",
+          "input": {
+            "scale": 1,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": 1
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "streak 1.5 floors to 1 then 2",
+          "input": {
+            "scale": 1,
+            "streak": 1.5,
+            "outcome": "correct",
+            "answerMs": 10,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 2
+          },
+          "source": "reference"
+        },
+        {
+          "name": "plain path rounds to 4 places",
+          "input": {
+            "scale": 1.23456,
+            "streak": 0,
+            "outcome": "correct",
+            "answerMs": 9000,
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1.2346,
+            "streak": 0
+          },
+          "source": "reference"
+        },
+        {
+          "name": "answerMs string is slow",
+          "input": {
+            "scale": 1,
+            "streak": 2,
+            "outcome": "correct",
+            "answerMs": "10",
+            "limitMs": 8000
+          },
+          "expect": {
+            "scale": 1,
+            "streak": 0
+          },
+          "source": "reference"
+        }
+      ]
+    },
+    {
+      "fn": "timerLimit",
+      "cases": [
+        {
+          "name": "default base scale 1",
+          "input": {
+            "baseMs": 8000,
+            "scale": 1
+          },
+          "expect": 8000,
+          "source": "reference"
+        },
+        {
+          "name": "example 8000 x 1.2",
+          "input": {
+            "baseMs": 8000,
+            "scale": 1.2
+          },
+          "expect": 9600,
+          "source": "reference"
+        },
+        {
+          "name": "example 9600 shrunk",
+          "input": {
+            "baseMs": 8000,
+            "scale": 1.08
+          },
+          "expect": 8640,
+          "source": "reference"
+        },
+        {
+          "name": "min scale",
+          "input": {
+            "baseMs": 8000,
+            "scale": 0.5
+          },
+          "expect": 4000,
+          "source": "reference"
+        },
+        {
+          "name": "max scale",
+          "input": {
+            "baseMs": 8000,
+            "scale": 2
+          },
+          "expect": 16000,
+          "source": "reference"
+        },
+        {
+          "name": "clamp low 1500",
+          "input": {
+            "baseMs": 2000,
+            "scale": 0.5
+          },
+          "expect": 1500,
+          "source": "reference"
+        },
+        {
+          "name": "clamp low exact 1500",
+          "input": {
+            "baseMs": 3000,
+            "scale": 0.5
+          },
+          "expect": 1500,
+          "source": "reference"
+        },
+        {
+          "name": "clamp high 60000",
+          "input": {
+            "baseMs": 30000,
+            "scale": 2
+          },
+          "expect": 60000,
+          "source": "reference"
+        },
+        {
+          "name": "just below high",
+          "input": {
+            "baseMs": 29999,
+            "scale": 2
+          },
+          "expect": 59998,
+          "source": "reference"
+        },
+        {
+          "name": "rounds",
+          "input": {
+            "baseMs": 8001,
+            "scale": 1.0001
+          },
+          "expect": 8002,
+          "source": "reference"
+        },
+        {
+          "name": "half rounds up",
+          "input": {
+            "baseMs": 5001,
+            "scale": 0.5
+          },
+          "expect": 2501,
+          "source": "reference"
+        },
+        {
+          "name": "base 30000 scale 1",
+          "input": {
+            "baseMs": 30000,
+            "scale": 1
+          },
+          "expect": 30000,
+          "source": "reference"
+        },
+        {
+          "name": "base 2000 scale 1",
+          "input": {
+            "baseMs": 2000,
+            "scale": 1
+          },
+          "expect": 2000,
+          "source": "reference"
+        },
+        {
+          "name": "base 2000 scale 2",
+          "input": {
+            "baseMs": 2000,
+            "scale": 2
+          },
+          "expect": 4000,
+          "source": "reference"
+        },
+        {
+          "name": "base 10000 scale 0.7",
+          "input": {
+            "baseMs": 10000,
+            "scale": 0.7
+          },
+          "expect": 7000,
+          "source": "reference"
+        },
+        {
+          "name": "baseMs string -> 8000",
+          "input": {
+            "baseMs": "x",
+            "scale": 1
+          },
+          "expect": 8000,
+          "source": "reference"
+        },
+        {
+          "name": "baseMs missing -> 8000",
+          "input": {
+            "scale": 1.5
+          },
+          "expect": 12000,
+          "source": "reference"
+        },
+        {
+          "name": "scale 9 clamps to 2",
+          "input": {
+            "baseMs": 8000,
+            "scale": 9
+          },
+          "expect": 16000,
+          "source": "reference"
+        },
+        {
+          "name": "baseMs 1000 not clamped upstream",
+          "input": {
+            "baseMs": 1000,
+            "scale": 2
+          },
+          "expect": 2000,
+          "source": "reference"
+        },
+        {
+          "name": "baseMs 50000 scale 1 not clamped",
+          "input": {
+            "baseMs": 50000,
+            "scale": 1
+          },
+          "expect": 50000,
+          "source": "reference"
+        },
+        {
+          "name": "scale missing -> 1",
+          "input": {
+            "baseMs": 8000
+          },
+          "expect": 8000,
+          "source": "reference"
+        }
+      ]
+    }
+  ]
+}

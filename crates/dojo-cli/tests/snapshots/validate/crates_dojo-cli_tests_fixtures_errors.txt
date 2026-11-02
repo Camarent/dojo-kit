@@ -1,0 +1,3 @@
+exit: 1
+output:
+{"ok":false,"errors":1,"warnings":0,"diagnostics":[{"severity":"error","code":"unknown_unit","file":"content/u.jsonl","line":1,"message":"item 'u-1' uses unknown unit 'nope'"}]}

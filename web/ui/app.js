@@ -1,0 +1,329 @@
+/*
+ * ui/app.js — Preact + htm UI. Defines window.DojoApp = { start(opts), fail(root, err) }.
+ * Globals expected: preact, htm, DojoStorage, DojoSession, DojoTypes, DojoExt (question UIs live in types/*.js). Course text is rendered through DojoExt.text.
+ */
+(function (root) {
+  'use strict';
+
+  function dep(name, file) { return root[name] || (typeof require !== 'undefined' ? require(file) : null) || {}; }
+
+  var h = preact.h;
+  var Component = preact.Component;
+  var html = htm.bind(h);
+  var DojoExt = root.DojoExt || {};
+  var DojoI18n = dep('DojoI18n', './i18n.js');
+
+  var DojoCommon = dep('DojoCommon', './common.js');
+
+  var DojoCatalog = dep('DojoCatalog', './catalog.js');
+
+  var CatalogScreen = DojoCatalog.CatalogScreen;
+  var Home = (dep('DojoHome', './home.js')).Home;
+
+  var Dialog = DojoCommon.Dialog;
+  var ProgressBar = DojoCommon.ProgressBar;
+  var Loading = DojoCommon.Loading;
+  var daysLeft = DojoCommon.daysLeft;
+  var applyTheme = DojoCommon.applyTheme;
+
+  var DojoStimulus = dep('DojoStimulus', './stimulus.js');
+  var shared = DojoStimulus.create();
+  var Stimulus = shared.Stimulus;
+
+  var DojoSessionScreen = dep('DojoSessionScreen', './session-screen.js');
+  var DojoResults = dep('DojoResults', './results.js');
+  var sessionParts = DojoSessionScreen.create({ Stimulus: Stimulus, kanjiRows: shared.kanjiRows, tagInfo: shared.tagInfo, captionFor: shared.captionFor, fmtClock: shared.fmtClock });
+  var SessionBoundary = sessionParts.SessionBoundary;
+  var SessionScreen = sessionParts.SessionScreen;
+  var Results = DojoResults.create({ percent: shared.percent, fmtClock: shared.fmtClock, itemLabel: shared.itemLabel, dupeSet: shared.dupeSet }).Results;
+  var DojoPlacement = dep('DojoPlacement', './placement.js');
+  var placementParts = DojoPlacement.create({ uniqueSorted: shared.uniqueSorted, tagInfo: shared.tagInfo, toggle: shared.toggle, Stimulus: Stimulus, kanjiRows: shared.kanjiRows });
+  var PracticeSetup = placementParts.PracticeSetup;
+  var PlacementScreen = placementParts.PlacementScreen;
+  var PlacementSession = placementParts.PlacementSession;
+
+  var DojoSettingsSpeech = dep('DojoSettingsSpeech', './settings-speech.js');
+  var DojoSettings = dep('DojoSettings', './settings.js');
+  var settingsParts = DojoSettings.create({ renderSpeechSettings: DojoSettingsSpeech.create().renderSpeechSettings });
+  var SettingsScreen = settingsParts.SettingsScreen;
+  var renderPluginSettings = settingsParts.renderPluginSettings;
+
+  // ---------- screen routing ----------
+
+  function sessionProps(self, p, s) {
+    return { t: p.t, lang: p.lang, session: s.session, engine: p.engine, now: p.now, win: p.win, course: p.course, store: p.store,
+      onEnd: function (sum) { self.endSession(sum); }, onExit: function () { self.exitSession(); } };
+  }
+  function sessionScreen(self, p, s) {
+    var placement = s.session && s.session.mode === 'placement';
+    var props = sessionProps(self, p, s);
+    if (!placement) props.content = p.content;
+    return h(SessionBoundary, { key: s.session.id, t: p.t, session: s.session, onExit: props.onExit, onFinish: function () { self.finishBroken(s.session); } },
+      h(placement ? PlacementSession : SessionScreen, props));
+  }
+  function practiceScreen(self, p, s, common) {
+    return h(PracticeSetup, Object.assign({ content: p.content, onStart: function (m, o) { self.startMode(m, o); } }, common));
+  }
+  function resultsScreen(self, p, s, common) {
+    var isPlacement = s.summary && s.summary.mode === 'placement';
+    return h(Results, Object.assign({ summary: s.summary, byId: p.byId, stimuli: p.content && p.content.stimuli, win: p.win, store: p.store, engine: p.engine, lang: p.lang, onAgain: function () { self.again(); }, isPlacement: isPlacement }, common));
+  }
+  function settingsScreen(self, p, s, common) {
+    return h(SettingsScreen, Object.assign({ lang: p.lang, store: p.store, content: p.content, engine: p.engine, now: p.now, win: p.win,
+      onDataChanged: function () { self.refresh(); }, onPlacement: function () { self.showPlacementIntro(); },
+      onNotice: function (n) { self.setState({ notice: n.text }); } }, common));
+  }
+  function catalogScreen(self, p, s, common) {
+    return h(CatalogScreen, Object.assign({ content: p.content, store: p.store, engine: p.engine, now: p.now, win: p.win }, common));
+  }
+  function homeScreen(self, p, s, common) {
+    var home = s.home || {};
+    var doc = p.store.doc;
+    var examDate = doc.settings && doc.settings.examDate ? doc.settings.examDate : null;
+    var examDaysLeft = daysLeft(examDate, p.today());
+    return h(Home, Object.assign({ home: home, engine: p.engine, exams: p.engine.exams ? p.engine.exams() : [], onStart: function (m, o) { self.startMode(m, o); }, onPlacement: function () { self.showPlacementIntro(); }, onMoreNew: function (n) { self.addMoreNew(n); }, onGroupSetting: function (gid, field, value) { self.setGroupSetting(gid, field, value); }, examDate: examDate, examDaysLeft: examDaysLeft, lang: p.lang, resume: home.resume, onResume: function () { self.resumeExam(); }, onStartOver: function () { self.startOver(); }, onDiscard: function () { self.discardDraft(); } }, common));
+  }
+  var SCREENS = { practice: practiceScreen, session: sessionScreen, results: resultsScreen, settings: settingsScreen, catalog: catalogScreen, home: homeScreen };
+
+  // ---------- App ----------
+
+  class App extends Component {
+    constructor(props) {
+      super(props);
+      this.state = { screen: 'home', status: props.store.status, notice: null, session: null, summary: null, home: null, placementIntro: false, confirmNew: null };
+      this.state.home = this.homeData();
+      this.lastStart = null;
+    }
+    homeData() {
+      var p = this.props;
+      var doc = p.store.doc;
+      var streak;
+      try { streak = p.dojo.call('streak', { days: (doc.stats && doc.stats.days) || {}, todayKey: p.today() }); } catch { streak = 0; }
+      var weak;
+      try { weak = !p.engine.start('weak', { limit: 1 }).error; } catch { weak = false; }
+      var pl = p.engine.placement ? p.engine.placement() : { done: false };
+      var resume = null;
+      var draft = p.engine.examDraft ? p.engine.examDraft() : null;
+      if (draft) {
+        resume = { examId: draft.examId, answered: draft.answers.length, total: draft.ids.length, remainingMs: draft.remainingMs[draft.group] };
+      }
+      return { counts: p.engine.counts(), streak: streak, weak: weak, placementDone: pl.done, resume: resume };
+    }
+    scrollTop() {
+      var w = this.props.win;
+      if (w && typeof w.scrollTo === 'function') { try { w.scrollTo(0, 0); } catch { /* no scroll */ } }
+    }
+    setStatus(status) { this.setState({ status: status }); }
+    remoteChanged() {
+      this.setState({ home: this.homeData() });
+    }
+    refresh() { this.setState({ home: this.homeData() }); }
+    go(screen) {
+      this.setState({ screen: screen, notice: null, session: null, placementIntro: false, home: screen === 'home' ? this.homeData() : this.state.home });
+      this.scrollTop();
+    }
+    endSession(summary) {
+      this.props.store.flush();
+      this.setState({ screen: 'results', summary: summary, session: null });
+      this.scrollTop();
+    }
+    finishBroken(session) {
+      var sum = session.finish();
+      if (sum && !sum.error) this.endSession(sum); else this.exitSession();
+    }
+    exitSession() {
+      if (this.state.session && this.state.session.abandon) this.state.session.abandon();
+      this.props.store.flush();
+      this.go('home');
+    }
+    again() {
+      if (this.lastStart) this.startMode(this.lastStart.mode, this.lastStart.opts);
+      else this.go('home');
+    }
+    addMoreNew(count) {
+      this.props.engine.moreNew(count);
+      this.refresh();
+    }
+    setGroupSetting(gid, field, value) {
+      var patch = {};
+      patch[field] = value;
+      var result = this.props.engine.setGroupSetting(gid, patch);
+      if (result.error) {
+        this.setState({ notice: this.props.t('settings.groupSettings.error', { field: field, error: result.error }) });
+        return;
+      }
+      this.refresh();
+    }
+    startPlacement() {
+      var session = this.props.engine.start('placement', {});
+      if (session.error) {
+        this.setState({ notice: this.props.t('start.' + session.error), placementIntro: false });
+        return;
+      }
+      this.lastStart = { mode: 'placement', opts: {} };
+      this.setState({ screen: 'session', session: session, notice: null, placementIntro: false });
+      this.scrollTop();
+    }
+    showPlacementIntro() {
+      this.setState({ placementIntro: true });
+    }
+    resumeExam() {
+      var draft = this.props.engine.examDraft ? this.props.engine.examDraft() : null;
+      if (!draft) { this.refresh(); return; }
+      var session = this.props.engine.start('exam', { examId: draft.examId, resume: draft });
+      if (session.error) {
+        this.setState({ notice: this.props.t('start.' + session.error), home: this.homeData() });
+        return;
+      }
+      this.lastStart = { mode: 'exam', opts: { examId: draft.examId } };
+      if (session.done) {
+        var sum = session.finish();
+        if (sum.error) { this.setState({ notice: this.props.t('session.error', { code: sum.error }), home: this.homeData() }); return; }
+        this.endSession(sum);
+        return;
+      }
+      this.setState({ screen: 'session', session: session, notice: null });
+      this.scrollTop();
+    }
+    discardDraft() {
+      var draft = this.props.engine.examDraft ? this.props.engine.examDraft() : null;
+      if (draft) this.props.engine.discardDraft(draft.sid);
+      this.refresh();
+    }
+    startOver() {
+      var draft = this.props.engine.examDraft ? this.props.engine.examDraft() : null;
+      if (!draft) return;
+      this.props.engine.discardDraft(draft.sid);
+      this.setState({ home: this.homeData() });
+      this.startMode('exam', { examId: draft.examId }, true);
+    }
+    startMode(mode, opts, confirmed) {
+      var resume = this.state.home && this.state.home.resume;
+      if (!confirmed && mode === 'exam' && !opts.training && resume) {
+        this.setState({ confirmNew: { mode: mode, opts: opts } });
+        return;
+      }
+      var session = this.props.engine.start(mode, opts);
+      if (session.error) {
+        this.setState({ notice: this.props.t('start.' + session.error) });
+        return;
+      }
+      this.lastStart = { mode: mode, opts: opts };
+      this.setState({ screen: 'session', session: session, notice: null });
+      this.scrollTop();
+    }
+    confirmNewCancel() {
+      this.setState({ confirmNew: null });
+    }
+    confirmNewProceed() {
+      var c = this.state.confirmNew;
+      if (!c) return;
+      this.setState({ confirmNew: null });
+      var draft = this.props.engine.examDraft ? this.props.engine.examDraft() : null;
+      if (draft) this.props.engine.discardDraft(draft.sid);
+      this.startMode(c.mode, c.opts, true);
+    }
+    overlayBody(p, s, common) {
+      var self = this;
+      if (s.confirmNew) {
+        return h(Dialog, {
+          testid: 'confirm-new-exam',
+          title: p.t('home.resume.confirm.title'),
+          body: p.t('home.resume.confirm.body'),
+          confirmLabel: p.t('home.resume.confirm.yes'),
+          danger: false,
+          cancelLabel: p.t('cancel'),
+          onConfirm: function () { self.confirmNewProceed(); },
+          onCancel: function () { self.confirmNewCancel(); }
+        });
+      }
+      if (s.placementIntro) return h(PlacementScreen, Object.assign({ onStart: function () { self.startPlacement(); } }, common));
+      return null;
+    }
+    render(p, s) {
+      var self = this;
+      var common = { t: p.t, course: p.course, status: s.status, notice: s.notice, dojo: p.dojo, go: function (x) { self.go(x); } };
+      var body = this.overlayBody(p, s, common) || (SCREENS[s.screen] || homeScreen)(self, p, s, common);
+      return html`<div class="app">${body}</div>`;
+    }
+  }
+
+  // ---------- start / fail ----------
+
+  function ErrorScreen(p) {
+    var t = p.t;
+    return html`<div class="app"><main class="screen" data-testid="error" role="alert">
+      <header class="head"><h1>${t('error.title')}</h1></header>
+      <p>${t('error.body')}</p>
+      <details data-testid="error-details"><summary>${t('error.details')}</summary><pre class="pre mono">${p.message}</pre></details>
+    </main></div>`;
+  }
+
+  function errorMessage(err) {
+    return !err || !(err.stack || err.message) ? String(err) : (err.name ? err.name + ': ' : '') + (err.message || String(err));
+  }
+
+  function fail(rootEl, err) {
+    var i18n = root.__DOJO_I18N__ || null;
+    var t = DojoI18n.makeT(i18n, DojoI18n.pickLang(i18n, 'en'));
+    var message = errorMessage(err);
+    try { preact.render(null, rootEl); } catch { /* tree already broken */ }
+    try { rootEl.textContent = ''; } catch { /* no DOM */ }
+    try {
+      preact.render(h(ErrorScreen, { t: t, message: message }), rootEl);
+    } catch {
+      try { rootEl.textContent = 'Error: ' + message; } catch { /* no DOM */ }
+    }
+  }
+
+  function applyCourseExtensions(course, content, t) {
+    if (DojoExt.use) DojoExt.use(course.markup);
+    if (DojoExt.useRuby) DojoExt.useRuby(course.ruby, content.items);
+    if (DojoExt.useInputScript) DojoExt.useInputScript(course.inputScript, t('guard.script'));
+  }
+
+  function setRootLang(rootEl, course) {
+    try { if (rootEl && rootEl.setAttribute && (course.contentLanguage || course.uiLanguage)) rootEl.setAttribute('lang', course.contentLanguage || course.uiLanguage); } catch { /* no DOM */ }
+  }
+
+  function start(opts) {
+    var rootEl = opts.root, content = opts.content, course = content.course;
+    var now = opts.now || Date.now;
+    var win = opts.win || root;
+    var i18n = opts.i18n || root.__DOJO_I18N__ || null;
+    var t = DojoI18n.makeT(i18n, opts.lang || course.uiLanguage || 'en');
+    applyCourseExtensions(course, content, t);
+    var holder = { app: null };
+    setRootLang(rootEl, course);
+    preact.render(h(Loading, { t: t }), rootEl);
+    function today() { return shared.localDay(now()); }
+    var store = DojoStorage.createStore({
+      courseId: course.id,
+      dojo: opts.dojo,
+      migrate: DojoMigrate.create({ dojo: opts.dojo, items: content.items }),
+      now: now,
+      localStorage: opts.localStorage || null,
+      claude: opts.claude || null,
+      storageProvider: DojoExt.getStorageProvider ? DojoExt.getStorageProvider() : null,
+      onStatus: function (s) { if (holder.app) holder.app.setStatus(s); },
+      onRemoteChange: function () { if (holder.app) holder.app.remoteChanged(); }
+    });
+    return store.load().then(function () {
+      applyTheme(win, store.doc.settings && store.doc.settings.theme);
+      if (DojoExt.bindSettings) {
+        DojoExt.bindSettings(function (key) {
+          return store.doc.settings && store.doc.settings[key];
+        });
+      }
+      var engine = DojoSession.createEngine({ dojo: opts.dojo, store: store, content: content, now: now, today: today, random: Math.random });
+      store.attachLifecycle(win);
+      var byId = {};
+      content.items.forEach(function (it) { byId[it.id] = it; });
+      preact.render(h(App, { ref: function (a) { holder.app = a; }, t: t, lang: opts.lang || course.uiLanguage || 'en', store: store, engine: engine, dojo: opts.dojo,
+        content: content, course: course, byId: byId, now: now, today: today, win: win }), rootEl);
+      return { store: store, engine: engine };
+    }).catch(function (e) { fail(rootEl, e); });
+  }
+
+  root.DojoApp = { start: start, fail: fail, _makeT: DojoI18n.makeT, _pickLang: DojoI18n.pickLang, _Stimulus: Stimulus, _SessionScreen: SessionScreen, _Results: Results, _Home: Home, _App: App, _CatalogScreen: CatalogScreen, _SettingsScreen: SettingsScreen, _PlacementSession: PlacementSession, _PracticeSetup: PracticeSetup, _ProgressBar: ProgressBar, _daysLeft: daysLeft, _applyTheme: applyTheme, _pluralForm: DojoI18n.pluralForm, _renderPluginSettings: renderPluginSettings };
+})(typeof self !== 'undefined' ? self : this);

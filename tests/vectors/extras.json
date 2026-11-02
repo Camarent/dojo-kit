@@ -1,0 +1,1931 @@
+{
+  "groups": [
+    {
+      "fn": "applyExtras",
+      "cases": [
+        {
+          "name": "e default wrong",
+          "input": {
+            "rec": {},
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.65,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e default correct",
+          "input": {
+            "rec": {},
+            "correct": true,
+            "given": "",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.35
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e 0.5 wrong 0.65",
+          "input": {
+            "rec": {
+              "e": 0.5
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.65,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e 0.65 correct 0.455",
+          "input": {
+            "rec": {
+              "e": 0.65
+            },
+            "correct": true,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.455
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e not touched when not weighted",
+          "input": {
+            "rec": {
+              "e": 0.5
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "e": 0.5,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e absent not created when not weighted",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": true,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e rounds to 4 places",
+          "input": {
+            "rec": {
+              "e": 0.1234
+            },
+            "correct": true,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.0864
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e -1 wrong clamps to 0.3",
+          "input": {
+            "rec": {
+              "e": -1
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.3,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e 2 correct clamps to 0.7",
+          "input": {
+            "rec": {
+              "e": 2
+            },
+            "correct": true,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.7
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e string uses default",
+          "input": {
+            "rec": {
+              "e": "x"
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.65,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "e NaN-like null uses default",
+          "input": {
+            "rec": {
+              "e": null
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.65,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "timed out weighted raises e",
+          "input": {
+            "rec": {
+              "e": 0.2
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.44,
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "weighted flag 1 is not set",
+          "input": {
+            "rec": {
+              "e": 0.5
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": 1
+          },
+          "expect": {
+            "e": 0.5,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "correct 1 handled as wrong",
+          "input": {
+            "rec": {
+              "e": 0.5
+            },
+            "correct": 1,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.65,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf wrong counts",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "abc",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "abc",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf trims",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "  abc  ",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "abc",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf increments existing in place",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "q",
+                  1
+                ],
+                [
+                  "abc",
+                  2
+                ],
+                [
+                  "r",
+                  1
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "abc",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "q",
+                1
+              ],
+              [
+                "abc",
+                3
+              ],
+              [
+                "r",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf 16 chars counts",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "aaaaaaaaaaaaaaaa",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "aaaaaaaaaaaaaaaa",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf 17 chars ignored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "aaaaaaaaaaaaaaaaa",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf emoji x9 counted",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "😀😀😀😀😀😀😀😀😀",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "😀😀😀😀😀😀😀😀😀",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf emoji x16 counted",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf emoji x17 ignored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf BOM kept as 3-code-point key",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "﻿ab",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "﻿ab",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf NEL trimmed",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "ab",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "ab",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf ideographic space trimmed",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "　ab　",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "ab",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf empty given ignored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf blank given ignored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "   ",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf number given ignored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": 123,
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf correct ignored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": true,
+            "given": "abc",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf timed out not counted",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "abc",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf key constructor stored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "constructor",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "constructor",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf key __proto__ stored",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "__proto__",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "cf": [
+              [
+                "__proto__",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf key toString stored",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "toString",
+                  1
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "toString",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "toString",
+                2
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf object normalised to list",
+          "input": {
+            "rec": {
+              "cf": {
+                "a": 1
+              }
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf bad entries dropped",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "a"
+                ],
+                [
+                  "b",
+                  0
+                ],
+                [
+                  "c",
+                  1.5
+                ],
+                [
+                  1,
+                  2
+                ],
+                [
+                  "d",
+                  1,
+                  9
+                ],
+                [
+                  "ok",
+                  3
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "ok",
+                3
+              ],
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf duplicate keeps first",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "a",
+                  1
+                ],
+                [
+                  "a",
+                  5
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "zz",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "a",
+                1
+              ],
+              [
+                "zz",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf string value becomes list",
+          "input": {
+            "rec": {
+              "cf": "str"
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf null becomes list",
+          "input": {
+            "rec": {
+              "cf": null
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf malformed copied when rule does not fire",
+          "input": {
+            "rec": {
+              "cf": {
+                "a": 1
+              }
+            },
+            "correct": true,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": {
+              "a": 1
+            }
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf count 2^53-1 increment stays",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "a",
+                  9007199254740991
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "a",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "a",
+                9007199254740991
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf key too long in storage dropped",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "aaaaaaaaaaaaaaaaa",
+                  2
+                ],
+                [
+                  "b",
+                  1
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "b",
+                1
+              ],
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf 8 entries plus new evicts lowest other",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "k0",
+                  2
+                ],
+                [
+                  "k1",
+                  3
+                ],
+                [
+                  "k2",
+                  4
+                ],
+                [
+                  "k3",
+                  5
+                ],
+                [
+                  "k4",
+                  6
+                ],
+                [
+                  "k5",
+                  7
+                ],
+                [
+                  "k6",
+                  8
+                ],
+                [
+                  "k7",
+                  9
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "zz",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "k1",
+                3
+              ],
+              [
+                "k2",
+                4
+              ],
+              [
+                "k3",
+                5
+              ],
+              [
+                "k4",
+                6
+              ],
+              [
+                "k5",
+                7
+              ],
+              [
+                "k6",
+                8
+              ],
+              [
+                "k7",
+                9
+              ],
+              [
+                "zz",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf eviction tie earliest index",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "m",
+                  1
+                ],
+                [
+                  "z",
+                  1
+                ],
+                [
+                  "a",
+                  1
+                ],
+                [
+                  "b",
+                  1
+                ],
+                [
+                  "c",
+                  1
+                ],
+                [
+                  "d",
+                  1
+                ],
+                [
+                  "e",
+                  1
+                ],
+                [
+                  "f",
+                  1
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "q",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "z",
+                1
+              ],
+              [
+                "a",
+                1
+              ],
+              [
+                "b",
+                1
+              ],
+              [
+                "c",
+                1
+              ],
+              [
+                "d",
+                1
+              ],
+              [
+                "e",
+                1
+              ],
+              [
+                "f",
+                1
+              ],
+              [
+                "q",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf ten tampered entries keeps new key",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "k0",
+                  2
+                ],
+                [
+                  "k1",
+                  3
+                ],
+                [
+                  "k2",
+                  4
+                ],
+                [
+                  "k3",
+                  5
+                ],
+                [
+                  "k4",
+                  6
+                ],
+                [
+                  "k5",
+                  7
+                ],
+                [
+                  "k6",
+                  8
+                ],
+                [
+                  "k7",
+                  9
+                ],
+                [
+                  "k8",
+                  10
+                ],
+                [
+                  "k9",
+                  11
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "new",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "k3",
+                5
+              ],
+              [
+                "k4",
+                6
+              ],
+              [
+                "k5",
+                7
+              ],
+              [
+                "k6",
+                8
+              ],
+              [
+                "k7",
+                9
+              ],
+              [
+                "k8",
+                10
+              ],
+              [
+                "k9",
+                11
+              ],
+              [
+                "new",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf existing key at eight increments in place",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "k0",
+                  2
+                ],
+                [
+                  "k1",
+                  3
+                ],
+                [
+                  "k2",
+                  4
+                ],
+                [
+                  "k3",
+                  5
+                ],
+                [
+                  "k4",
+                  6
+                ],
+                [
+                  "k5",
+                  7
+                ],
+                [
+                  "k6",
+                  8
+                ],
+                [
+                  "k7",
+                  9
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "k3",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "k0",
+                2
+              ],
+              [
+                "k1",
+                3
+              ],
+              [
+                "k2",
+                4
+              ],
+              [
+                "k3",
+                6
+              ],
+              [
+                "k4",
+                6
+              ],
+              [
+                "k5",
+                7
+              ],
+              [
+                "k6",
+                8
+              ],
+              [
+                "k7",
+                9
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf tampered nine excludes only new key keeps existing",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "k0",
+                  1
+                ],
+                [
+                  "k1",
+                  2
+                ],
+                [
+                  "k2",
+                  3
+                ],
+                [
+                  "k3",
+                  4
+                ],
+                [
+                  "k4",
+                  5
+                ],
+                [
+                  "k5",
+                  6
+                ],
+                [
+                  "k6",
+                  7
+                ],
+                [
+                  "k7",
+                  8
+                ],
+                [
+                  "k8",
+                  9
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "k0",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "k0",
+                2
+              ],
+              [
+                "k2",
+                3
+              ],
+              [
+                "k3",
+                4
+              ],
+              [
+                "k4",
+                5
+              ],
+              [
+                "k5",
+                6
+              ],
+              [
+                "k6",
+                7
+              ],
+              [
+                "k7",
+                8
+              ],
+              [
+                "k8",
+                9
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf dedupe judged among kept entries",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "a",
+                  0
+                ],
+                [
+                  "a",
+                  3
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "zz",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "a",
+                3
+              ],
+              [
+                "zz",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "given all 25 white space chars trimmed",
+          "input": {
+            "rec": {},
+            "correct": false,
+            "given": "\t\n\u000b\f\r                  　ab\t\n\u000b\f\r                  　",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "ab",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf integer-like keys keep insertion order",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "zz",
+                  1
+                ],
+                [
+                  "87",
+                  1
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "9",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "zz",
+                1
+              ],
+              [
+                "87",
+                1
+              ],
+              [
+                "9",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "cf integer-like keys full list",
+          "input": {
+            "rec": {
+              "cf": [
+                [
+                  "zz",
+                  1
+                ],
+                [
+                  "87",
+                  1
+                ],
+                [
+                  "9",
+                  1
+                ],
+                [
+                  "b",
+                  1
+                ],
+                [
+                  "c",
+                  1
+                ],
+                [
+                  "d",
+                  1
+                ],
+                [
+                  "e",
+                  1
+                ],
+                [
+                  "f",
+                  1
+                ]
+              ]
+            },
+            "correct": false,
+            "given": "5",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "cf": [
+              [
+                "87",
+                1
+              ],
+              [
+                "9",
+                1
+              ],
+              [
+                "b",
+                1
+              ],
+              [
+                "c",
+                1
+              ],
+              [
+                "d",
+                1
+              ],
+              [
+                "e",
+                1
+              ],
+              [
+                "f",
+                1
+              ],
+              [
+                "5",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "to first",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "to increments",
+          "input": {
+            "rec": {
+              "to": 2
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "to": 3
+          },
+          "source": "reference"
+        },
+        {
+          "name": "to not on plain wrong",
+          "input": {
+            "rec": {
+              "to": 2
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": false
+          },
+          "expect": {
+            "to": 2,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "to string 3 -> 1",
+          "input": {
+            "rec": {
+              "to": "3"
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "to negative -> 1",
+          "input": {
+            "rec": {
+              "to": -2
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "to 2.7 -> 3",
+          "input": {
+            "rec": {
+              "to": 2.7
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "to": 3
+          },
+          "source": "reference"
+        },
+        {
+          "name": "to 2^53-1 stays",
+          "input": {
+            "rec": {
+              "to": 9007199254740991
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "to": 9007199254740991
+          },
+          "source": "reference"
+        },
+        {
+          "name": "timedOut 1 is not set",
+          "input": {
+            "rec": {
+              "to": 2
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": 1,
+            "weighted": false
+          },
+          "expect": {
+            "to": 2,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "untouched fields kept",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99
+            },
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": true
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "e": 0.65,
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "unknown fields kept",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 5,
+              "ok": 3,
+              "bad": 1,
+              "last": 99,
+              "zz": {
+                "n": 1
+              },
+              "q": "k"
+            },
+            "correct": false,
+            "given": "w",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "s": 2,
+            "due": 5,
+            "ok": 3,
+            "bad": 1,
+            "last": 99,
+            "zz": {
+              "n": 1
+            },
+            "q": "k",
+            "e": 0.65,
+            "cf": [
+              [
+                "w",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "empty rec timed out",
+          "input": {
+            "rec": {},
+            "correct": false,
+            "given": "",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rec null timed out",
+          "input": {
+            "rec": null,
+            "correct": false,
+            "given": "x",
+            "timedOut": true,
+            "weighted": false
+          },
+          "expect": {
+            "to": 1
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rec array becomes empty",
+          "input": {
+            "rec": [
+              1,
+              2
+            ],
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.65,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rec absent",
+          "input": {
+            "correct": false,
+            "given": "x",
+            "timedOut": false,
+            "weighted": true
+          },
+          "expect": {
+            "e": 0.65,
+            "cf": [
+              [
+                "x",
+                1
+              ]
+            ]
+          },
+          "source": "reference"
+        }
+      ]
+    }
+  ]
+}

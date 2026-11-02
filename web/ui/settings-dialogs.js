@@ -1,0 +1,309 @@
+/*
+ * ui/settings-dialogs.js — unit and group settings dialog state and handlers
+ * Globals expected: DojoExt.
+ * create() returns { install(Cls) }; install copies the dialog methods onto Cls.prototype.
+ */
+(function (root) {
+  'use strict';
+
+  var DojoExt = root.DojoExt || {};
+  var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
+
+  // Summary part: text when it is non-empty and cur differs from base, else ''.
+  function diffPart(cur, base, text) {
+    return text && cur !== base ? text : '';
+  }
+
+  // Per-day text, or '' when undefined.
+  function perDayText(t, n) {
+    return n !== undefined ? n + '/' + t('duration.day.short') : '';
+  }
+
+  // Group value: override > course group > default.
+  function groupValue(override, courseGroup, key, dflt) {
+    if (override[key] !== undefined) return override[key];
+    return courseGroup ? courseGroup[key] : dflt;
+  }
+
+  // Unit dialog summary parts: pace, drop, new per day, order.
+  function unitSummaryParts(t, eff, course) {
+    var e = eff.effective;
+    var paceKey = eff.override.ladderScale === undefined ? 'settings.unitSettings.ladderPace.option.asInCourse' : 'settings.unitSettings.pace.x' + e.ladderScale;
+    var drop = e.dropOnWrong <= 3 ? t('settings.unitSettings.drop.' + e.dropOnWrong) : t('settings.unitSettings.dropN', { n: e.dropOnWrong });
+    return [
+      diffPart(e.ladderScale, course.ladderScale, t(paceKey)),
+      diffPart(e.dropOnWrong, course.dropOnWrong, drop),
+      diffPart(e.newPerDay, course.newPerDay, perDayText(t, e.newPerDay)),
+      diffPart(e.newOrder, course.newOrder, t('settings.unitSettings.order.' + e.newOrder))
+    ].filter(Boolean);
+  }
+
+  // Group dialog summary parts: new per day, order, only tags.
+  function groupSummaryParts(t, e, courseDefaults) {
+    var tagsChanged = e.onlyTags !== undefined && JSON.stringify(e.onlyTags) !== JSON.stringify(courseDefaults.onlyTags);
+    return [
+      diffPart(e.newPerDay, courseDefaults.newPerDay, perDayText(t, e.newPerDay)),
+      diffPart(e.newOrder, courseDefaults.newOrder, t('settings.unitSettings.order.' + (e.newOrder || 'file'))),
+      tagsChanged ? t('settings.groupSettings.onlyTags') + ': ' + e.onlyTags : ''
+    ].filter(Boolean);
+  }
+
+  class SettingsDialogs {
+    // Course-resolved value (WASM unitConfig, no user overrides). ladderScale has no course level: 1 = unscaled.
+    getCourseUnitValue(unitId, field) {
+      var p = this.props;
+      if (field === 'ladderScale') return 1;
+      var resolved = p.engine.unitConfig(unitId);
+      if (field === 'newPerDay') {
+        return typeof resolved.newPerDay === 'number' ? resolved.newPerDay : p.engine.globalNewPerDay();
+      }
+      if (field === 'dropOnWrong') {
+        // srsByType is per item type: a unit whose items share one type shows that type's drop.
+        var types = {};
+        p.content.items.forEach(function (it) { if (it.unit === unitId && DojoCommon.isActive(it)) types[it.type] = true; });
+        var names = Object.keys(types);
+        if (names.length === 1 && typeof resolved.dropByType[names[0]] === 'number') return resolved.dropByType[names[0]];
+      }
+      return resolved[field];
+    }
+    getEffectiveUnitSettings(unitId) {
+      var p = this.props;
+      var override = p.engine.unitSettings(unitId);
+      var courseUnit = null;
+      var units = p.course.units || [];
+      for (var i = 0; i < units.length; i++) {
+        if (units[i].id === unitId) {
+          courseUnit = units[i];
+          break;
+        }
+      }
+      var effective = {
+        newPerDay: override.newPerDay !== undefined ? override.newPerDay : this.getCourseUnitValue(unitId, 'newPerDay'),
+        ladderScale: override.ladderScale !== undefined ? override.ladderScale : this.getCourseUnitValue(unitId, 'ladderScale'),
+        dropOnWrong: override.dropOnWrong !== undefined ? override.dropOnWrong : this.getCourseUnitValue(unitId, 'dropOnWrong'),
+        newOrder: override.newOrder !== undefined ? override.newOrder : this.getCourseUnitValue(unitId, 'newOrder')
+      };
+      return { effective: effective, override: override, courseUnit: courseUnit };
+    }
+    unitSettingsSummary(unitId) {
+      var t = this.props.t;
+      var eff = this.getEffectiveUnitSettings(unitId);
+      var course = {
+        newPerDay: this.getCourseUnitValue(unitId, 'newPerDay'),
+        ladderScale: this.getCourseUnitValue(unitId, 'ladderScale'),
+        dropOnWrong: this.getCourseUnitValue(unitId, 'dropOnWrong'),
+        newOrder: this.getCourseUnitValue(unitId, 'newOrder')
+      };
+      return unitSummaryParts(t, eff, course).join(', ');
+    }
+    formatLadderPreview(ladder, t) {
+      if (!ladder || ladder.length === 0) return '';
+      var parts = [];
+      for (var i = 1; i < ladder.length; i++) {
+        parts.push(Math.round(ladder[i] / 86400000) + t('duration.day.short'));
+      }
+      return parts.join(', ');
+    }
+    getLadderPreview(unitId) {
+      var p = this.props;
+      return this.formatLadderPreview(p.engine.unitLadder(unitId), p.t);
+    }
+    openUnitDialog(unitId) {
+      var result = this.getEffectiveUnitSettings(unitId);
+      var effective = result.effective;
+      var override = result.override;
+      var courseUnit = result.courseUnit;
+      var unit = courseUnit || { id: unitId, title: unitId };
+      var courseDefaults = {
+        newPerDay: this.getCourseUnitValue(unitId, 'newPerDay'),
+        ladderScale: this.getCourseUnitValue(unitId, 'ladderScale'),
+        dropOnWrong: this.getCourseUnitValue(unitId, 'dropOnWrong'),
+        newOrder: this.getCourseUnitValue(unitId, 'newOrder')
+      };
+      this.setState({
+        unitDialog: {
+          initial: Object.assign({}, override),
+          unitId: unitId,
+          unitTitle: DojoExt.plain ? DojoExt.plain(unit.title) : unit.title,
+          effective: effective,
+          override: override,
+          course: {
+            newPerDay: courseDefaults.newPerDay !== undefined ? courseDefaults.newPerDay : undefined,
+            ladderScale: courseDefaults.ladderScale,
+            dropOnWrong: courseDefaults.dropOnWrong !== undefined ? courseDefaults.dropOnWrong : undefined,
+            newOrder: courseDefaults.newOrder !== undefined ? courseDefaults.newOrder : undefined
+          },
+          ladderPreview: this.getLadderPreview(unitId)
+        }
+      });
+    }
+    closeUnitDialog(keep) {
+      var d = this.state.unitDialog;
+      if (d && !keep && d.initial) {
+        var patch = {};
+        ['newPerDay', 'ladderScale', 'dropOnWrong', 'newOrder'].forEach(function (f) { patch[f] = d.initial[f] !== undefined ? d.initial[f] : null; });
+        var r = this.props.engine.setUnitSetting(d.unitId, patch);
+        if (!r.error) { this.props.onDataChanged(); this.setState({ exportText: this.props.store.exportText() }); }
+      }
+      this.setState({ unitDialog: null });
+    }
+    setUnitSettingField(unitId, field, value) {
+      var p = this.props;
+      var patch = {};
+      patch[field] = value;
+      var result = p.engine.setUnitSetting(unitId, patch);
+      if (result.error) {
+        this.props.onNotice({ kind: 'bad', text: p.t('settings.unitSettings.error', { field: field, error: result.error }) });
+        return;
+      }
+      this.props.onDataChanged();
+      this.setState({
+        exportText: p.store.exportText(),
+        unitDialog: this.state.unitDialog ? Object.assign({}, this.state.unitDialog, {
+          effective: this.getEffectiveUnitSettings(unitId).effective,
+          override: p.engine.unitSettings(unitId),
+          ladderPreview: this.getLadderPreview(unitId)
+        }) : null
+      });
+    }
+    resetUnitSettings(unitId) {
+      var p = this.props;
+      var result = p.engine.setUnitSetting(unitId, { newPerDay: null, ladderScale: null, dropOnWrong: null, newOrder: null });
+      if (result.error) {
+        this.props.onNotice({ kind: 'bad', text: p.t('settings.unitSettings.reset.error') });
+        return;
+      }
+      this.props.onDataChanged();
+      this.setState({
+        exportText: p.store.exportText(),
+        unitDialog: null
+      });
+    }
+    // Group settings helpers
+    getEffectiveGroupSettings(groupId) {
+      var p = this.props;
+      var courseGroups = p.course.groups || [];
+      var courseGroup = null;
+      for (var i = 0; i < courseGroups.length; i++) {
+        if (courseGroups[i].id === groupId) {
+          courseGroup = courseGroups[i];
+          break;
+        }
+      }
+      var override = p.engine.groupSettings ? p.engine.groupSettings(groupId) : {};
+      var effective = {
+        newPerDay: groupValue(override, courseGroup, 'newPerDay', undefined),
+        newOrder: groupValue(override, courseGroup, 'newOrder', 'file'),
+        onlyTags: groupValue(override, courseGroup, 'onlyTags', undefined)
+      };
+      return { effective: effective, override: override, courseGroup: courseGroup };
+    }
+    groupSettingsSummary(groupId) {
+      var t = this.props.t;
+      var eff = this.getEffectiveGroupSettings(groupId);
+      var e = eff.effective;
+      var courseGroup = eff.courseGroup;
+      var courseDefaults = {
+        newPerDay: groupValue({}, courseGroup, 'newPerDay', undefined),
+        newOrder: groupValue({}, courseGroup, 'newOrder', 'file'),
+        onlyTags: groupValue({}, courseGroup, 'onlyTags', undefined)
+      };
+      return groupSummaryParts(t, e, courseDefaults).join(', ');
+    }
+    openGroupDialog(groupId) {
+      var result = this.getEffectiveGroupSettings(groupId);
+      var effective = result.effective;
+      var override = result.override;
+      var courseGroup = result.courseGroup || { id: groupId, title: groupId };
+      var courseDefaults = {
+        newPerDay: courseGroup.newPerDay !== undefined ? courseGroup.newPerDay : undefined,
+        newOrder: courseGroup.newOrder !== undefined ? courseGroup.newOrder : 'file',
+        onlyTags: courseGroup.onlyTags !== undefined ? courseGroup.onlyTags : undefined
+      };
+      this.setState({
+        groupDialog: {
+          initial: Object.assign({}, override),
+          groupId: groupId,
+          groupTitle: DojoExt.plain ? DojoExt.plain(courseGroup.title) : courseGroup.title,
+          effective: effective,
+          override: override,
+          course: courseDefaults,
+          extraTags: courseGroup.extraTags || []
+        }
+      });
+    }
+    closeGroupDialog(keep) {
+      var d = this.state.groupDialog;
+      if (d && !keep && d.initial) {
+        var patch = {};
+        ['newPerDay', 'newOrder', 'onlyTags', 'extraRandom'].forEach(function (f) { patch[f] = d.initial[f] !== undefined ? d.initial[f] : null; });
+        var r = this.props.engine.setGroupSetting(d.groupId, patch);
+        if (!r.error) { this.props.onDataChanged(); this.setState({ exportText: this.props.store.exportText() }); }
+      }
+      this.setState({ groupDialog: null });
+    }
+    setGroupSettingField(groupId, field, value) {
+      var p = this.props;
+      var patch = {};
+      patch[field] = value;
+      var result = p.engine.setGroupSetting(groupId, patch);
+      if (result.error) {
+        this.props.onNotice({ kind: 'bad', text: p.t('settings.groupSettings.error', { field: field, error: result.error }) });
+        return;
+      }
+      this.props.onDataChanged();
+      this.setState({
+        exportText: p.store.exportText(),
+        groupDialog: this.state.groupDialog ? Object.assign({}, this.state.groupDialog, {
+          effective: this.getEffectiveGroupSettings(groupId).effective,
+          override: p.engine.groupSettings ? p.engine.groupSettings(groupId) : {}
+        }) : null
+      });
+    }
+    resetGroupSettings(groupId) {
+      var p = this.props;
+      var result = p.engine.setGroupSetting(groupId, { newPerDay: null, newOrder: null, onlyTags: null, extraRandom: null });
+      if (result.error) {
+        this.props.onNotice({ kind: 'bad', text: p.t('settings.groupSettings.reset.error') });
+        return;
+      }
+      this.props.onDataChanged();
+      this.setState({
+        exportText: p.store.exportText(),
+        groupDialog: null
+      });
+    }
+    ladderScaleToValue(scale) {
+      if (scale === 0.5) return '0.5';
+      if (scale === 0.75) return '0.75';
+      if (scale === 1) return '1';
+      if (scale === 1.5) return '1.5';
+      if (scale === 2) return '2';
+      if (scale === 3) return '3';
+      return String(scale);
+    }
+    ladderScaleFromValue(value) {
+      if (value === '0.5') return 0.5;
+      if (value === '0.75') return 0.75;
+      if (value === '1') return 1;
+      if (value === '1.5') return 1.5;
+      if (value === '2') return 2;
+      if (value === '3') return 3;
+      return parseFloat(value) || 1;
+    }
+  }
+
+  function install(Cls) {
+    Object.getOwnPropertyNames(SettingsDialogs.prototype).forEach(function (name) {
+      if (name !== 'constructor') Cls.prototype[name] = SettingsDialogs.prototype[name];
+    });
+  }
+
+  function create() {
+    return { install: install };
+  }
+
+  var api = { create: create };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.DojoSettingsDialogs = api;
+})(typeof self !== 'undefined' ? self : this);
