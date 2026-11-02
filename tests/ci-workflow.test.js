@@ -25,7 +25,7 @@ function jobLines(yml, name) {
   const start = all.indexOf(`  ${name}:`);
   if (start < 0) return [];
   const out = [];
-  for (let i = start + 1; i < all.length && !/^  \S/.test(all[i]); i++) out.push(all[i].trim());
+  for (let i = start + 1; i < all.length && !/^ {2}\S/.test(all[i]); i++) out.push(all[i].trim());
   return out;
 }
 
