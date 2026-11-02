@@ -5,6 +5,14 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-11-02
+
+### Fixed
+
+- `app.js`: an unknown screen name now falls back to the home screen (`SCREENS.home`). The 0.1.1 split left a reference to an undefined `homeScreen`, which failed `npm run lint`.
+- CI: pinned `actions/checkout` and `actions/setup-node` to their v7 releases; dependency refresh with grouped Dependabot updates.
+- Hooks: internal paths are read from the untracked `.git/info/guard-paths`; the retired `dev` merge subject exemption is removed.
+
 ## [0.1.1] - 2026-11-02
 
 ### Added
