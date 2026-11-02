@@ -18,7 +18,7 @@ Screens of the `examples/showcase` course (`./dojo build examples/showcase`).
 |---|---|---|---|---|
 | ![Home](docs/img/home.png) | ![Practice picker](docs/img/practice-picker.png) | ![Multiple-select question](docs/img/question-multi.png) | ![Feedback](docs/img/feedback-correct.png) | ![Mock exam](docs/img/exam.png) |
 
-Demo: the [examples/showcase](examples/showcase) course is the demo behind these screens.
+Demo: https://camarent.github.io/dojo-kit/ - the [examples/showcase](examples/showcase) course is the demo behind these screens.
 
 ## Quick start
 
