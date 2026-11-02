@@ -269,6 +269,27 @@ fi
 cd "$scratch"
 rm -rf "$remote7"
 
+# Test 7c/7d: pre-push refuses added lines with a personal email or an absolute local path (no workspace/ mention)
+for t7 in "7c|personal email|contact me@gmail.com" "7d|absolute /root/ path|see /root/notes/x"; do
+  label="${t7%%|*}"; rest="${t7#*|}"; desc="${rest%%|*}"; content="${rest#*|}"
+  echo "Test $label: pre-push refuses range with $desc in added line"
+  new_repo
+  remote7=$(mktemp -d)
+  git init --quiet --bare "$remote7"
+  git remote add origin "$remote7"
+  echo "$content" > notes.md
+  git add notes.md
+  git commit --quiet --message "chore(test): content $label" --no-verify
+  if git push origin HEAD >/dev/null 2>&1; then
+    echo "FAIL: pre-push accepted commit with $content"
+    fail_count=$((fail_count + 1))
+  else
+    echo "PASS"
+  fi
+  cd "$scratch"
+  rm -rf "$remote7"
+done
+
 # Test 7b: new branch scans only commits unknown to remotes
 echo "Test 7b: new branch push ignores already-pushed commits"
 new_repo

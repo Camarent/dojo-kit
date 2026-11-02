@@ -125,8 +125,8 @@ check_content_in_commit() {
   commit="$1"
   commit_short=$(echo "$commit" | cut -c1-7)
   tmpfile=$(mktemp)
-  # keep file headers and only the added lines that can match: the loop below then spawns one grep per candidate, not per added line
-  git show -U0 "$commit" | grep -E '^(\+\+\+ |\+.*workspace/[A-Za-z0-9_/-]+)' > "$tmpfile" || true
+  # keep file headers and only the added lines that can match (workspace/ path, email, or absolute local path): the loop below then spawns one grep per candidate, not per added line
+  git show -U0 "$commit" | grep -E '^(\+\+\+ |\+.*workspace/[A-Za-z0-9_/-]+|\+.*[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|\+.*(/root/|/home/|/Users/))' > "$tmpfile" || true
   line_count=0
   found_bad=false
   current_file=""
