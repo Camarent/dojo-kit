@@ -66,17 +66,14 @@ check_commit_range() {
   for commit in $range; do
     # Check author and committer for this commit
     commit_short=$(echo "$commit" | cut -c1-7)
-    for kind in author committer; do
-      case "$kind" in
-        author) fmt="%ae" ;;
-        committer) fmt="%ce" ;;
-      esac
-      email=$(git show -s --format="$fmt" "$commit" 2>/dev/null)
-      is_owner_email "$email" || { echo "refused: commit ${commit_short}: ${kind} email '$email' is not the Camarent noreply address" >&2; return 1; }
-    done
-
-    for kind in ad cd; do
-      off=$(git show -s --format="%${kind%d}i" "$commit" 2>/dev/null)
+    # one git call for both identities and both dates
+    ident=$(git show -s --format='%ae%n%ce%n%ai%n%ci' "$commit" 2>/dev/null)
+    author_email=$(printf '%s\n' "$ident" | sed -n 1p)
+    committer_email=$(printf '%s\n' "$ident" | sed -n 2p)
+    is_owner_email "$author_email" || { echo "refused: commit ${commit_short}: author email '$author_email' is not the Camarent noreply address" >&2; return 1; }
+    is_owner_email "$committer_email" || { echo "refused: commit ${commit_short}: committer email '$committer_email' is not the Camarent noreply address" >&2; return 1; }
+    for n in 3 4; do
+      off=$(printf '%s\n' "$ident" | sed -n "${n}p")
       off=${off##* }
       [ "$off" = "+0000" ] || { echo "refused: commit ${commit_short}: date offset '$off' is not +0000" >&2; return 1; }
     done
@@ -101,7 +98,7 @@ check_commit_range() {
     fi
 
     # Check for forbidden paths in this commit
-    bad_paths=$(git show --name-only --pretty=format: "$commit" | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$|(.*/)?[^/]*[Pp]rogress[^/]*\.json$)' || true)
+    bad_paths=$(git diff-tree --root --no-commit-id --name-only -r "$commit" | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|(TEAM|PROGRESS|PLAN[^/]*)\.md$|(.*/)?[^/]*[Pp]rogress[^/]*\.json$)' || true)
     if [ -n "$bad_paths" ]; then
       echo "refused: commit ${commit_short}: stages private or generated paths:" >&2
       echo "$bad_paths" | head -10 | sed 's/^/  /' >&2
@@ -120,7 +117,8 @@ check_content_in_commit() {
   commit="$1"
   commit_short=$(echo "$commit" | cut -c1-7)
   tmpfile=$(mktemp)
-  git show -U0 "$commit" > "$tmpfile"
+  # keep file headers and only the added lines that can match: the loop below then spawns one grep per candidate, not per added line
+  git show -U0 "$commit" | grep -E '^(\+\+\+ |\+.*workspace/[A-Za-z0-9_/-]+)' > "$tmpfile" || true
   line_count=0
   found_bad=false
   current_file=""

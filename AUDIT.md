@@ -80,10 +80,10 @@ clippy | . | cargo clippy --workspace --all-targets --message-format=json -- -W 
 cargo-audit | . | cargo audit --json | cargo-audit
 cargo-deny | . | cargo deny --format json check | cargo-deny
 cargo-machete | . | cargo machete --with-metadata | cargo-machete
-eslint | . | cd "${DOJO_JSTOOLS:?set DOJO_JSTOOLS to the tools dir}/proj" && "$DOJO_JSTOOLS/node_modules/.bin/eslint" -c eslint.config.js -f json web tools | eslint
-knip | . | cd "${DOJO_JSTOOLS:?set DOJO_JSTOOLS to the tools dir}/proj" && "$DOJO_JSTOOLS/node_modules/.bin/knip" --no-config-hints --reporter json | knip
-jscpd | . | d=$(mktemp -d) && "${DOJO_JSTOOLS:?set DOJO_JSTOOLS to the tools dir}/node_modules/.bin/jscpd" web --min-lines 10 --min-tokens 70 --ignore "**/vendor/**,**/tests/**" --silent --reporters json --output $d >/dev/null; cat $d/jscpd-report.json | jscpd
-madge | . | "${DOJO_JSTOOLS:?set DOJO_JSTOOLS to the tools dir}/node_modules/.bin/madge" --circular --extensions js --json web | madge
+eslint | . | cd "${JSTOOLS:?set JSTOOLS to the tools dir}/proj" && "$JSTOOLS/node_modules/.bin/eslint" -c eslint.config.js -f json web tools | eslint
+knip | . | cd "${JSTOOLS:?set JSTOOLS to the tools dir}/proj" && "$JSTOOLS/node_modules/.bin/knip" --no-config-hints --reporter json | knip
+jscpd | . | d=$(mktemp -d) && "${JSTOOLS:?set JSTOOLS to the tools dir}/node_modules/.bin/jscpd" web --min-lines 10 --min-tokens 70 --ignore "**/vendor/**,**/tests/**" --silent --reporters json --output $d >/dev/null; cat $d/jscpd-report.json | jscpd
+madge | . | "${JSTOOLS:?set JSTOOLS to the tools dir}/node_modules/.bin/madge" --circular --extensions js --json web | madge
 gitleaks | . | GITLEAKS_CONFIG_TOML=$'[extend]\nuseDefault = true\n[[allowlists]]\npaths = ["^target/", "^workspace/"]' GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' gitleaks dir --redact --no-banner --report-format json --report-path /dev/stdout . | gitleaks
 ```
 
