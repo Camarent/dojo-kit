@@ -1,6 +1,6 @@
 // Checks .github/workflows/ci.yml against scripts/ci.sh with line checks (no YAML parser).
 // Every `step <cmd>` line of ci.sh must appear as a `- run: <cmd>` line of ci.yml, and the
-// matrix must list Node 22 and 24. The mutation case drops one step from an in-memory copy.
+// matrix must be Node 24. The mutation case drops one step from an in-memory copy.
 const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
@@ -29,12 +29,12 @@ function jobLines(yml, name) {
   return out;
 }
 
-// Returns a list of problems; empty means ci.yml covers ci.sh and the matrix is 22 and 24.
+// Returns a list of problems; empty means ci.yml covers ci.sh and the matrix is Node 24.
 function checkCi(yml, sh) {
   const problems = [];
   const lines = yml.split('\n').map((l) => l.trim());
-  if (!lines.includes('node-version: [22, 24]') && !lines.includes('node-version: [22,24]')) {
-    problems.push('matrix node-version must be [22, 24]');
+  if (!lines.includes('node-version: [24]')) {
+    problems.push('matrix node-version must be [24]');
   }
   for (const uses of ['actions/checkout@', 'actions/setup-node@', 'dtolnay/rust-toolchain@']) {
     if (!lines.some((l) => l.includes(`uses: ${uses}`))) problems.push(`missing step uses: ${uses}`);
@@ -63,7 +63,7 @@ function checkCi(yml, sh) {
   return problems;
 }
 
-test('ci.yml covers every ci.sh step on Node 22 and 24', () => {
+test('ci.yml covers every ci.sh step on Node 24', () => {
   assert.deepStrictEqual(checkCi(CI_YML, CI_SH), []);
 });
 
@@ -127,8 +127,8 @@ test('scripts run directly (not via bash/npm/cargo) are executable', () => {
   }
 });
 
-test('mutation: a matrix without Node 24 is caught', () => {
-  const wrong = CI_YML.replace('node-version: [22, 24]', 'node-version: [22]');
+test('mutation: a matrix that is not Node 24 is caught', () => {
+  const wrong = CI_YML.replace('node-version: [24]', 'node-version: [22]');
   assert.notStrictEqual(wrong, CI_YML);
   assert.ok(checkCi(wrong, CI_SH).some((p) => p.includes('node-version')));
 });

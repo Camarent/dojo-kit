@@ -22,7 +22,7 @@
   ],
   "private": true,
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "scripts": {
     "test": "bash scripts/check-all.sh",

@@ -27,7 +27,7 @@ Needs a Rust toolchain (https://rustup.rs) with the `wasm32-unknown-unknown` tar
 
 Required to build and run the trainer (the `./dojo` wrapper checks for `cargo`; `scripts/build-wasm.sh` also uses `rustc`, `sed` and `perl`):
 - Rust toolchain via rustup (https://rustup.rs), edition 2024 so a recent stable (`Cargo.toml`), with the WASM target (Rust 1.85+ for edition 2024; developed on 1.99). No `wasm-pack` or `npm` is used.
-- Node.js: not needed to author or build a course; used only for the web tests, the dev server (`node web/dev/serve.js`) and vectors (`tests/gen-vectors.js`). Node.js 22 or newer (engines in `package.json`; CI runs 22 and 24).
+- Node.js: not needed to author or build a course; used only for the web tests, the dev server (`node web/dev/serve.js`) and vectors (`tests/gen-vectors.js`). Node.js 24 or newer (engines in `package.json`; CI runs 22 and 24).
 
 For textbooks (`docs/FROM-TEXTBOOKS.md`; all optional, only needed for that route; the commands and package names below were not run or verified in this repo's environment, where none of them are installed):
 - `poppler-utils` (`pdftotext`, `pdfinfo`, `pdftoppm`) for PDFs.

@@ -5,7 +5,7 @@ Thanks for helping with dojo-kit. This file lists the checks a change must pass.
 ## Setup
 
 - Rust toolchain (edition 2024, see `Cargo.toml`) with the `wasm32-unknown-unknown` target.
-- Node.js 22 or newer (the web tests use `node:test`).
+- Node.js 24 or newer (the web tests use `node:test`).
 - Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`.
 
 ## Checks
