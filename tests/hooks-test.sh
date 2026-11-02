@@ -559,7 +559,24 @@ new_repo; echo s > s.txt; git add s.txt
 expect_refused "Test 30: set dojo.owner refuses another login, numeric form too" "noreply address" git -c user.email="3629354+other@users.noreply.github.com" commit --quiet -m "feat(core): add thing"
 cd "$scratch"
 
-# Internal process paths are refused in a fresh clone (git add -f simulates a missing ignore rule)
+# Internal process paths come from the untracked .git/info/guard-paths, never from the public hook:
+# without the file they pass, with it they are refused (git add -f simulates a missing ignore rule)
+gp=$(git rev-parse --git-path info/guard-paths)
+mkdir -p "$(dirname "$gp")"
+rm -f "$gp"
+echo "x" > internal-note.txt
+git add -f internal-note.txt
+printf '%s\n' '# comment' '' 'internal-note\.txt$' > "$gp"
+echo "Test: a path listed in info/guard-paths is refused"
+if git commit --quiet --message "chore(test): internal" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+  echo "FAIL: listed path was accepted"
+  fail_count=$((fail_count + 1))
+else
+  echo "PASS"
+fi
+git reset --hard HEAD >/dev/null 2>&1
+git clean -fdq
+printf '%s\n' '\.audits/' '\.code-index/' 'AUDIT\.md$' '\.claude/settings\.local\.json$' > "$gp"
 for bad in .audits/x.md .code-index/x AUDIT.md .claude/settings.local.json; do
   echo "Test: staging $bad is refused"
   mkdir -p "$(dirname "$bad")"
