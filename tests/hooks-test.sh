@@ -559,6 +559,22 @@ new_repo; echo s > s.txt; git add s.txt
 expect_refused "Test 30: set dojo.owner refuses another login, numeric form too" "noreply address" git -c user.email="3629354+other@users.noreply.github.com" commit --quiet -m "feat(core): add thing"
 cd "$scratch"
 
+# Internal process paths are refused in a fresh clone (git add -f simulates a missing ignore rule)
+for bad in .audits/x.md .code-index/x AUDIT.md .claude/settings.local.json; do
+  echo "Test: staging $bad is refused"
+  mkdir -p "$(dirname "$bad")"
+  echo "x" > "$bad"
+  git add -f "$bad"
+  if git commit --quiet --message "chore(test): add internal path" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
+    echo "FAIL: staging $bad was accepted"
+    fail_count=$((fail_count + 1))
+  else
+    echo "PASS"
+  fi
+  git reset --hard HEAD >/dev/null 2>&1
+  git clean -fdq
+done
+
 if [ "$fail_count" -gt 0 ]; then
   echo "FAIL: $fail_count test(s) failed"
   exit 1
