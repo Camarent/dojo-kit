@@ -87,7 +87,7 @@ Screens of the `examples/showcase` course (`./dojo build examples/showcase`).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for tests, lint and the CI script. Run the test suite with `npm test` and lint with `npm run lint`.
 
-Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`. They refuse a commit whose author or committer email is not the owner's GitHub noreply address (`users.noreply.github.com`, plain or `<id>+` form), or that stages files under the private course folders under `workspace/`, `dist/`, `.work/`, `target/`, `cargo-target/`, or any `*.wasm` file. Hooks accept only the owner's GitHub noreply address; `git config dojo.owner <your-github-login>` is the intended pin to your login, but the hooks do not read it yet.
+Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`. They refuse a commit whose author or committer email is not the owner's GitHub noreply address (`users.noreply.github.com`, plain or `<id>+` form), or that stages files under the private course folders under `workspace/`, `dist/`, `target/`, `cargo-target/`, or any `*.wasm` file. Hooks accept only the owner's GitHub noreply address; `git config dojo.owner <your-github-login>` pins them to your login. Extra path bans for your own working files go in the untracked `.git/info/guard-paths` (one regular expression per line).
 
 ## Documentation
 

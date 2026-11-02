@@ -1,6 +1,15 @@
 #!/bin/sh
 # Shared checks for pre-commit and commit-msg. Enable: git config core.hooksPath .githooks
 
+# Paths no commit may add or change. Generic bans live here. Owner-specific internal paths are NOT
+# listed in this public file: put one ERE per line in the untracked `.git/info/guard-paths` (blank and # lines ignored).
+banned_re() {
+  base='workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|(.*/)?[^/]*[Pp]rogress[^/]*\.json$'
+  extra=$(grep -v '^[[:space:]]*\(#\|$\)' "$(git rev-parse --git-path info/guard-paths 2>/dev/null)" 2>/dev/null | paste -sd'|' -)
+  [ -n "$extra" ] && base="$base|$extra"
+  printf '^(%s)' "$base"
+}
+
 # Accepted identity: a GitHub noreply address (plain or <digits>+login form).
 # dojo.owner (a GitHub login) pins it to that login; unset accepts any noreply address.
 is_owner_email() {
@@ -106,7 +115,7 @@ check_commit_range() {
     fi
 
     # Check for forbidden paths in this commit
-    bad_paths=$(git diff-tree --root --no-commit-id --name-only --diff-filter=ACMR -r "$commit" | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|\.audits/|\.code-index/|\.claude/settings\.local\.json$|(TEAM|PROGRESS|PLAN[^/]*)\.md$|(.*/)?[^/]*[Pp]rogress[^/]*\.json$)' || true)
+    bad_paths=$(git diff-tree --root --no-commit-id --name-only --diff-filter=ACMR -r "$commit" | grep -E "$(banned_re)" || true)
     if [ -n "$bad_paths" ]; then
       echo "refused: commit ${commit_short}: stages private or generated paths:" >&2
       echo "$bad_paths" | head -10 | sed 's/^/  /' >&2
@@ -224,7 +233,7 @@ main_guard() {
   check_ident || fail=1
 
   # Check staged paths
-  bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(workspace/[^.]|dist/|(.*/)?target/|(.*/)?cargo-target/|.*\.wasm$|\.work/|\.notes/|\.audits/|\.code-index/|AUDIT\.md$|\.claude/settings\.local\.json$|(TEAM|PROGRESS|PLAN[^/]*)\.md$|(.*/)?[^/]*[Pp]rogress[^/]*\.json$)' || true)
+  bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "$(banned_re)" || true)
   if [ -n "$bad" ]; then
     echo "refused: private or generated paths are staged:" >&2
     echo "$bad" | head -10 >&2

@@ -212,7 +212,7 @@
     render(p, s) {
       var self = this;
       var common = { t: p.t, course: p.course, status: s.status, notice: s.notice, dojo: p.dojo, go: function (x) { self.go(x); } };
-      var body = this.overlayBody(p, s, common) || (SCREENS[s.screen] || homeScreen)(self, p, s, common);
+      var body = this.overlayBody(p, s, common) || (SCREENS[s.screen] || SCREENS.home)(self, p, s, common);
       return html`<div class="app">${body}</div>`;
     }
   }
