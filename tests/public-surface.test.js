@@ -18,9 +18,9 @@ function trackedFiles(root) {
   return r.stdout.split('\n').filter(Boolean);
 }
 
-// Throws when the README does not state Node.js 22 or newer, or still states 18 or newer.
+// Throws when the README does not state Node.js 24 or newer, or still states 18 or newer.
 function assertReadmeNode(text) {
-  assert.match(text, /Node\.js 22 or newer/, 'README states Node.js 22 or newer');
+  assert.match(text, /Node\.js 24 or newer/, 'README states Node.js 24 or newer');
   assert.doesNotMatch(text, /18 or newer/, 'README does not state 18 or newer');
 }
 
@@ -30,7 +30,7 @@ function readmeNodeMajor(text) {
   return m ? Number(m[1]) : undefined;
 }
 
-// Returns the major of an engines.node range such as ">=22", or undefined.
+// Returns the major of an engines.node range such as ">=24", or undefined.
 function enginesNodeMajor(range) {
   const m = typeof range === 'string' && range.match(/\d+/);
   return m ? Number(m[0]) : undefined;
@@ -51,19 +51,19 @@ test('no tracked file is a private doc or lives under .work/ or .notes/', () => 
   assert.deepStrictEqual(bad, []);
 });
 
-test('package.json has repository, homepage, bugs, author, >=5 keywords and engines.node >=22', () => {
+test('package.json has repository, homepage, bugs, author, >=5 keywords and engines.node >=24', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   for (const key of ['repository', 'homepage', 'bugs', 'author']) {
     assert.ok(pkg[key], `package.json has ${key}`);
   }
   assert.ok(Array.isArray(pkg.keywords) && pkg.keywords.length >= 5, 'keywords has at least 5 entries');
   assert.ok(
-    typeof pkg.engines?.node === 'string' && pkg.engines.node.startsWith('>=22'),
-    'engines.node starts with >=22',
+    typeof pkg.engines?.node === 'string' && pkg.engines.node.startsWith('>=24'),
+    'engines.node starts with >=24',
   );
 });
 
-test('README states Node.js 22 or newer and not 18 or newer', () => {
+test('README states Node.js 24 or newer and not 18 or newer', () => {
   assertReadmeNode(fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8'));
 });
 
@@ -80,7 +80,7 @@ test('.gitignore has no line equal to .work/ or TEAM.md', () => {
 });
 
 test('mutation: README text with 18 or newer fails the Node check', () => {
-  const fixture = '# Demo\n\nNeeds Node.js 22 or newer. Older: Node.js 18 or newer works too.\n';
+  const fixture = '# Demo\n\nNeeds Node.js 24 or newer. Older: Node.js 18 or newer works too.\n';
   assert.throws(() => assertReadmeNode(fixture), /18 or newer/);
-  assert.throws(() => assertReadmeNode('# Demo\n\nNo version stated.\n'), /22 or newer/);
+  assert.throws(() => assertReadmeNode('# Demo\n\nNo version stated.\n'), /24 or newer/);
 });
