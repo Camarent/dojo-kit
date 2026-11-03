@@ -1,6 +1,7 @@
 # dojo-kit
 
 [![CI](https://github.com/Camarent/dojo-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/Camarent/dojo-kit/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Camarent/dojo-kit/graph/badge.svg)](https://codecov.io/gh/Camarent/dojo-kit)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Camarent/dojo-kit)](https://github.com/Camarent/dojo-kit/releases)
 

@@ -35,3 +35,4 @@ courses/
 web/*.wasm
 /target
 *[Pp]rogress*.json
+coverage/

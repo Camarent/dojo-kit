@@ -28,7 +28,7 @@ jobs:
           cache: npm
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
-          components: clippy
+          components: clippy, llvm-tools-preview
           targets: wasm32-unknown-unknown
       - run: bash scripts/build-wasm.sh
       - run: npm ci
@@ -37,6 +37,21 @@ jobs:
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: bash scripts/validate-examples.sh
       - run: npm test
+      - name: Collect JS coverage
+        run: |
+          mkdir -p coverage
+          node --test --experimental-test-coverage --test-coverage-exclude='**/tests/**' --test-coverage-exclude='**/vendor/**' --test-reporter=lcov --test-reporter-destination=coverage/lcov.info web/tests/*.test.js tests/*.test.js
+      - uses: taiki-e/install-action@1919c4a95903d2c33e4a221102edca87309fc14b # v2.89.0
+        with:
+          tool: cargo-llvm-cov
+      - name: Collect Rust coverage
+        run: cargo llvm-cov --workspace --lcov --output-path coverage/rust.lcov.info
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@04b047e8bb82a0c002c8312c1c880fbc6a999d45 # v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info,coverage/rust.lcov.info
+          fail_ci_if_error: false
 
   rust-audit:
     runs-on: ubuntu-latest
