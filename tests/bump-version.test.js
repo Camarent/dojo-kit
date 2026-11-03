@@ -65,3 +65,13 @@ test('a second set with the same numbers changes nothing', () => {
   run(dir, 'set', '0.1.5', '0.1.6', 'docs: entry');
   assert.strictEqual(run(dir, 'set', '0.1.5', '0.1.6', 'docs: entry'), '');
 });
+
+test('set fails and names a required file that is missing or does not hold the new version', () => {
+  const missing = fixture();
+  fs.rmSync(path.join(missing, 'Cargo.lock'));
+  assert.throws(() => execFileSync('bash', [SCRIPT, 'set', '0.1.5', '0.1.6', 'x'], { cwd: missing, stdio: 'pipe' }), (e) => /Cargo\.lock \(missing\)/.test(String(e.stderr)));
+
+  const unmatched = fixture();
+  fs.writeFileSync(path.join(unmatched, 'Cargo.toml'), '[package]\nname = "a"\nversion = "0.1.5"\n');
+  assert.throws(() => execFileSync('bash', [SCRIPT, 'set', '0.1.5', '0.1.6', 'x'], { cwd: unmatched, stdio: 'pipe' }), (e) => /not at 0\.1\.6: Cargo\.toml/.test(String(e.stderr)));
+});
