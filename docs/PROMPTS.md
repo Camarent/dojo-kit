@@ -41,6 +41,18 @@ To continue an unfinished course instead: "Resume workspace/<id> following docs/
 Open <path to dojo-kit>, read AGENTS.md (sections 0, 4, 5, 8) and then extend the course workspace/<course-id>/ with material from <new files or topic>. Use ./dojo next-id for ids, never reuse or renumber ids, validate and lock after each batch, and show me the new counts with ./dojo stats. Do not change existing items except to retire wrong ones; tell me which ones and why.
 ```
 
+## Test prompt: textbooks in workspace/<id>/materials/
+
+```
+Open the repository at <path to dojo-kit>. Read AGENTS.md and docs/FROM-TEXTBOOKS.md completely, then build a practice trainer from my textbooks. Course id: <id>. The textbooks (PDF, scans or EPUB) are in workspace/<id>/materials/.
+
+Course: <topic, level, date>. UI language: <en|ru>. Content language: <language>. Exam format (if known, or "take it from the chapter tests"): <sections, questions, minutes, pass rule>.
+
+Steps: check the requirements (docs/REQUIREMENTS.md); tell me what is missing and ask before installing anything; never use sudo without asking. Extract text per chapter, write MAP.md and show me the plan, then for each chapter write items only with ./dojo add, run ./dojo validate and ./dojo lock after it and mark the chapter done in MAP.md. Own wording only, short quotes at most. Use the speak field for listening. Put what cannot be expressed into GAPS.md. At the end ./dojo build and report items per unit and type and everything skipped. Do not publish without asking me.
+
+To continue an unfinished course instead: "Resume workspace/<id> following docs/FROM-TEXTBOOKS.md section 8."
+```
+
 ## review-course.md
 ```
 Open <path to dojo-kit>. Read AGENTS.md section 4 (content rules) and 8a (Unambiguous answers). Review workspace/<course-id>/ as a strict examiner: run ./dojo validate workspace/<course-id> --json, then check a random 15% of items against workspace/<course-id>/materials/ for factual errors, ambiguous prompts, more than one defensible correct option, implausible distractors, answers leaked in the prompt, prompt/type mismatches, and script mixing. Report findings as a list (item id, problem, suggested fix). Do not edit anything.
