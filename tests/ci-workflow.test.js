@@ -108,7 +108,7 @@ test('mutation: removing the rust-audit timeout is caught', () => {
 });
 
 test('mutation: removing npm caching or the concurrency block is caught', () => {
-  const noCache = CI_YML.replaceAll('          cache: npm\n', '');
+  const noCache = CI_YML.replace('          cache: npm\n', '');
   assert.notStrictEqual(noCache, CI_YML);
   assert.deepStrictEqual(checkCi(noCache, CI_SH), ['setup-node must cache: npm']);
   const noConcurrency = CI_YML.replace(/^concurrency:[\s\S]*?\n\n/m, '');

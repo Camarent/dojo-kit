@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Codecov: CI collects JS and Rust coverage (lcov) and uploads it; coverage badge in the README.
+- Codecov: CI collects JS and Rust coverage (lcov) in the `check` job and uploads each with its own Codecov flag; coverage badge in the README.
+- `scripts/check-all.sh`: `DOJO_COVERAGE_DIR` makes the cargo and node test steps write lcov files.
+
+## [0.1.4] - 2026-11-03
+
+### Added
+
+- GitHub Pages workflow that deploys the showcase demo, with a test for it.
+- README demo link, screenshots and badges; Pages entry in `docs/REQUIREMENTS.md`.
 
 ## [0.1.3] - 2026-11-02
 

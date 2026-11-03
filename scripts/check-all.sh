@@ -10,6 +10,8 @@
 #               (one OK line, or the failing pieces with the log path). Unset or missing: each step
 #               runs directly, output not trimmed. Exit code decides red/green either way.
 #   DOJO_COURSE_GATE  path to the course gate script (only with --with-course-gate).
+#   DOJO_COVERAGE_DIR  directory for lcov files. Set: the cargo and node test steps also write
+#               <dir>/rust.lcov.info (cargo llvm-cov) and <dir>/js.lcov.info (node coverage). Unset: plain runs.
 # Env set by this script (only when not already set):
 #   GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*'  (git in the repo and worktrees)
 set -euo pipefail
@@ -48,8 +50,15 @@ step() {
 }
 
 step "scripts/build-wasm.sh" scripts/build-wasm.sh
-step "cargo test --workspace" cargo test --workspace
-step "node --test web/tests/*.test.js tests/*.test.js" node --test web/tests/*.test.js tests/*.test.js
+COV="${DOJO_COVERAGE_DIR:-}"
+if [ -n "$COV" ]; then
+    mkdir -p "$COV"
+    step "cargo llvm-cov --workspace" cargo llvm-cov --workspace --lcov --output-path "$COV/rust.lcov.info"
+    step "node --test web/tests/*.test.js tests/*.test.js (coverage)" node --test --experimental-test-coverage --test-coverage-exclude='**/tests/**' --test-coverage-exclude='**/vendor/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination="$COV/js.lcov.info" web/tests/*.test.js tests/*.test.js
+else
+    step "cargo test --workspace" cargo test --workspace
+    step "node --test web/tests/*.test.js tests/*.test.js" node --test web/tests/*.test.js tests/*.test.js
+fi
 step "node tests/wasm-smoke.js" node tests/wasm-smoke.js
 step "node tests/gen-vectors.js && git diff --exit-code -- tests/vectors" bash -c 'node tests/gen-vectors.js && git diff --exit-code -- tests/vectors'
 step "bash tests/hooks-test.sh" bash tests/hooks-test.sh
