@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # Release hook for the pipeline (pipeline.json "release_script"). Run from the repo root.
 #   bump-version.sh current [REF]            print X.Y.Z (package.json at REF, default: working tree)
-#   bump-version.sh set OLD NEW "ENTRY"      move every version file from OLD to NEW, print the changed files
+#   bump-version.sh set OLD NEW "ENTRY"      move our own version from OLD to NEW, print the changed files
+#
+# Only this project's own version is ever touched. Each edit is anchored to a place that can only be ours:
+# the top-level "version" of package.json, the root entry of package-lock.json, Cargo.toml [workspace.package],
+# and Cargo.lock entries named like a workspace member. A dependency that shares the number is never matched.
+# A guard then counts the changed lines per file; any other count restores every file and exits 1.
 set -euo pipefail
-
-semver='[0-9]+\.[0-9]+\.[0-9]+'
 
 # Every file below MUST hold the new version after `set`; a missing file or an unmatched pattern is an error, never a skip.
 REQUIRED=(package.json package-lock.json Cargo.toml Cargo.lock CHANGELOG.md)
@@ -12,51 +15,87 @@ REQUIRED=(package.json package-lock.json Cargo.toml Cargo.lock CHANGELOG.md)
 current() {
   local ref="${1:-}" text
   if [ -n "$ref" ]; then text=$(git show "$ref:package.json"); else text=$(cat package.json); fi
-  printf '%s\n' "$text" | grep -Eo "\"version\"[[:space:]]*:[[:space:]]*\"$semver\"" | head -1 | grep -Eo "$semver"
+  printf '%s\n' "$text" | perl -ne 'if (/^  "version"\s*:\s*"(\d+\.\d+\.\d+)"/) { print "$1\n"; exit }'
 }
 
-# Rewrite FILE with a perl substitution; print FILE when it changed.
-sub() {
-  local file="$1" expr="$2" before
-  [ -f "$file" ] || return 0  # a missing REQUIRED file is reported by verify
-  before=$(cksum <"$file")
-  perl -0pi -e "$expr" "$file"
-  [ "$before" = "$(cksum <"$file")" ] || echo "$file"
+# Package names of the workspace members listed in Cargo.toml (these are the crates that carry our version).
+members() {
+  local dir
+  perl -0ne 'if (/^\[workspace\]\n(?:(?!\[)[^\n]*\n)*?members\s*=\s*\[(.*?)\]/ms) { my $m = $1; print "$1\n" while $m =~ /"([^"]+)"/g; exit }' Cargo.toml |
+    while read -r dir; do
+      # shellcheck disable=SC2086 # a members entry may be a glob
+      for d in $dir; do perl -0ne 'print "$1\n" if /^\[package\]\n(?:(?!\[)[^\n]*\n)*?name\s*=\s*"([^"]+)"/m' "$d/Cargo.toml"; done
+    done
 }
 
-# Exit 1 naming every REQUIRED file that does not hold $1 (OLD in $2 must be gone from the path crates).
+# Run perl code $2 over file $1 when it exists (a missing REQUIRED file is reported by verify).
+edit() { [ -f "$1" ] && perl -0pi -e "$2" "$1" || true; }
+
+# Exit 1 naming every REQUIRED file that does not hold $NEW (and, in Cargo.lock, no member left at $OLD).
 verify() {
-  local new="$1" old="$2" n=${1//./\\.} o=${2//./\\.} bad=() f
+  local bad=() f
   for f in "${REQUIRED[@]}"; do
     [ -f "$f" ] || { bad+=("$f (missing)"); continue; }
     case "$f" in
-      package.json) [ "$(current)" = "$new" ] || bad+=("$f") ;;
-      package-lock.json) perl -0ne "exit(/^  \"version\"\\s*:\\s*\"$n\"/m ? 0 : 1)" "$f" || bad+=("$f") ;;
-      Cargo.toml) perl -0ne "exit(/^\\[workspace\\.package\\].*?^version\\s*=\\s*\"$n\"/ms ? 0 : 1)" "$f" || bad+=("$f") ;;
-      Cargo.lock) perl -0ne "exit(/\\nversion = \"$n\"\\n(?!source)/ && !/\\[\\[package\\]\\]\\nname = \"[^\"]+\"\\nversion = \"$o\"\\n(?!source)/ ? 0 : 1)" "$f" || bad+=("$f") ;;
-      CHANGELOG.md) grep -q "^## \\[$new\\]" "$f" || bad+=("$f") ;;
+      package.json) [ "$(current)" = "$NEW" ] || bad+=("$f") ;;
+      package-lock.json)
+        perl -0ne 'exit(/^  "version"\s*:\s*"\Q$ENV{NEW}\E"/m && /"packages"\s*:\s*\{\s*""\s*:\s*\{[^}]*?"version"\s*:\s*"\Q$ENV{NEW}\E"/s ? 0 : 1)' "$f" || bad+=("$f") ;;
+      Cargo.toml)
+        perl -0ne 'exit(/^\[workspace\.package\]\n(?:(?!\[)[^\n]*\n)*?version\s*=\s*"\Q$ENV{NEW}\E"/m ? 0 : 1)' "$f" || bad+=("$f") ;;
+      Cargo.lock)
+        perl -0ne 'my $n = () = /\[\[package\]\]\nname = "(?:$ENV{NAMES})"\nversion = "\Q$ENV{NEW}\E"/g;
+                   exit($n == $ENV{N} && !/\[\[package\]\]\nname = "(?:$ENV{NAMES})"\nversion = "\Q$ENV{OLD}\E"/ ? 0 : 1)' "$f" || bad+=("$f") ;;
+      CHANGELOG.md) grep -q "^## \[$NEW\]" "$f" || bad+=("$f") ;;
     esac
   done
-  [ ${#bad[@]} -eq 0 ] || { echo "bump-version: not at $new: ${bad[*]}" >&2; exit 1; }
+  [ ${#bad[@]} -eq 0 ] || { echo "bump-version: not at $NEW: ${bad[*]}" >&2; return 1; }
+}
+
+# Lines each file may change: 0 (already done) or exactly this many. Anything else means a pattern hit something that is not ours.
+expected() {
+  case "$1" in
+    package.json | Cargo.toml) echo 1 ;;
+    package-lock.json) echo 2 ;;
+    Cargo.lock) echo "$N" ;;
+  esac
 }
 
 set_version() {
-  local old="$1" new="$2" entry="$3" o
-  o=${old//./\\.}
+  local f added want
+  TMP=$(mktemp -d)
+  trap 'rm -rf "$TMP"' EXIT
+  export OLD="$1" NEW="$2" ENTRY="$3" DATE
+  DATE=$(date -u +%F)
+  NAMES=$(members | paste -sd'|')
+  N=$(members | grep -c .) || true
+  export NAMES N
+  for f in "${REQUIRED[@]}"; do [ -f "$f" ] && cp "$f" "$TMP/$f"; done
 
-  sub package.json "s/(\"version\"\\s*:\\s*\")$o\"/\${1}$new\"/"
-  # lockfile: the top-level version (2-space indent) and the root entry packages[""], never a dependency that shares the number
-  sub package-lock.json "s/(^  \"version\"\\s*:\\s*\")$o\"/\${1}$new\"/m; s/(\"packages\"\\s*:\\s*\\{\\s*\"\"\\s*:\\s*\\{[^}]*?\"version\"\\s*:\\s*\")$o\"/\${1}$new\"/s"
-  sub Cargo.toml "s/(^\\[workspace\\.package\\].*?^version\\s*=\\s*\")$o\"/\${1}$new\"/ms"
-  # path crates (workspace members) have no `source` line in Cargo.lock; registry crates with the same number do
-  sub Cargo.lock "s/(\\[\\[package\\]\\]\\nname = \"[^\"]+\"\\nversion = \")$o\"(\\n(?!source))/\${1}$new\"\${2}/g"
-  if [ -f CHANGELOG.md ] && ! grep -q "^## \\[$new\\]" CHANGELOG.md; then
-    ENTRY="$entry" NEW="$new" DATE="$(date -u +%F)" perl -0pi -e '
-      my $h = "## [$ENV{NEW}] - $ENV{DATE}\n\n- $ENV{ENTRY}\n\n";
-      s/^(?=## \[(?!Unreleased))/$h/m or $_ .= "\n$h"' CHANGELOG.md
-    echo CHANGELOG.md
+  edit package.json 's/^(  "version"\s*:\s*")\Q$ENV{OLD}\E"/$1$ENV{NEW}"/m'
+  edit package-lock.json 's/^(  "version"\s*:\s*")\Q$ENV{OLD}\E"/$1$ENV{NEW}"/m; s/("packages"\s*:\s*\{\s*""\s*:\s*\{[^}]*?"version"\s*:\s*")\Q$ENV{OLD}\E"/$1$ENV{NEW}"/s'
+  edit Cargo.toml 's/(^\[workspace\.package\]\n(?:(?!\[)[^\n]*\n)*?version\s*=\s*")\Q$ENV{OLD}\E"/$1$ENV{NEW}"/m'
+  edit Cargo.lock 's/(\[\[package\]\]\nname = "(?:$ENV{NAMES})"\nversion = ")\Q$ENV{OLD}\E"/$1$ENV{NEW}"/g'
+  if [ -f CHANGELOG.md ] && ! grep -q "^## \[$NEW\]" CHANGELOG.md; then
+    edit CHANGELOG.md 'my $h = "## [$ENV{NEW}] - $ENV{DATE}\n\n- $ENV{ENTRY}\n\n"; s/^(?=## \[(?!Unreleased))/$h/m or $_ .= "\n$h"'
   fi
-  verify "$new" "$old"
+
+  for f in "${REQUIRED[@]}"; do
+    [ -f "$f" ] || continue
+    want=$(expected "$f")
+    [ -n "$want" ] || continue
+    added=$(diff "$TMP/$f" "$f" | grep -c '^>' || true)
+    if [ "$added" -ne 0 ] && [ "$added" -ne "$want" ]; then
+      for f in "${REQUIRED[@]}"; do [ -f "$TMP/$f" ] && cp "$TMP/$f" "$f"; done
+      echo "bump-version: $f changed $added line(s), expected $want: nothing written" >&2
+      return 1
+    fi
+  done
+  if ! verify; then
+    for f in "${REQUIRED[@]}"; do [ -f "$TMP/$f" ] && cp "$TMP/$f" "$f"; done
+    return 1
+  fi
+  for f in "${REQUIRED[@]}"; do [ -f "$f" ] && [ -f "$TMP/$f" ] && ! cmp -s "$TMP/$f" "$f" && echo "$f"; done
+  return 0
 }
 
 case "${1:-}" in
