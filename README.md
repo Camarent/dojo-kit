@@ -19,11 +19,10 @@ Using an AI assistant? Copy a prompt from [docs/PROMPTS.md](docs/PROMPTS.md); th
 
 Screens of the [examples/showcase](examples/showcase) course, the demo behind the live link.
 
-![Home](docs/img/home.png)
-
-![Multiple-select question](docs/img/question-multi.png)
-
-![Mock exam](docs/img/exam.png)
+| Light theme | Dark theme |
+|---|---|
+| ![Home screen, light theme](docs/img/home-light.png) | ![Home screen, dark theme](docs/img/home-dark.png) |
+| ![Question screen, light theme](docs/img/question-light.png) | ![Question screen, dark theme](docs/img/question-dark.png) |
 
 ## Quick start
 
