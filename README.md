@@ -41,18 +41,6 @@ Rust toolchain and Node.js 24 or newer; full list in [docs/REQUIREMENTS.md](docs
 
 Open the repo in your assistant (Claude Code or any other), put your materials into `workspace/<course>/materials/`, and paste a prompt from [docs/PROMPTS.md](docs/PROMPTS.md) (sources in `prompts/`). The assistant follows [AGENTS.md](AGENTS.md): ingest materials, write content, `dojo validate`, `dojo build`, publish. CLAUDE.md is a short pointer for tools that read it.
 
-### Test prompt: textbooks in `workspace/<id>/materials/`
-
-```
-Open the repository at <path to dojo-kit>. Read AGENTS.md and docs/FROM-TEXTBOOKS.md completely, then build a practice trainer from my textbooks. Course id: <id>. The textbooks (PDF, scans or EPUB) are in workspace/<id>/materials/.
-
-Course: <topic, level, date>. UI language: <en|ru>. Content language: <language>. Exam format (if known, or "take it from the chapter tests"): <sections, questions, minutes, pass rule>.
-
-Steps: check the requirements (README "Requirements"); tell me what is missing and ask before installing anything; never use sudo without asking. Extract text per chapter, write MAP.md and show me the plan, then for each chapter write items only with ./dojo add, run ./dojo validate and ./dojo lock after it and mark the chapter done in MAP.md. Own wording only, short quotes at most. Use the speak field for listening. Put what cannot be expressed into GAPS.md. At the end ./dojo build and report items per unit and type and everything skipped. Do not publish without asking me.
-
-To continue an unfinished course instead: "Resume workspace/<id> following docs/FROM-TEXTBOOKS.md section 8."
-```
-
 ## Repository map
 
 - `crates/dojo-core` - pure Rust logic: content model, answer checks, SRS, progress merge, exam sampling, validation.
@@ -71,7 +59,7 @@ To continue an unfinished course instead: "Resume workspace/<id> following docs/
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for tests, lint and the CI script. Run the test suite with `npm test` and lint with `npm run lint`.
 
-Enable the tracked git hooks once per clone: `git config core.hooksPath .githooks`. They refuse a commit whose author or committer email is not the owner's GitHub noreply address (`users.noreply.github.com`, plain or `<id>+` form), or that stages files under the private course folders under `workspace/`, `dist/`, `target/`, `cargo-target/`, or any `*.wasm` file. Hooks accept only the owner's GitHub noreply address; `git config dojo.owner <your-github-login>` pins them to your login. Extra path bans for your own working files go in the untracked `.git/info/guard-paths` (one regular expression per line).
+The tracked git hooks enforce the commit rules; setup and details are in [CONTRIBUTING.md](CONTRIBUTING.md#git-hooks).
 
 ## Documentation
 

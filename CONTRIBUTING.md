@@ -19,13 +19,18 @@ A change is ready when `npm test`, `npm run lint` and `scripts/ci.sh` all pass.
 ## Rules
 
 - Follow [CONTRACT.md](CONTRACT.md) for framework rules.
-- Do not commit course content, private materials, build output or `*.wasm` files. See the README "Contributing" section for the hooks that enforce this.
+- Do not commit course content, private materials, build output or `*.wasm` files. See the "Git hooks" section below for the hooks that enforce this.
 - Keep docs in step with the code.
 
 ## Git hooks
 
+Optional for outside contributors: the owner's clone enforces these rules; you may skip the hooks.
+
 - Enable once per clone: `git config core.hooksPath .githooks`.
-- The hooks read `git config dojo.owner <your-github-login>`. When it is set, only that login's noreply address may commit; when it is unset, any `*@users.noreply.github.com` address passes.
+- The hooks refuse a commit whose author or committer email is not a GitHub noreply address (`users.noreply.github.com`, plain or `<id>+` form).
+- `git config dojo.owner <your-github-login>` pins the hooks to one login: only that login's noreply address may commit. When it is unset, any `*@users.noreply.github.com` address passes.
+- The hooks refuse a commit that stages files under the private course folders `workspace/`, `dist/`, `target/`, `cargo-target/`, or any `*.wasm` file.
+- Extra path bans for your own working files go in the untracked `.git/info/guard-paths` (one regular expression per line).
 - The pre-commit and pre-push hooks need `gitleaks` on PATH. Without it they refuse, unless you set `DOJO_ALLOW_NO_GITLEAKS=1` to skip the secret scan.
 - Commit subject format: `<type>(<area>): <what>` (types: feat fix refactor test docs chore perf build style).
 
