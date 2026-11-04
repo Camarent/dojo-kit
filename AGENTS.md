@@ -7,7 +7,7 @@ Field lists, unambiguous-answer rules, unit/exam/plugin settings and the content
 ## 0. Rules that always apply
 - Work ONLY inside the course folder `workspace/<course-id>/`. Do not edit `crates/`, `web/`, `tools/`, `tests/`, `schema/` or this file unless the user asks you to change the framework itself.
 - Facts come from the user's materials (and sources the user allows you to consult). Do not invent facts. If a material is ambiguous or you are unsure, leave the item out and tell the user.
-- Copyright: the materials may be copyrighted. Write your own questions and short explanations; quote at most a short phrase. Never paste long passages, full tables or whole exercises into the course. The `source` field points to where a fact came from (file and page or section), it does not copy it.
+- Copyright: the materials are the user's, so what to copy is the user's decision. By default write your own short explanations, and copy questions, options and passages only when the user says to. Warn the user once that sharing a course that contains a book's text (a published link, a public repository) may infringe copyright. The `source` field points to where a fact came from (file and page or section).
 - Ids are permanent. Never reuse, renumber or delete an id. To remove an item set `"status":"retired"`. To change an item's type or its correct answer, retire it and add a new item with a new id (saved progress belongs to the id). Editing wording or fixing a typo is fine.
 - No secrets, no personal data of the user in the course files.
 - Never claim something works without running the command that proves it.

@@ -181,10 +181,10 @@ Reference course: `examples/listening/` (synthetic tones, `make-audio.js` regene
 - Build limits for packs: CONTRACT 12.1 (keep each pack under 15 MB; `dojo build` fails above 16 MiB per file).
 
 ## Copyright
-Write your own questions and short explanations. Quote at most a short phrase. No long passages, full tables or whole exercises. `source` points to file and page/section; it does not copy.
+What to copy from the materials is the user's decision. By default write your own explanations; copy questions, options and passages only when the user asks for it. `source` points to file and page/section. Warn the user once that sharing a course that contains a book's text may infringe copyright.
 
 ## When to leave an item out
-Leave the item out and tell the user when: the materials give no answer or two readings are defensible; the page is unreadable (bad OCR); the fact needs an unavailable audio/image; the right answer cannot be made unique in the available type; the source is the only wording and would need a long quote. List these in the final report (and in `GAPS.md` when it is a format limit).
+Leave the item out and tell the user when: the materials give no answer or two readings are defensible; the page is unreadable (bad OCR); the fact needs an unavailable audio/image; the right answer cannot be made unique in the available type. List these in the final report (and in `GAPS.md` when it is a format limit).
 
 ## Superseding retired items
 When a retired item is replaced by a new one, list the retired ids on the live item: `"supersedes": ["old-1", "old-2"]` (optional, any item type). Learners' saved progress is then carried over automatically at load; no document marker is written.

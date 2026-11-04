@@ -21,7 +21,7 @@ Question types I want: <e.g. mostly multiple choice, some typed answers, some fi
 My materials are in: <path> (copy them into workspace/<course-id>/materials/ if they are elsewhere).
 Course id: <short-lowercase-id>
 
-Rules: only my materials are the source of facts; write your own questions, do not copy long passages; run ./dojo validate after every batch of about 30 items and fix every error; do not stop with validation errors; at the end show me the number of items per unit and type and list anything you skipped. Do not publish anything without telling me first.
+Rules: only my materials are the source of facts; write your own questions unless I ask you to copy from the materials; run ./dojo validate after every batch of about 30 items and fix every error; do not stop with validation errors; at the end show me the number of items per unit and type and list anything you skipped. Do not publish anything without telling me first.
 ```
 
 ## from-textbooks.md
@@ -64,7 +64,7 @@ The file starts with the heading "Prompt: AI without file or shell access (chat 
 I want a practice trainer for <exam/course>. Produce, as separate code blocks with the file name above each block:
 1. course.json (fields: id, title, uiLanguage, contentLanguage, units [{id,title}], optional exam {minutes, passMark?, pass?, sections [{title,count,units?,types?}]}).
 2. One JSONL file per unit (content/<unit-id>.jsonl), one JSON object per line, with these types: choice {type,id,unit,prompt,options,answer(index from 0),explanation}, multi {options, correct[]}, gap {answers[]}, cloze {parts: strings and arrays-of-alternatives}, numeric {answer, tolerance?, unitLabel?}, match {pairs[{left,right}]}, order {steps in correct order}, card {prompt, back}. Ids look like geo-1, geo-2 and must be unique.
-Base every fact on this material only: <paste material>. Write your own questions; do not copy long passages.
+Base every fact on this material only: <paste material>. Write your own questions unless I ask you to copy from the materials.
 ```
 After the reply: save the blocks into `workspace/<course-id>/` in the repository, run `./dojo validate workspace/<course-id>`, paste the errors back to the AI, and repeat until it passes. Then `./dojo build workspace/<course-id>`.
 

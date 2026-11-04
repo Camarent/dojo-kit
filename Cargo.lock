@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "dojo-cli"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "dojo-core",
  "serde_json",
@@ -12,7 +12,7 @@ dependencies = [
 
 [[package]]
 name = "dojo-core"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "schemars",
  "serde",
@@ -21,7 +21,7 @@ dependencies = [
 
 [[package]]
 name = "dojo-wasm"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "dojo-core",
 ]
