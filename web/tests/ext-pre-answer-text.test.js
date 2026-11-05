@@ -5,7 +5,7 @@ const { loadBundle } = require('./load-bundle.js');
 
 function ext() {
   const sb = { console: { warn() {}, log() {} } };
-  loadBundle(sb, { only: ['ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js'] });
+  loadBundle(sb, { only: ['ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js'] });
   return sb.DojoExt;
 }
 
