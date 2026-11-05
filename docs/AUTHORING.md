@@ -187,7 +187,7 @@ What to copy from the materials is the user's decision. By default write your ow
 Leave the item out and tell the user when: the materials give no answer or two readings are defensible; the page is unreadable (bad OCR); the fact needs an unavailable audio/image; the right answer cannot be made unique in the available type. List these in the final report (and in `GAPS.md` when it is a format limit).
 
 ## Course checks (external scripts)
-`course.json` `"checks": [{"id": "gap-answers", "script": "checks/gap-answers.sh"}]` runs a script during `dojo validate` and `dojo build`. `script` is relative to the course folder (no `..`, no absolute path; `bad_plugin_path` otherwise). The script gets the course folder as its first argument and as cwd, and prints one JSON finding per line:
+`course.json` `"checks": [{"id": "gap-answers", "script": "checks/gap-answers.sh"}]` runs a script during `dojo validate` (`dojo build` does not run checks). `dojo validate` executes these scripts with your full environment: validate only courses you trust, or pass `--no-checks` to skip the scripts. `script` is relative to the course folder (no `..`, no absolute path; `bad_plugin_path` otherwise). The script gets the course folder as its first argument and as cwd, and prints one JSON finding per line:
 ```sh
 #!/bin/sh
 # $1 = course folder; prints findings only
