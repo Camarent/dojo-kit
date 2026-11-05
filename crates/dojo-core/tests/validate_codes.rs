@@ -118,12 +118,10 @@ fn fires_ruby_on_skip_kanji_and_ruby_missing() {
     let shown = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{学|がく}","options":["a","b"],"answer":0}"#;
     assert!(!codes(&run(&skip, &[shown])).contains(&"ruby_on_skip_kanji"));
 
-    // drill item with a bare kanji, then with its ruby
-    let drill = with_course(r#""ruby":{"drillUnits":["u"]}"#);
+    // drill item keeps its headword bare: exempt from ruby_missing
+    let drill = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"x","drillUnits":["u"]}"#);
     let bare = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"日本","options":["a","b"],"answer":0}"#;
-    fires(&drill, &[bare], "ruby_missing");
-    let ruby = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{日|に}{本|ほん}","options":["a","b"],"answer":0}"#;
-    assert!(!codes(&run(&drill, &[ruby])).contains(&"ruby_missing"));
+    assert!(!codes(&run(&drill, &[bare])).contains(&"ruby_missing"));
 
     // no drill scope configured: bare kanji is fine
     assert!(!codes(&run(COURSE, &[bare])).contains(&"ruby_missing"));

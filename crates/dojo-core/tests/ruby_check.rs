@@ -86,9 +86,11 @@ fn drill_item_exempt_from_skip_rules() {
     // a drill item with ruby on a skip kanji: no ruby_on_skip_kanji
     let hidden = choice("d-2", "d", "{日|にち}", r#"["a","b"]"#, "");
     assert!(!codes(&run(&course, &[&hidden])).contains(&"ruby_on_skip_kanji"));
-    // the drill rule still flags a bare kanji in the prompt
+    // a bare kanji in a drill prompt is exempt; the same item outside the drill unit warns
     let bare = choice("d-3", "d", "日本", r#"["a","b"]"#, "");
-    fires(&course, &[&bare], "ruby_missing");
+    assert!(!codes(&run(&course, &[&bare])).contains(&"ruby_missing"));
+    let non_drill = choice("u-3", "u", "日本", r#"["a","b"]"#, "");
+    fires(&course, &[&non_drill], "ruby_missing");
 }
 
 #[test]

@@ -92,11 +92,8 @@ pub(super) fn check_ruby(item: &Item, course: Option<&Course>, ruby_skip: Option
     let Some(ruby) = course.and_then(|c| c.ruby.as_ref()) else { return };
     let id = item.id();
 
+    // A reading drill keeps its headword bare: ruby would give away the answer.
     if is_drill(item, ruby) {
-        let (_, bare) = scan_ruby(item.prompt());
-        if !bare.is_empty() {
-            sink.warning("ruby_missing", file, line, format!("drill item '{id}' has a kanji without a {{base|reading}} ruby"));
-        }
         return;
     }
 
