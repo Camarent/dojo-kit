@@ -223,10 +223,15 @@ pub(crate) fn run_validate(args: &[String]) -> Result<u8, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
+
+    // Writing a script and exec'ing it races with another test thread's fork (ETXTBSY, "Text file busy"): tests that write scripts hold this lock for their whole run.
+    static SCRIPT_LOCK: Mutex<()> = Mutex::new(());
     use std::os::unix::fs::PermissionsExt;
 
     #[test]
     fn script_over_timeout_is_killed_and_reported_as_check_failed() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-timeout-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
@@ -243,6 +248,7 @@ mod tests {
 
     #[test]
     fn script_symlink_out_of_course_dir_is_check_failed() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let base = std::env::temp_dir().join(format!("dojo-check-symlink-{}", std::process::id()));
         let _ = fs::remove_dir_all(&base);
         let (dir, outside) = (base.join("course"), base.join("outside"));
@@ -262,6 +268,7 @@ mod tests {
 
     #[test]
     fn grandchild_holding_stdout_fails_after_grace_instead_of_hanging() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-grandchild-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
@@ -278,6 +285,7 @@ mod tests {
 
     #[test]
     fn timeout_kills_the_whole_process_group() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-group-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
@@ -296,6 +304,7 @@ mod tests {
 
     #[test]
     fn stdout_over_cap_is_check_failed_truncated() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-cap-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
@@ -312,6 +321,7 @@ mod tests {
 
     #[test]
     fn failed_check_message_ends_with_stderr_tail() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-stderr-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
@@ -329,6 +339,7 @@ mod tests {
 
     #[test]
     fn no_checks_flag_skips_check_scripts() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-nochecks-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(dir.join("content")).unwrap();
