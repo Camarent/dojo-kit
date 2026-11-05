@@ -110,6 +110,24 @@ fn every_code_has_a_firing_test() {
 }
 
 #[test]
+fn fires_ruby_on_skip_kanji_and_ruby_missing() {
+    // ruby on a kanji the skip set already hides
+    let skip = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"日"}"#);
+    let hidden = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{日|にち}","options":["a","b"],"answer":0}"#;
+    fires(&skip, &[hidden], "ruby_on_skip_kanji");
+    let shown = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{学|がく}","options":["a","b"],"answer":0}"#;
+    assert!(!codes(&run(&skip, &[shown])).contains(&"ruby_on_skip_kanji"));
+
+    // drill item keeps its headword bare: exempt from ruby_missing
+    let drill = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"x","drillUnits":["u"]}"#);
+    let bare = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"日本","options":["a","b"],"answer":0}"#;
+    assert!(!codes(&run(&drill, &[bare])).contains(&"ruby_missing"));
+
+    // no drill scope configured: bare kanji is fine
+    assert!(!codes(&run(COURSE, &[bare])).contains(&"ruby_missing"));
+}
+
+#[test]
 fn bad_supersedes_cases() {
     let old = r#"{"type":"choice","id":"o-1","unit":"u","prompt":"Old","options":["a","b"],"answer":0,"status":"retired"}"#;
     let new = |extra: &str| format!(r#"{{"type":"choice","id":"n-1","unit":"u","prompt":"New","options":["a","b"],"answer":0,{extra}}}"#);

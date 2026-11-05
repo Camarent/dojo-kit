@@ -251,6 +251,15 @@ pub struct RubyConfig {
     /// Word -> reading pairs known at build time (`{base|reading}` source); merged into the browser dict.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dict: Option<BTreeMap<String, String>>,
+    /// Items with any of these tags are kanji-drill items: exempt from the ruby checks (the headword stays bare).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub drill_tags: Option<Vec<String>>,
+    /// Units whose items are kanji-drill items (same exemption as `drillTags`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub drill_units: Option<Vec<String>>,
+    /// Opt-in (default false): warn `ruby_on_skip_kanji` / `ruby_missing` on question prompt and options against the skip set.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub check_questions: Option<bool>,
 }
 
 /// Contents of `course.json`.

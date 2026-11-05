@@ -70,6 +70,8 @@ pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, cou
 pub(super) struct ItemCtx<'a> {
     pub(super) course: Option<&'a Course>,
     pub(super) stimuli: &'a StimulusInfo,
+    /// Ruby skip set from `ruby::skip_set`; `None` when the skip rules are off.
+    pub(super) ruby_skip: Option<HashSet<char>>,
 }
 
 type PromptKey<'a> = (&'a str, &'a str, Option<&'a str>, String, String);
@@ -143,6 +145,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
     check_ambiguous_answer(item, sink, name, line);
     check_order_blanks_mismatch(item, sink, name, line);
     super::order_split::check_order_split(item, ctx.course, sink, name, line);
+    super::ruby::check_ruby(item, ctx.course, ctx.ruby_skip.as_ref(), sink, name, line);
 
     if let Some(c) = ctx.course {
         let whitelisted_scripts: HashSet<String> = c.scripts.iter().cloned().collect();

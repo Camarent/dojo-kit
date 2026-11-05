@@ -869,6 +869,33 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "drillTags": {
+          "description": "Items with any of these tags are kanji-drill items: exempt from the ruby checks (the headword stays bare).",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "drillUnits": {
+          "description": "Units whose items are kanji-drill items (same exemption as `drillTags`).",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "checkQuestions": {
+          "description": "Opt-in (default false): warn `ruby_on_skip_kanji` / `ruby_missing` on question prompt and options against the skip set.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
