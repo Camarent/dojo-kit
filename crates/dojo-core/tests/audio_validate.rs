@@ -145,6 +145,7 @@ fn make_course_with_audio(manifest_path: &str) -> Course {
         exams: vec![],
         storage: None,
         plugins: None,
+        checks: vec![],
         markup: None,
         input_script: None,
         captions: None,

@@ -12,6 +12,7 @@ pub struct SourceFile {
 }
 
 mod audio;
+mod checks;
 mod codes;
 mod exam;
 mod files;
@@ -25,6 +26,7 @@ mod quality;
 mod speech;
 mod dupes;
 use course::check_course;
+pub use checks::parse_findings;
 pub use codes::CODES;
 pub use files::check_audio_files;
 

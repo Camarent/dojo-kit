@@ -84,6 +84,14 @@ pub struct Plugins {
     pub styles: Vec<String>,
 }
 
+/// One external course check: `script` is a path relative to the course dir.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CourseCheck {
+    pub id: String,
+    pub script: String,
+}
+
 /// Placement test configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -267,6 +275,8 @@ pub struct Course {
     pub storage: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub plugins: Option<Plugins>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub checks: Vec<CourseCheck>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub markup: Option<String>,
     /// Script names (`non-latin`, `han`, `hiragana`, `katakana`, `cyrillic`, `greek`, `arabic`, `hebrew`, `hangul`, `devanagari`, `thai`): typed answers in these scripts are blocked while the input holds Latin letters.

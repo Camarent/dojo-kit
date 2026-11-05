@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 107] = [
+pub const CODES: [(&str, Severity, &str); 110] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -109,4 +109,7 @@ pub const CODES: [(&str, Severity, &str); 107] = [
     ("audio_path_escape", Severity::Error, "audio manifest path in course.json escapes the course directory"),
     ("bad_timer", Severity::Error, "timer config is invalid (baseMs, adaptive, or replays)"),
     ("mode_by_type", Severity::Error, "srs.mode is set in srsByType which is not allowed"),
+    ("check_failed", Severity::Error, "a course check reported a finding; the message has its code, item and text"),
+    ("check_missing", Severity::Error, "a course check script file does not exist"),
+    ("check_bad_output", Severity::Error, "a course check printed a line that is not a finding object or has an unknown severity"),
 ];
