@@ -186,6 +186,15 @@ What to copy from the materials is the user's decision. By default write your ow
 ## When to leave an item out
 Leave the item out and tell the user when: the materials give no answer or two readings are defensible; the page is unreadable (bad OCR); the fact needs an unavailable audio/image; the right answer cannot be made unique in the available type. List these in the final report (and in `GAPS.md` when it is a format limit).
 
+## Course checks (external scripts)
+`course.json` `"checks": [{"id": "gap-answers", "script": "checks/gap-answers.sh"}]` runs a script during `dojo validate` and `dojo build`. `script` is relative to the course folder (no `..`, no absolute path; `bad_plugin_path` otherwise). The script gets the course folder as its first argument and as cwd, and prints one JSON finding per line:
+```sh
+#!/bin/sh
+# $1 = course folder; prints findings only
+echo '{"code":"empty-answer","severity":"warning","item":"item-1","message":"answer text is empty"}'
+```
+Each finding shows as `check_failed` at `course.json` with `<code> [<item>]: <message>`. `severity` `error` fails the validate (exit 1); `warning` fails only with `--strict`. Other output: a non-finding line is `check_bad_output`; a non-zero exit, a timeout (60 s) or a script outside the folder is `check_failed`; a missing script is `check_missing`. Rules and codes: CONTRACT section 7.
+
 ## Superseding retired items
 When a retired item is replaced by a new one, list the retired ids on the live item: `"supersedes": ["old-1", "old-2"]` (optional, any item type). Learners' saved progress is then carried over automatically at load; no document marker is written.
 - Validator error `bad_supersedes`: field on a retired item, empty list, duplicate id, the item itself, an id that is not retired, or an id listed by two successors. For a chain, list all transitive predecessors.
