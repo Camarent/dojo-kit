@@ -41,6 +41,8 @@ EOF
 ```
 Also `--file <path>` (read the batch from a file) and `--dry-run` (check without writing). All items are added or none; errors are printed as `item k: message`. 8-15 items per call. Never write `content/*.jsonl` by hand (AGENTS.md section 4a). `./dojo next-id workspace/<course-id> <prefix> --count N` prints N free ids (nothing is reserved).
 
+**Check for an existing word first.** Before adding items for a word, search the course for the same kana or kanji and the same meaning (grep `content/*.jsonl`, active items only). If an active item already has it, do not add a second copy: merge into the existing item or skip it, and say which. The intake step for feedback items is `prompts/add-content.md`; it carries this rule.
+
 ## Unambiguous-answer rules
 1. A learner who knows the fact must be able to answer without guessing; a gap has exactly one answer (every accepted spelling goes into `answers`; several different answers only when the prompt says "any" or "one of").
 2. The prompt matches the input type: no "write" on choice/match/order/card, no "choose/pick" on gap (validator `prompt_type_mismatch`); no two non-stimulus gap/cloze/numeric items share the same normalized prompt with different normalized answer sets (validator `same_prompt_different_answers`).
