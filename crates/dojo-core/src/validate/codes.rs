@@ -75,7 +75,7 @@ pub const CODES: [(&str, Severity, &str); 113] = [
     ("foreign_script", Severity::Warning, "text contains letters from a script that is not Latin, Cyrillic, Hiragana, Katakana, or CJK"),
     ("prompt_type_mismatch", Severity::Warning, "prompt asks to write/type but item type has no text input, or asks to choose/pick on a gap item"),
     ("same_prompt_different_answers", Severity::Warning, "two non-stimulus gap/cloze/numeric items share the same normalized prompt but have different normalized answer sets"),
-    ("dup_word", Severity::Warning, "two live (not retired, not superseded) non-stimulus gap/cloze/numeric items in the same unit and type have equal prompts (ignoring case, ruby markup, parenthesised hints, punctuation) and intersecting normalized answer sets"),
+    ("dup_word", Severity::Warning, "two live (not retired, not superseded) non-stimulus gap/cloze/numeric items in the same unit and type have equal prompts (ignoring case, ruby markup, parenthesised hints, punctuation) and one normalized answer set contained in the other"),
     ("ambiguous_answer", Severity::Warning, "gap with several answers (some non-ASCII, some alphabetic; number formats are skipped) and no disambiguation hint in the prompt, choice/multi option with '/' outside brackets, or duplicate options"),
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
     ("order_alt_invalid", Severity::Error, "order altOrders entry is not a permutation of the step indices, equals the identity order, or repeats another entry"),

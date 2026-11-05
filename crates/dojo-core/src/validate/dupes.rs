@@ -134,7 +134,7 @@ fn dup_prompt_key(prompt: &str) -> String {
 /// One candidate for the dup_word check: file, line, item, prompt key, flat answer set.
 type DupCandidate<'a> = (&'a str, usize, &'a Item, String, BTreeSet<String>);
 
-/// Check for live items in the same unit and type whose prompts match (after normalization) and whose answer sets intersect (likely one word entered twice)
+/// Check for live items in the same unit and type whose prompts match (after normalization) and whose one answer set contains the other (likely one word entered twice)
 pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
     let superseded: BTreeSet<&str> = items.iter().filter_map(|(_, _, it)| it.supersedes_field()).flatten().map(String::as_str).collect();
     let mut by_group: BTreeMap<(String, &str), Vec<DupCandidate>> = BTreeMap::new();
@@ -161,14 +161,14 @@ pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sin
     for group in by_group.values() {
         for (i, a) in group.iter().enumerate() {
             for b in group.iter().skip(i + 1) {
-                if a.3 != b.3 || a.4.is_disjoint(&b.4) {
+                if a.3 != b.3 || !(a.4.is_subset(&b.4) || b.4.is_subset(&a.4)) {
                     continue;
                 }
                 sink.warning(
                     "dup_word",
                     a.0,
                     a.1,
-                    format!("items '{}', '{}' have the same prompt and overlapping answers; the same word may be entered twice", a.2.id(), b.2.id()),
+                    format!("items '{}', '{}' have the same prompt and nested answers; the same word may be entered twice", a.2.id(), b.2.id()),
                 );
             }
         }

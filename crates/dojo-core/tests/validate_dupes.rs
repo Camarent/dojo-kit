@@ -241,3 +241,17 @@ fn dup_word_stimulus_items_not_checked() {
     let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim","answers":["swim"],"stimulus":"s1"}"#;
     assert!(!dup_word_fires(&[l1, l2]));
 }
+
+#[test]
+fn dup_word_partial_overlap_different_extras_no_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"four","answers":["4","yon"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"four","answers":["4","shi"]}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_subset_answers_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"ticket","answers":["ticket","kippu"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"ticket","answers":["kippu"]}"#;
+    assert!(dup_word_fires(&[l1, l2]));
+}
