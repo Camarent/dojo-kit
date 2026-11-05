@@ -338,6 +338,8 @@ impl Item {
 
     pub fn speak(&self) -> Option<&str> { common_field!(self, i => i.speak.as_deref()) }
 
+    pub fn meta(&self) -> Option<&serde_json::Value> { common_field!(self, i => i.meta.as_ref()) }
+
     pub fn tags(&self) -> &[String] { common_field!(self, i => &i.tags) }
 
     pub fn entity(&self) -> Option<&str> { common_field!(self, i => i.entity.as_deref()) }

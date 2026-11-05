@@ -172,7 +172,8 @@ pub fn validate_all(
     let stimuli_info = files::check_stimuli_file(stimuli, course.as_ref(), &mut course_sink);
     files::check_intros_file(intros, &all, &mut course_sink);
 
-    let ctx = files::ItemCtx { course: course.as_ref(), stimuli: &stimuli_info };
+    let ruby_skip = ruby::skip_set(course.as_ref(), all.iter().map(|(_, _, i)| *i));
+    let ctx = files::ItemCtx { course: course.as_ref(), stimuli: &stimuli_info, ruby_skip };
     let file_diags = files::check_item_files(files, &parsed, &ctx);
 
     if let Some(c) = &course {
