@@ -181,7 +181,7 @@ fn read_tail(mut reader: impl Read, keep: usize) -> String {
         if n == 0 {
             break;
         }
-        tail.extend_from_slice(&chunk[..n]);
+        tail.extend_from_slice(chunk.get(..n).unwrap_or_default());
         if tail.len() > keep {
             tail.drain(..tail.len() - keep);
         }
@@ -339,7 +339,7 @@ mod tests {
         fs::write(&script, "#!/bin/sh\necho '{\"code\":\"E1\",\"severity\":\"error\",\"item\":\"u-1\",\"message\":\"wrong gap\"}'\n").unwrap();
         fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
         let d = dir.to_string_lossy().into_owned();
-        let with = run_validate(&[d.clone()]);
+        let with = run_validate(std::slice::from_ref(&d));
         let without = run_validate(&[d, "--no-checks".to_string()]);
         let _ = fs::remove_dir_all(&dir);
         assert_eq!(with, Ok(1));
