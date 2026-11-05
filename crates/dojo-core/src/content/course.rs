@@ -251,6 +251,12 @@ pub struct RubyConfig {
     /// Word -> reading pairs known at build time (`{base|reading}` source); merged into the browser dict.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dict: Option<BTreeMap<String, String>>,
+    /// Items with any of these tags are kanji-drill items: each Han character in their prompt needs a `{base|reading}` ruby.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub drill_tags: Option<Vec<String>>,
+    /// Units whose items are kanji-drill items (same rule as `drillTags`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub drill_units: Option<Vec<String>>,
 }
 
 /// Contents of `course.json`.

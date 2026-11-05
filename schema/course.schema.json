@@ -869,6 +869,26 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "drillTags": {
+          "description": "Items with any of these tags are kanji-drill items: each Han character in their prompt needs a `{base|reading}` ruby.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "drillUnits": {
+          "description": "Units whose items are kanji-drill items (same rule as `drillTags`).",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false

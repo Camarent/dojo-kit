@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 110] = [
+pub const CODES: [(&str, Severity, &str); 112] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -112,4 +112,6 @@ pub const CODES: [(&str, Severity, &str); 110] = [
     ("check_failed", Severity::Error, "a course check reported a finding; the message has its code, item and text"),
     ("check_missing", Severity::Error, "a course check script file does not exist"),
     ("check_bad_output", Severity::Error, "a course check printed a line that is not a finding object or has an unknown severity"),
+    ("ruby_on_skip_kanji", Severity::Warning, "a {base|reading} ruby whose kanji the course ruby skip set already hides"),
+    ("ruby_missing", Severity::Warning, "a kanji drill item (ruby drillTags/drillUnits) has a kanji in its prompt with no {base|reading} ruby"),
 ];

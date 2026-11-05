@@ -23,6 +23,7 @@ mod lang;
 mod order_alt;
 mod order_split;
 mod quality;
+mod ruby;
 mod speech;
 mod dupes;
 use course::check_course;

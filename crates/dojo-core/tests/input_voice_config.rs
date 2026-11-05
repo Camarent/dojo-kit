@@ -41,3 +41,15 @@ fn ruby_and_captions_parse_and_unknown_ruby_key_is_rejected() {
     assert_eq!(parsed.captions.unwrap()["meaning"], "M");
     assert!(parse_course(&course(r#""ruby":{"nope":1}"#)).is_err());
 }
+
+#[test]
+fn ruby_drill_tags_and_units_parse_and_round_trip() {
+    let c = parse_course(&course(r#""ruby":{"drillTags":["kanji"],"drillUnits":["u"]}"#)).unwrap();
+    let ruby = c.ruby.as_ref().unwrap();
+    assert_eq!(ruby.drill_tags.as_deref(), Some(&["kanji".to_string()][..]));
+    assert_eq!(ruby.drill_units.as_deref(), Some(&["u".to_string()][..]));
+    let v = serde_json::to_value(&c).unwrap();
+    assert_eq!(v["ruby"]["drillTags"][0], "kanji");
+    assert_eq!(v["ruby"]["drillUnits"][0], "u");
+    assert!(parse_course(&course(r#""ruby":{"drillTags":"kanji"}"#)).is_err());
+}
