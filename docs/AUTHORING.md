@@ -124,6 +124,9 @@ Course tests that need the framework find it with `tools/fw-root.js`; set `DOJO_
   - The skip set is the Han characters (kanji) of `skip`, plus those of the string at item path `skipKey` (default `meta.kanji`) of every item tagged `skipTag`.
   - `{base|reading}` whose base characters are all in the set shows only the base. A base with any other kanji keeps its reading.
   - Only the displayed ruby changes. Speech, search and plain text never include readings.
+- Ruby checks (`dojo validate`, `crates/dojo-core/src/validate/ruby.rs`; both are warnings, so `--strict` fails on them):
+  - `drillTags` / `drillUnits` (lists): items with any of those tags, or in those units, are kanji-drill items. Each Han character in their prompt needs a `{base|reading}` ruby; otherwise `ruby_missing`. This runs without `checkQuestions`.
+  - `checkQuestions: true` (opt-in, default off; needs `"markup": "ruby"` and `skip` or `skipTag`): checks question prompt and options against the skip set. `ruby_on_skip_kanji`: ruby on a kanji the skip set already hides. `ruby_missing`: a kanji outside the skip set with no `{base|reading}`.
   ```json
   "ruby": { "skipTag": "core", "skipKey": "meta.kanji" }
   ```
