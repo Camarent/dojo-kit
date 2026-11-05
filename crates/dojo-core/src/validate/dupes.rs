@@ -106,10 +106,13 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
     }
 }
 
+/// Items grouped by (unit, type, normalized answer sets); each entry is (file, line, item, prompt).
+type AnswerGroups<'a> = BTreeMap<(String, &'a str, Vec<Vec<String>>), Vec<(&'a str, usize, &'a Item, String)>>;
+
 /// Check for items in the same unit and type with the same normalized answers but different prompts (likely one word entered twice)
 pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
     // Group by (unit, type, normalized answer sets); only gap, cloze, and numeric, and only non-stimulus items
-    let mut by_answers: BTreeMap<(String, &str, Vec<Vec<String>>), Vec<(&str, usize, &Item, String)>> = BTreeMap::new();
+    let mut by_answers: AnswerGroups = BTreeMap::new();
 
     for (file, line, item) in items {
         if item.stimulus().is_some() {
