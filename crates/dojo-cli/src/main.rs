@@ -13,7 +13,7 @@ use std::path::Path;
 use std::process::ExitCode;
 
 
-pub(crate) const USAGE: &str = "usage: dojo schema (--out <dir> | --brief)\n       dojo validate <course-dir> [--json] [--strict] [--web <dir>]\n\
+pub(crate) const USAGE: &str = "usage: dojo schema (--out <dir> | --brief)\n       dojo validate <course-dir> [--json] [--strict] [--no-checks] [--web <dir>]\n\
        dojo lock <course-dir>\n\
        dojo build <course-dir> [--out <dir>] [--wasm <file>] [--web <dir>] [--strict]\n\
        dojo init <course-id> [--title T] [--ui LANG] [--content-lang LANG] [--workspace DIR]\n\
