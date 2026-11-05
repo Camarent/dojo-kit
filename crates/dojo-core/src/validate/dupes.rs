@@ -1,7 +1,7 @@
 use super::{Sink, items::fold_norm};
 use crate::check::{Normalize, normalize};
 use crate::content::{ClozePart, Item, ItemType};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 /// An item with its source file and line.
 type Located<'a> = (&'a str, usize, &'a Item);
@@ -103,5 +103,45 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
                 format!("items {} share the prompt but have different answers; reword one prompt (AGENTS.md 8a)", ids.join(", ")),
             );
         }
+    }
+}
+
+/// Check for items in the same unit and type with the same normalized answers but different prompts (likely one word entered twice)
+pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
+    // Group by (unit, type, normalized answer sets); only gap, cloze, and numeric, and only non-stimulus items
+    let mut by_answers: BTreeMap<(String, &str, Vec<Vec<String>>), Vec<(&str, usize, &Item, String)>> = BTreeMap::new();
+
+    for (file, line, item) in items {
+        if item.stimulus().is_some() {
+            continue;
+        }
+        let item_type = item.item_type();
+        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric) {
+            continue;
+        }
+        let answers = normalize_answer_set(item, course_norm);
+        if answers.iter().all(Vec::is_empty) {
+            continue;
+        }
+        let norm_prompt = normalize(item.prompt(), &effective_norm(item, course_norm));
+        if norm_prompt.is_empty() {
+            continue;
+        }
+        by_answers.entry((item.unit().to_string(), item_type.as_str(), answers)).or_default().push((*file, *line, *item, norm_prompt));
+    }
+
+    for group in by_answers.values() {
+        let distinct: BTreeSet<&str> = group.iter().map(|(_, _, _, p)| p.as_str()).collect();
+        if distinct.len() < 2 {
+            continue;
+        }
+        let Some(&(file, line, _, _)) = group.first() else { continue };
+        let ids: Vec<String> = group.iter().map(|(_, _, it, _)| format!("'{}'", it.id())).collect();
+        sink.warning(
+            "dup_word",
+            file,
+            line,
+            format!("items {} have the same answers but different prompts; the same word may be entered twice", ids.join(", ")),
+        );
     }
 }

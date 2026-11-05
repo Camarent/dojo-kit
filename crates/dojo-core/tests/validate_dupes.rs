@@ -147,3 +147,79 @@ fn case_sensitive_cloze_answers_differing_in_case_warn() {
     let l2 = r#"{"type":"cloze","id":"u-2","unit":"u","prompt":"p","parts":["x ",["a"]],"normalize":{"caseSensitive":true}}"#;
     assert!(warns(&[l1, l2]));
 }
+
+fn dup_word_fires(lines: &[&str]) -> bool {
+    codes(&run(COURSE, lines)).contains(&"dup_word")
+}
+
+#[test]
+fn dup_word_same_unit_type_answers_different_prompts() {
+    // Same word asked twice in the same unit and type, with different prompts
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"Say it in English","answers":["nine"]}"#;
+    let d = run(COURSE, &[l1, l2]);
+    let w: Vec<_> = d.iter().filter(|d| d.code == "dup_word").collect();
+    assert_eq!(w.len(), 1, "one warning per answer group, got {d:?}");
+    for id in ["u-1", "u-2"] {
+        assert!(w[0].message.contains(id), "message lists {id}: {}", w[0].message);
+    }
+}
+
+#[test]
+fn dup_word_kana_prompt_vs_kanji_prompt_copy() {
+    // Kana prompt and kanji prompt with the same answer: a copied word
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"くるま","answers":["車"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"車","answers":["車"]}"#;
+    assert!(dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_cloze_same_blanks_different_prompts() {
+    let l1 = r#"{"type":"cloze","id":"u-1","unit":"u","prompt":"Capital ___","parts":["Capital ",["Paris"]]}"#;
+    let l2 = r#"{"type":"cloze","id":"u-2","unit":"u","prompt":"France's city ___","parts":["France's city ",["Paris"]]}"#;
+    assert!(dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_numeric_same_answer_different_prompts() {
+    let l1 = r#"{"type":"numeric","id":"u-1","unit":"u","prompt":"2+2?","answer":4}"#;
+    let l2 = r#"{"type":"numeric","id":"u-2","unit":"u","prompt":"Two plus two?","answer":4}"#;
+    assert!(dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_decoy_different_answers_no_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"Say it in English","answers":["ten"]}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_same_prompt_same_answers_no_fire() {
+    // Same prompt: duplicate_prompt territory, not dup_word
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_other_unit_no_fire() {
+    let two = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"},{"id":"v","title":"V"}]}"#;
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+    let l2 = r#"{"type":"gap","id":"v-1","unit":"v","prompt":"Say it in English","answers":["nine"]}"#;
+    assert!(!codes(&run(two, &[l1, l2])).contains(&"dup_word"));
+}
+
+#[test]
+fn dup_word_other_type_no_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+    let l2 = r#"{"type":"numeric","id":"u-2","unit":"u","prompt":"Say it in English","answer":9}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_stimulus_items_not_checked() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"],"stimulus":"s1"}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"Say it in English","answers":["nine"],"stimulus":"s1"}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}

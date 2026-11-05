@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 112] = [
+pub const CODES: [(&str, Severity, &str); 113] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -75,6 +75,7 @@ pub const CODES: [(&str, Severity, &str); 112] = [
     ("foreign_script", Severity::Warning, "text contains letters from a script that is not Latin, Cyrillic, Hiragana, Katakana, or CJK"),
     ("prompt_type_mismatch", Severity::Warning, "prompt asks to write/type but item type has no text input, or asks to choose/pick on a gap item"),
     ("same_prompt_different_answers", Severity::Warning, "two non-stimulus gap/cloze/numeric items share the same normalized prompt but have different normalized answer sets"),
+    ("dup_word", Severity::Warning, "two non-stimulus gap/cloze/numeric items in the same unit and type have the same normalized answers but different prompts"),
     ("ambiguous_answer", Severity::Warning, "gap with several answers (some non-ASCII, some alphabetic; number formats are skipped) and no disambiguation hint in the prompt, choice/multi option with '/' outside brackets, or duplicate options"),
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
     ("order_alt_invalid", Severity::Error, "order altOrders entry is not a permutation of the step indices, equals the identity order, or repeats another entry"),
