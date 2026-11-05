@@ -112,7 +112,7 @@ fn every_code_has_a_firing_test() {
 #[test]
 fn fires_ruby_on_skip_kanji_and_ruby_missing() {
     // ruby on a kanji the skip set already hides
-    let skip = with_course(r#""markup":"ruby","ruby":{"skip":"日"}"#);
+    let skip = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"日"}"#);
     let hidden = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{日|にち}","options":["a","b"],"answer":0}"#;
     fires(&skip, &[hidden], "ruby_on_skip_kanji");
     let shown = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{学|がく}","options":["a","b"],"answer":0}"#;

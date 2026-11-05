@@ -889,6 +889,13 @@
           "items": {
             "type": "string"
           }
+        },
+        "checkQuestions": {
+          "description": "Opt-in (default false): warn `ruby_on_skip_kanji` / `ruby_missing` on question prompt and options against the skip set.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false

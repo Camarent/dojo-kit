@@ -1,8 +1,8 @@
 mod common;
 use common::*;
 
-const SKIP: &str = r#""markup":"ruby","ruby":{"skip":"日"}"#;
-const DRILL: &str = r#""markup":"ruby","ruby":{"skip":"日","drillUnits":["d"]}"#;
+const SKIP: &str = r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"日"}"#;
+const DRILL: &str = r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"日","drillUnits":["d"]}"#;
 
 fn choice(id: &str, unit: &str, prompt: &str, options: &str, extra: &str) -> String {
     format!(r#"{{"type":"choice","id":"{id}","unit":"{unit}","prompt":"{prompt}","options":{options},"answer":0{extra}}}"#)
@@ -25,7 +25,7 @@ fn skip_from_option_text_hides_ruby_base() {
 
 #[test]
 fn skip_tag_items_contribute_meta_kanji() {
-    let course = with_course(r#""markup":"ruby","ruby":{"skipTag":"core"}"#);
+    let course = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skipTag":"core"}"#);
     let source = r#"{"type":"card","id":"k-1","unit":"u","prompt":"p","back":"b","tags":["core"],"meta":{"kanji":"学"}}"#;
     let ruby = choice("u-1", "u", "{学|がく}", r#"["a","b"]"#, "");
     fires(&course, &[source, &ruby], "ruby_on_skip_kanji");
@@ -36,12 +36,12 @@ fn skip_tag_items_contribute_meta_kanji() {
 
 #[test]
 fn skip_key_reads_custom_meta_path() {
-    let course = with_course(r#""markup":"ruby","ruby":{"skipTag":"core","skipKey":"meta.k.jp"}"#);
+    let course = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skipTag":"core","skipKey":"meta.k.jp"}"#);
     let source = r#"{"type":"card","id":"k-1","unit":"u","prompt":"p","back":"b","tags":["core"],"meta":{"k":{"jp":"学"}}}"#;
     let ruby = choice("u-1", "u", "{学|がく}", r#"["a","b"]"#, "");
     fires(&course, &[source, &ruby], "ruby_on_skip_kanji");
     // a path that does not start with `meta` resolves to nothing
-    let bad = with_course(r#""markup":"ruby","ruby":{"skipTag":"core","skipKey":"kanji"}"#);
+    let bad = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skipTag":"core","skipKey":"kanji"}"#);
     assert!(!codes(&run(&bad, &[source, &ruby])).contains(&"ruby_on_skip_kanji"));
 }
 
@@ -49,10 +49,10 @@ fn skip_key_reads_custom_meta_path() {
 fn rules_off_without_markup_ruby_or_skip_source() {
     let hidden = choice("u-1", "u", "{日|にち}", r#"["a","b"]"#, "");
     let bare = choice("u-2", "u", "日本", r#"["a","b"]"#, "");
-    let no_markup = with_course(r#""ruby":{"skip":"日"}"#);
+    let no_markup = with_course(r#""ruby":{"checkQuestions":true,"skip":"日"}"#);
     let d = codes(&run(&no_markup, &[&hidden, &bare]));
     assert!(!d.contains(&"ruby_on_skip_kanji") && !d.contains(&"ruby_missing"));
-    let no_source = with_course(r#""markup":"ruby","ruby":{"drillUnits":["x"]}"#);
+    let no_source = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"drillUnits":["x"]}"#);
     let d = codes(&run(&no_source, &[&hidden, &bare]));
     assert!(!d.contains(&"ruby_on_skip_kanji") && !d.contains(&"ruby_missing"));
 }
@@ -96,4 +96,13 @@ fn retired_items_are_not_checked() {
     let course = with_course(SKIP);
     let retired = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"学校","options":["a","b"],"answer":0,"status":"retired"}"#;
     assert!(!codes(&run(&course, &[retired])).contains(&"ruby_missing"));
+}
+
+#[test]
+fn skip_rules_off_without_check_questions() {
+    let course = with_course(r#""markup":"ruby","ruby":{"skip":"日"}"#);
+    let hidden = choice("u-1", "u", "{日|にち}", r#"["a","b"]"#, "");
+    let bare = choice("u-2", "u", "学校", r#"["a","b"]"#, "");
+    let d = codes(&run(&course, &[&hidden, &bare]));
+    assert!(!d.contains(&"ruby_on_skip_kanji") && !d.contains(&"ruby_missing"));
 }

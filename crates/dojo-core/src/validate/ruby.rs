@@ -48,10 +48,10 @@ fn meta_str<'a>(item: &'a Item, key: &str) -> Option<&'a str> {
 }
 
 /// The skip set: Han of `ruby.skip` plus Han of the `skipKey` string of every item tagged `skipTag`.
-/// `None` unless `markup` is `ruby` and a skip source is set.
+/// `None` unless `markup` is `ruby`, `ruby.checkQuestions` is true and a skip source is set.
 pub(super) fn skip_set<'a>(course: Option<&Course>, items: impl Iterator<Item = &'a Item>) -> Option<HashSet<char>> {
     let ruby = course?.ruby.as_ref()?;
-    if course?.markup.as_deref() != Some(RUBY_MARKUP) || (ruby.skip.is_none() && ruby.skip_tag.is_none()) {
+    if ruby.check_questions != Some(true) || course?.markup.as_deref() != Some(RUBY_MARKUP) || (ruby.skip.is_none() && ruby.skip_tag.is_none()) {
         return None;
     }
     let mut set: HashSet<char> = ruby.skip.as_deref().unwrap_or("").chars().filter(|c| is_han(*c)).collect();

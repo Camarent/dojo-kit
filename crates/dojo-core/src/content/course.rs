@@ -257,6 +257,9 @@ pub struct RubyConfig {
     /// Units whose items are kanji-drill items (same rule as `drillTags`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub drill_units: Option<Vec<String>>,
+    /// Opt-in (default false): warn `ruby_on_skip_kanji` / `ruby_missing` on question prompt and options against the skip set.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub check_questions: Option<bool>,
 }
 
 /// Contents of `course.json`.
