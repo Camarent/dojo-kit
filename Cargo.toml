@@ -5,7 +5,7 @@ members = ["crates/dojo-core", "crates/dojo-wasm", "crates/dojo-cli"]
 [workspace.package]
 edition = "2024"
 license = "MIT"
-version = "0.1.9"
+version = "0.1.10"
 
 [profile.release]
 opt-level = "z"
