@@ -192,8 +192,20 @@
     });
   }
 
-  function buildRubyDict(items, dictKeys) {
+  // Build-time pairs (course.ruby.dict) go in first; any Han-only word is kept, single kanji included.
+  function addBuildDict(dict, pairs) {
+    if (!pairs || typeof pairs !== 'object' || Array.isArray(pairs)) return;
+    Object.keys(pairs).forEach(function (w) {
+      var r = pairs[w];
+      if (typeof r !== 'string' || !r || !w || hanOf(w).length !== [...w].length) return;
+      if (!Object.prototype.hasOwnProperty.call(dict, w)) dict[w] = r;
+      else if (dict[w] !== r) dict[w] = null;
+    });
+  }
+
+  function buildRubyDict(items, dictKeys, pairs) {
     var dict = {};
+    addBuildDict(dict, pairs);
     if (!Array.isArray(items)) return dict;
     var keys = dictKeys && Array.isArray(dictKeys) ? dictKeys : ['meta.examples', 'meta.irregular'];
     items.forEach(function (it) {
@@ -254,7 +266,7 @@
     S.rubyDict = null;
     S.rubyDictMax = 0;
     if (!cfg || typeof cfg !== 'object') return false;
-    S.rubyDict = buildRubyDict(items, cfg.dictKeys);
+    S.rubyDict = buildRubyDict(items, cfg.dictKeys, cfg.dict);
     Object.keys(S.rubyDict).forEach(function (w) { if (w.length > S.rubyDictMax) S.rubyDictMax = w.length; });
     var set = {};
     var n = 0;

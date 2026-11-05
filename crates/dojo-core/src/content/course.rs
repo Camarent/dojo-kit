@@ -248,6 +248,9 @@ pub struct RubyConfig {
     pub skip_key: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dict_keys: Option<Vec<String>>,
+    /// Word -> reading pairs known at build time (`{base|reading}` source); merged into the browser dict.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dict: Option<BTreeMap<String, String>>,
 }
 
 /// Contents of `course.json`.

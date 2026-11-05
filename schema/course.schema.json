@@ -859,6 +859,16 @@
           "items": {
             "type": "string"
           }
+        },
+        "dict": {
+          "description": "Word -> reading pairs known at build time (`{base|reading}` source); merged into the browser dict.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false

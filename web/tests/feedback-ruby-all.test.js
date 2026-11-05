@@ -65,6 +65,41 @@ test('feedback explanation has <rt> with こう', async () => {
   assert.ok(!/[{|}]/.test(explText), 'explanation should not have raw markup');
 });
 
+// Expected answer words that no item example or prose markup covers: only the build-time course.ruby.dict has them.
+async function startDict(dict) {
+  const dictItem = { id: 'g2', unit: 'u1', type: 'gap', prompt: '{甲|こう}', answers: ['丁乙丙'], explanation: 'no ruby here' };
+  const cfg = { skip: '甲', dict: dict };
+  const m = await H.mount({
+    items: [dictItem],
+    course: { id: 'c', title: 'C', uiLanguage: 'en', markup: 'ruby', ruby: cfg, units: [{ id: 'u1', title: 'U' }] }
+  });
+  m.sb.DojoExt.use('ruby');
+  m.sb.DojoExt.useRuby(cfg, [dictItem]);
+  m.app.startMode('daily', {});
+  return m.screen(m.sb.DojoApp._SessionScreen);
+}
+
+test('feedback expected answer annotates words from course.ruby.dict only', async () => {
+  const scr = await startDict({ '丁': 'てい', '乙丙': 'おつへい' });
+  scr.answer({ text: 'wrong' });
+  const expected = H.find(scr.view(), 'expected');
+  assert.ok(expected, 'expected line shown');
+  const rts = [];
+  H.walk(expected, (n) => { if (n.type === 'rt') rts.push(H.text(n)); });
+  assert.deepStrictEqual(rts, ['てい', 'おつへい'], 'dict readings for 丁 and 乙丙');
+  assert.ok(!/[{|}]/.test(H.text(expected)), 'expected line has no raw markup');
+});
+
+test('feedback expected answer has no ruby when course.ruby.dict is empty', async () => {
+  const scr = await startDict({});
+  scr.answer({ text: 'wrong' });
+  const expected = H.find(scr.view(), 'expected');
+  assert.ok(expected, 'expected line shown');
+  const types = [];
+  H.walk(expected, (n) => { if (n.type) types.push(n.type); });
+  assert.ok(!types.includes('ruby'), 'no dict, no ruby');
+});
+
 test('feedback rendered text has no undefined, {, [object', async () => {
   const { scr } = await start();
   scr.answer({ text: 'wrong' });
