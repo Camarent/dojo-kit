@@ -288,7 +288,7 @@ pub(super) fn check_mode_by_type(
 }
 
 /// True when a relative path is absolute or contains a `..` component.
-fn escapes(path: &str) -> bool {
+pub(super) fn escapes(path: &str) -> bool {
     let p = Path::new(path);
     p.is_absolute()
         || path.starts_with('/')

@@ -37,7 +37,7 @@
     var t = p.t;
     var cur = s.cur;
     var card = s.introCard;
-    var introBody = DojoDetail.renderIntroBody({ intro: card, item: cur.item, ctx: { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: t, h: h }, decl: DojoDetail.renderDeclarativeDetail(p.course, (p.course.units || []).find(function (u) { return u.id === cur.item.unit; }) || null, cur.item, p.t) });
+    var introBody = DojoDetail.renderIntroBody({ intro: card, item: cur.item, all: true, ctx: { items: (p.content && p.content.items) || [], records: (p.store && p.store.doc.items) || {}, t: t, h: h }, decl: DojoDetail.renderDeclarativeDetail(p.course, (p.course.units || []).find(function (u) { return u.id === cur.item.unit; }) || null, cur.item, p.t, true) });
     var body = introBody;
     if (audio && card.speak) {
       body = html`<div class="qline">

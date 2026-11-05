@@ -66,6 +66,7 @@ fn check_course_misc(course: &Course, sink: &mut Sink) {
             check_plugin_path(path, "styles", sink);
         }
     }
+    super::checks::check_checks(&course.checks, sink);
     if let Some(norm) = &course.normalize {
         validate_fold(&norm.fold, COURSE_FILE, 0, sink);
     }

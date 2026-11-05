@@ -117,6 +117,7 @@ Command-line tool that turns a course directory (`course.json` + `content/*.json
 Commands (`USAGE` and dispatch `run` in `crates/dojo-cli/src/main.rs`; each command is `run_<name>` in `crates/dojo-cli/src/cmd/<name>.rs`):
 - `dojo schema --brief` and `dojo schema --out <dir>` (writes `course.schema.json`, `item.schema.json`).
 - `dojo validate <course-dir> [--json] [--strict] [--web <dir>]` (`crates/dojo-cli/src/cmd/validate.rs`, `run_validate`). Exit 0 ok, 1 on errors (or warnings with `--strict`).
+- Course checks (`course.json` `checks`): `run_checks` (`crates/dojo-cli/src/cmd/validate.rs`) runs each script that passes the core path rule; findings are parsed by `parse_findings` (`crates/dojo-core/src/validate/checks.rs`) into `check_failed` / `check_bad_output`. Contract: CONTRACT section 7.
 - `dojo lock <course-dir>` (`crates/dojo-cli/src/cmd/lock.rs`). Rewrites `ids.lock`.
 - `dojo build <course-dir> [--out <dir>] [--wasm <file>] [--web <dir>] [--strict]` (`crates/dojo-cli/src/cmd/build.rs`). Default out `dist`.
 - `dojo init <course-id> [--title T] [--ui LANG] [--content-lang LANG] [--workspace DIR]` (`crates/dojo-cli/src/cmd/init.rs`).

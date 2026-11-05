@@ -84,6 +84,7 @@ After every 2-3 `add` calls (about 30 items) run:
 ```
 Exit code 0 = no errors. Fix every `error` (the message names the file, line and rule). Read the `warning`s: fix them unless you have a reason. Then `./dojo lock workspace/<course-id>` records the ids (it refuses if there are errors). Repeat for the next shard. `./dojo stats workspace/<course-id>` shows counts per unit and type; use it to find thin units.
 Never end a session with validation errors.
+`dojo validate` also runs the course's check scripts (`course.json` `checks`). It executes them with your full environment: validate only courses you trust, or pass `--no-checks` to skip the scripts.
 
 ## 6. Review before building
 Re-read a random sample (10-15%) of the items as a learner would: is each answer actually supported by the materials, is exactly one option right (for `choice`), are the explanations true? Fix or retire what is not. Report to the user: number of items per unit and type, anything you skipped and why.

@@ -86,6 +86,12 @@
         }
       ]
     },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CourseCheck"
+      }
+    },
     "markup": {
       "type": [
         "string",
@@ -806,6 +812,23 @@
       },
       "additionalProperties": false
     },
+    "CourseCheck": {
+      "description": "One external course check: `script` is a path relative to the course dir.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "script"
+      ]
+    },
     "RubyConfig": {
       "description": "`course.ruby`: which kanji need no reading. The skip set = Han characters of `skip` plus the Han characters of the string at item path `skipKey` (default `meta.kanji`) of every item tagged `skipTag`. A `{base|reading}` whose Han characters are all in the set renders as bare `base`; other ruby keeps its reading.",
       "type": "object",
@@ -834,6 +857,16 @@
             "null"
           ],
           "items": {
+            "type": "string"
+          }
+        },
+        "dict": {
+          "description": "Word -> reading pairs known at build time (`{base|reading}` source); merged into the browser dict.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
             "type": "string"
           }
         }
