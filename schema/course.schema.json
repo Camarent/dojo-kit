@@ -871,7 +871,7 @@
           }
         },
         "drillTags": {
-          "description": "Items with any of these tags are kanji-drill items: each Han character in their prompt needs a `{base|reading}` ruby.",
+          "description": "Items with any of these tags are kanji-drill items: exempt from the ruby checks (the headword stays bare).",
           "type": [
             "array",
             "null"
@@ -881,7 +881,7 @@
           }
         },
         "drillUnits": {
-          "description": "Units whose items are kanji-drill items (same rule as `drillTags`).",
+          "description": "Units whose items are kanji-drill items (same exemption as `drillTags`).",
           "type": [
             "array",
             "null"
