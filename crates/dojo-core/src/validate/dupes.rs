@@ -106,45 +106,71 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
     }
 }
 
-/// Items grouped by (unit, type, normalized answer sets); each entry is (file, line, item, prompt).
-type AnswerGroups<'a> = BTreeMap<(String, &'a str, Vec<Vec<String>>), Vec<(&'a str, usize, &'a Item, String)>>;
+/// Prompt reduced for duplicate matching: lowercase, `{base|reading}` ruby kept as base, parenthesised hints removed, whitespace collapsed, trailing punctuation trimmed.
+fn dup_prompt_key(prompt: &str) -> String {
+    let mut out = String::new();
+    let mut depth = 0usize;
+    let mut in_ruby_reading = false;
+    let mut in_ruby = false;
+    for c in prompt.chars() {
+        match c {
+            '(' | '\u{ff08}' => depth += 1,
+            ')' | '\u{ff09}' => depth = depth.saturating_sub(1),
+            _ if depth > 0 => {}
+            '{' => in_ruby = true,
+            '|' if in_ruby => in_ruby_reading = true,
+            '}' if in_ruby => {
+                in_ruby = false;
+                in_ruby_reading = false;
+            }
+            _ if in_ruby_reading => {}
+            _ => out.extend(c.to_lowercase()),
+        }
+    }
+    let collapsed = out.split_whitespace().collect::<Vec<_>>().join(" ");
+    collapsed.trim_end_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace() || "\u{3002}\u{3001}\u{ff01}\u{ff1f}\u{2026}".contains(c)).to_string()
+}
 
-/// Check for items in the same unit and type with the same normalized answers but different prompts (likely one word entered twice)
+/// One candidate for the dup_word check: file, line, item, prompt key, flat answer set.
+type DupCandidate<'a> = (&'a str, usize, &'a Item, String, BTreeSet<String>);
+
+/// Check for live items in the same unit and type whose prompts match (after normalization) and whose answer sets intersect (likely one word entered twice)
 pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
-    // Group by (unit, type, normalized answer sets); only gap, cloze, and numeric, and only non-stimulus items
-    let mut by_answers: AnswerGroups = BTreeMap::new();
+    let superseded: BTreeSet<&str> = items.iter().filter_map(|(_, _, it)| it.supersedes_field()).flatten().map(String::as_str).collect();
+    let mut by_group: BTreeMap<(String, &str), Vec<DupCandidate>> = BTreeMap::new();
 
     for (file, line, item) in items {
-        if item.stimulus().is_some() {
+        if item.stimulus().is_some() || item.is_retired() || superseded.contains(item.id()) {
             continue;
         }
         let item_type = item.item_type();
         if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric) {
             continue;
         }
-        let answers = normalize_answer_set(item, course_norm);
-        if answers.iter().all(Vec::is_empty) {
+        let answers: BTreeSet<String> = normalize_answer_set(item, course_norm).into_iter().flatten().collect();
+        if answers.is_empty() {
             continue;
         }
-        let norm_prompt = normalize(item.prompt(), &effective_norm(item, course_norm));
-        if norm_prompt.is_empty() {
+        let key = dup_prompt_key(item.prompt());
+        if key.is_empty() {
             continue;
         }
-        by_answers.entry((item.unit().to_string(), item_type.as_str(), answers)).or_default().push((*file, *line, *item, norm_prompt));
+        by_group.entry((item.unit().to_string(), item_type.as_str())).or_default().push((*file, *line, *item, key, answers));
     }
 
-    for group in by_answers.values() {
-        let distinct: BTreeSet<&str> = group.iter().map(|(_, _, _, p)| p.as_str()).collect();
-        if distinct.len() < 2 {
-            continue;
+    for group in by_group.values() {
+        for (i, a) in group.iter().enumerate() {
+            for b in group.iter().skip(i + 1) {
+                if a.3 != b.3 || a.4.is_disjoint(&b.4) {
+                    continue;
+                }
+                sink.warning(
+                    "dup_word",
+                    a.0,
+                    a.1,
+                    format!("items '{}', '{}' have the same prompt and overlapping answers; the same word may be entered twice", a.2.id(), b.2.id()),
+                );
+            }
         }
-        let Some(&(file, line, _, _)) = group.first() else { continue };
-        let ids: Vec<String> = group.iter().map(|(_, _, it, _)| format!("'{}'", it.id())).collect();
-        sink.warning(
-            "dup_word",
-            file,
-            line,
-            format!("items {} have the same answers but different prompts; the same word may be entered twice", ids.join(", ")),
-        );
     }
 }

@@ -153,73 +153,91 @@ fn dup_word_fires(lines: &[&str]) -> bool {
 }
 
 #[test]
-fn dup_word_same_unit_type_answers_different_prompts() {
-    // Same word asked twice in the same unit and type, with different prompts
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
-    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"Say it in English","answers":["nine"]}"#;
+fn dup_word_hint_prompt_vs_plain_prompt_overlapping_answers() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"swim (kana or kanji)","answers":["swim","swam"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim","answers":["swam"]}"#;
     let d = run(COURSE, &[l1, l2]);
     let w: Vec<_> = d.iter().filter(|d| d.code == "dup_word").collect();
-    assert_eq!(w.len(), 1, "one warning per answer group, got {d:?}");
+    assert_eq!(w.len(), 1, "one warning per pair, got {d:?}");
     for id in ["u-1", "u-2"] {
         assert!(w[0].message.contains(id), "message lists {id}: {}", w[0].message);
     }
 }
 
 #[test]
-fn dup_word_kana_prompt_vs_kanji_prompt_copy() {
-    // Kana prompt and kanji prompt with the same answer: a copied word
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"くるま","answers":["車"]}"#;
-    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"車","answers":["車"]}"#;
+fn dup_word_ruby_and_case_normalized() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"{Swim|swm}  now!","answers":["x"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim now","answers":["x"]}"#;
     assert!(dup_word_fires(&[l1, l2]));
 }
 
 #[test]
-fn dup_word_cloze_same_blanks_different_prompts() {
+fn dup_word_cloze_same_prompt_same_blanks() {
     let l1 = r#"{"type":"cloze","id":"u-1","unit":"u","prompt":"Capital ___","parts":["Capital ",["Paris"]]}"#;
-    let l2 = r#"{"type":"cloze","id":"u-2","unit":"u","prompt":"France's city ___","parts":["France's city ",["Paris"]]}"#;
+    let l2 = r#"{"type":"cloze","id":"u-2","unit":"u","prompt":"capital ___ (hint)","parts":["Capital ",["Paris"]]}"#;
     assert!(dup_word_fires(&[l1, l2]));
 }
 
 #[test]
-fn dup_word_numeric_same_answer_different_prompts() {
+fn dup_word_numeric_same_prompt_same_answer() {
     let l1 = r#"{"type":"numeric","id":"u-1","unit":"u","prompt":"2+2?","answer":4}"#;
-    let l2 = r#"{"type":"numeric","id":"u-2","unit":"u","prompt":"Two plus two?","answer":4}"#;
+    let l2 = r#"{"type":"numeric","id":"u-2","unit":"u","prompt":"2+2","answer":4}"#;
     assert!(dup_word_fires(&[l1, l2]));
 }
 
 #[test]
-fn dup_word_decoy_different_answers_no_fire() {
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
-    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"Say it in English","answers":["ten"]}"#;
+fn dup_word_homophone_different_prompts_no_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"rain","answers":["ame"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"candy","answers":["ame"]}"#;
     assert!(!dup_word_fires(&[l1, l2]));
 }
 
 #[test]
-fn dup_word_same_prompt_same_answers_no_fire() {
-    // Same prompt: duplicate_prompt territory, not dup_word
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
-    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+fn dup_word_sentence_drill_different_prompts_no_fire() {
+    let l1 = r#"{"type":"gap","id":"sd-1","unit":"u","prompt":"I swim every day.","answers":["swim"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim","answers":["swim"]}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_retired_item_no_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"swim","answers":["swim"],"status":"retired"}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim","answers":["swim"]}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_superseded_item_no_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"swim","answers":["swim"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim","answers":["swim"],"supersedes":["u-1"]}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_disjoint_answers_no_fire() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"swim","answers":["a"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim","answers":["b"]}"#;
     assert!(!dup_word_fires(&[l1, l2]));
 }
 
 #[test]
 fn dup_word_other_unit_no_fire() {
     let two = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"},{"id":"v","title":"V"}]}"#;
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
-    let l2 = r#"{"type":"gap","id":"v-1","unit":"v","prompt":"Say it in English","answers":["nine"]}"#;
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"swim","answers":["swim"]}"#;
+    let l2 = r#"{"type":"gap","id":"v-1","unit":"v","prompt":"swim","answers":["swim"]}"#;
     assert!(!codes(&run(two, &[l1, l2])).contains(&"dup_word"));
 }
 
 #[test]
 fn dup_word_other_type_no_fire() {
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
-    let l2 = r#"{"type":"numeric","id":"u-2","unit":"u","prompt":"Say it in English","answer":9}"#;
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"nine","answers":["9"]}"#;
+    let l2 = r#"{"type":"numeric","id":"u-2","unit":"u","prompt":"nine","answer":9}"#;
     assert!(!dup_word_fires(&[l1, l2]));
 }
 
 #[test]
 fn dup_word_stimulus_items_not_checked() {
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"],"stimulus":"s1"}"#;
-    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"Say it in English","answers":["nine"],"stimulus":"s1"}"#;
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"swim","answers":["swim"],"stimulus":"s1"}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim","answers":["swim"],"stimulus":"s1"}"#;
     assert!(!dup_word_fires(&[l1, l2]));
 }
