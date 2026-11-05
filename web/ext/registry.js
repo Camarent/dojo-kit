@@ -163,6 +163,29 @@
     return null;
   }
 
+  // Aligns a word with okurigana to its reading so only kanji runs carry ruby: 飲み物/のみもの -> {飲|の}み{物|もの}. Whole word on failed alignment.
+  function splitRuby(base, reading) {
+    var runs = base.match(/[一-鿿㐀-䶿\u{20000}-\u{2CEAF}]+|[^一-鿿㐀-䶿\u{20000}-\u{2CEAF}]+/gu) || [];
+    if (runs.length < 2) return [{ base: base, reading: reading }];
+    var out = [];
+    var pos = 0;
+    for (var k = 0; k < runs.length; k++) {
+      var run = runs[k];
+      if (!isHan(run.charAt(0))) {
+        if (reading.substr(pos, run.length) !== run) return [{ base: base, reading: reading }];
+        out.push({ text: run });
+        pos += run.length;
+        continue;
+      }
+      var nextKana = k + 1 < runs.length ? runs[k + 1] : null;
+      var end = nextKana === null ? reading.length : reading.indexOf(nextKana, pos + 1);
+      if (end < 0 || end <= pos) return [{ base: base, reading: reading }];
+      out.push({ base: run, reading: reading.slice(pos, end) });
+      pos = end;
+    }
+    return pos === reading.length ? out : [{ base: base, reading: reading }];
+  }
+
   // Splits plain text into text/ruby segments, longest known word first; unknown kanji stay bare.
   function annotateText(str) {
     if (!S.rubyDict || typeof str !== 'string') return [{ text: str }];
@@ -174,7 +197,7 @@
       var hit = i > 0 && i !== lastEnd && isHan(str.charAt(i - 1)) ? null : longestWordAt(str, i);
       if (hit) {
         if (buf) { out.push({ text: buf }); buf = ''; }
-        out.push({ base: hit, reading: S.rubyDict[hit] });
+        splitRuby(hit, S.rubyDict[hit]).forEach(function (x) { out.push(x); });
         i += hit.length;
         lastEnd = i;
       } else {

@@ -52,11 +52,11 @@ Fields common to every item: `type`, `prompt` (required: the question or instruc
 Types (see `./dojo schema --brief` for the main fields; `schema/course.schema.json` is the complete reference):
 - `choice`: one correct option among 3-5. `options`, `answer` (index of the correct option, counting from 0). The app shuffles options, so the position of the answer does not matter. Use for true/false too (`["True","False"]`).
 - `multi`: select all that apply. `options` (3+), `correct` (array of indices, fewer than the number of options). Say in `prompt` that several answers are right.
-- `gap`: a typed short answer. `answers` (all accepted spellings), optional `normalize` (`caseSensitive`, `trim`, `collapseSpaces`, `stripPunctuation`). Only for answers that have one unambiguous short form.
+- `gap`: a typed short answer. `answers` (all accepted spellings), optional `normalize` (`caseSensitive`, `trim`, `collapseSpaces`, `stripPunctuation`). Only for answers that have one unambiguous short form. Optional `retry`: readings that are close but not correct (e.g. a sibling word that also fits); the learner is asked to try another form instead of getting a wrong mark. Never list an item's own answers in `retry`.
 - `cloze`: fill blanks in a sentence. `parts`: array of strings (literal text) and arrays of strings (a blank with its accepted alternatives), e.g. `["The capital of France is ",["Paris"],"."]`. Max 5 blanks recommended.
 - `numeric`: a number. `answer`, optional `tolerance` (absolute), optional `unitLabel` (display only, e.g. "kg").
 - `match`: link pairs. `pairs: [{"left":"..","right":".."}]` (2-6 recommended), optional `distractors` (extra wrong right-hand choices). Lefts must be distinct, rights must be distinct.
-- `order`: put steps in order. `steps` in the CORRECT order (the app shuffles them). 3-7 steps recommended.
+- `order`: put steps in order. `steps` in the CORRECT order (the app shuffles them). 3-7 steps recommended. Optional `altOrders`: other step orders that are also correct (each a permutation of the step indices, not the identity, no repeats).
 - `card`: self-rated flashcard. `prompt` is the front, `back` the answer. Use for definitions and facts that cannot be auto-checked. Cards are never used in the mock exam.
 
 Quality rules:
