@@ -2,6 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const H = require('./app-harness.js');
+const RU = JSON.parse(H.read('i18n/ru.json'));
 
 const item = { id: 'g1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['x'] };
 
@@ -18,8 +19,8 @@ test('results skipped answer shows session.dontKnow instead of dash', async () =
     const li = H.find(v, 'missed-g1');
     assert.ok(li, 'missed-g1 not found');
     const txt = H.text(li);
-    assert.ok(txt.includes(lang === 'en' ? "I don't know" : 'Не знаю'),
-      `Expected ${lang === 'en' ? "I don't know" : 'Не знаю'} in: ${txt}`);
+    assert.ok(txt.includes(lang === 'en' ? "I don't know" : RU['session.dontKnow']),
+      `Expected ${lang === 'en' ? "I don't know" : RU['session.dontKnow']} in: ${txt}`);
     assert.ok(!txt.includes(' - ') && !txt.includes('\u2013 '),
       `Should not contain bare dash in: ${txt}`);
   }
@@ -33,7 +34,7 @@ test('results zero score shows hint, non-zero does not', async () => {
     const hint0 = H.find(v0, 'results-hint');
     assert.ok(hint0, 'results-hint not found for 0 score');
     const hintText = H.text(hint0);
-    assert.ok(hintText.includes(lang === 'en' ? 'Review weak spots from Home' : 'Повторите слабые места на главной'),
+    assert.ok(hintText.includes(lang === 'en' ? 'Review weak spots from Home' : RU['results.hint']),
       `Unexpected hint text: ${hintText}`);
 
     // Non-zero score (partial)

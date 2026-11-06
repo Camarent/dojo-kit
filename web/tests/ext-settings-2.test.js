@@ -178,16 +178,16 @@ test('Select has an accessible name via label for/id', () => {
 
 test('Labels use the active language with primary-tag and en fallback', () => {
   const sb = loadApp();
-  sb.DojoExt.registerSetting({ key: 'lbl', label: { en: 'Hello', ru: 'Привет' }, options: [{ value: 'a', label: { en: 'A', ru: 'А' } }], default: 'a' });
+  sb.DojoExt.registerSetting({ key: 'lbl', label: { en: 'Hello', ru: 'Privet' }, options: [{ value: 'a', label: { en: 'A', ru: 'Ah' } }], default: 'a' });
   const labelOf = (props) => {
     const row = find(sb.DojoApp._renderPluginSettings(props, {}), 'plugin-setting-lbl');
     return row.props.children.filter((c) => c && c.type === 'label')[0].props.children;
   };
   const base = { t: (k) => k, store: { doc: { settings: {} } } };
-  assert.deepStrictEqual([].concat(labelOf(Object.assign({ lang: 'ru' }, base))), ['Привет']);
-  assert.deepStrictEqual([].concat(labelOf(Object.assign({ lang: 'ru-RU' }, base))), ['Привет']);
+  assert.deepStrictEqual([].concat(labelOf(Object.assign({ lang: 'ru' }, base))), ['Privet']);
+  assert.deepStrictEqual([].concat(labelOf(Object.assign({ lang: 'ru-RU' }, base))), ['Privet']);
   assert.deepStrictEqual([].concat(labelOf(Object.assign({ lang: 'fr' }, base))), ['Hello']);
-  assert.deepStrictEqual([].concat(labelOf(Object.assign({ course: { uiLanguage: 'ru' } }, base))), ['Привет']);
+  assert.deepStrictEqual([].concat(labelOf(Object.assign({ course: { uiLanguage: 'ru' } }, base))), ['Privet']);
 });
 
 test('A markup render() reading getSetting changes output after the select changes', () => {

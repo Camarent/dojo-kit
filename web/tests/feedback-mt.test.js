@@ -10,7 +10,7 @@ test('digits equal to answer hidden', () => {
 });
 test('empty hidden, text shown', () => {
   assert.strictEqual(mtVisible('', 'x'), false);
-  assert.strictEqual(mtVisible('Здравствуйте', '1346'), true);
+  assert.strictEqual(mtVisible('Bonjour', '1346'), true);
 });
 test('translation equal to a letter answer hidden', () => {
   assert.strictEqual(mtVisible('Paris, ', 'paris'.replace('p', 'P')), false);

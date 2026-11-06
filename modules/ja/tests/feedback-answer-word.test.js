@@ -2,7 +2,7 @@
 // Mutation coverage: removing the rubyDict expansion in rubyRender (all mode) turns the ruby tests red; removing answerTexts from kanjiBreakdown turns the rows test red.
 const test = require('node:test');
 const assert = require('node:assert');
-const H = require('./app-harness.js');
+const H = require('./harness.js').appHarness;
 
 const kj = (c, ru, readings, examples) => ({ id: 'k-' + c, unit: 'k', type: 'card', prompt: c, back: ru, tags: ['kanji', 'band1'], meta: { kanji: c, ru: ru, on: readings.on, kun: readings.kun, examples: examples } });
 const items = [

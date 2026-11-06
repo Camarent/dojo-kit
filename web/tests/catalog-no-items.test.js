@@ -28,23 +28,23 @@ test('The catalog never renders a per-item row for any unit', async () => {
 
 test('The kanji tab rows show the kanji character and its meaning', async () => {
   const items = [
-    gap('a', 'u1', { entity: 'kanji-1', meta: { title: '日 sun', kanji: '日', ru: 'sun' } }),
-    gap('b', 'u1', { entity: 'kanji-2', meta: { title: '月 moon', kanji: '月', ru: 'moon' } })
+    gap('a', 'u1', { entity: 'kanji-1', meta: { title: 'Sol sun', kanji: 'Sol', ru: 'sun' } }),
+    gap('b', 'u1', { entity: 'kanji-2', meta: { title: 'Luna moon', kanji: 'Luna', ru: 'moon' } })
   ];
   const c = await open(items, { course: { units: [{ id: 'u1', title: 'Kanji' }] } });
   const view = c.cat.view();
   const text = H.text(view);
-  assert.ok(text.includes('日') && text.includes('sun'), 'Should show kanji and meaning for 日/sun');
-  assert.ok(text.includes('月') && text.includes('moon'), 'Should show kanji and meaning for 月/moon');
+  assert.ok(text.includes('Sol') && text.includes('sun'), 'Should show kanji and meaning for Sol/sun');
+  assert.ok(text.includes('Luna') && text.includes('moon'), 'Should show kanji and meaning for Luna/moon');
 });
 
 test('Search finds an entity by its reading', async () => {
   const items = [
-    gap('a', 'u1', { entity: 'kanji-1', meta: { kanji: '日', ru: 'ひ' } }),
-    gap('b', 'u1', { entity: 'kanji-2', meta: { kanji: '月', ru: 'つき' } })
+    gap('a', 'u1', { entity: 'kanji-1', meta: { kanji: 'Sol', ru: 'hi' } }),
+    gap('b', 'u1', { entity: 'kanji-2', meta: { kanji: 'Luna', ru: 'tsuki' } })
   ];
   const c = await open(items, { course: { units: [{ id: 'u1', title: 'Kanji' }] } });
-  c.cat.filter({ search: 'ひ' });
+  c.cat.filter({ search: 'hi' });
   const found = c.topics().filter(id => id.startsWith('topic-kanji-1'));
   assert.strictEqual(found.length, 1, 'Should find entity by reading');
 });

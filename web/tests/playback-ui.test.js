@@ -41,14 +41,6 @@ test('replays:2 shows 2 then 1 left', () => {
   assert.match(H.text(H.find(view(), 'play-replays')), /Replays left: 1/);
 });
 
-test('russian counter is plural-aware and has the noreplay text', () => {
-  const t = H.loadApp().DojoApp._makeT({ en, ru }, 'ru');
-  assert.strictEqual(t('audio.replays', { n: 1 }), 'Повторов осталось: 1');
-  assert.strictEqual(t('audio.replays', { n: 2 }), 'Повторов осталось: 2');
-  assert.strictEqual(t('audio.replays', { n: 0 }), 'Повторов осталось: 0');
-  assert.strictEqual(t('audio.noreplay'), 'Повторов больше нет');
-});
-
 test('no counter without a replay limit', () => {
   const C = H.loadApp().DojoCommon;
   const audio = { t: (k) => k, played: {}, win: {}, cfg: {}, onFail() {}, status: 'ok' };

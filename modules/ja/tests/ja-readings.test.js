@@ -232,3 +232,16 @@ for (const [input, expected] of ROMAJI_CASES) {
     assert.ok(result.includes(`<rt>${expected}</rt>`), `Expected ${expected}, got: ${result}`);
   });
 }
+
+test('kanjiIndex: key/meaning/readings config branches', () => {
+  const rd = require('../web/readings.js');
+  const items = [
+    { meta: { kanji: '日', en: 'sun' } }, { meta: { kanji: '日', en: 'dup' } }, { meta: { kanji: 'ab' } }, null, 'x',
+    { meta: { kanji: '月' } }
+  ];
+  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, 'en')), ['日']);
+  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, { meaning: 'meta.en' })), ['日']);
+  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, {})), []);
+  assert.deepStrictEqual(rd.kanjiIndex(null), {});
+  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, { key: 'meta.kanji', meaning: 'meta.en', readings: [] })), ['日']);
+});

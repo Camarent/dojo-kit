@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { read, mkContent, mkI18n, setup, loadApp, find, allText, renderSettings } = require('./settings-ui-helpers.js');
+const RU = JSON.parse(read('i18n/ru.json'));
 
 function assertClean(str) {
   assert.ok(!/undefined/.test(str), 'contains undefined: ' + str);
@@ -73,9 +74,9 @@ for (const lang of ['ru', 'en']) {
       assert.ok(saveText.includes('Save'), 'Save button should have "Save" text in en: ' + saveText);
       assert.ok(resetText.includes('Reset'), 'Reset button should have "Reset" text in en: ' + resetText);
     } else if (lang === 'ru') {
-      assert.ok(cancelText.includes('Отмена'), 'Cancel button should have "Отмена" text in ru: ' + cancelText);
-      assert.ok(saveText.includes('Сохранить'), 'Save button should have "Сохранить" text in ru: ' + saveText);
-      assert.ok(resetText.includes('Сбросить'), 'Reset button should have "Сбросить" text in ru: ' + resetText);
+      assert.ok(cancelText.includes(RU.cancel), 'Cancel button should have the ru cancel text: ' + cancelText);
+      assert.ok(saveText.includes(RU.save), 'Save button should have the ru save text: ' + saveText);
+      assert.ok(resetText.includes(RU['settings.unitSettings.reset']), 'Reset button should have the ru reset text: ' + resetText);
     }
     
     // Assert no undefined, {, [object in rendered dialog text
@@ -121,9 +122,9 @@ for (const lang of ['ru', 'en']) {
       assert.ok(saveText.includes('Save'), 'Save button should have "Save" text in en: ' + saveText);
       assert.ok(resetText.includes('Reset'), 'Reset button should have "Reset" text in en: ' + resetText);
     } else if (lang === 'ru') {
-      assert.ok(cancelText.includes('Отмена'), 'Cancel button should have "Отмена" text in ru: ' + cancelText);
-      assert.ok(saveText.includes('Сохранить'), 'Save button should have "Сохранить" text in ru: ' + saveText);
-      assert.ok(resetText.includes('Сбросить'), 'Reset button should have "Сбросить" text in ru: ' + resetText);
+      assert.ok(cancelText.includes(RU.cancel), 'Cancel button should have the ru cancel text: ' + cancelText);
+      assert.ok(saveText.includes(RU.save), 'Save button should have the ru save text: ' + saveText);
+      assert.ok(resetText.includes(RU['settings.unitSettings.reset']), 'Reset button should have the ru reset text: ' + resetText);
     }
     
     // Assert no undefined, {, [object in rendered dialog text
@@ -163,8 +164,8 @@ for (const lang of ['ru', 'en']) {
       // In English, the confirm button text comes from settings.reset.confirm
       assert.ok(confirmText.length > 0, 'Confirm button should have text in en');
     } else if (lang === 'ru') {
-      assert.ok(cancelText.includes('Отмена'), 'Cancel button should have "Отмена" text in ru: ' + cancelText);
-      assert.ok(confirmText.includes('Да, стереть'), 'Confirm button should have "Да, стереть" text in ru: ' + confirmText);
+      assert.ok(cancelText.includes(RU.cancel), 'Cancel button should have the ru cancel text: ' + cancelText);
+      assert.ok(confirmText.includes(RU['settings.reset.confirm']), 'Confirm button should have the ru confirm text: ' + confirmText);
     }
     
     // Assert no undefined, {, [object in rendered text

@@ -23,7 +23,7 @@ test('tag caption beats type caption, type caption beats the built-in one', asyn
 });
 
 test('short prompt is large, long prompt is not', async () => {
-  const a = await start([choice('a', '一', [])]);
+  const a = await start([choice('a', 'one', [])]);
   assert.ok(/\bbig\b/.test(H.find(a.v(), 'prompt').props.class));
   const b = await start([choice('a', 'A fairly long sentence prompt', [])]);
   assert.ok(!/\bbig\b/.test(H.find(b.v(), 'prompt').props.class));

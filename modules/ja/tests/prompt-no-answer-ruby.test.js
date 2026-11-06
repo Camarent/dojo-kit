@@ -1,10 +1,8 @@
 'use strict';
-// Setup copied from modules/ja/tests/ruby-unlearned.test.js
+// Setup copied from ruby-unlearned.test.js
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('./ja-ext.js');
-const H = require('./app-harness.js');
-const { readSource } = require('./load-bundle.js');
+const { jaExt: Ext, appHarness: H, readSource } = require('./harness.js');
 
 const items = [
   { id: 'vocab-741', type: 'gap', unit: 'u1', tags: ['vocab', 'band1'], prompt: '元気', answers: ['げんき'], explanation: '{元気|げんき}' },

@@ -27,7 +27,7 @@ function unitWithGlyph(id, title, glyph) {
 test('glyph path set (meta.char) shows the value in detail-glyph', async () => {
   const course = courseWithGlyph('meta.char');
   const items = [
-    choice('a', 'u1', { meta: { kanji: '旧', char: '字' } })
+    choice('a', 'u1', { meta: { kanji: 'Q', char: 'Z' } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -39,13 +39,13 @@ test('glyph path set (meta.char) shows the value in detail-glyph', async () => {
   // Check that detail-glyph is rendered with the custom path value
   const glyphEl = H.find(v, 'detail-glyph');
   assert.ok(glyphEl, 'detail-glyph element exists');
-  assert.strictEqual(H.text(glyphEl), '字', 'glyph shows meta.char value');
+  assert.strictEqual(H.text(glyphEl), 'Z', 'glyph shows meta.char value');
 });
 
 test('glyph path set but resolves to empty/missing -> no detail-glyph element even when meta.kanji is set', async () => {
   const course = courseWithGlyph('meta.char');
   const items = [
-    choice('a', 'u1', { meta: { kanji: '旧' } })
+    choice('a', 'u1', { meta: { kanji: 'Q' } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -62,7 +62,7 @@ test('glyph path set but resolves to empty/missing -> no detail-glyph element ev
 test('glyph unset -> no detail-glyph', async () => {
   const course = courseWithGlyph(undefined);
   const items = [
-    choice('a', 'u1', { meta: { kanji: '旧' } })
+    choice('a', 'u1', { meta: { kanji: 'Q' } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -78,7 +78,7 @@ test('glyph unset -> no detail-glyph', async () => {
 test('glyph path with nested property works', async () => {
   const course = courseWithGlyph('meta.data.character');
   const items = [
-    choice('a', 'u1', { meta: { data: { character: '漢' } } })
+    choice('a', 'u1', { meta: { data: { character: 'H' } } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -89,13 +89,13 @@ test('glyph path with nested property works', async () => {
   
   const glyphEl = H.find(v, 'detail-glyph');
   assert.ok(glyphEl, 'detail-glyph element exists');
-  assert.strictEqual(H.text(glyphEl), '漢', 'glyph shows nested path value');
+  assert.strictEqual(H.text(glyphEl), 'H', 'glyph shows nested path value');
 });
 
 test('glyph path set but resolves to null -> no detail-glyph', async () => {
   const course = courseWithGlyph('meta.char');
   const items = [
-    choice('a', 'u1', { meta: { char: null, kanji: '旧' } })
+    choice('a', 'u1', { meta: { char: null, kanji: 'Q' } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -110,7 +110,7 @@ test('glyph path set but resolves to null -> no detail-glyph', async () => {
 test('glyph path set but resolves to empty string -> no detail-glyph', async () => {
   const course = courseWithGlyph('meta.char');
   const items = [
-    choice('a', 'u1', { meta: { char: '', kanji: '旧' } })
+    choice('a', 'u1', { meta: { char: '', kanji: 'Q' } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -129,8 +129,8 @@ test('unit-level glyph config overrides course-level', async () => {
   ]);
   
   const items = [
-    choice('a', 'u1', { meta: { kanji: '旧', char: 'A' } }),
-    choice('b', 'u2', { meta: { kanji: '新', char: 'B' } })
+    choice('a', 'u1', { meta: { kanji: 'Q', char: 'A' } }),
+    choice('b', 'u2', { meta: { kanji: 'N', char: 'B' } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -141,7 +141,7 @@ test('unit-level glyph config overrides course-level', async () => {
   let v = cat.view();
   let glyphEl = H.find(v, 'detail-glyph');
   assert.ok(glyphEl, 'detail-glyph element exists for u1');
-  assert.strictEqual(H.text(glyphEl), '旧', 'u1 glyph shows meta.kanji');
+  assert.strictEqual(H.text(glyphEl), 'Q', 'u1 glyph shows meta.kanji');
   
   // Test u2 item (should use unit glyph config: meta.char)
   cat.setState({ detailItem: items[1] });

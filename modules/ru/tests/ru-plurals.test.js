@@ -1,12 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const fs = require('fs');
-const path = require('path');
-const { makeT } = require('../ui/i18n.js');
-
-const root = path.join(__dirname, '..');
-const ru = JSON.parse(fs.readFileSync(path.join(root, 'i18n', 'ru.json'), 'utf8'));
+const { makeT, ru } = require('./harness.js');
 const t = makeT({ ru }, 'ru');
 
 test('home.weak.count uses Russian one/few/many forms', () => {

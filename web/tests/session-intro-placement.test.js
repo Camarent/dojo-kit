@@ -94,7 +94,7 @@ function inst(Cls, props) {
 async function catalogSetup() {
   const sb = load(true);
   const content = mkContent({ units: [{ id: 'u', title: 'U1' }, { id: 'v', title: 'U2' }] }, 3);
-  content.items[0].prompt = '{漢|かん}字';
+  content.items[0].prompt = '{Glyph|qzx}word';
   content.items[0].tags = ['kanji'];
   content.items[1].tags = ['kanji', 'extra'];
   content.items[2].unit = 'v';
@@ -185,10 +185,10 @@ test('Catalog: units are tabs, tags filter, stage colour from progress', async (
 test('Catalog: search matches DojoExt.plain() text and the raw reading', async () => {
   const c = await catalogSetup();
   const search = (q) => { find(c.cat.view(), 'catalog-search').props.onInput({ target: { value: q } }); };
-  search('漢字');
+  search('Glyphword');
   assert.ok(find(c.cat.view(), 'topic-g1'));
   assert.strictEqual(find(c.cat.view(), 'topic-g2'), null);
-  search('かん');
+  search('qzx');
   assert.ok(find(c.cat.view(), 'topic-g1'));
   assert.strictEqual(find(c.cat.view(), 'topic-g2'), null);
   search('E2');

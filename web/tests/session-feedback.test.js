@@ -105,7 +105,7 @@ function typeInto(m, id, value) {
 
 const ITEMS = [];
 for (let i = 0; i < 4; i++) {
-  ITEMS.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: '{冷|れい}蔵庫 ' + i, answers: ['れいぞうこ'], explanation: '{冷|れい}' });
+  ITEMS.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: '{Fri|fri}dge ' + i, answers: ['fridge'], explanation: '{Fri|fri}' });
 }
 
 async function startDaily(m) {
@@ -126,7 +126,7 @@ async function answerGap(m, value) {
 test('typed correct answer shows right feedback with Correct verdict and no expected line', async () => {
   const m = await mount(ITEMS);
   await startDaily(m);
-  await answerGap(m, 'れいぞうこ');
+  await answerGap(m, 'fridge');
   const fb = q(m.rootEl, 'feedback');
   assert.ok(fb, 'feedback shown after answer');
   assert.ok(fb.attrs.class.split(' ').includes('right'), fb.attrs.class);
@@ -138,7 +138,7 @@ test('typed correct answer shows right feedback with Correct verdict and no expe
 test('typed wrong answer shows wrong feedback with Wrong verdict and expected line', async () => {
   const m = await mount(ITEMS);
   await startDaily(m);
-  await answerGap(m, 'れいぞうく');
+  await answerGap(m, 'fridgx');
   const fb = q(m.rootEl, 'feedback');
   assert.ok(fb, 'feedback shown after answer');
   assert.ok(fb.attrs.class.split(' ').includes('wrong'), fb.attrs.class);
@@ -146,5 +146,5 @@ test('typed wrong answer shows wrong feedback with Wrong verdict and expected li
   assert.strictEqual(txt(q(m.rootEl, 'verdict')), 'Wrong');
   const exp = q(m.rootEl, 'expected');
   assert.ok(exp, 'expected line shown for a wrong answer');
-  assert.ok(txt(exp).includes('れいぞうこ'), txt(exp));
+  assert.ok(txt(exp).includes('fridge'), txt(exp));
 });

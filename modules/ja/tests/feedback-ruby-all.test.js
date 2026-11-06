@@ -2,7 +2,7 @@
 // Mutation coverage: replacing renderTextAll with renderText in the explanation rendering turns this test red.
 const test = require('node:test');
 const assert = require('node:assert');
-const H = require('./app-harness.js');
+const H = require('./harness.js').appHarness;
 
 const item = {
   id: 'g1',

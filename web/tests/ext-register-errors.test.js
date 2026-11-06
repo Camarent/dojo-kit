@@ -25,16 +25,3 @@ test('preAnswerText: no hook, string result, non-string result, throwing hook', 
     assert.strictEqual(ext.preAnswerText({ id: 'a' }, 'txt'), 'txt');
   } finally { console.warn = warn; }
 });
-
-test('kanjiIndex: key/meaning/readings config branches', () => {
-  const rd = require('../../modules/ja/web/readings.js');
-  const items = [
-    { meta: { kanji: '日', en: 'sun' } }, { meta: { kanji: '日', en: 'dup' } }, { meta: { kanji: 'ab' } }, null, 'x',
-    { meta: { kanji: '月' } }
-  ];
-  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, 'en')), ['日']);
-  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, { meaning: 'meta.en' })), ['日']);
-  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, {})), []);
-  assert.deepStrictEqual(rd.kanjiIndex(null), {});
-  assert.deepStrictEqual(Object.keys(rd.kanjiIndex(items, { key: 'meta.kanji', meaning: 'meta.en', readings: [] })), ['日']);
-});

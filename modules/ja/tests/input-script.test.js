@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const ext = require('../ext.js');
+const ext = require('./harness.js').ext;
 
 const gap = (...answers) => ({ type: 'gap', answers });
 const MSG = 'use the course script';

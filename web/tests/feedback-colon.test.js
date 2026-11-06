@@ -2,6 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const H = require('./app-harness.js');
+const RU = JSON.parse(H.read('i18n/ru.json'));
 
 const choice = (id, unit, extra) => Object.assign({ id, unit, type: 'choice', prompt: 'Prompt ' + id, options: ['a', 'b', 'c'], answer: 0 }, extra);
 
@@ -15,15 +16,15 @@ async function startWrong(o) {
   return { m, scr };
 }
 
-test('feedback for wrong answer in ru contains "Правильно:" exactly once and never "::"', async () => {
+test('feedback for wrong answer in ru contains the session.expected label exactly once and never "::"', async () => {
   const { scr } = await startWrong({ lang: 'ru' });
   const fb = H.find(scr.view(), 'feedback');
   assert.ok(fb, 'feedback element found');
   const fbText = H.text(fb);
   
-  // Count occurrences of "Правильно:" - should be exactly 1
-  const correctCount = (fbText.match(/Правильно:/g) || []).length;
-  assert.strictEqual(correctCount, 1, '"Правильно:" appears exactly once, but appeared ' + correctCount + ' times in: ' + fbText);
+  // Count occurrences of the session.expected label - should be exactly 1
+  const correctCount = fbText.split(RU['session.expected']).length - 1;
+  assert.strictEqual(correctCount, 1, 'session.expected label appears exactly once, but appeared ' + correctCount + ' times in: ' + fbText);
   
   // Should never contain double colon
   assert.ok(!/::/.test(fbText), 'feedback should not contain "::", but got: ' + fbText);

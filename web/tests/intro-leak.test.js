@@ -44,17 +44,17 @@ test('match', () => {
   assert.ok(!leaksAnswer(it, 'rome is'));
 });
 test('weak-6 case hidden', () => {
-  const it = { type: 'gap', prompt: 'мыть; стирать', answers: ['あらう', '洗う'] };
-  assert.ok(leaksAnswer(it, 'あらう (洗う). Мыть посуду, руки; стирать одежду.'));
+  const it = { type: 'gap', prompt: 'wash; launder', answers: ['arau', 'lavare'] };
+  assert.ok(leaksAnswer(it, 'arau (lavare). Wash dishes, hands; launder clothes.'));
 });
 test('non-leaking explanation still shown', () => {
-  const it = { type: 'gap', answers: ['あらう', '洗う'] };
-  assert.ok(!leaksAnswer(it, 'Мыть посуду, руки; стирать одежду.'));
+  const it = { type: 'gap', answers: ['arau', 'lavare'] };
+  assert.ok(!leaksAnswer(it, 'Wash dishes, hands; launder clothes.'));
 });
 test('ruby reading form caught', () => {
-  const it = { type: 'gap', answers: ['あらう'] };
-  assert.ok(leaksAnswer(it, '{洗う|あらう} посуду'));
-  assert.ok(leaksAnswer({ type: 'gap', answers: ['洗う'] }, '{洗う|あらう} посуду'));
+  const it = { type: 'gap', answers: ['arau'] };
+  assert.ok(leaksAnswer(it, '{lavare|arau} dishes'));
+  assert.ok(leaksAnswer({ type: 'gap', answers: ['lavare'] }, '{lavare|arau} dishes'));
 });
 
 test('leaksAnswer: a one-letter Latin answer does not match inside a longer word', () => {

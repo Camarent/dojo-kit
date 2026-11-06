@@ -11,9 +11,9 @@ const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 test('lines: stimulus speak lines, item speak string, none without speak, plain() applied', () => {
   const sb = load(true);
   const S = sb.DojoSpeech;
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(S.lines({ text: 'x', speak: { lines: [{ voice: 'a', text: '{漢|かん}字' }, { text: 'b' }] } }))),
-    [{ text: '漢字', voice: 'a' }, { text: 'b' }]);
-  assert.strictEqual(S.lines({ speak: '{日|に}本' })[0].text, '日本');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S.lines({ text: 'x', speak: { lines: [{ voice: 'a', text: '{Kan|kan}ji' }, { text: 'b' }] } }))),
+    [{ text: 'Kanji', voice: 'a' }, { text: 'b' }]);
+  assert.strictEqual(S.lines({ speak: '{Ni|ni}hon' })[0].text, 'Nihon');
   assert.deepStrictEqual(J(S.lines({ text: 'visible text' })), []);
   assert.deepStrictEqual(J(S.lines({ prompt: 'p' })), []);
   assert.deepStrictEqual(J(S.lines(null)), []);

@@ -121,7 +121,7 @@ test('registerSetting rejects keys with a colon (unit: namespace)', () => {
 
 test('registerSetting rejects object labels without a string en', () => {
   assert.throws(() => ext.registerSetting({ key: 'k', label: {}, options: [{value: 'a'}], default: 'a' }));
-  assert.throws(() => ext.registerSetting({ key: 'k', label: { ru: 'Р' }, options: [{value: 'a'}], default: 'a' }));
+  assert.throws(() => ext.registerSetting({ key: 'k', label: { ru: 'R' }, options: [{value: 'a'}], default: 'a' }));
 });
 
 test('getSetting ignores Object.prototype keys', () => {

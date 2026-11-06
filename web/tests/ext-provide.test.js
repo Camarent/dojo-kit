@@ -48,7 +48,7 @@ test('provide rejects a bad name or a non-function', () => {
 test('registerFeedbackRows: the hook result replaces rows; null when unset or throwing', () => {
   const { E, warns } = ext();
   assert.strictEqual(E.feedbackRows({ prompt: 'p' }, {}), null);
-  const rows = [{ kanji: '日', meaning: 'day', on: ['ニチ'], kun: [] }];
+  const rows = [{ kanji: 'D', meaning: 'day', on: ['NICHI'], kun: [] }];
   E.registerFeedbackRows((item, ctx) => (ctx.examMode ? null : rows));
   assert.deepStrictEqual(E.feedbackRows({ prompt: 'p' }, { examMode: false }), rows);
   assert.strictEqual(E.feedbackRows({ prompt: 'p' }, { examMode: true }), null);
