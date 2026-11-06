@@ -191,3 +191,12 @@ The `artifact` target is the only one implemented: default storage artifact-db w
 ### 12.5 Numeric dictation (composition, no new item type)
 - numeric item + stimulus `{hideText:true, audio:[...]}` + unit `timer`. Web: numeric input gets `inputmode="numeric"`, focus after playback, Enter submits. checkNumeric grades.
 - Rejected option: a `dictation` Item variant (item.rs is at 389 lines; would duplicate checkNumeric).
+
+## 13. Optional modules and language packs
+- Module = folder `modules/<id>/` with `module.json` (`manifestVersion: 1`, `id`, `description?`, `hooks?`, `web?: {scripts, styles}`, `courseKeys?`, `markups?`, `requires?: [id]`). Unknown fields are rejected. Shipped: `ja`, `ru`; registry crate `modules/registry`.
+- Course: `course.json` `modules?: [id]` lists the modules the course enables; absent or empty = none.
+- Language pack: `web/i18n/packs.json` maps a UI language to `{modules: [id]}`, e.g. `{"ru": {"modules": ["ru"]}}`. Packs add modules for every course in that UI language.
+- Resolution: take course `modules`, then the pack for the UI language, then `requires` transitively. Load each `modules/<id>/module.json`. Order: dependencies first; among ready modules the smallest id first.
+- Missing module: a listed id with no loadable `module.json` fails with `module "<id>" not found (<origin>): no modules/<id>/module.json`, where origin is `listed in course.json modules`, `requested by language pack "<lang>"` or `required by module "<id>"`. Validator code `module_missing` (error, file `course.json`).
+- `module_key_unlisted` (error): a course key or markup that a module provides, while the module is not in the course `modules` list.
+- A folder whose `module.json` does not load is left out of the available-modules listing; a course that lists its id still fails with `module_missing`.

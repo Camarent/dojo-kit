@@ -106,6 +106,9 @@ Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
 ## Plugins and markup
 `course.json`: `"plugins": {"scripts": ["x.js"], "styles": ["x.css"]}` and `"markup": "<plugin-name>"`. Plugin paths are relative to the course folder, no `..`, no absolute paths (`bad_plugin_path`); files are inlined at build time. Example: `examples/plugins/ja-readings/` (README there) renders `{漢字|よみ}` as ruby with display modes kana/romaji/none; it needs `"markup": "ja-readings"` or it does nothing. For readings in choice/multi options use separate options, never "a/b" (rule 3). Built-in, no plugin needed: `"markup": "ruby"` for `{base|reading}` annotations (furigana, pinyin, any gloss), `speech.voices.<role>.prefer` (voice-name regexes), `inputScript` (see CONTRACT section 4). Use plugins only when the user asks.
 
+## Optional modules (course.json modules)
+`course.json`: `"modules": ["ja"]` enables framework modules (`modules/<id>/module.json`; shipped: `ja`, `ru`). Absent or empty = no optional modules. A module that provides a course key or markup (`courseKeys`, `markups` in its manifest) needs to be listed here, or validation reports `module_key_unlisted`. A UI language can also pull modules in through `web/i18n/packs.json`; a course does not need to list those. An id that no `modules/<id>/module.json` loads fails with `module_missing`. Full rules: CONTRACT section 13.
+
 ## Storage provider (plugin code)
 Progress storage is not a course setting. Plugin code (a `<script>` listed in `plugins.scripts`) may call `DojoExt.registerStorage(provider)`; `provider.openRef({courseId, key})` resolves `{ref, snap}`. One provider; a second call replaces the first. Without one, progress uses localStorage and the artifact db when available. Full contract: CONTRACT section 6.
 

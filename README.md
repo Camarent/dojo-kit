@@ -64,6 +64,7 @@ Open the repo in your assistant (Claude Code or any other), put your materials i
 - `crates/dojo-cli` - the `dojo` binary.
 - `web/` - Preact UI, storage adapters, i18n, styles, dev server.
 - `schema/` - generated JSON Schemas for `course.json` and items.
+- `modules/` - optional modules (`ja`, `ru`, registry crate); enabled per course with `modules` in `course.json`, see CONTRACT section 13.
 - `examples/` - `demo`, `showcase` courses and an example plugin.
 - `docs/` - architecture, module docs, authoring guide, prompts.
 - `prompts/` - copy-paste prompts for AI assistants.
