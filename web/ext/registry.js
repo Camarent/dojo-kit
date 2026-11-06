@@ -197,6 +197,14 @@
   }
   function runResets() { resetFns.forEach(function (fn) { fn(); }); }
 
+  // Course hooks run by DojoExt.runCourse(course, content) when a course loads.
+  var courseFns = [];
+  function onCourse(fn) {
+    if (typeof fn !== 'function') throw new Error('DojoExt.onCourse: function required');
+    courseFns.push(fn);
+  }
+  function runCourse(course, content) { courseFns.forEach(function (fn) { fn(course, content); }); }
+
 
   var api = {
     state: S,
@@ -218,6 +226,8 @@
     registerBuiltinMarkup: registerBuiltinMarkup,
     onReset: onReset,
     runResets: runResets,
+    onCourse: onCourse,
+    runCourse: runCourse,
     warn: warn
   };
   if (typeof module === 'object' && module.exports) module.exports = api;

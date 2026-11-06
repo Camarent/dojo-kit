@@ -82,3 +82,13 @@ test('useInputScript without input-script gives a clear error, not a null throw'
   loadBundle(sb, { only: ['ext/registry.js', 'ext.js'] });
   assert.throws(() => sb.DojoExt.useInputScript(['x']), /input-script.js is not loaded/);
 });
+
+test('runCourse calls every onCourse hook with the course and content', () => {
+  const { E } = ext();
+  const seen = [];
+  E.onCourse((c, k) => seen.push(['a', c.id, k.n]));
+  E.onCourse((c) => seen.push(['b', c.id]));
+  E.runCourse({ id: 'x' }, { n: 1 });
+  assert.deepStrictEqual(seen, [['a', 'x', 1], ['b', 'x']]);
+  assert.throws(() => E.onCourse('nope'), /function required/);
+});

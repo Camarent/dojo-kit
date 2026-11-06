@@ -247,7 +247,7 @@
 
   function applyCourseExtensions(course, content, t) {
     if (DojoExt.use) DojoExt.use(course.markup);
-    if (DojoExt.useRuby) DojoExt.useRuby(course.ruby, content.items);
+    if (DojoExt.runCourse) DojoExt.runCourse(course, content);
     if (DojoExt.useInputScript) DojoExt.useInputScript(course.inputScript, t('guard.script'));
   }
 

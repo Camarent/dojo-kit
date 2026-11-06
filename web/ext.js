@@ -154,7 +154,7 @@ function extRenderHooks(S, warn, runResets) {
     getRegisteredSettings: getRegisteredSettings, use: markup.use, useInputScript: useInputScript,
     text: markup.text, textAll: markup.textAll, plain: markup.plain, beforeSubmit: hooks.beforeSubmit,
     detail: hooks.detail, intro: hooks.intro, voiceRank: render.voiceRank, reset: render.reset,
-    registerBuiltinMarkup: registry.registerBuiltinMarkup, onReset: registry.onReset, provide: provide
+    registerBuiltinMarkup: registry.registerBuiltinMarkup, onReset: registry.onReset, onCourse: registry.onCourse, runCourse: registry.runCourse, provide: provide
   };
 
   // Plugin extension point: adds fn as DojoExt[name]. Core names and earlier provides are refused (warn), the first one wins.
