@@ -47,28 +47,28 @@ fn foreign_script_allows_latin_extended() {
 
 #[test]
 fn foreign_script_allows_cyrillic() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Привет","options":["Да","Нет"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"\u041f\u0440\u0438\u0432\u0435\u0442","options":["\u0414\u0430","\u041d\u0435\u0442"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "foreign_script"), "Cyrillic should be allowed, got {d:?}");
 }
 
 #[test]
 fn foreign_script_allows_hiragana() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"こんにちは","options":["はい","いいえ"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"\u3053\u3093\u306b\u3061\u306f","options":["\u306f\u3044","\u3044\u3044\u3048"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "foreign_script"), "Hiragana should be allowed, got {d:?}");
 }
 
 #[test]
 fn foreign_script_allows_katakana() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"コンピュータ","options":["はい","いいえ"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf","options":["\u306f\u3044","\u3044\u3044\u3048"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "foreign_script"), "Katakana should be allowed, got {d:?}");
 }
 
 #[test]
 fn foreign_script_allows_cjk() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"你好","options":["是","否"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"\u4f60\u597d","options":["\u662f","\u5426"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "foreign_script"), "CJK should be allowed, got {d:?}");
 }
@@ -119,7 +119,7 @@ fn prompt_type_mismatch_no_warning_on_choice_choose() {
 
 #[test]
 fn ambiguous_answer_gap_multiple_without_hint() {
-    let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"Как читается 一?","answers":["いち","ひと"]}"#;
+    let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"\u041a\u0430\u043a \u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u4e00?","answers":["\u3044\u3061","\u3072\u3068"]}"#;
     let d = run(COURSE, &[l]);
     assert!(d.iter().any(|d| d.code == "ambiguous_answer"));
 }
@@ -177,28 +177,28 @@ fn ambiguous_answer_multi_option_with_slash() {
 
 #[test]
 fn ambiguous_answer_choice_slash_inside_ascii_parens() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["до (места/времени)"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["\u0434\u043e (\u043c\u0435\u0441\u0442\u0430/\u0432\u0440\u0435\u043c\u0435\u043d\u0438)"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "ambiguous_answer"));
 }
 
 #[test]
 fn ambiguous_answer_choice_slash_inside_fullwidth_parens() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["до（места/времени）"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["\u0434\u043e\uff08\u043c\u0435\u0441\u0442\u0430/\u0432\u0440\u0435\u043c\u0435\u043d\u0438\uff09"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "ambiguous_answer"));
 }
 
 #[test]
 fn ambiguous_answer_choice_slash_inside_fullwidth_parens_japanese() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["食べる（たべる/くう）"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["\u98df\u3079\u308b\uff08\u305f\u3079\u308b/\u304f\u3046\uff09"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "ambiguous_answer"));
 }
 
 #[test]
 fn ambiguous_answer_choice_no_space_slash() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["двоюродный брат/сестра"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["\u0434\u0432\u043e\u044e\u0440\u043e\u0434\u043d\u044b\u0439 \u0431\u0440\u0430\u0442/\u0441\u0435\u0441\u0442\u0440\u0430"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     let ambig_count = d.iter().filter(|d| d.code == "ambiguous_answer").count();
     assert_eq!(ambig_count, 1);
@@ -208,7 +208,7 @@ fn ambiguous_answer_choice_no_space_slash() {
 
 #[test]
 fn ambiguous_answer_choice_slash_outside_and_inside_parens() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["брат/сестра (о людях/днях)"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["\u0431\u0440\u0430\u0442/\u0441\u0435\u0441\u0442\u0440\u0430 (\u043e \u043b\u044e\u0434\u044f\u0445/\u0434\u043d\u044f\u0445)"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     let ambig_count = d.iter().filter(|d| d.code == "ambiguous_answer").count();
     assert_eq!(ambig_count, 1);
@@ -244,14 +244,14 @@ fn ambiguous_answer_choice_nested_parens_slash_inside_no_warning() {
 
 #[test]
 fn ambiguous_answer_choice_slash_after_fullwidth_closer() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["до（а） x/y"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["\u0434\u043e\uff08\u0430\uff09 x/y"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(d.iter().any(|d| d.code == "ambiguous_answer"));
 }
 
 #[test]
 fn ambiguous_answer_choice_fullwidth_slash() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["брат／сестра"],"answer":0}"#;
+    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Pick","options":["\u0431\u0440\u0430\u0442\uff0f\u0441\u0435\u0441\u0442\u0440\u0430"],"answer":0}"#;
     let d = run(COURSE, &[l]);
     assert!(d.iter().any(|d| d.code == "ambiguous_answer"));
 }
@@ -272,14 +272,14 @@ fn ambiguous_answer_choice_stray_closer() {
 
 #[test]
 fn ambiguous_answer_multi_slash_inside_parens() {
-    let l = r#"{"type":"multi","id":"u-1","unit":"u","prompt":"Select","options":["до (места/времени)"],"correct":[0]}"#;
+    let l = r#"{"type":"multi","id":"u-1","unit":"u","prompt":"Select","options":["\u0434\u043e (\u043c\u0435\u0441\u0442\u0430/\u0432\u0440\u0435\u043c\u0435\u043d\u0438)"],"correct":[0]}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "ambiguous_answer"));
 }
 
 #[test]
 fn ambiguous_answer_multi_slash_outside() {
-    let l = r#"{"type":"multi","id":"u-1","unit":"u","prompt":"Select","options":["братья/сёстры"],"correct":[0]}"#;
+    let l = r#"{"type":"multi","id":"u-1","unit":"u","prompt":"Select","options":["\u0431\u0440\u0430\u0442\u044c\u044f/\u0441\u0451\u0441\u0442\u0440\u044b"],"correct":[0]}"#;
     let d = run(COURSE, &[l]);
     assert!(d.iter().any(|d| d.code == "ambiguous_answer"));
 }

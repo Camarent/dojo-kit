@@ -325,7 +325,7 @@ fn bad_fold_at_course_level() {
 
 #[test]
 fn valid_fold_has_no_bad_fold() {
-    let d = run(COURSE, &[&gap_fold(r#"[["A-Z","a-z"],["ё","е"],["。",""]]"#)]);
+    let d = run(COURSE, &[&gap_fold(r#"[["A-Z","a-z"],["\u0451","\u0435"],["\u3002",""]]"#)]);
     assert!(!d.iter().any(|d| d.code == "bad_fold"), "{d:?}");
 }
 
@@ -337,10 +337,10 @@ fn fold_too_large_in_item() {
 
 #[test]
 fn fold_target_limit_counts_chars_not_bytes() {
-    let ok = "あ".repeat(16);
+    let ok = "\u{3042}".repeat(16);
     let d = run(COURSE, &[&gap_fold(&format!(r#"[["b","{ok}"]]"#))]);
     assert!(!d.iter().any(|d| d.code == "fold_too_large"), "{d:?}");
-    let long = "あ".repeat(17);
+    let long = "\u{3042}".repeat(17);
     fires(COURSE, &[&gap_fold(&format!(r#"[["b","{long}"]]"#))], "fold_too_large");
 }
 
@@ -371,9 +371,9 @@ fn normalize_without_fold_keeps_default_duplicate_and_leak_verdict() {
 
 #[test]
 fn course_normalize_is_fallback_for_duplicate_prompt_check() {
-    let course = with_course(r#""normalize":{"fold":[["ё","е"]]}"#);
-    let a = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"ёлка","answers":["a"]}"#;
-    let b = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"елка","answers":["a"]}"#;
+    let course = with_course(r#""normalize":{"fold":[["\u0451","\u0435"]]}"#);
+    let a = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"\u0451\u043b\u043a\u0430","answers":["a"]}"#;
+    let b = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"\u0435\u043b\u043a\u0430","answers":["a"]}"#;
     fires(&course, &[a, b], "duplicate_prompt");
     let d = run(COURSE, &[a, b]);
     assert!(!d.iter().any(|d| d.code == "duplicate_prompt"), "{d:?}");
