@@ -7,6 +7,7 @@ name = "dojo-cli"
 version = "0.1.11"
 dependencies = [
  "dojo-core",
+ "dojo-modules",
  "serde",
  "serde_json",
 ]
@@ -17,6 +18,30 @@ version = "0.1.11"
 dependencies = [
  "schemars",
  "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "dojo-module-ja"
+version = "0.1.11"
+dependencies = [
+ "dojo-core",
+]
+
+[[package]]
+name = "dojo-module-ru"
+version = "0.1.11"
+dependencies = [
+ "dojo-core",
+]
+
+[[package]]
+name = "dojo-modules"
+version = "0.1.11"
+dependencies = [
+ "dojo-core",
+ "dojo-module-ja",
+ "dojo-module-ru",
  "serde_json",
 ]
 
