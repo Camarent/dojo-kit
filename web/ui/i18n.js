@@ -9,7 +9,7 @@
   function pluralForm(lang, n) {
     try {
       return new Intl.PluralRules(primaryTag(lang)).select(n);
-    } catch (e) {
+    } catch {
       return new Intl.PluralRules('en').select(n);
     }
   }
