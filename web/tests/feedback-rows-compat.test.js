@@ -36,6 +36,21 @@ test('core maps legacy kanji field to ch without the ja module', () => {
   assert.strictEqual(find(v, 'fb-mean').props.children, 'day');
 });
 
+test('without a module label the feedback label is the core key session.fbLabel', () => {
+  const { E, shared } = loadStimulus();
+  E.registerFeedbackRows(() => [{ ch: 'D', meaning: 'day' }]);
+  assert.strictEqual(find(shared.fbRows(P, S, false), 'fb-label').props.children, 'session.fbLabel');
+});
+
+test('opts.label picks the text for the UI language, falling back to en', () => {
+  const { E, shared } = loadStimulus();
+  E.registerFeedbackRows(() => [{ ch: 'D', meaning: 'day' }], { label: { en: 'L-en', fr: 'L-fr' } });
+  const label = (lang) => find(shared.fbRows(Object.assign({}, P, { lang }), S, false), 'fb-label').props.children;
+  assert.strictEqual(label('fr'), 'L-fr');
+  assert.strictEqual(label('fr-CA'), 'L-fr');
+  assert.strictEqual(label('ru'), 'L-en');
+});
+
 test('feedback rows are not shown in exam mode, even from a registered plugin', () => {
   const { E, shared } = loadStimulus();
   let calls = 0;

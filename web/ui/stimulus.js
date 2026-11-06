@@ -124,12 +124,19 @@
     return DojoExt.feedbackRows(item, { examMode: !!examMode, items: p.content ? p.content.items : undefined, course: p.course });
   }
 
+  // Label text: the module map from registerFeedbackRows opts.label (UI language, then its primary tag, then en), else session.fbLabel.
+  function fbLabel(p) {
+    var map = DojoExt.feedbackLabel ? DojoExt.feedbackLabel() : null;
+    var lang = String(p.lang || 'en');
+    var text = map && (map[lang] || map[lang.split('-')[0]] || map.en);
+    return text || p.t('session.fbLabel');
+  }
+
   function fbRows(p, s, examMode) {
     var breakdown = feedbackRowsFor(p, s, examMode);
     if (!breakdown || !breakdown.length) return null;
-    var t = p.t;
     return html`<ul class="fb-rows" data-testid="fb-rows">
-      <li class="muted" data-testid="fb-label">${t('session.fbLabel')}</li>
+      <li class="muted" data-testid="fb-label">${fbLabel(p)}</li>
       ${breakdown.map(fbRow)}
     </ul>`;
   }

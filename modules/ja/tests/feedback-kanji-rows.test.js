@@ -139,7 +139,7 @@ test('kanji-rows: works for both correct and wrong answers', async () => {
   }
 });
 
-test('kanji-rows: label uses i18n key session.kanji', async () => {
+test('kanji-rows: the ja module supplies the label Kanji in this word', async () => {
   const items = [
     word('w-日本', '日本'),
     kanji('日', '日', { on: ['ニチ'], kun: ['ひ'] }),
@@ -151,7 +151,7 @@ test('kanji-rows: label uses i18n key session.kanji', async () => {
   const label = H.find(scr.view(), 'fb-label');
   assert.ok(label, 'kanji-label should be present');
   const labelText = H.text(label);
-  assert.strictEqual(labelText, 'Breakdown', 'Label should use i18n session.fbLabel key');
+  assert.strictEqual(labelText, 'Kanji in this word', 'ja module label (registerFeedbackRows opts.label)');
 });
 
 test('kanji-rows: at max-width 390px the row stays one compact line (3 columns kept)', async () => {

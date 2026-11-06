@@ -14,7 +14,8 @@
     return ext.kanjiBreakdown(item, ctx.items, cfgOrLang);
   }
 
-  ext.registerFeedbackRows(kanjiRows, { fallback: true, aliases: { ch: ['kanji'] } });
+  var LABEL = { en: 'Kanji in this word', fr: 'Kanji de ce mot', ru: 'Кандзи в слове' };
+  ext.registerFeedbackRows(kanjiRows, { fallback: true, aliases: { ch: ['kanji'] }, label: LABEL });
 
   var api = { kanjiRows: kanjiRows };
   if (typeof module === 'object' && module.exports) module.exports = api;

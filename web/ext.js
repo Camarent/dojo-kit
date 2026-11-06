@@ -148,6 +148,7 @@ function extRenderHooks(S, warn, runResets) {
     registerMarkup: registerMarkup, registerBeforeSubmit: registerBeforeSubmit,
     registerDetail: registerDetail, registerIntro: registerIntro, registerPreAnswerText: registerPreAnswerText, preAnswerText: render.preAnswerText, registerVoiceRank: registerVoiceRank,
     registerFeedbackRows: registerFeedbackRows, feedbackRows: function (item, ctx) { return registry.feedbackRows(item, ctx); },
+    feedbackLabel: function () { return registry.feedbackLabel(); },
     registerStorage: registerStorage, getStorageProvider: getStorageProvider,
     registerSetting: registerSetting, bindSettings: bindSettings, getSetting: getSetting,
     getRegisteredSettings: getRegisteredSettings, use: markup.use, useInputScript: useInputScript,

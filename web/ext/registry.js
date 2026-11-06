@@ -50,12 +50,15 @@
   // opts.fallback: a module default, used when the plugin hook is absent or yields null; reset() keeps it.
   // opts.aliases: { field: [legacyName, ...] } legacy row field names read when the canonical field is absent
   // (applies to every hook's rows; module-level, kept by reset()).
+  // opts.label: { lang: text } feedback label replacing the core session.fbLabel text (module-level, kept by reset()).
   var fallbackRowsFn = null;
+  var rowLabel = null;
   // Core default: the legacy kanji field name maps to ch, so rows without the ja module still render.
   var rowAliases = { ch: ['kanji'] };
   function registerFeedbackRows(fn, opts) {
     if (typeof fn !== 'function') throw new Error('DojoExt.registerFeedbackRows: function required');
     if (opts && opts.aliases) Object.keys(opts.aliases).forEach(function (k) { rowAliases[k] = [].concat(opts.aliases[k]); });
+    if (opts && opts.label && typeof opts.label === 'object') rowLabel = opts.label;
     if (opts && opts.fallback) fallbackRowsFn = fn;
     else S.feedbackRowsFn = fn;
   }
@@ -76,6 +79,9 @@
     try { var r = fn(item, ctx); return Array.isArray(r) ? r.map(applyAliases) : null; }
     catch (e) { warn('feedbackRows failed', e); return null; }
   }
+
+  // Label map registered with opts.label, or null.
+  function feedbackLabel() { return rowLabel; }
 
   // Guarded like the other hooks: a throwing or null plugin hook falls back to the module default.
   function feedbackRows(item, ctx) {
@@ -203,7 +209,7 @@
     registerPreAnswerText: registerPreAnswerText,
     registerVoiceRank: registerVoiceRank,
     registerFeedbackRows: registerFeedbackRows,
-    feedbackRows: feedbackRows,
+    feedbackRows: feedbackRows, feedbackLabel: feedbackLabel,
     registerStorage: registerStorage,
     getStorageProvider: getStorageProvider,
     registerSetting: registerSetting,
