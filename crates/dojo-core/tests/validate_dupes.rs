@@ -101,6 +101,14 @@ fn choice_items_same_prompt_different_correct_option_warn() {
 }
 
 #[test]
+fn choice_and_gap_with_same_prompt_do_not_warn() {
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"nine","options":["девять","десять"],"answer":0}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"nine","answers":["きゅう"]}"#;
+    let d = run(COURSE, &[l1, l2]);
+    assert!(!codes(&d).contains(&"same_prompt_different_answers"), "cross-type pair must not warn, got {d:?}");
+}
+
+#[test]
 fn gap_answer_order_does_not_matter() {
     let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine","nyu"]}"#;
     let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9?","answers":["nyu","nine"]}"#;

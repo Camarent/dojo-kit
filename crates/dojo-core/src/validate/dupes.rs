@@ -56,7 +56,7 @@ fn effective_norm(item: &Item, course_norm: Option<&Normalize>) -> Normalize {
 
 /// Check for items with same prompt but different answers
 pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
-    // Group items by normalized prompt, but only for gap, cloze, numeric, and choice types
+    // Group items by type and normalized prompt, but only for gap, cloze, numeric, and choice types
     // and only for non-stimulus items
     let mut by_prompt: BTreeMap<String, Vec<(&str, usize, &Item)>> = BTreeMap::new();
     
@@ -81,7 +81,8 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
             continue;
         }
         
-        by_prompt.entry(norm_prompt).or_default().push((*file, *line, *item));
+        // Different types are different skills (e.g. meaning choice vs reading gap on one headword)
+        by_prompt.entry(format!("{item_type:?}\u{0}{norm_prompt}")).or_default().push((*file, *line, *item));
     }
     
     // For each prompt with multiple items, check if they have different answer sets
