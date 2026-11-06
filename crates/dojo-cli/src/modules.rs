@@ -131,10 +131,10 @@ fn load(modules_dir: &Path, id: &str, origin: &str) -> Result<Manifest, String> 
     if manifest.id.as_str() != id {
         return Err(format!("{}: id \"{}\" must equal the folder name \"{id}\"", path.display(), manifest.id));
     }
-    if let Some(web) = &manifest.web {
-        if let Some(bad) = web.scripts.iter().chain(&web.styles).find(|p| !safe_rel(p)) {
-            return Err(format!("{}: web path \"{bad}\" must be relative inside the module", path.display()));
-        }
+    if let Some(web) = &manifest.web
+        && let Some(bad) = web.scripts.iter().chain(&web.styles).find(|p| !safe_rel(p))
+    {
+        return Err(format!("{}: web path \"{bad}\" must be relative inside the module", path.display()));
     }
     Ok(manifest)
 }
