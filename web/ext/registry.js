@@ -5,7 +5,7 @@
   'use strict';
 
   var S = {
-    markups: {}, active: null, scriptGuard: null, guard: null, detailFn: null, introFn: null, preTextFn: null, rankFn: null, storageProvider: null,
+    markups: {}, active: null, scriptGuard: null, guard: null, detailFn: null, introFn: null, preTextFn: null, rankFn: null, feedbackRowsFn: null, storageProvider: null,
     rubySkip: null, rubyDict: null, rubyDictMax: 0,
     pluginSettings: {}, settingsAccessor: null, settingsBound: false
   };
@@ -45,6 +45,19 @@
   function registerVoiceRank(fn) {
     if (typeof fn !== 'function') throw new Error('DojoExt.registerVoiceRank: function required');
     S.rankFn = fn;
+  }
+
+  // fn(item, ctx) returns an array of kanji rows ({ kanji, meaning, on, kun }) that replaces the built-in breakdown, or null.
+  function registerFeedbackRows(fn) {
+    if (typeof fn !== 'function') throw new Error('DojoExt.registerFeedbackRows: function required');
+    S.feedbackRowsFn = fn;
+  }
+
+  // Guarded like the other hooks: a throwing plugin yields null, so the built-in breakdown is used.
+  function feedbackRows(item, ctx) {
+    if (!S.feedbackRowsFn) return null;
+    try { var r = S.feedbackRowsFn(item, ctx); return Array.isArray(r) ? r : null; }
+    catch (e) { warn('feedbackRows failed', e); return null; }
   }
 
   // Storage provider for the progress document (openRef); one provider, a second call replaces the first.
@@ -286,6 +299,8 @@
     registerIntro: registerIntro,
     registerPreAnswerText: registerPreAnswerText,
     registerVoiceRank: registerVoiceRank,
+    registerFeedbackRows: registerFeedbackRows,
+    feedbackRows: feedbackRows,
     registerStorage: registerStorage,
     getStorageProvider: getStorageProvider,
     registerSetting: registerSetting,

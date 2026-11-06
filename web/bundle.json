@@ -27,6 +27,7 @@
     "ext/ruby-dict.js",
     "ext/registry.js",
     "ext/ruby.js",
+    "ext/input-script.js",
     "ext/readings.js",
     "ext.js",
     "speech.js",

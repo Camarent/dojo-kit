@@ -52,7 +52,7 @@ function extRenderHooks(S, warn) {
   function reset() {
     S.introFn = null; S.preTextFn = null; S.rankFn = null; S.markups = {}; S.active = null;
     S.rubySkip = null; S.rubyDict = null; S.rubyDictMax = 0; S.guard = null;
-    S.scriptGuard = null; S.detailFn = null; S.pluginSettings = {}; S.storageProvider = null;
+    S.scriptGuard = null; S.detailFn = null; S.feedbackRowsFn = null; S.pluginSettings = {}; S.storageProvider = null;
     S.settingsAccessor = null; S.settingsBound = false;
   }
 
@@ -77,6 +77,7 @@ function extRenderHooks(S, warn) {
   function registerIntro(fn) { return registry.registerIntro(fn); }
   function registerPreAnswerText(fn) { return registry.registerPreAnswerText(fn); }
   function registerVoiceRank(fn) { return registry.registerVoiceRank(fn); }
+  function registerFeedbackRows(fn) { return registry.registerFeedbackRows(fn); }
   function registerStorage(provider) { return registry.registerStorage(provider); }
   function getStorageProvider() { return registry.getStorageProvider(); }
   function registerSetting(config) { return registry.registerSetting(config); }
@@ -95,13 +96,26 @@ function extRenderHooks(S, warn) {
   var hooks = extHooks(S, warn);
   var render = extRenderHooks(S, warn);
 
-  return {
+  var api = {
     registerMarkup: registerMarkup, registerBeforeSubmit: registerBeforeSubmit,
     registerDetail: registerDetail, registerIntro: registerIntro, registerPreAnswerText: registerPreAnswerText, preAnswerText: render.preAnswerText, registerVoiceRank: registerVoiceRank,
+    registerFeedbackRows: registerFeedbackRows, feedbackRows: function (item, ctx) { return registry.feedbackRows(item, ctx); },
     registerStorage: registerStorage, getStorageProvider: getStorageProvider,
     registerSetting: registerSetting, bindSettings: bindSettings, getSetting: getSetting,
     getRegisteredSettings: getRegisteredSettings, use: use, useInputScript: useInputScript,
     useRuby: useRuby, text: text, textAll: textAll, plain: plain, beforeSubmit: hooks.beforeSubmit,
-    detail: hooks.detail, intro: hooks.intro, voiceRank: render.voiceRank, reset: render.reset, kanjiBreakdown: kanjiBreakdown
+    detail: hooks.detail, intro: hooks.intro, voiceRank: render.voiceRank, reset: render.reset, kanjiBreakdown: kanjiBreakdown,
+    provide: provide
   };
+
+  // Plugin extension point: adds fn as DojoExt[name]. Core names and earlier provides are refused (warn), the first one wins.
+  function provide(name, fn) {
+    if (typeof name !== 'string' || name === '') throw new Error('DojoExt.provide: name required');
+    if (typeof fn !== 'function') throw new Error('DojoExt.provide: function required');
+    if (name === '__proto__' || name in Object.prototype || Object.prototype.hasOwnProperty.call(api, name)) { warn('provide: "' + name + '" is taken, keeping the first'); return false; }
+    api[name] = fn;
+    return true;
+  }
+
+  return api;
 });

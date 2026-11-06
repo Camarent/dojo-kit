@@ -55,7 +55,7 @@ async function setup(course, opts) {
 
 function load(markup) {
   const sb = { console: { warn() {}, log: console.log } };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js'] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/input-script.js', 'ext/readings.js', 'ext.js'] });
   sb.DojoSession = DojoSession;
   if (markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });

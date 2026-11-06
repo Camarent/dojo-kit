@@ -261,7 +261,7 @@
       var cfg = (this.unitById[d.unit] && this.unitById[d.unit].detail) || p.course.detail;
       if (!cfg || typeof cfg.glyph !== 'string' || cfg.glyph === '') return null;
       var v = resolvePath(d, cfg.glyph);
-      return typeof v === 'string' && v !== '' ? html`<span class="kanji-ch" data-testid="detail-glyph">${v}</span>` : null;
+      return typeof v === 'string' && v !== '' ? html`<span class="glyph-ch" data-testid="detail-glyph">${v}</span>` : null;
     }
 
     renderDetailBody(p, t, d) {

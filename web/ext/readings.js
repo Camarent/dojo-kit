@@ -6,8 +6,15 @@
   'use strict';
   var registry = root.DojoExtRegistry || (typeof require !== 'undefined' ? require('./registry.js') : null);
   var rubyApi = root.DojoExtRuby || (typeof require !== 'undefined' ? require('./ruby.js') : null);
+  // Resolved on each call, so the bundle may load input-script.js after this file.
+  function inputScript() {
+    var m = root.DojoExtInputScript || (typeof require !== 'undefined' ? require('./input-script.js') : null);
+    if (!m) throw new Error('DojoExt: ext/input-script.js is not loaded');
+    return m;
+  }
 
   var S = registry.state;
+  function expectedTexts(item) { return inputScript().expectedTexts(item); }
   var hanOf = registry.hanOf;
   var pathValue = registry.pathValue;
   var warn = registry.warn;
@@ -23,16 +30,6 @@
       warn('markup plain failed', e);
       return str;
     }
-  }
-
-  function expectedTexts(item) {
-    var out = [];
-    if (!item) return out;
-    if (item.type === 'gap' && Array.isArray(item.answers)) out = item.answers.slice();
-    else if (item.type === 'cloze' && Array.isArray(item.parts)) {
-      item.parts.forEach(function (p) { if (Array.isArray(p)) out = out.concat(p); });
-    }
-    return out.filter(function (x) { return typeof x === 'string'; });
   }
 
   function answerTexts(item) {
@@ -124,59 +121,14 @@
     return result.slice(0, 12);
   }
 
-  function inputText(input) {
-    if (typeof input === 'string') return input;
-    if (!input || typeof input !== 'object') return '';
-    var parts = [];
-    if (typeof input.text === 'string') parts.push(input.text);
-    if (Array.isArray(input.inputs)) input.inputs.forEach(function (x) { if (typeof x === 'string') parts.push(x); });
-    return parts.join('\n');
-  }
-
-  var SCRIPTS = {
-    han: /[\u4e00-\u9fff\u3400-\u4dbf\u{20000}-\u{2CEAF}]/u,
-    hiragana: /[\u3040-\u309f]/,
-    katakana: /[\u30a0-\u30ff\uff65-\uff9f]/,
-    cyrillic: /[\u0400-\u04ff]/,
-    greek: /[\u0370-\u03ff\u1f00-\u1fff]/,
-    arabic: /[\u0600-\u06ff\u0750-\u077f]/,
-    hebrew: /[\u0590-\u05ff]/,
-    hangul: /[\uac00-\ud7af\u1100-\u11ff]/,
-    devanagari: /[\u0900-\u097f]/,
-    thai: /[\u0e00-\u0e7f]/
-  };
-
-  function scriptNames(list) {
-    var out = [];
-    (Array.isArray(list) ? list : []).forEach(function (n) {
-      if (n === 'non-latin') Object.keys(SCRIPTS).forEach(function (k) { if (out.indexOf(k) < 0) out.push(k); });
-      else if (Object.prototype.hasOwnProperty.call(SCRIPTS, n) && out.indexOf(n) < 0) out.push(n);
-    });
-    return out;
-  }
-
-  var LATIN_RE = /[A-Za-z]/;
-
-  function useInputScript(scripts, message) {
-    var names = scriptNames(scripts);
-    if (names.length === 0) { S.scriptGuard = null; return false; }
-    S.scriptGuard = function (item, input) {
-      var exp = expectedTexts(item);
-      var inScript = exp.some(function (a) { return names.some(function (n) { return SCRIPTS[n].test(a); }); });
-      if (inScript && LATIN_RE.test(inputText(input))) return { message: String(message || '') };
-      return null;
-    };
-    return true;
-  }
-
   var api = {
     kanjiBreakdown: kanjiBreakdown,
     kanjiIndex: kanjiIndex,
     expectedTexts: expectedTexts,
     answerTexts: answerTexts,
-    useInputScript: useInputScript,
-    inputText: inputText,
-    scriptNames: scriptNames
+    useInputScript: function (scripts, message) { return inputScript().useInputScript(scripts, message); },
+    inputText: function () { return inputScript().inputText.apply(null, arguments); },
+    scriptNames: function () { return inputScript().scriptNames.apply(null, arguments); }
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.DojoExtReadings = api;

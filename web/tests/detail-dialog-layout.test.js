@@ -94,7 +94,7 @@ test('header renders the glyph when item has meta.kanji, none otherwise', async 
   openRow();
   const g = H.find(H.find(cat.view(), 'catalog-detail-header'), 'detail-glyph');
   assert.ok(g, 'glyph in header');
-  assert.match(g.props.class, /\bkanji-ch\b/);
+  assert.match(g.props.class, /\bglyph-ch\b/);
   assert.strictEqual(H.text(g), '一');
   click('btn-close-detail');
   const row = H.find(cat.view(), 'topic-a2');

@@ -234,3 +234,36 @@ test('kanji-rows: no breakdown config means no kanji rows', async () => {
   const fb = H.find(scr.view(), 'kanji-rows');
   assert.strictEqual(fb, null, 'kanji-rows should be absent when no breakdown config');
 });
+
+test('kanji-rows: rows from DojoExt.registerFeedbackRows replace the built-in breakdown', async () => {
+  const items = [
+    word('w-日本', '日本'),
+    kanji('日', '日', { on: ['ニチ'], kun: ['ひ'] }),
+    kanji('本', '本', { on: ['ホン'], kun: ['もと'] })
+  ];
+  const { scr } = await start({
+    items,
+    setup(sb) { sb.DojoExt.registerFeedbackRows(() => [{ kanji: 'X', meaning: 'plug', on: [], kun: [] }]); }
+  });
+  scr.answer({ text: 'wrong' });
+  const rows = H.findAll(scr.view(), /^kanji-row$/);
+  assert.strictEqual(rows.length, 1);
+  assert.strictEqual(H.text(H.find(rows[0], 'kanji-ch')), 'X');
+  assert.strictEqual(H.text(H.find(rows[0], 'kanji-mean')), 'plug');
+});
+
+test('kanji-rows: a throwing registerFeedbackRows hook falls back to the built-in breakdown', async () => {
+  const items = [
+    word('w-日本', '日本'),
+    kanji('日', '日', { on: ['ニチ'], kun: ['ひ'] }),
+    kanji('本', '本', { on: ['ホン'], kun: ['もと'] })
+  ];
+  const { scr } = await start({
+    items,
+    setup(sb) { sb.DojoExt.registerFeedbackRows(() => { throw new Error('plugin boom'); }); }
+  });
+  scr.answer({ text: 'wrong' });
+  const rows = H.findAll(scr.view(), /^kanji-row$/);
+  assert.strictEqual(rows.length, 2);
+  assert.strictEqual(H.text(H.find(rows[0], 'kanji-ch')), '日');
+});

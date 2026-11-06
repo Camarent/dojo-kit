@@ -114,7 +114,7 @@
     var onRead = readingText(k.on);
     var kunRead = readingText(k.kun);
     return html`<li class="kanji-row-grid" data-testid="kanji-row">
-      <span class="kanji-ch" data-testid="kanji-ch">${k.kanji}</span>
+      <span class="glyph-ch" data-testid="kanji-ch">${k.kanji}</span>
       <span class="kanji-mean" data-testid="kanji-mean">${k.meaning}</span>
       ${onRead || kunRead ? html`<span class="kanji-read muted" data-testid="kanji-read">
         ${onRead ? html`<span data-testid="kanji-on">${onRead}</span>` : null}
@@ -124,8 +124,15 @@
     </li>`;
   }
 
+  // Plugin rows (DojoExt.registerFeedbackRows) replace the built-in breakdown when the hook returns an array.
+  function feedbackRowsFor(p, s, examMode) {
+    var item = s.cur && s.cur.item;
+    if (!item || !s.result || !DojoExt.feedbackRows) return null;
+    return DojoExt.feedbackRows(item, { examMode: !!examMode, items: p.content ? p.content.items : undefined });
+  }
+
   function kanjiRows(p, s, examMode) {
-    var breakdown = kanjiBreakdownFor(p, s, examMode);
+    var breakdown = feedbackRowsFor(p, s, examMode) || kanjiBreakdownFor(p, s, examMode);
     if (!breakdown || !breakdown.length) return null;
     var t = p.t;
     return html`<ul class="kanji-rows" data-testid="kanji-rows">
