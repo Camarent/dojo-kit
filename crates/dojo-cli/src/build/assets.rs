@@ -41,7 +41,6 @@ pub(crate) struct Assets {
 }
 
 pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::Value) -> Step<Assets> {
-    let ui_language = course_json.get("uiLanguage").and_then(|v| v.as_str()).unwrap_or_default().to_string();
     let bundle_text = fatal(read(&web.join("bundle.json")))?;
     let bundle: serde_json::Value = fatal(serde_json::from_str(&bundle_text).map_err(|e| format!("bundle.json: {e}")))?;
     let scripts = fatal(string_list(&bundle, "scripts"))?;
@@ -49,7 +48,7 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
     let bundle_languages = fatal(string_list(&bundle, "i18n"))?;
     let licenses = fatal(string_list(&bundle, "licenses"))?;
 
-    let lang = select_lang(dir, &ui_language, &bundle_languages)?;
+    let (lang, resolved) = course_lang_modules(dir, web, course_json, &bundle_languages)?;
 
     let canonical_root = fatal(fs::canonicalize(dir).map_err(|e| format!("cannot canonicalize course directory: {e}")))?;
     let plugin_scripts = failed(plugin_files(&canonical_root, course_json, "scripts"))?;
@@ -58,8 +57,6 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
         return Err(Stop::Fail("bundle.json: scripts has no \"@course\" marker but the course declares plugin scripts".to_string()));
     }
 
-    let course_modules = fatal(course_module_ids(course_json))?;
-    let resolved = failed(modules::resolve(web, &lang, &course_modules))?;
     let module_scripts = failed(read_all(&failed(modules::web_paths(web, &resolved, |w| w.scripts.as_slice()))?))?;
     let module_styles = failed(read_all(&failed(modules::web_paths(web, &resolved, |w| w.styles.as_slice()))?))?;
     if !module_scripts.is_empty() && !scripts.iter().any(|r| r == "@modules") {
@@ -114,6 +111,16 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
         license_texts.push(failed(read_listed(web, rel))?);
     }
     Ok(Assets { script_html, css, license_texts, bundle_languages, lang })
+}
+
+/// UI language and effective module set of a course, shared by `dojo build` and `dojo validate`.
+/// `bundle_languages` is the bundle's `i18n` list; `web` is the `web/` directory.
+pub(crate) fn course_lang_modules(dir: &Path, web: &Path, course_json: &serde_json::Value, bundle_languages: &[String]) -> Step<(String, Vec<modules::Manifest>)> {
+    let ui_language = course_json.get("uiLanguage").and_then(|v| v.as_str()).unwrap_or_default();
+    let lang = select_lang(dir, ui_language, bundle_languages)?;
+    let course_modules = fatal(course_module_ids(course_json))?;
+    let resolved = failed(modules::resolve(web, &lang, &course_modules))?;
+    Ok((lang, resolved))
 }
 
 fn select_lang(dir: &Path, ui_language: &str, bundle_languages: &[String]) -> Step<String> {

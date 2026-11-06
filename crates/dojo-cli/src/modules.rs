@@ -91,6 +91,20 @@ pub(crate) fn web_paths(web_dir: &Path, modules: &[Manifest], pick: fn(&Web) -> 
         .collect())
 }
 
+/// Every manifest under `modules/` that loads, sorted by id. Folders whose manifest does not load are left out; `resolve` reports them when a set lists them.
+pub(crate) fn all_manifests(web_dir: &Path) -> Vec<Manifest> {
+    let Ok(dir) = modules_dir(web_dir) else { return Vec::new() };
+    let Ok(entries) = fs::read_dir(&dir) else { return Vec::new() };
+    let mut ids: Vec<String> = entries
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().join("module.json").is_file())
+        .filter_map(|e| e.file_name().into_string().ok())
+        .filter(|id| valid_id(id))
+        .collect();
+    ids.sort();
+    ids.iter().filter_map(|id| load(&dir, id, "modules/").ok()).collect()
+}
+
 fn modules_dir(web_dir: &Path) -> Result<PathBuf, String> {
     let root = web_dir
         .parent()

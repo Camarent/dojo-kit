@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 113] = [
+pub const CODES: [(&str, Severity, &str); 115] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -115,6 +115,8 @@ pub const CODES: [(&str, Severity, &str); 113] = [
     ("check_bad_output", Severity::Error, "a course check printed a line that is not a finding object or has an unknown severity"),
     ("ruby_on_skip_kanji", Severity::Warning, "a {base|reading} ruby whose kanji the course ruby skip set already hides"),
     ("ruby_missing", Severity::Warning, "a kanji drill item (ruby drillTags/drillUnits) has a kanji in its prompt with no {base|reading} ruby"),
+    ("module_missing", Severity::Error, "course.json lists a module (or a language pack requests one) that has no usable modules/<id>/module.json"),
+    ("module_key_unlisted", Severity::Error, "course.json uses a key or markup that a module provides, but the module is not in the course modules list"),
 ];
 
 /// [`CODES`] followed by the codes of each module, in module order.
