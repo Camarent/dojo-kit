@@ -61,8 +61,8 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
     let mut by_prompt: BTreeMap<String, Vec<(&str, usize, &Item)>> = BTreeMap::new();
     
     for (file, line, item) in items {
-        // Skip stimulus items
-        if item.stimulus().is_some() {
+        // Skip stimulus and retired items
+        if item.stimulus().is_some() || item.is_retired() {
             continue;
         }
         
@@ -114,28 +114,68 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
 
 /// Prompt reduced for duplicate matching: lowercase, `{base|reading}` ruby kept as base, parenthesised hints removed, whitespace collapsed, trailing punctuation trimmed.
 fn dup_prompt_key(prompt: &str) -> String {
+    prompt_parts(prompt).0
+}
+
+/// Kana-only parenthesised hints (readings, a reading hint after a kanji headword) and ruby readings of a prompt.
+fn prompt_readings(prompt: &str) -> (Vec<String>, Vec<String>) {
+    let parts = prompt_parts(prompt);
+    (parts.1, parts.2)
+}
+
+/// True when the prompts carry kana hints that name different cards: a hint that is neither the other prompt's hint nor a ruby reading of either prompt.
+fn kana_hints_differ(a: &str, b: &str) -> bool {
+    let (ah, ar) = prompt_readings(a);
+    let (bh, br) = prompt_readings(b);
+    let only = |own: &[String], other: &[String]| own.iter().any(|h| !other.contains(h) && !ar.contains(h) && !br.contains(h));
+    only(&ah, &bh) || only(&bh, &ah)
+}
+
+/// (key, kana hints, ruby readings) of a prompt.
+fn prompt_parts(prompt: &str) -> (String, Vec<String>, Vec<String>) {
     let mut out = String::new();
     let mut depth = 0usize;
     let mut in_ruby_reading = false;
     let mut in_ruby = false;
+    let mut hint = String::new();
+    let mut hints: Vec<String> = Vec::new();
+    let mut readings: Vec<String> = Vec::new();
     for (idx, c) in prompt.char_indices() {
         match c {
-            '(' | '\u{ff08}' => depth += 1,
-            ')' | '\u{ff09}' => depth = depth.saturating_sub(1),
-            _ if depth > 0 => {}
+            '(' | '\u{ff08}' => {
+                if depth == 0 {
+                    hint.clear();
+                }
+                depth += 1;
+            }
+            ')' | '\u{ff09}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 && !hint.is_empty() && hint.chars().all(|k| ('\u{3040}'..='\u{30ff}').contains(&k)) {
+                    hints.push(hint.clone());
+                }
+            }
+            _ if depth > 0 => hint.push(c),
             // An unclosed `{` is plain text, so it cannot hide the rest of the prompt.
-            '{' if prompt[idx..].contains('}') => in_ruby = true,
+            '{' if prompt[idx..].contains('}') => {
+                in_ruby = true;
+                readings.push(String::new());
+            }
             '|' if in_ruby => in_ruby_reading = true,
             '}' if in_ruby => {
                 in_ruby = false;
                 in_ruby_reading = false;
             }
-            _ if in_ruby_reading => {}
+            _ if in_ruby_reading => {
+                if let Some(r) = readings.last_mut() {
+                    r.push(c);
+                }
+            }
             _ => out.extend(c.to_lowercase()),
         }
     }
     let collapsed = out.split_whitespace().collect::<Vec<_>>().join(" ");
-    collapsed.trim_end_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace() || "\u{3002}\u{3001}\u{ff01}\u{ff1f}\u{2026}".contains(c)).to_string()
+    let key = collapsed.trim_end_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace() || "\u{3002}\u{3001}\u{ff01}\u{ff1f}\u{2026}".contains(c)).to_string();
+    (key, hints, readings)
 }
 
 /// One candidate for the dup_word check: file, line, item, flat answer set.
@@ -169,7 +209,7 @@ pub(super) fn check_dup_word(items: &[(&str, usize, &Item)], sink: &mut Sink, co
     for group in by_group.values() {
         for (i, a) in group.iter().enumerate() {
             for b in group.iter().skip(i + 1) {
-                if !(a.3.is_subset(&b.3) || b.3.is_subset(&a.3)) {
+                if !(a.3.is_subset(&b.3) || b.3.is_subset(&a.3)) || kana_hints_differ(a.2.prompt(), b.2.prompt()) {
                     continue;
                 }
                 sink.warning(
