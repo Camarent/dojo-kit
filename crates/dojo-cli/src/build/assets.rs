@@ -93,7 +93,7 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
         }
         if rel == "@modules" {
             for t in &module_styles {
-                css.push_str(t);
+                css.push_str(&build::escape_style_text(t));
                 css.push('\n');
             }
             continue;

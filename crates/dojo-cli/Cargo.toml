@@ -13,6 +13,3 @@ serde_json = { version = "1.0.154", features = ["float_roundtrip", "preserve_ord
 [[bin]]
 name = "dojo"
 path = "src/main.rs"
-
-[package.metadata.cargo-machete]
-ignored = ["dojo-modules"]

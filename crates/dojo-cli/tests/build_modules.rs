@@ -177,6 +177,18 @@ fn module_script_without_marker_is_a_build_error() -> Res {
 }
 
 #[test]
+fn module_css_closing_style_tag_is_escaped() -> Res {
+    let e = env("cssesc", BUNDLE_WITH_MARKERS)?;
+    module(&e, "base", &[], "var BASEM=1;")?;
+    put(&e.root.join("modules/base/m.css"), ".base::after{content:\"</style>\"}")?;
+    course_with(&e, "en", &["base"])?;
+    let html = build_html(&e, &e.root.join("dist"))?;
+    assert!(!html.contains(".base::after{content:\"</style>\"}"), "raw </style> from module css reached the page");
+    assert!(html.contains(".base::after{content:\"<\\/style>\"}"), "escaped module css missing");
+    Ok(())
+}
+
+#[test]
 fn fr_ui_course_ships_en_and_fr_only() -> Res {
     let e = env("fr", BUNDLE_WITH_MARKERS)?;
     course_with(&e, "fr", &[])?;

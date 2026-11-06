@@ -31,6 +31,7 @@ pub(crate) struct Manifest {
     pub(crate) manifest_version: u32,
     pub(crate) id: String,
     #[serde(default)]
+    #[allow(dead_code)] // accepted from module.json (deny_unknown_fields), not read by the build
     pub(crate) description: String,
     #[serde(default)]
     pub(crate) hooks: Vec<Hook>,
