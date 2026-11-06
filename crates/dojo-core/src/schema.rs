@@ -1,7 +1,7 @@
 use crate::check::Normalize;
 use crate::content::{Course, Item};
 use crate::srs::DEFAULT_LADDER;
-use crate::validate::CODES;
+use crate::validate::Severity;
 use serde_json::Value;
 
 fn to_value<T: serde::Serialize>(schema: &T) -> Value {
@@ -37,8 +37,13 @@ pub const EXAMPLE_LINES: [&str; 8] = [
     r#"{"type":"numeric","id":"a-5","unit":"a","prompt":"What is 2+2?","answer":4.0,"tolerance":0.1,"unitLabel":"units"}"#,
 ];
 
-/// Compact plain-text cheat-sheet of the content format for AI authors.
+/// Compact plain-text cheat-sheet of the content format for AI authors, with the built-in validator codes.
 pub fn brief() -> String {
+    brief_with_codes(&crate::validate::CODES)
+}
+
+/// Same as `brief`; `codes` is the validator code list to print (built-in `CODES` plus module codes, see `validate::all_codes`).
+pub fn brief_with_codes(codes: &[(&str, Severity, &str)]) -> String {
     let ladder: Vec<String> = DEFAULT_LADDER.iter().map(i64::to_string).collect();
     let n = Normalize::default();
     let common = "id string REQUIRED; unit string REQUIRED (unit id); tags [string] optional; prompt string REQUIRED; explanation string optional; source string optional; status \"active\"|\"retired\" optional; stimulus string optional (id from stimuli.jsonl); entity string optional (learning record id); topic string optional (catalog/topic label shown instead of the question; never the prompt)";
@@ -104,7 +109,7 @@ pub fn brief() -> String {
     s.push_str("  Changing an item's type or its correct answer needs a new id.\n");
     s.push_str("  Keep shards of about 30 items; run `dojo validate` after each change.\n");
     s.push_str("\nVALIDATOR CODES (dojo validate <course-dir>)\n");
-    for (code, severity, what) in CODES {
+    for (code, severity, what) in codes {
         s.push_str(&format!("  {code} [{}] {what}\n", severity.as_str()));
     }
     s

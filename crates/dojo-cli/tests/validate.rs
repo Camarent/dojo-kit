@@ -156,6 +156,8 @@ fn brief_lists_validator_codes() {
     let text = stdout(&out);
     assert!(text.contains("VALIDATOR CODES"));
     assert!(text.contains("  retired_id_reused [error]"));
+    assert!(text.contains("  module_missing [error]"));
+    assert!(text.contains("  ruby_missing [warning]"));
 }
 
 #[test]

@@ -99,7 +99,7 @@ JS, in `web/storage.js`. Interface: `load()`, `update(fn)` (load -> merge -> sav
 - `dojo import-progress <old.json> --map <id-map.json> --course <dir> [--out <file>] [--write] [--now <ISO>]`: converts legacy progress to v:1; dry-run unless `--write`.
 - `dojo stats <course-dir> [--json]`, `dojo next-id <course-dir> <prefix> [--count N]`, `dojo add <course-dir> <unit-id> [--file F] [--dry-run]` (appends items from JSON on stdin or a file, all-or-nothing, assigns ids above the highest existing).
 - Exit codes: 0 ok, 1 validation or build refusal, 2 usage or I/O error.
-- Validator codes: the list is `CODES` (`crates/dojo-core/src/validate/codes.rs`); its length is `CODES.len()` and is not fixed in this document. `dojo schema` prints them under "VALIDATOR CODES".
+- Validator codes: the built-in list is `CODES` (`crates/dojo-core/src/validate/codes.rs`); its length is `CODES.len()` and is not fixed in this document. It pins the module codes `module_missing` and `module_key_unlisted`. Module codes (e.g. `ruby_*`) live in `modules/<id>/rust` and merge via `all_codes`. `dojo schema --brief` prints built-in plus registry module codes under "VALIDATOR CODES". `validate(course_text, files, lock)` keeps its signature; `validate_with_modules` takes the module list.
 
 ## 8. Testing
 - Rust unit and integration tests in `crates/dojo-core` and `crates/dojo-cli` (the latter spawn the binary on fixtures and `examples/`).
