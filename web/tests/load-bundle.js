@@ -10,10 +10,16 @@ function readSource(relPath, root = WEB) {
   return fs.readFileSync(path.join(root, relPath), 'utf8');
 }
 
-// Web scripts of modules/ja, as paths relative to web/; loadBundle puts them at the "@modules" marker.
-const JA_DIR = path.join(WEB, '..', 'modules', 'ja');
-const JA_SCRIPTS = JSON.parse(fs.readFileSync(path.join(JA_DIR, 'module.json'), 'utf8')).web.scripts
-  .map((s) => path.relative(WEB, path.join(JA_DIR, s)));
+// Web scripts of every module under modules/, as paths relative to web/; loadBundle puts them at the "@modules" marker.
+const MODULES_DIR = path.join(WEB, '..', 'modules');
+function moduleScripts() {
+  return fs.readdirSync(MODULES_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => path.join(MODULES_DIR, d.name))
+    .filter((dir) => fs.existsSync(path.join(dir, 'module.json')))
+    .flatMap((dir) => (JSON.parse(fs.readFileSync(path.join(dir, 'module.json'), 'utf8')).web?.scripts ?? [])
+      .map((s) => path.relative(WEB, path.join(dir, s))));
+}
 
 function bundleScripts(bundle = DEFAULT_BUNDLE) {
   const b = typeof bundle === 'string' ? JSON.parse(fs.readFileSync(bundle, 'utf8')) : bundle;
@@ -23,7 +29,7 @@ function bundleScripts(bundle = DEFAULT_BUNDLE) {
 // Bundle scripts with "@modules" replaced by the ja module scripts and "@course" dropped.
 function withModules(bundle) {
   const b = typeof bundle === 'string' ? JSON.parse(fs.readFileSync(bundle, 'utf8')) : bundle;
-  return b.scripts.flatMap((s) => (s === '@modules' ? JA_SCRIPTS : s === '@course' ? [] : [s]));
+  return b.scripts.flatMap((s) => (s === '@modules' ? moduleScripts() : s === '@course' ? [] : [s]));
 }
 
 // Source text for script `f`: the override when given, else the file under `root`.
