@@ -52,7 +52,7 @@ fn fake_modules() -> Vec<Box<dyn ValidatorModule>> {
 
 const ZAP: &str = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"Zap the answer","options":["a","b"],"answer":0}"#;
 const ORDER: &str = r#"{"type":"order","id":"u-2","unit":"u","prompt":"Order","steps":["a","ing"]}"#;
-const CAT: &str = r#"{"type":"gap","id":"u-3","unit":"u","prompt":"Word for cat","answers":["кот","кошка"]}"#;
+const CAT: &str = r#"{"type":"gap","id":"u-3","unit":"u","prompt":"Word for cat","answers":["chat","kitté"]}"#;
 
 fn run_with(modules: &[Box<dyn ValidatorModule>]) -> Vec<Diagnostic> {
     let course = with_course(r#""contentLanguage":"xx""#);

@@ -356,7 +356,7 @@ fn i18n_plural_setup(tag: &str, file: &str) -> io::Result<(PathBuf, PathBuf)> {
 
 #[test]
 fn i18n_plural_dotted_suffixes_accepted() {
-    let (dir, web) = i18n_plural_setup("i18n-plural-dotted", r#"{"n.one":"{n} элемент","n.few":"{n} элемента","n.many":"{n} элементов","n.other":"{n} элементов","hi":"Привет {name}"}"#).unwrap();
+    let (dir, web) = i18n_plural_setup("i18n-plural-dotted", r#"{"n.one":"{n} item","n.few":"{n} items","n.many":"{n} items","n.other":"{n} items","hi":"Hi {name}"}"#).unwrap();
     let out = validate_i18n(&dir, &web, &[]);
     assert_eq!(code(&out), Some(0));
     assert_eq!(stdout(&out), "0 errors, 0 warnings\n");
@@ -364,7 +364,7 @@ fn i18n_plural_dotted_suffixes_accepted() {
 
 #[test]
 fn i18n_plural_placeholder_mismatch_is_error() {
-    let (dir, web) = i18n_plural_setup("i18n-plural-ph", r#"{"n.one":"{n} элемент","n.few":"много","n.many":"{n} элементов","n.other":"{n} элементов","hi":"Привет {name}"}"#).unwrap();
+    let (dir, web) = i18n_plural_setup("i18n-plural-ph", r#"{"n.one":"{n} item","n.few":"many","n.many":"{n} items","n.other":"{n} items","hi":"Hi {name}"}"#).unwrap();
     let out = validate_i18n(&dir, &web, &[]);
     assert_eq!(code(&out), Some(1));
     let text = stdout(&out);
@@ -374,7 +374,7 @@ fn i18n_plural_placeholder_mismatch_is_error() {
 
 #[test]
 fn i18n_plural_unknown_suffix_is_warning() {
-    let (dir, web) = i18n_plural_setup("i18n-plural-unknown", r#"{"n.one":"{n} элемент","n.few":"{n} элемента","n.many":"{n} элементов","n.other":"{n} элементов","n.dual":"{n} duo","hi":"Привет {name}"}"#).unwrap();
+    let (dir, web) = i18n_plural_setup("i18n-plural-unknown", r#"{"n.one":"{n} item","n.few":"{n} items","n.many":"{n} items","n.other":"{n} items","n.dual":"{n} duo","hi":"Hi {name}"}"#).unwrap();
     let out = validate_i18n(&dir, &web, &[]);
     assert_eq!(code(&out), Some(0));
     let text = stdout(&out);
@@ -384,7 +384,7 @@ fn i18n_plural_unknown_suffix_is_warning() {
 
 #[test]
 fn i18n_plural_underscore_suffix_is_warning() {
-    let (dir, web) = i18n_plural_setup("i18n-plural-underscore", r#"{"n.one":"{n} элемент","n.few":"{n} элемента","n.many":"{n} элементов","n.other":"{n} элементов","n_few":"{n} wrong","hi":"Привет {name}"}"#).unwrap();
+    let (dir, web) = i18n_plural_setup("i18n-plural-underscore", r#"{"n.one":"{n} item","n.few":"{n} items","n.many":"{n} items","n.other":"{n} items","n_few":"{n} wrong","hi":"Hi {name}"}"#).unwrap();
     let out = validate_i18n(&dir, &web, &[]);
     assert_eq!(code(&out), Some(0));
     let text = stdout(&out);

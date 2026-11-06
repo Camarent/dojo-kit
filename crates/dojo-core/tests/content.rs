@@ -271,8 +271,8 @@ fn crlf_line_endings() {
 
 #[test]
 fn non_ascii_text_inside_strings() {
-    let obj = "{\n  \"type\": \"gap\",\n  \"id\": \"a-1\",\n  \"unit\": \"a\",\n  \"prompt\": \"Столица {Франции} 🗼 — ___\",\n  \"answers\": [\"Париж\"]\n}";
-    let p = parse_items(&format!("{obj}\nпроизвольный текст 🗼\n{obj}\n"));
+    let obj = "{\n  \"type\": \"gap\",\n  \"id\": \"a-1\",\n  \"unit\": \"a\",\n  \"prompt\": \"Capital {France} 🗼 — ___\",\n  \"answers\": [\"Paris\"]\n}";
+    let p = parse_items(&format!("{obj}\nstray text 🗼\n{obj}\n"));
     assert_eq!(p.items.len(), 2);
     assert_eq!(p.items[1].0, 9);
     assert_eq!(p.errors.len(), 1);

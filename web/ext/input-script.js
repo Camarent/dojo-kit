@@ -28,10 +28,10 @@
   }
 
   var SCRIPTS = {
-    han: /[一-鿿㐀-䶿\u{20000}-\u{2CEAF}]/u,
-    hiragana: /[぀-ゟ]/,
-    katakana: /[゠-ヿ･-ﾟ]/,
-    cyrillic: /[Ѐ-ӿ]/,
+    han: /[\u4e00-\u9fff\u3400-\u4dbf\u{20000}-\u{2CEAF}]/u,
+    hiragana: /[\u3040-\u309f]/,
+    katakana: /[\u30a0-\u30ff\uff65-\uff9f]/,
+    cyrillic: /[\u0400-\u04ff]/,
     greek: /[Ͱ-Ͽἀ-῿]/,
     arabic: /[؀-ۿݐ-ݿ]/,
     hebrew: /[֐-׿]/,

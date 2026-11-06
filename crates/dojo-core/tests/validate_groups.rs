@@ -13,7 +13,7 @@ fn bad_retry_equal_to_answer_after_normalization() {
 
 #[test]
 fn bad_retry_equal_after_fold() {
-    let l = gap_retry(r#","normalize":{"fold":[["ё","е"]]}"#, r#"["елка"]"#, r#"["Ёлка"]"#);
+    let l = gap_retry(r#","normalize":{"fold":[["é","e"]]}"#, r#"["elan"]"#, r#"["Élan"]"#);
     fires(COURSE, &[&l], "bad_retry");
 }
 
