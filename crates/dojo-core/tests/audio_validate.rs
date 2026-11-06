@@ -170,6 +170,7 @@ fn make_course_with_audio(manifest_path: &str) -> Course {
         }),
         timer: None,
         confusions: None,
+        modules: Vec::new(),
     }
 }
 

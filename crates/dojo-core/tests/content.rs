@@ -142,9 +142,18 @@ fn course_ui_language_required() {
 }
 
 #[test]
+fn course_modules_optional_and_parsed() {
+    let base = r#"{"id":"d","title":"t","uiLanguage":"en","units":[{"id":"u","title":"U","newPerDay":1}]"#;
+    let without = parse_course(&format!("{base}}}")).unwrap();
+    assert!(without.modules.is_empty());
+    let with = parse_course(&format!(r#"{base},"modules":["kanji","grammar"]}}"#)).unwrap();
+    assert_eq!(with.modules, vec!["kanji".to_string(), "grammar".to_string()]);
+}
+
+#[test]
 fn course_schema_mentions_every_field() {
     let s = course_schema().to_string();
-    for f in ["id", "title", "uiLanguage", "contentLanguage", "units", "types", "srs", "srsByType", "exam", "storage"] {
+    for f in ["id", "title", "uiLanguage", "contentLanguage", "units", "types", "srs", "srsByType", "exam", "storage", "modules"] {
         assert!(s.contains(&format!("\"{f}\"")), "{f}");
     }
 }
