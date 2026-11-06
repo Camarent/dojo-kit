@@ -51,7 +51,8 @@
   // opts.aliases: { field: [legacyName, ...] } legacy row field names read when the canonical field is absent
   // (applies to every hook's rows; module-level, kept by reset()).
   var fallbackRowsFn = null;
-  var rowAliases = {};
+  // Core default: the legacy kanji field name maps to ch, so rows without the ja module still render.
+  var rowAliases = { ch: ['kanji'] };
   function registerFeedbackRows(fn, opts) {
     if (typeof fn !== 'function') throw new Error('DojoExt.registerFeedbackRows: function required');
     if (opts && opts.aliases) Object.keys(opts.aliases).forEach(function (k) { rowAliases[k] = [].concat(opts.aliases[k]); });
@@ -61,15 +62,14 @@
 
   function applyAliases(row) {
     if (!row || typeof row !== 'object') return row;
-    var out = row;
     Object.keys(rowAliases).forEach(function (field) {
-      if (out[field] !== undefined) return;
+      if (row[field] !== undefined) return;
       for (var i = 0; i < rowAliases[field].length; i++) {
         var v = row[rowAliases[field][i]];
-        if (v !== undefined) { if (out === row) out = Object.assign({}, row); out[field] = v; return; }
+        if (v !== undefined) { row[field] = v; return; }
       }
     });
-    return out;
+    return row;
   }
 
   function guardedRows(fn, item, ctx) {

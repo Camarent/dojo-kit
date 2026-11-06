@@ -117,9 +117,10 @@
   }
 
   // Rows from DojoExt.registerFeedbackRows (a course plugin, else a module fallback such as the ja breakdown).
+  // No rows in exam mode, whichever hook would supply them.
   function feedbackRowsFor(p, s, examMode) {
     var item = s.cur && s.cur.item;
-    if (!item || !s.result || !DojoExt.feedbackRows) return null;
+    if (!item || !s.result || examMode || !DojoExt.feedbackRows) return null;
     return DojoExt.feedbackRows(item, { examMode: !!examMode, items: p.content ? p.content.items : undefined, course: p.course });
   }
 
