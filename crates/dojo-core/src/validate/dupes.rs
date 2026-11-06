@@ -31,6 +31,11 @@ fn normalize_answer_set(item: &Item, course_norm: Option<&Normalize>) -> Vec<Vec
                 })
                 .collect()
         }
+        Item::Choice(c) => {
+            // The answer is the correct option; a bad index is reported by the item check, not here.
+            let v: Vec<String> = c.options.get(c.answer).map(|o| normalize(o, &norm_opts)).into_iter().collect();
+            vec![v]
+        }
         Item::Numeric(n) => {
             // For numeric, we convert the answer to a normalized string representation
             vec![vec![format!("{:.6}", n.answer)]]
@@ -51,7 +56,7 @@ fn effective_norm(item: &Item, course_norm: Option<&Normalize>) -> Normalize {
 
 /// Check for items with same prompt but different answers
 pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
-    // Group items by normalized prompt, but only for gap, cloze, and numeric types
+    // Group items by normalized prompt, but only for gap, cloze, numeric, and choice types
     // and only for non-stimulus items
     let mut by_prompt: BTreeMap<String, Vec<(&str, usize, &Item)>> = BTreeMap::new();
     
@@ -61,9 +66,9 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
             continue;
         }
         
-        // Only check gap, cloze, and numeric
+        // Only check gap, cloze, numeric, and choice
         let item_type = item.item_type();
-        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric) {
+        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric | ItemType::Choice) {
             continue;
         }
         
@@ -112,12 +117,13 @@ fn dup_prompt_key(prompt: &str) -> String {
     let mut depth = 0usize;
     let mut in_ruby_reading = false;
     let mut in_ruby = false;
-    for c in prompt.chars() {
+    for (idx, c) in prompt.char_indices() {
         match c {
             '(' | '\u{ff08}' => depth += 1,
             ')' | '\u{ff09}' => depth = depth.saturating_sub(1),
             _ if depth > 0 => {}
-            '{' => in_ruby = true,
+            // An unclosed `{` is plain text, so it cannot hide the rest of the prompt.
+            '{' if prompt[idx..].contains('}') => in_ruby = true,
             '|' if in_ruby => in_ruby_reading = true,
             '}' if in_ruby => {
                 in_ruby = false;
@@ -131,20 +137,21 @@ fn dup_prompt_key(prompt: &str) -> String {
     collapsed.trim_end_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace() || "\u{3002}\u{3001}\u{ff01}\u{ff1f}\u{2026}".contains(c)).to_string()
 }
 
-/// One candidate for the dup_word check: file, line, item, prompt key, flat answer set.
-type DupCandidate<'a> = (&'a str, usize, &'a Item, String, BTreeSet<String>);
+/// One candidate for the dup_word check: file, line, item, flat answer set.
+type DupCandidate<'a> = (&'a str, usize, &'a Item, BTreeSet<String>);
 
 /// Check for live items in the same unit and type whose prompts match (after normalization) and whose one answer set contains the other (likely one word entered twice)
-pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
+pub(super) fn check_dup_word(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
     let superseded: BTreeSet<&str> = items.iter().filter_map(|(_, _, it)| it.supersedes_field()).flatten().map(String::as_str).collect();
-    let mut by_group: BTreeMap<(String, &str), Vec<DupCandidate>> = BTreeMap::new();
+    // Grouped by unit, type and prompt key, so only items with the same prompt are compared pairwise.
+    let mut by_group: BTreeMap<(String, &str, String), Vec<DupCandidate>> = BTreeMap::new();
 
     for (file, line, item) in items {
         if item.stimulus().is_some() || item.is_retired() || superseded.contains(item.id()) {
             continue;
         }
         let item_type = item.item_type();
-        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric) {
+        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric | ItemType::Choice) {
             continue;
         }
         let answers: BTreeSet<String> = normalize_answer_set(item, course_norm).into_iter().flatten().collect();
@@ -155,13 +162,13 @@ pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sin
         if key.is_empty() {
             continue;
         }
-        by_group.entry((item.unit().to_string(), item_type.as_str())).or_default().push((*file, *line, *item, key, answers));
+        by_group.entry((item.unit().to_string(), item_type.as_str(), key)).or_default().push((*file, *line, *item, answers));
     }
 
     for group in by_group.values() {
         for (i, a) in group.iter().enumerate() {
             for b in group.iter().skip(i + 1) {
-                if a.3 != b.3 || !(a.4.is_subset(&b.4) || b.4.is_subset(&a.4)) {
+                if !(a.3.is_subset(&b.3) || b.3.is_subset(&a.3)) {
                     continue;
                 }
                 sink.warning(

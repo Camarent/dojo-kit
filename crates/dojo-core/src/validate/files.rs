@@ -1,7 +1,7 @@
 use super::audio::{ManifestState, check_manifest, check_mode_by_type, check_pack_files, check_stimuli_audio, check_timer_config, load_manifest};
 use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm, item_body};
 use super::quality::{check_ambiguous_answer, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
-use super::dupes::{check_same_answer_diff_prompts, check_same_prompt_diff_answers};
+use super::dupes::{check_dup_word, check_same_prompt_diff_answers};
 use super::speech::validate_speak;
 use super::{COURSE_FILE, Diagnostic, ItemChecker, LOCK_FILE, Severity, Sink, SourceFile, ValidatorModule, exam, is_valid_id};
 use super::groups::{check_bar_matches, check_entity_spans_groups, check_mixed_entity_scope};
@@ -229,7 +229,7 @@ pub(super) fn check_course_totals(c: &Course, all: &AllItems, course_sink: &mut 
     check_same_prompt_diff_answers(all, course_sink, course_norm);
 
     // Check for the same answers under different prompts (a word entered twice)
-    check_same_answer_diff_prompts(all, course_sink, course_norm);
+    check_dup_word(all, course_sink, course_norm);
 
     // Check entity spans groups
     check_entity_spans_groups(c, all, course_sink);
