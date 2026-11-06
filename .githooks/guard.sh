@@ -42,7 +42,7 @@ msg_names_job() {
 # no exemptions
 subject_ok() {
   first=$(grep -v '^#' | head -n 1)
-  echo "$first" | grep -qE '^(feat|fix|refactor|test|docs|chore|perf|build|style)\([^()[:space:]]+\): [^[:space:]]' && return 0
+  echo "$first" | grep -qE '^(feat|fix|refactor|test|docs|chore|perf|build|style|ci)\([^()[:space:]]+\): [^[:space:]]' && return 0
   return 1
 }
 
@@ -224,12 +224,21 @@ check_content_in_commit() {
   return 0
 }
 
+# Warns (never fails) when the repo top has no AUDIT.md; it is git-excluded, so a fresh clone lacks it
+warn_missing_audit() {
+  top=$(git rev-parse --show-toplevel 2>/dev/null) || return 0
+  [ -n "$top" ] && [ ! -f "$top/AUDIT.md" ] && echo "guard: warning: AUDIT.md missing at repo top (audit tools need it; not fatal)" >&2
+  return 0
+}
+
 # Main function for pre-commit and commit-msg
 main_guard() {
   fail=0
 
   # Check author and committer emails
   check_ident || fail=1
+
+  warn_missing_audit
 
   # Check staged paths
   bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "$(banned_re)" || true)
