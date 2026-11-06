@@ -1,8 +1,8 @@
 //! Kanji-ruby checks for course `ruby` config: `ruby_on_skip_kanji` and `ruby_missing`.
 //! The skip rules run only when `markup` is `ruby` and a skip source (`skip` or `skipTag`) is set.
 
-use super::Sink;
-use crate::content::{Course, Item, RubyConfig};
+use dojo_core::content::{Course, Item, RubyConfig};
+use dojo_core::validate::{Diagnostic, ItemChecker, Severity};
 use std::collections::HashSet;
 
 const RUBY_MARKUP: &str = "ruby";
@@ -49,9 +49,9 @@ fn meta_str<'a>(item: &'a Item, key: &str) -> Option<&'a str> {
 
 /// The skip set: Han of `ruby.skip` plus Han of the `skipKey` string of every item tagged `skipTag`.
 /// `None` unless `markup` is `ruby`, `ruby.checkQuestions` is true and a skip source is set.
-pub(super) fn skip_set<'a>(course: Option<&Course>, items: impl Iterator<Item = &'a Item>) -> Option<HashSet<char>> {
-    let ruby = course?.ruby.as_ref()?;
-    if ruby.check_questions != Some(true) || course?.markup.as_deref() != Some(RUBY_MARKUP) || (ruby.skip.is_none() && ruby.skip_tag.is_none()) {
+pub(crate) fn skip_set<'a>(course: &Course, items: impl Iterator<Item = &'a Item>) -> Option<HashSet<char>> {
+    let ruby = course.ruby.as_ref()?;
+    if ruby.check_questions != Some(true) || course.markup.as_deref() != Some(RUBY_MARKUP) || (ruby.skip.is_none() && ruby.skip_tag.is_none()) {
         return None;
     }
     let mut set: HashSet<char> = ruby.skip.as_deref().unwrap_or("").chars().filter(|c| is_han(*c)).collect();
@@ -86,29 +86,42 @@ fn hidden_base(base: &str, skip: &HashSet<char>) -> bool {
     !han.is_empty() && han.iter().all(|c| skip.contains(c))
 }
 
-/// Checks one active item against the course `ruby` config; no-op without a `ruby` section.
-/// `ruby_skip` is the set from [`skip_set`]; `None` turns off the skip rules.
-pub(super) fn check_ruby(item: &Item, course: Option<&Course>, ruby_skip: Option<&HashSet<char>>, sink: &mut Sink, file: &str, line: usize) {
-    let Some(ruby) = course.and_then(|c| c.ruby.as_ref()) else { return };
-    let id = item.id();
+fn warning(code: &'static str, file: &str, line: usize, message: String) -> Diagnostic {
+    Diagnostic { severity: Severity::Warning, code, file: file.to_string(), line, message }
+}
 
-    // A reading drill keeps its headword bare: ruby would give away the answer.
-    if is_drill(item, ruby) {
-        return;
-    }
+/// Per-item ruby check built once per course by `Ja::course_checker`.
+pub(crate) struct RubyChecker {
+    /// Skip set from [`skip_set`]; `None` turns off the skip rules.
+    pub(crate) skip: Option<HashSet<char>>,
+}
 
-    let Some(skip) = ruby_skip else { return };
-    let mut hidden = false;
-    let mut missing = false;
-    for text in std::iter::once(item.prompt()).chain(options(item).iter().map(String::as_str)) {
-        let (bases, bare) = scan_ruby(text);
-        hidden |= bases.iter().any(|b| hidden_base(b, skip));
-        missing |= bare.iter().any(|c| !skip.contains(c));
-    }
-    if hidden {
-        sink.warning("ruby_on_skip_kanji", file, line, format!("item '{id}' has ruby on kanji that the ruby skip set already hides"));
-    }
-    if missing {
-        sink.warning("ruby_missing", file, line, format!("item '{id}' has a kanji outside the ruby skip set without a {{base|reading}} ruby"));
+impl ItemChecker for RubyChecker {
+    /// Findings for one active item; empty without a `ruby` section.
+    fn check(&self, item: &Item, course: Option<&Course>, file: &str, line: usize) -> Vec<Diagnostic> {
+        let Some(ruby) = course.and_then(|c| c.ruby.as_ref()) else { return Vec::new() };
+        let id = item.id();
+
+        // A reading drill keeps its headword bare: ruby would give away the answer.
+        if is_drill(item, ruby) {
+            return Vec::new();
+        }
+
+        let Some(skip) = self.skip.as_ref() else { return Vec::new() };
+        let mut hidden = false;
+        let mut missing = false;
+        for text in std::iter::once(item.prompt()).chain(options(item).iter().map(String::as_str)) {
+            let (bases, bare) = scan_ruby(text);
+            hidden |= bases.iter().any(|b| hidden_base(b, skip));
+            missing |= bare.iter().any(|c| !skip.contains(c));
+        }
+        let mut out = Vec::new();
+        if hidden {
+            out.push(warning("ruby_on_skip_kanji", file, line, format!("item '{id}' has ruby on kanji that the ruby skip set already hides")));
+        }
+        if missing {
+            out.push(warning("ruby_missing", file, line, format!("item '{id}' has a kanji outside the ruby skip set without a {{base|reading}} ruby")));
+        }
+        out
     }
 }

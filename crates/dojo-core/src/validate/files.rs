@@ -70,8 +70,6 @@ pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, cou
 pub(super) struct ItemCtx<'a> {
     pub(super) course: Option<&'a Course>,
     pub(super) stimuli: &'a StimulusInfo,
-    /// Ruby skip set from `ruby::skip_set`; `None` when the skip rules are off.
-    pub(super) ruby_skip: Option<HashSet<char>>,
     /// Extension modules; their word lists and fragment tables apply on top of the built-in ones.
     pub(super) modules: &'a [Box<dyn ValidatorModule>],
     /// Per-item checks from the modules' `course_checker`, run on every active item.
@@ -149,7 +147,6 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
     check_ambiguous_answer(item, sink, name, line, ctx.modules);
     check_order_blanks_mismatch(item, sink, name, line);
     super::order_split::check_order_split(item, ctx.course, sink, name, line, ctx.modules);
-    super::ruby::check_ruby(item, ctx.course, ctx.ruby_skip.as_ref(), sink, name, line);
     for checker in &ctx.checkers {
         sink.out.extend(checker.check(item, ctx.course, name, line));
     }

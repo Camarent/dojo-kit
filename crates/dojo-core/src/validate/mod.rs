@@ -19,12 +19,10 @@ mod files;
 mod groups;
 mod items;
 mod course;
-mod lang;
 mod module;
 mod order_alt;
 mod order_split;
 mod quality;
-mod ruby;
 mod speech;
 mod dupes;
 use course::check_course;
@@ -186,7 +184,6 @@ pub fn validate_with_modules(
     let stimuli_info = files::check_stimuli_file(stimuli, course.as_ref(), &mut course_sink);
     files::check_intros_file(intros, &all, &mut course_sink);
 
-    let ruby_skip = ruby::skip_set(course.as_ref(), all.iter().map(|(_, _, i)| *i));
     let checkers: Vec<Box<dyn ItemChecker>> = match &course {
         Some(c) => {
             let items: Vec<&Item> = all.iter().map(|(_, _, i)| *i).collect();
@@ -194,7 +191,7 @@ pub fn validate_with_modules(
         }
         None => Vec::new(),
     };
-    let ctx = files::ItemCtx { course: course.as_ref(), stimuli: &stimuli_info, ruby_skip, modules, checkers };
+    let ctx = files::ItemCtx { course: course.as_ref(), stimuli: &stimuli_info, modules, checkers };
     let file_diags = files::check_item_files(files, &parsed, &ctx);
 
     if let Some(c) = &course {

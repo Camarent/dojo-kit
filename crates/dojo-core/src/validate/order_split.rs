@@ -3,13 +3,13 @@
 use super::{Sink, ValidatorModule};
 use crate::content::{Course, Item};
 
-/// Warn for every order step (index >= 1) that is a bare ending or case particle. Only for a `contentLanguage` with a table in `lang/` or in a module.
+/// Warn for every order step (index >= 1) that is a bare ending or case particle. Only for a `contentLanguage` with a word table in an active module.
 pub(super) fn check_order_split(item: &Item, course: Option<&Course>, sink: &mut Sink, file: &str, line: usize, modules: &[Box<dyn ValidatorModule>]) {
     let Item::Order(o) = item else { return };
     let Some(language) = course.and_then(|c| c.content_language.as_deref()) else {
         return;
     };
-    let Some(is_fragment) = super::lang::fragment_check(language).or_else(|| modules.iter().find_map(|m| m.fragment_check(language))) else {
+    let Some(is_fragment) = modules.iter().find_map(|m| m.fragment_check(language)) else {
         return;
     };
     for (k, step) in o.steps.iter().enumerate().skip(1) {

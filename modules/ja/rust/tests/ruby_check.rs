@@ -108,3 +108,21 @@ fn skip_rules_off_without_check_questions() {
     let d = codes(&run(&course, &[&hidden, &bare]));
     assert!(!d.contains(&"ruby_on_skip_kanji") && !d.contains(&"ruby_missing"));
 }
+
+#[test]
+fn fires_ruby_on_skip_kanji_and_ruby_missing() {
+    // ruby on a kanji the skip set already hides
+    let skip = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"日"}"#);
+    let hidden = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{日|にち}","options":["a","b"],"answer":0}"#;
+    fires(&skip, &[hidden], "ruby_on_skip_kanji");
+    let shown = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{学|がく}","options":["a","b"],"answer":0}"#;
+    assert!(!codes(&run(&skip, &[shown])).contains(&"ruby_on_skip_kanji"));
+
+    // drill item keeps its headword bare: exempt from ruby_missing
+    let drill = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"x","drillUnits":["u"]}"#);
+    let bare = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"日本","options":["a","b"],"answer":0}"#;
+    assert!(!codes(&run(&drill, &[bare])).contains(&"ruby_missing"));
+
+    // no drill scope configured: bare kanji is fine
+    assert!(!codes(&run(COURSE, &[bare])).contains(&"ruby_missing"));
+}
