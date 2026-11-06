@@ -1,6 +1,6 @@
 ---
 paths: [modules/]
-summary: Optional language modules (ja, ru) - validator crates, browser scripts, manifests - and their registry crate.
+summary: Optional modules (ja, ru) - validator crates, browser scripts, manifests - and their registry crate.
 ---
 # modules
 
