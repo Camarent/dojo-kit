@@ -7,6 +7,7 @@ const path = require('path');
 const web = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 const bundle = JSON.parse(read('bundle.json'));
+const { loadBundle } = require('./load-bundle.js');
 
 function fresh() {
   delete require.cache[require.resolve('../types/registry.js')];
@@ -45,6 +46,19 @@ test('type scripts load before ui/app.js in registry, choice, gap, card order', 
   const s = bundle.scripts;
   const order = s.filter((f) => /^types\/(registry|choice|gap|card)\.js$|^ui\/app\.js$/.test(f)).map((f) => path.basename(f, '.js'));
   assert.deepStrictEqual(order, ['registry', 'choice', 'gap', 'card', 'app']);
+});
+
+test('feedback row aliases: a frozen plugin row is not written to', () => {
+  const sb = { console: { warn() {}, log() {} } };
+  loadBundle(sb, { only: ['ext/registry.js', 'ext.js'] });
+  const E = sb.DojoExt;
+  const row = Object.freeze({ glyph: 'D', meaning: 'day' });
+  E.registerFeedbackRows(() => [row], { aliases: { ch: ['glyph'] } });
+  const out = E.feedbackRows({ prompt: 'p' }, { examMode: false });
+  assert.strictEqual(out[0].ch, 'D');
+  assert.strictEqual(out[0].meaning, 'day');
+  assert.strictEqual(row.ch, undefined);
+  assert.notStrictEqual(out[0], row);
 });
 
 test('ui/app.js holds no question-type internals', () => {
