@@ -53,8 +53,7 @@
   // opts.label: { lang: text } feedback label replacing the core session.fbLabel text (module-level, kept by reset()).
   var fallbackRowsFn = null;
   var rowLabel = null;
-  // Core default: the legacy kanji field name maps to ch, so rows without the ja module still render.
-  var rowAliases = { ch: ['kanji'] };
+  var rowAliases = {};
   function registerFeedbackRows(fn, opts) {
     if (typeof fn !== 'function') throw new Error('DojoExt.registerFeedbackRows: function required');
     if (opts && opts.aliases) Object.keys(opts.aliases).forEach(function (k) { rowAliases[k] = [].concat(opts.aliases[k]); });

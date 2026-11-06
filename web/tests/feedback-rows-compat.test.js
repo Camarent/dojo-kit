@@ -26,14 +26,20 @@ function find(v, id) {
 const P = { t: (k) => k, content: { items: [] }, course: {} };
 const S = { cur: { item: { id: 'a', prompt: 'P' } }, result: { ok: true } };
 
-test('core maps legacy kanji field to ch without the ja module', () => {
+test('opts.aliases maps a legacy row field to ch', () => {
   const { E, shared } = loadStimulus();
-  E.registerFeedbackRows(() => [{ kanji: 'D', meaning: 'day', on: [], kun: [] }]);
+  E.registerFeedbackRows(() => [{ glyph: 'D', meaning: 'day', on: [], kun: [] }], { aliases: { ch: ['glyph'] } });
   const rows = E.feedbackRows({ prompt: 'p' }, { examMode: false });
   assert.strictEqual(rows[0].ch, 'D');
   const v = shared.fbRows(P, S, false);
   assert.strictEqual(find(v, 'fb-ch').props.children, 'D');
   assert.strictEqual(find(v, 'fb-mean').props.children, 'day');
+});
+
+test('core has no default alias: a row without ch has no character', () => {
+  const { E } = loadStimulus();
+  E.registerFeedbackRows(() => [{ glyph: 'D', meaning: 'day' }]);
+  assert.strictEqual(E.feedbackRows({ prompt: 'p' }, { examMode: false })[0].ch, undefined);
 });
 
 test('without a module label the feedback label is the core key session.fbLabel', () => {
