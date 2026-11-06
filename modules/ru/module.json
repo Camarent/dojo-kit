@@ -1,0 +1,6 @@
+{
+  "manifestVersion": 1,
+  "id": "ru",
+  "description": "Russian validator: trigger words and disambiguation words.",
+  "hooks": ["validator"]
+}
