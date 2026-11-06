@@ -58,11 +58,14 @@ test('plural ru uses one/few/many categories', () => {
 test('plural non-ru uses one/other categories', () => {
   const sb = loadApp();
   const f = (lang, n) => sb.DojoApp._pluralForm(lang, n);
-  ['fr', 'xx', 'de'].forEach((lang) => {
+  ['xx', 'de'].forEach((lang) => {
     assert.strictEqual(f(lang, 1), 'one', lang + ' n=1');
     assert.strictEqual(f(lang, 0), 'other', lang + ' n=0');
     assert.strictEqual(f(lang, 2), 'other', lang + ' n=2');
   });
+  // CLDR French: 0 and 1 are one.
+  assert.strictEqual(f('fr', 0), 'one', 'fr n=0');
+  assert.strictEqual(f('fr', 2), 'other', 'fr n=2');
 });
 
 test('plural family missing in partial falls back to en forms', () => {

@@ -7,14 +7,11 @@
   function primaryTag(lang) { return String(lang || 'en').split('-')[0]; }
 
   function pluralForm(lang, n) {
-    if (primaryTag(lang) === 'ru') {
-      var m10 = n % 10;
-      var m100 = n % 100;
-      if (m10 === 1 && m100 !== 11) return 'one';
-      if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'few';
-      return 'many';
+    try {
+      return new Intl.PluralRules(primaryTag(lang)).select(n);
+    } catch (e) {
+      return new Intl.PluralRules('en').select(n);
     }
-    return n === 1 ? 'one' : 'other';
   }
 
   // First plural form of key in dict that exists for count n, or undefined.

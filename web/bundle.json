@@ -83,7 +83,8 @@
   ],
   "i18n": [
     "en",
-    "ru"
+    "ru",
+    "fr"
   ],
   "licenses": [
     "vendor/preact.LICENSE",
