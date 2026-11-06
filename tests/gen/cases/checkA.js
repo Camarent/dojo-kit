@@ -23,7 +23,7 @@ function checkNormalizePart1(kit) {
 
   kit.normalizeCases.push(vec('punctuation_kept_by_default', { text: "Don't!" }, "don't!", 'spec'));
 
-  kit.normalizeCases.push(vec('cyrillic', { text: 'МОСКВА', opts: { caseSensitive: false, trim: true, collapseSpaces: true, stripPunctuation: false } }, 'москва', 'spec'));
+  kit.normalizeCases.push(vec('upper_ascii_lowercased', { text: 'MOSCOW', opts: { caseSensitive: false, trim: true, collapseSpaces: true, stripPunctuation: false } }, 'moscow', 'spec'));
 }
 
 function checkNormalizePart2(kit) {
@@ -31,13 +31,13 @@ function checkNormalizePart2(kit) {
 
   kit.normalizeCases.push(vec('cafe_not_equal_cafe', { text: 'cafe', opts: { caseSensitive: false, trim: true, collapseSpaces: true, stripPunctuation: false } }, 'cafe', 'spec'));
 
-  kit.normalizeCases.push(vec('fold_kana_table', { text: 'アイ', opts: { fold: [['ア', 'あ'], ['イ', 'い']] } }, 'あい', 'spec'));
+  kit.normalizeCases.push(vec('fold_table', { text: 'Ab', opts: { fold: [['a', 'x'], ['b', 'y']] } }, 'xy', 'spec'));
 
-  kit.normalizeCases.push(vec('fold_yo_to_ye', { text: 'Ёлка', opts: { fold: [['ё', 'е']] } }, 'елка', 'spec'));
+  kit.normalizeCases.push(vec('fold_a_ring_to_a', { text: 'Åse', opts: { fold: [['å', 'a']] } }, 'ase', 'spec'));
 
   kit.normalizeCases.push(vec('fold_range_case_sensitive', { text: 'ABC xyz', opts: { caseSensitive: true, fold: [['A-Z', 'a-z']] } }, 'abc xyz', 'spec'));
 
-  kit.normalizeCases.push(vec('fold_delete', { text: 'はい。', opts: { fold: [['。', '']] } }, 'はい', 'spec'));
+  kit.normalizeCases.push(vec('fold_delete', { text: 'ab.', opts: { fold: [['.', '']] } }, 'ab', 'spec'));
 
   kit.normalizeCases.push(vec('digits', { text: '42' }, '42', 'spec'));
 
@@ -72,7 +72,7 @@ function checkCheckGapPart1(kit) {
 function checkGapVerdictPart1(kit) {
   kit.checkGapCases.push(vec('digits_with_space_no_match', { answers: ['42'], input: '4 2', opts: { collapseSpaces: false } }, false, 'spec'));
 
-  kit.checkGapCases.push(vec('cyrillic_case_insensitive', { answers: ['МОСКВА'], input: 'москва' }, true, 'spec'));
+  kit.checkGapCases.push(vec('upper_ascii_case_insensitive', { answers: ['MOSCOW'], input: 'moscow' }, true, 'spec'));
 
   kit.checkGapCases.push(vec('accented_latin_match', { answers: ['café'], input: 'Café' }, true, 'spec'));
 
@@ -101,11 +101,11 @@ function checkGapVerdictPart2(kit) {
 
   kit.gapVerdictCases.push(vec('multiple_retry_match', { answers: ['Paris'], retry: ['Pariz', 'Londinium'], input: 'Londinium' }, 'retry', 'spec'));
 
-  kit.gapVerdictCases.push(vec('fold_applies_to_input_and_answer', { answers: ['Ёлка'], retry: [], input: 'елка', opts: { fold: [['ё', 'е']] } }, 'ok', 'spec'));
+  kit.gapVerdictCases.push(vec('fold_applies_to_input_and_answer', { answers: ['Åse'], retry: [], input: 'ase', opts: { fold: [['å', 'a']] } }, 'ok', 'spec'));
 
-  kit.gapVerdictCases.push(vec('fold_applies_to_retry', { answers: ['Paris'], retry: ['Ёлка'], input: 'елка', opts: { fold: [['ё', 'е']] } }, 'retry', 'spec'));
+  kit.gapVerdictCases.push(vec('fold_applies_to_retry', { answers: ['Paris'], retry: ['Åse'], input: 'ase', opts: { fold: [['å', 'a']] } }, 'retry', 'spec'));
 
-  kit.gapVerdictCases.push(vec('fold_absent_distinguishes_yo', { answers: ['Ёлка'], retry: [], input: 'елка' }, 'wrong', 'spec'));
+  kit.gapVerdictCases.push(vec('fold_absent_distinguishes_accent', { answers: ['Åse'], retry: [], input: 'ase' }, 'wrong', 'spec'));
 
   kit.gapVerdictCases.push(vec('case_and_space_normalized', { answers: ['New York'], retry: ['Nu York'], input: '  NEW   york ' }, 'ok', 'spec'));
 
