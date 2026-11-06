@@ -23,7 +23,7 @@ const run = (scripts, opts = {}) => {
 };
 
 test('bundleScripts is bundle.json minus @course', () => {
-  const expected = JSON.parse(readSource('bundle.json')).scripts.filter((s) => s !== '@course');
+  const expected = JSON.parse(readSource('bundle.json')).scripts.filter((s) => s !== '@course' && s !== '@modules');
   assert.deepStrictEqual(bundleScripts(), expected);
   assert.ok(!bundleScripts().includes('@course'));
 });

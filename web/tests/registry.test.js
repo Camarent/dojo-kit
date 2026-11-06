@@ -36,7 +36,7 @@ test('register rejects incomplete definitions', () => {
 });
 
 test('every file listed in bundle.json exists', () => {
-  ['scripts', 'styles', 'licenses'].forEach((k) => (bundle[k] || []).filter((f) => f !== '@course').forEach((f) => {
+  ['scripts', 'styles', 'licenses'].forEach((k) => (bundle[k] || []).filter((f) => f !== '@course' && f !== '@modules').forEach((f) => {
     assert.ok(fs.existsSync(path.join(web, f)), f + ' missing');
   }));
 });

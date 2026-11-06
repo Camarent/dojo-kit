@@ -12,7 +12,7 @@ function readSource(relPath, root = WEB) {
 
 function bundleScripts(bundle = DEFAULT_BUNDLE) {
   const b = typeof bundle === 'string' ? JSON.parse(fs.readFileSync(bundle, 'utf8')) : bundle;
-  return b.scripts.filter((s) => s !== '@course');
+  return b.scripts.filter((s) => s !== '@course' && s !== '@modules');
 }
 
 // Source text for script `f`: the override when given, else the file under `root`.
