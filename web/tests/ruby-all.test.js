@@ -2,7 +2,7 @@
 // Mutation coverage: ignoring `opts.all` turns the textAll test red.
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('../ext.js');
+const Ext = require('./ja-ext.js');
 
 const items = [
   { id: 'a', tags: ['core'], meta: { kanji: '甲' } },

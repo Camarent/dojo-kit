@@ -22,7 +22,7 @@ const V = (name, lang) => ({ name, lang });
 
 function load() {
   const sb = { console };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js', 'speech.js'] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/input-script.js', 'ext.js', '../modules/ja/web/ruby-dict.js', '../modules/ja/web/ruby.js', '../modules/ja/web/readings.js', '../modules/ja/web/kanji-rows.js', 'speech.js'] });
   return sb;
 }
 

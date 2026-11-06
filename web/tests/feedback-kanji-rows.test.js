@@ -155,7 +155,7 @@ test('kanji-rows: label uses i18n key session.kanji', async () => {
 });
 
 test('kanji-rows: at max-width 390px the row stays one compact line (3 columns kept)', async () => {
-  const css = H.read('styles/app.css');
+  const css = H.read('../modules/ja/web/ja.css');
   const base = css.match(/\.kanji-row-grid\s*\{[^}]*\}/)[0];
   assert.ok(/grid-template-columns:\s*auto 1fr auto/.test(base));
   const m = css.match(/@media \(max-width: 390px\)\s*\{[^@]*?\n\}/g).filter((b) => b.includes('.kanji-row-grid'));

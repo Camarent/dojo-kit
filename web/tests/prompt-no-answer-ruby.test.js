@@ -2,7 +2,7 @@
 // Setup copied from web/tests/ruby-unlearned.test.js
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('../ext.js');
+const Ext = require('./ja-ext.js');
 const H = require('./app-harness.js');
 const { readSource } = require('./load-bundle.js');
 

@@ -1,5 +1,5 @@
 /*
- * ext/ruby-dict.js — ruby parse (`{base|reading}`) and the word-reading dictionary builders used by the built-in ruby renderer.
+ * modules/ja/web/ruby-dict.js — ja module: ruby parse (`{base|reading}`) and the word-reading dictionary builders used by the built-in ruby renderer.
  */
 (function (root) {
   'use strict';

@@ -24,7 +24,7 @@ export default [
   },
   {
     // Web app loads preact/htm from vendor and exposes Dojo* namespaces as globals.
-    files: ["web/**/*.js"],
+    files: ["web/**/*.js", "modules/*/web/**/*.js"],
     languageOptions: {
       globals: {
         preact: "readonly",

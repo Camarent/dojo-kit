@@ -22,13 +22,13 @@ global.preact = {
 
 function loadExtAndPlugin() {
   const sb = { console, self: {}, preact: global.preact };
-  loadBundle(sb, { only: ['ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js', '../examples/plugins/ja-readings/ja-readings.js'] });
+  loadBundle(sb, { only: ['ext/registry.js', 'ext/input-script.js', 'ext.js', '../modules/ja/web/ruby-dict.js', '../modules/ja/web/ruby.js', '../modules/ja/web/readings.js', '../modules/ja/web/kanji-rows.js', '../modules/ja/examples/ja-readings/ja-readings.js'] });
   return sb;
 }
 
 function loadExtAndPluginNoPreact() {
   const sb = { console, self: {} };
-  loadBundle(sb, { only: ['ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js', '../examples/plugins/ja-readings/ja-readings.js'] });
+  loadBundle(sb, { only: ['ext/registry.js', 'ext/input-script.js', 'ext.js', '../modules/ja/web/ruby-dict.js', '../modules/ja/web/ruby.js', '../modules/ja/web/readings.js', '../modules/ja/web/kanji-rows.js', '../modules/ja/examples/ja-readings/ja-readings.js'] });
   return sb;
 }
 

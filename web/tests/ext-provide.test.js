@@ -77,8 +77,8 @@ test('provide refuses inherited and prototype names', () => {
   assert.strictEqual(warns.length, 4);
 });
 
-test('readings without input-script gives a clear error, not a null throw', () => {
+test('useInputScript without input-script gives a clear error, not a null throw', () => {
   const sb = { console: { warn() {}, log() {} } };
-  loadBundle(sb, { only: ['ext/ruby-dict.js', 'ext/registry.js', 'ext/ruby.js', 'ext/readings.js', 'ext.js'] });
+  loadBundle(sb, { only: ['ext/registry.js', 'ext.js'] });
   assert.throws(() => sb.DojoExt.useInputScript(['x']), /input-script.js is not loaded/);
 });

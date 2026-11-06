@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('../ext.js');
+const Ext = require('./ja-ext.js');
 
 test.beforeEach(() => { Ext.reset(); Ext.use('ruby'); });
 

@@ -1,0 +1,12 @@
+/* ja module: kanji breakdown rows in feedback */
+.kanji-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.kanji-row-grid { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-2); align-items: center; }
+/* Kanji rows wrap at 390px */
+@media (max-width: 390px) {
+  .kanji-rows { flex-wrap: wrap; }
+}
+@media (max-width: 390px) {
+  .kanji-row-grid { gap: var(--space-1); }
+  .kanji-mean { min-width: 0; overflow-wrap: anywhere; }
+  .kanji-read { font-size: var(--fs-sm); text-align: right; }
+}

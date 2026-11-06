@@ -98,14 +98,6 @@
     </section>`;
   }
 
-  function kanjiBreakdownFor(p, s, examMode) {
-    var item = s.cur && s.cur.item;
-    if (!item || !s.result || examMode || !DojoExt.kanjiBreakdown || !p.content || !p.content.items) return null;
-    var cfgOrLang = p.course.breakdown;
-    if (cfgOrLang === undefined) return null;
-    return DojoExt.kanjiBreakdown(item, p.content.items, cfgOrLang);
-  }
-
   function readingText(list) {
     return Array.isArray(list) && list.length > 0 ? list.join(' / ') : null;
   }
@@ -124,15 +116,15 @@
     </li>`;
   }
 
-  // Plugin rows (DojoExt.registerFeedbackRows) replace the built-in breakdown when the hook returns an array.
+  // Rows from DojoExt.registerFeedbackRows (a course plugin, else a module fallback such as ja kanji rows).
   function feedbackRowsFor(p, s, examMode) {
     var item = s.cur && s.cur.item;
     if (!item || !s.result || !DojoExt.feedbackRows) return null;
-    return DojoExt.feedbackRows(item, { examMode: !!examMode, items: p.content ? p.content.items : undefined });
+    return DojoExt.feedbackRows(item, { examMode: !!examMode, items: p.content ? p.content.items : undefined, course: p.course });
   }
 
   function kanjiRows(p, s, examMode) {
-    var breakdown = feedbackRowsFor(p, s, examMode) || kanjiBreakdownFor(p, s, examMode);
+    var breakdown = feedbackRowsFor(p, s, examMode);
     if (!breakdown || !breakdown.length) return null;
     var t = p.t;
     return html`<ul class="kanji-rows" data-testid="kanji-rows">

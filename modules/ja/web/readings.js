@@ -1,36 +1,19 @@
 /*
- * ext/readings.js — DojoExt readings and kanji breakdown support.
- * Global DojoExtReadings (UMD).
+ * modules/ja/web/readings.js — ja module: kanji breakdown (DojoExt.kanjiBreakdown) from course.breakdown.
+ * Global DojoJaReadings (UMD).
  */
 (function (root) {
   'use strict';
-  var registry = root.DojoExtRegistry || (typeof require !== 'undefined' ? require('./registry.js') : null);
-  var rubyApi = root.DojoExtRuby || (typeof require !== 'undefined' ? require('./ruby.js') : null);
-  // Resolved on each call, so the bundle may load input-script.js after this file.
-  function inputScript() {
-    var m = root.DojoExtInputScript || (typeof require !== 'undefined' ? require('./input-script.js') : null);
-    if (!m) throw new Error('DojoExt: ext/input-script.js is not loaded');
-    return m;
-  }
+  var req = typeof require !== 'undefined';
+  var ext = root.DojoExt || (req ? require('../../../web/ext.js') : null);
+  var inputScript = root.DojoExtInputScript || (req ? require('../../../web/ext/input-script.js') : null);
+  var RD = root.DojoRubyDict || (req ? require('./ruby-dict.js') : null);
 
-  var S = registry.state;
-  function expectedTexts(item) { return inputScript().expectedTexts(item); }
-  var hanOf = registry.hanOf;
-  var pathValue = registry.pathValue;
-  var warn = registry.warn;
-
-  // Use rubyApi.plain if available, otherwise use S.active.plain directly
-  function plain(str) {
-    if (rubyApi && rubyApi.plain) return rubyApi.plain(str);
-    if (!S.active || typeof str !== 'string') return str;
-    try {
-      var out = S.active.plain(str);
-      return typeof out === 'string' ? out : str;
-    } catch (e) {
-      warn('markup plain failed', e);
-      return str;
-    }
-  }
+  var expectedTexts = inputScript.expectedTexts;
+  var hanOf = RD.hanOf;
+  var pathValue = RD.pathValue;
+  // Text without the active markup (ext.plain), so {base|reading} counts only its base.
+  function plain(str) { return ext.plain(str); }
 
   function answerTexts(item) {
     var out = [];
@@ -121,15 +104,9 @@
     return result.slice(0, 12);
   }
 
-  var api = {
-    kanjiBreakdown: kanjiBreakdown,
-    kanjiIndex: kanjiIndex,
-    expectedTexts: expectedTexts,
-    answerTexts: answerTexts,
-    useInputScript: function (scripts, message) { return inputScript().useInputScript(scripts, message); },
-    inputText: function () { return inputScript().inputText.apply(null, arguments); },
-    scriptNames: function () { return inputScript().scriptNames.apply(null, arguments); }
-  };
+  ext.provide('kanjiBreakdown', kanjiBreakdown);
+
+  var api = { kanjiBreakdown: kanjiBreakdown, kanjiIndex: kanjiIndex, answerTexts: answerTexts };
   if (typeof module === 'object' && module.exports) module.exports = api;
-  root.DojoExtReadings = api;
+  root.DojoJaReadings = api;
 })(typeof self !== 'undefined' ? self : this);

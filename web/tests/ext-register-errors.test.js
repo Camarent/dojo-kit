@@ -27,7 +27,7 @@ test('preAnswerText: no hook, string result, non-string result, throwing hook', 
 });
 
 test('kanjiIndex: key/meaning/readings config branches', () => {
-  const rd = require('../ext/readings.js');
+  const rd = require('../../modules/ja/web/readings.js');
   const items = [
     { meta: { kanji: '日', en: 'sun' } }, { meta: { kanji: '日', en: 'dup' } }, { meta: { kanji: 'ab' } }, null, 'x',
     { meta: { kanji: '月' } }

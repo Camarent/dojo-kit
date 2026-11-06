@@ -201,3 +201,33 @@ fn ru_ui_course_resolves_ru_pack_modules() -> Res {
     assert!(!html.contains("var RUPACK=1;"));
     Ok(())
 }
+
+fn ja_module() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../modules/ja")
+}
+
+#[test]
+fn ja_module_ships_its_web_files_in_order_only_when_listed() -> Res {
+    let e = env("ja", BUNDLE_WITH_MARKERS)?;
+    copy_dir(&ja_module(), &e.root.join("modules/ja"))?;
+    let markers = [
+        "modules/ja/web/ruby-dict.js",
+        "modules/ja/web/ruby.js",
+        "modules/ja/web/readings.js",
+        "modules/ja/web/kanji-rows.js",
+    ];
+    course_with(&e, "en", &[])?;
+    let plain = build_html(&e, &e.root.join("dist-plain"))?;
+    assert!(markers.iter().all(|m| !plain.contains(m)), "course without ja ships no ja script");
+    assert!(!plain.contains(".kanji-row-grid"), "course without ja ships no ja style");
+    course_with(&e, "en", &["ja"])?;
+    let html = build_html(&e, &e.root.join("dist"))?;
+    let mut last = html.find("var CORE=1;").ok_or("core missing")?;
+    for m in markers {
+        let at = html.find(m).ok_or(format!("{m} missing"))?;
+        assert!(last < at, "{m} out of order");
+        last = at;
+    }
+    assert!(html.contains(".kanji-row-grid"), "ja.css shipped");
+    Ok(())
+}

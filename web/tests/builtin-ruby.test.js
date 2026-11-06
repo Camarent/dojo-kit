@@ -6,7 +6,7 @@ const { loadBundle } = require('./load-bundle.js');
 
 function load() {
   const sb = { console };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js'] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'ext/registry.js', 'ext/input-script.js', 'ext.js', '../modules/ja/web/ruby-dict.js', '../modules/ja/web/ruby.js', '../modules/ja/web/readings.js', '../modules/ja/web/kanji-rows.js'] });
   return sb;
 }
 const J = (x) => JSON.parse(JSON.stringify(x));
