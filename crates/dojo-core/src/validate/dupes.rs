@@ -140,6 +140,7 @@ fn prompt_parts(prompt: &str) -> (String, Vec<String>, Vec<String>) {
     let mut hint = String::new();
     let mut hints: Vec<String> = Vec::new();
     let mut readings: Vec<String> = Vec::new();
+    let last_close = prompt.rfind('}');
     for (idx, c) in prompt.char_indices() {
         match c {
             '(' | '\u{ff08}' => {
@@ -156,7 +157,7 @@ fn prompt_parts(prompt: &str) -> (String, Vec<String>, Vec<String>) {
             }
             _ if depth > 0 => hint.push(c),
             // An unclosed `{` is plain text, so it cannot hide the rest of the prompt.
-            '{' if prompt[idx..].contains('}') => {
+            '{' if last_close.is_some_and(|close| close > idx) => {
                 in_ruby = true;
                 readings.push(String::new());
             }

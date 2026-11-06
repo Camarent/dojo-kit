@@ -101,6 +101,24 @@ fn choice_items_same_prompt_different_correct_option_warn() {
 }
 
 #[test]
+fn choice_same_prompt_different_options_no_warning() {
+    // Same prompt and same correct option, only the distractors differ -> no warning
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"What is 9?","options":["nine","ten"],"answer":0}"#;
+    let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"What is 9?","options":["nine","eleven"],"answer":0}"#;
+    let d = run(COURSE, &[l1, l2]);
+    assert!(!codes(&d).contains(&"same_prompt_different_answers"), "distractors alone must not warn, got {d:?}");
+}
+
+#[test]
+fn same_options_diff_answers_warns() {
+    // Same prompt and same option set, different correct option -> warning
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"What is 9?","options":["nine","ten"],"answer":0}"#;
+    let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"What is 9?","options":["nine","ten"],"answer":1}"#;
+    let d = run(COURSE, &[l1, l2]);
+    assert!(codes(&d).contains(&"same_prompt_different_answers"), "same options, different answer must warn, got {d:?}");
+}
+
+#[test]
 fn choice_and_gap_with_same_prompt_do_not_warn() {
     let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"nine","options":["\u0434\u0435\u0432\u044f\u0442\u044c","\u0434\u0435\u0441\u044f\u0442\u044c"],"answer":0}"#;
     let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"nine","answers":["\u304d\u3085\u3046"]}"#;
