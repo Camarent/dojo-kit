@@ -156,6 +156,7 @@
   registry.registerBuiltinMarkup('ruby', markup);
   registry.onReset(function () { R.dict = null; R.skip = null; R.max = 0; });
   ext.provide('useRuby', useRuby);
+  registry.onCourse(function (course, content) { useRuby(course.ruby, content.items); });
 
   return {
     markup: markup, useRuby: useRuby, splitRuby: splitRuby, annotateText: annotateText,
