@@ -5,6 +5,10 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-11-06
+
+- fix(n5): retire duplicate feedback vocab items, add duplicate-word validator
+
 ## [0.1.10] - 2026-11-05
 
 - feat(n5): reading drills follow N5-kanji rule; sentence grammar gaps; retry docs
