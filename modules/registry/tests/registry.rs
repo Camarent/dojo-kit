@@ -3,7 +3,6 @@
 use std::fs;
 use std::path::Path;
 
-use dojo_core::validate::ValidatorModule;
 use dojo_modules::{ids, validator};
 
 const VALIDATOR_HOOK: &str = "validator";
