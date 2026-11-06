@@ -1,4 +1,4 @@
-use super::Sink;
+use super::{Sink, ValidatorModule};
 use crate::check::{Normalize, normalize};
 use crate::content::{Item, ItemType};
 use std::collections::HashSet;
@@ -99,11 +99,11 @@ pub(super) fn get_prompt_type_mismatch_data() -> &'static [(&'static str, &'stat
 }
 
 /// Check for prompt type mismatch
-pub(super) fn check_prompt_type_mismatch(prompt: &str, item_type: ItemType, sink: &mut Sink, file: &str, line: usize, id: &str) {
-    let mismatch_data = get_prompt_type_mismatch_data();
+pub(super) fn check_prompt_type_mismatch(prompt: &str, item_type: ItemType, sink: &mut Sink, file: &str, line: usize, id: &str, modules: &[Box<dyn ValidatorModule>]) {
     let prompt_lower = prompt.to_lowercase();
-    
-    for (trigger_word, incompatible_types) in mismatch_data {
+    let module_triggers = modules.iter().flat_map(|m| m.prompt_triggers().iter());
+
+    for (trigger_word, incompatible_types) in get_prompt_type_mismatch_data().iter().chain(module_triggers) {
         if prompt_lower.contains(trigger_word) && incompatible_types.contains(&item_type) {
             sink.warning("prompt_type_mismatch", file, line, format!("item '{id}' prompt contains '{trigger_word}' but type '{}' has no text input", item_type.as_str()));
             return; // Only report one mismatch per item
@@ -129,7 +129,7 @@ pub(super) fn has_slash_outside_brackets(s: &str) -> bool {
 }
 
 /// Check for ambiguous answers
-pub(super) fn check_ambiguous_answer(item: &Item, sink: &mut Sink, file: &str, line: usize) {
+pub(super) fn check_ambiguous_answer(item: &Item, sink: &mut Sink, file: &str, line: usize, modules: &[Box<dyn ValidatorModule>]) {
     let id = item.id();
     
     match item {
@@ -143,7 +143,8 @@ pub(super) fn check_ambiguous_answer(item: &Item, sink: &mut Sink, file: &str, l
                     || prompt_lower.contains("любой")
                     || prompt_lower.split(|c: char| !c.is_alphanumeric()).any(|w| w == "any")
                     || prompt_lower.contains("one of")
-                    || prompt_lower.contains("или");
+                    || prompt_lower.contains("или")
+                    || modules.iter().flat_map(|m| m.disambiguation_words().iter()).any(|w| prompt_lower.contains(w));
                 if !has_disambiguation {
                     sink.warning("ambiguous_answer", file, line, format!("item '{id}' gap has {} answers but no disambiguation hint in prompt", g.answers.len()));
                 }

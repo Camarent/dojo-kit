@@ -116,3 +116,12 @@ pub const CODES: [(&str, Severity, &str); 113] = [
     ("ruby_on_skip_kanji", Severity::Warning, "a {base|reading} ruby whose kanji the course ruby skip set already hides"),
     ("ruby_missing", Severity::Warning, "a kanji drill item (ruby drillTags/drillUnits) has a kanji in its prompt with no {base|reading} ruby"),
 ];
+
+/// [`CODES`] followed by the codes of each module, in module order.
+pub fn all_codes(modules: &[Box<dyn super::ValidatorModule>]) -> Vec<(&'static str, Severity, &'static str)> {
+    let mut out: Vec<(&'static str, Severity, &'static str)> = CODES.to_vec();
+    for m in modules {
+        out.extend_from_slice(m.codes());
+    }
+    out
+}

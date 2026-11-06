@@ -84,16 +84,33 @@ fn fires_empty_detail_glyph() {
     fires(&c, &[CHOICE], "empty_detail_glyph");
 }
 
-#[test]
-fn every_code_has_a_firing_test() {
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests");
-    let mut texts = Vec::new();
-    for entry in std::fs::read_dir(&dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.extension().is_some_and(|e| e == "rs") {
-            texts.push(std::fs::read_to_string(&path).unwrap());
+/// Source text of every `.rs` test that may fire a code: this crate's `tests/`, plus the CLI tests
+/// and the module tests (`modules/*/rust/tests`) under the repo root. Missing directories are skipped.
+fn rust_test_texts() -> Vec<String> {
+    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut dirs = vec![manifest.join("tests")];
+    if let Some(root) = manifest.ancestors().find(|a| a.join("crates").is_dir()) {
+        dirs.push(root.join("crates/dojo-cli/tests"));
+        for module in std::fs::read_dir(root.join("modules")).into_iter().flatten().flatten() {
+            dirs.push(module.path().join("rust/tests"));
         }
     }
+    let mut texts = Vec::new();
+    for dir in dirs {
+        let Ok(entries) = std::fs::read_dir(&dir) else { continue };
+        for entry in entries {
+            let path = entry.unwrap().path();
+            if path.extension().is_some_and(|e| e == "rs") {
+                texts.push(std::fs::read_to_string(&path).unwrap());
+            }
+        }
+    }
+    texts
+}
+
+#[test]
+fn every_code_has_a_firing_test() {
+    let texts = rust_test_texts();
     let missing: Vec<&str> = CODES
         .iter()
         .map(|c| c.0)
