@@ -1,8 +1,10 @@
 use dojo_core::lock::{self, IdLock};
-use dojo_core::validate::{check_audio_files, Diagnostic, Severity, SourceFile, validate_all};
+use dojo_core::validate::{check_audio_files, Diagnostic, Severity, SourceFile, ValidatorModule, validate_with_modules};
 use std::fs;
 use std::path::Path;
 use crate::build;
+use crate::cmd::build::Stop;
+use crate::modules::{self, Hook};
 
 pub(crate) struct CourseFiles {
     pub(crate) course_text: String,
@@ -95,6 +97,47 @@ pub(crate) fn load(dir: &Path) -> Result<CourseFiles, String> {
     Ok(CourseFiles { course_text, files, lock, stimuli, intros })
 }
 
+/// The bundle's `i18n` list; empty when `bundle.json` is missing or unreadable.
+fn bundle_languages(web: &Path) -> Vec<String> {
+    fs::read_to_string(web.join("bundle.json"))
+        .ok()
+        .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+        .and_then(|b| b.get("i18n")?.as_array().map(|a| a.iter().filter_map(|v| v.as_str().map(str::to_string)).collect()))
+        .unwrap_or_default()
+}
+
+/// The effective module set `dojo build` would use; the error is the build's message.
+/// `None` when the course's i18n files cannot be read: `i18n_check` reports those, and the language is unknown.
+fn module_set(dir: &Path, web: &Path, course_json: &serde_json::Value) -> Result<Option<Vec<modules::Manifest>>, String> {
+    if build::collect_course_languages(dir).is_err() {
+        return Ok(None);
+    }
+    match build::course_lang_modules(dir, web, course_json, &bundle_languages(web)) {
+        Ok((_, set)) => Ok(Some(set)),
+        Err(Stop::Fail(message) | Stop::Err(message)) => Err(message),
+    }
+}
+
+/// `module_key_unlisted`: a course key or the markup that a manifest outside `set` provides.
+fn module_key_diags(course: &serde_json::Value, set: &[modules::Manifest], all: &[modules::Manifest]) -> Vec<Diagnostic> {
+    let markup = course.get("markup").and_then(|v| v.as_str());
+    let mut out = Vec::new();
+    for m in all.iter().filter(|m| !set.iter().any(|s| s.id == m.id)) {
+        let keys = m.course_keys.iter().filter(|k| course.get(k.as_str()).is_some()).map(|k| format!("key \"{k}\""));
+        let marks = m.markups.iter().filter(|k| markup == Some(k.as_str())).map(|k| format!("markup \"{k}\""));
+        for used in keys.chain(marks) {
+            out.push(Diagnostic {
+                severity: Severity::Error,
+                code: "module_key_unlisted",
+                file: "course.json".to_string(),
+                line: 0,
+                message: format!("course.json uses {used}, which module \"{}\" provides; add \"{}\" to modules", m.id, m.id),
+            });
+        }
+    }
+    out
+}
+
 /// Checks `<dir>/i18n/*.json` against `<web>/i18n/en.json`, counting `<web>/i18n/<lang>.json` as covering missing keys; nothing when the reference is unavailable.
 pub(crate) fn i18n_check(dir: &Path, web: Option<&Path>) -> Vec<Diagnostic> {
     let Some(web) = web else { return Vec::new() };
@@ -122,8 +165,27 @@ pub(crate) fn i18n_check(dir: &Path, web: Option<&Path>) -> Vec<Diagnostic> {
 
 /// Core validation, the UI-file checks and the plugin file checks that need the filesystem.
 pub(crate) fn validate_course(dir: &Path, course: &CourseFiles, web: Option<&Path>) -> Vec<Diagnostic> {
-    let mut diags = validate_all(&course.course_text, &course.files, course.lock.as_ref(), course.stimuli.as_ref(), course.intros.as_ref());
-    
+    let course_json: serde_json::Value = serde_json::from_str(&course.course_text).unwrap_or_default();
+    let mut module_diags = Vec::new();
+    let set = web.and_then(|w| match module_set(dir, w, &course_json) {
+        Ok(set) => set,
+        Err(message) => {
+            module_diags.push(Diagnostic { severity: Severity::Error, code: "module_missing", file: "course.json".to_string(), line: 0, message });
+            None
+        }
+    });
+    let validators: Vec<Box<dyn ValidatorModule>> = set
+        .iter()
+        .flatten()
+        .filter(|m| m.hooks.contains(&Hook::Validator))
+        .filter_map(|m| dojo_modules::validator(&m.id))
+        .collect();
+    let mut diags = validate_with_modules(&course.course_text, &course.files, course.lock.as_ref(), course.stimuli.as_ref(), course.intros.as_ref(), &validators);
+    if let (Some(set), Some(w)) = (&set, web) {
+        module_diags.extend(module_key_diags(&course_json, set, &modules::all_manifests(w)));
+    }
+    diags.extend(module_diags);
+
     // Parse course to get audio config
     let parsed_course: Result<dojo_core::content::Course, _> = serde_json::from_str(&course.course_text);
     if let Ok(ref c) = parsed_course {

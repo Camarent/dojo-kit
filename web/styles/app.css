@@ -220,7 +220,7 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .catalog-detail-dialog .qcard { border: none; padding: 0; }
 .catalog-detail-dialog .qcard p { font-size: var(--fs-sm); }
 .catalog-detail-header { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; background: var(--surface); z-index: 1; }
-.catalog-detail-header .kanji-ch { font-size: 2.5rem; }
+.catalog-detail-header .glyph-ch { font-size: 2.5rem; }
 .catalog-detail-header .btn.icon { padding: 0 var(--space-3); min-width: var(--tap); white-space: nowrap; flex: none; }
 .badge.retry { min-width: 5.5rem; text-align: center; flex: none; background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 999px; font-size: var(--fs-sm); margin-left: var(--space-2); }
 .feedback.retry { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
@@ -324,11 +324,6 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .group-actions > *, .group-toggles > * { max-width: 100%; }
 .extra-new-buttons { flex: 1 1 100%; }
 
-/* Kanji rows wrap at 390px */
-@media (max-width: 390px) {
-  .kanji-rows { flex-wrap: wrap; }
-}
-
 /* catalog: filters, pages */
 .catalog-filters .chips { min-width: 0; }
 .catalog-more { align-self: center; margin-top: var(--space-3); }
@@ -344,15 +339,8 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .speech-settings input[type="range"] { width: 100%; }
 input[type="range"].field { box-sizing: border-box; max-width: 100%; margin-inline: 0; }
 
-/* Kanji breakdown rows */
-.kanji-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.kanji-row-grid { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-2); align-items: center; }
-.kanji-ch { font-size: var(--fs-lg); min-width: 1.5em; }
-@media (max-width: 390px) {
-  .kanji-row-grid { gap: var(--space-1); }
-  .kanji-mean { min-width: 0; overflow-wrap: anywhere; }
-  .kanji-read { font-size: var(--fs-sm); text-align: right; }
-}
+/* Glyph shown in feedback rows and the catalog detail */
+.glyph-ch { font-size: var(--fs-lg); min-width: 1.5em; }
 
 /* Session layout: header row, centered question card, full-width answers, action row, feedback with a colored edge. */
 .topbar { display: flex; align-items: center; gap: var(--space-3); }

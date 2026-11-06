@@ -99,7 +99,7 @@ JS, in `web/storage.js`. Interface: `load()`, `update(fn)` (load -> merge -> sav
 - `dojo import-progress <old.json> --map <id-map.json> --course <dir> [--out <file>] [--write] [--now <ISO>]`: converts legacy progress to v:1; dry-run unless `--write`.
 - `dojo stats <course-dir> [--json]`, `dojo next-id <course-dir> <prefix> [--count N]`, `dojo add <course-dir> <unit-id> [--file F] [--dry-run]` (appends items from JSON on stdin or a file, all-or-nothing, assigns ids above the highest existing).
 - Exit codes: 0 ok, 1 validation or build refusal, 2 usage or I/O error.
-- Validator codes: the list is `CODES` (`crates/dojo-core/src/validate/codes.rs`); its length is `CODES.len()` and is not fixed in this document. `dojo schema` prints them under "VALIDATOR CODES".
+- Validator codes: the built-in list is `CODES` (`crates/dojo-core/src/validate/codes.rs`); its length is `CODES.len()` and is not fixed in this document. It pins the module codes `module_missing` and `module_key_unlisted`. Module codes (e.g. `ruby_*`) live in `modules/<id>/rust` and merge via `all_codes`. `dojo schema --brief` prints built-in plus registry module codes under "VALIDATOR CODES". `validate(course_text, files, lock)` keeps its signature; `validate_with_modules` takes the module list.
 
 ## 8. Testing
 - Rust unit and integration tests in `crates/dojo-core` and `crates/dojo-cli` (the latter spawn the binary on fixtures and `examples/`).
@@ -191,3 +191,12 @@ The `artifact` target is the only one implemented: default storage artifact-db w
 ### 12.5 Numeric dictation (composition, no new item type)
 - numeric item + stimulus `{hideText:true, audio:[...]}` + unit `timer`. Web: numeric input gets `inputmode="numeric"`, focus after playback, Enter submits. checkNumeric grades.
 - Rejected option: a `dictation` Item variant (item.rs is at 389 lines; would duplicate checkNumeric).
+
+## 13. Optional modules and language packs
+- Module = folder `modules/<id>/` with `module.json` (`manifestVersion: 1`, `id`, `description?`, `hooks?`, `web?: {scripts, styles}`, `courseKeys?`, `markups?`, `requires?: [id]`). Unknown fields are rejected. Shipped: `ja`, `ru`; registry crate `modules/registry`.
+- Course: `course.json` `modules?: [id]` lists the modules the course enables; absent or empty = none.
+- Language pack: `web/i18n/packs.json` maps a UI language to `{modules: [id]}`, e.g. `{"ru": {"modules": ["ru"]}}`. Packs add modules for every course in that UI language.
+- Resolution: take course `modules`, then the pack for the UI language, then `requires` transitively. Load each `modules/<id>/module.json`. Order: dependencies first; among ready modules the smallest id first.
+- Missing module: a listed id with no loadable `module.json` fails with `module "<id>" not found (<origin>): no modules/<id>/module.json`, where origin is `listed in course.json modules`, `requested by language pack "<lang>"` or `required by module "<id>"`. Validator code `module_missing` (error, file `course.json`).
+- `module_key_unlisted` (error): a course key or markup that a module provides, while the module is not in the course `modules` list.
+- A folder whose `module.json` does not load is left out of the available-modules listing; a course that lists its id still fails with `module_missing`.

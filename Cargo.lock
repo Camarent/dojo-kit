@@ -4,15 +4,17 @@ version = 4
 
 [[package]]
 name = "dojo-cli"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "dojo-core",
+ "dojo-modules",
+ "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "dojo-core"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "schemars",
  "serde",
@@ -20,8 +22,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "dojo-module-ja"
+version = "0.1.12"
+dependencies = [
+ "dojo-core",
+]
+
+[[package]]
+name = "dojo-module-ru"
+version = "0.1.12"
+dependencies = [
+ "dojo-core",
+]
+
+[[package]]
+name = "dojo-modules"
+version = "0.1.12"
+dependencies = [
+ "dojo-core",
+ "dojo-module-ja",
+ "dojo-module-ru",
+ "serde_json",
+]
+
+[[package]]
 name = "dojo-wasm"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "dojo-core",
 ]

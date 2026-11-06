@@ -23,9 +23,9 @@ test('detail-step, detail-due, detail-counts are hidden when item has no record'
   assert.strictEqual(H.find(v, 'detail-counts'), null, 'detail-counts is not rendered when no record');
 });
 
-test('detail-due shows "сейчас" when due is in the past', async () => {
+test('detail-due shows "now" when due is in the past', async () => {
   const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'ru' }, lang: 'ru' });
+  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
   m.doc.items['a'] = { s: 1, due: NOW - 1000, ok: 1, bad: 0, last: NOW - DAY };
   m.app.go('catalog');
   const cat = m.screen(m.sb.DojoApp._CatalogScreen);
@@ -36,23 +36,7 @@ test('detail-due shows "сейчас" when due is in the past', async () => {
   const dueEl = H.find(v, 'detail-due');
   assert.ok(dueEl, 'detail-due is rendered');
   const dueText = H.text(dueEl);
-  assert.ok(/сейчас/.test(dueText), 'detail-due shows "сейчас" for past due: ' + dueText);
-});
-
-test('detail-due shows "через N дн." when due is in the future', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'ru' }, lang: 'ru' });
-  m.doc.items['a'] = { s: 1, due: NOW + 3 * DAY, ok: 1, bad: 0, last: NOW - DAY };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
-  const dueEl = H.find(v, 'detail-due');
-  assert.ok(dueEl, 'detail-due is rendered');
-  const dueText = H.text(dueEl);
-  assert.ok(/через 3/.test(dueText), 'detail-due shows "через 3 дн." for +3 days: ' + dueText);
+  assert.ok(/now/.test(dueText), 'detail-due shows "now" for past due: ' + dueText);
 });
 
 test('detail-due shows "in N days" in English when due is in the future', async () => {
@@ -90,7 +74,7 @@ test('detail-counts shows correct ok and bad counts', async () => {
 
 test('detail-step shows stage number', async () => {
   const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'ru' }, lang: 'ru' });
+  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
   m.doc.items['a'] = { s: 3, due: NOW + DAY, ok: 1, bad: 0, last: NOW };
   m.app.go('catalog');
   const cat = m.screen(m.sb.DojoApp._CatalogScreen);
@@ -101,12 +85,12 @@ test('detail-step shows stage number', async () => {
   const stepEl = H.find(v, 'detail-step');
   assert.ok(stepEl, 'detail-step is rendered');
   const stepText = H.text(stepEl);
-  assert.ok(/Этап 3/.test(stepText), 'detail-step shows "Этап 3": ' + stepText);
+  assert.ok(/Stage 3/.test(stepText), 'detail-step shows "Stage 3": ' + stepText);
 });
 
 test('detail-step shows interval text', async () => {
   const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'ru' }, lang: 'ru' });
+  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
   m.doc.items['a'] = { s: 3, due: NOW + 3 * DAY, ok: 1, bad: 0, last: NOW };
   m.app.go('catalog');
   const cat = m.screen(m.sb.DojoApp._CatalogScreen);
@@ -117,8 +101,8 @@ test('detail-step shows interval text', async () => {
   const stepEl = H.find(v, 'detail-step');
   assert.ok(stepEl, 'detail-step is rendered');
   const stepText = H.text(stepEl);
-  assert.ok(/Этап 3/.test(stepText), 'detail-step shows "Этап 3": ' + stepText);
-  assert.ok(/через 3/.test(stepText), 'detail-step shows "через 3 дн.": ' + stepText);
+  assert.ok(/Stage 3/.test(stepText), 'detail-step shows "Stage 3": ' + stepText);
+  assert.ok(/in 3 days/.test(stepText), 'detail-step shows "in 3 days": ' + stepText);
 });
 
 test('screen text contains no undefined, {, or [object', async () => {
@@ -139,20 +123,20 @@ test('screen text contains no undefined, {, or [object', async () => {
 
 test('detail-due uses singular for 1 day and rounds partial days up', async () => {
   const items = [choice('a', 'u1'), choice('b', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'ru' }, lang: 'ru' });
+  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
   m.doc.items['a'] = { s: 1, due: NOW + DAY, ok: 1, bad: 0, last: NOW - DAY };
   m.doc.items['b'] = { s: 1, due: NOW + DAY + 1000, ok: 1, bad: 0, last: NOW - DAY };
   m.app.go('catalog');
   const cat = m.screen(m.sb.DojoApp._CatalogScreen);
   cat.setState({ detailItem: items[0] });
-  assert.ok(/через 1 день/.test(H.text(H.find(cat.view(), 'detail-due'))), 'singular');
+  assert.ok(/in 1 day(?!s)/.test(H.text(H.find(cat.view(), 'detail-due'))), 'singular');
   cat.setState({ detailItem: items[1] });
-  assert.ok(/через 2 дн/.test(H.text(H.find(cat.view(), 'detail-due'))), 'ceil to 2');
+  assert.ok(/in 2 days/.test(H.text(H.find(cat.view(), 'detail-due'))), 'ceil to 2');
 });
 
 test('record without ok/bad/s renders no undefined', async () => {
   const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'ru' }, lang: 'ru' });
+  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
   m.doc.items['a'] = { due: NOW + DAY };
   m.app.go('catalog');
   const cat = m.screen(m.sb.DojoApp._CatalogScreen);

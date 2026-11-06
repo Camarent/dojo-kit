@@ -24,10 +24,8 @@
     "session/clip-flags.js",
     "session.js",
     "types/registry.js",
-    "ext/ruby-dict.js",
     "ext/registry.js",
-    "ext/ruby.js",
-    "ext/readings.js",
+    "ext/input-script.js",
     "ext.js",
     "speech.js",
     "audio.js",
@@ -39,6 +37,7 @@
     "types/order.js",
     "types/cloze.js",
     "types/numeric.js",
+    "@modules",
     "@course",
     "ui/i18n.js",
     "ui/play-button.js",
@@ -79,11 +78,13 @@
     "styles/types-order.css",
     "styles/types-cloze.css",
     "styles/types-numeric.css",
+    "@modules",
     "@course"
   ],
   "i18n": [
     "en",
-    "ru"
+    "ru",
+    "fr"
   ],
   "licenses": [
     "vendor/preact.LICENSE",

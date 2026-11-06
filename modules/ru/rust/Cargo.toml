@@ -1,0 +1,8 @@
+[package]
+name = "dojo-module-ru"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+dojo-core = { version = "0.1.0", path = "../../../crates/dojo-core" }

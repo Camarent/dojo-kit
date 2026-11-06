@@ -1,11 +1,11 @@
 [workspace]
 resolver = "3"
-members = ["crates/dojo-core", "crates/dojo-wasm", "crates/dojo-cli"]
+members = ["crates/dojo-core", "crates/dojo-wasm", "crates/dojo-cli", "modules/registry", "modules/ja/rust", "modules/ru/rust"]
 
 [workspace.package]
 edition = "2024"
 license = "MIT"
-version = "0.1.11"
+version = "0.1.12"
 
 [profile.release]
 opt-level = "z"

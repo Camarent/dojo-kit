@@ -113,6 +113,13 @@ Add items with `./dojo add` (new ids are assigned for you), or retire items. Nev
 - A course file overlays the shipped file key by key, so it can also override single strings (for example `speech.novoice`). Keys missing from the course file fall back to en at runtime.
 - Shipping a language for everyone is framework-owner work, only when the user asks: copy `web/i18n/en.json` to `web/i18n/<lang>.json`, translate it, add `"<lang>"` to `web/bundle.json` `i18n`, and run `node --test web/tests/i18n.test.js`.
 
+## 9a. Add a module or language pack (framework owner, only when asked)
+Course builders do not do this; it changes the framework. Rules: CONTRACT section 13.
+- New module: create `modules/<id>/module.json` with `"manifestVersion": 1` and `"id"` equal to the folder name. Put scripts and styles under `modules/<id>/web/` and list them in `web.scripts` / `web.styles`. Add `markups`, `courseKeys`, `requires` only when needed. Unknown fields fail to load.
+- Language pack: add the pack to `web/i18n/packs.json` as `"<lang>": {"modules": ["<id>"]}`.
+- A course enables a module with `"modules": ["<id>"]` in `course.json`; no course needs to list a pack-only module.
+- Test: `cargo test -p dojo-cli` (module loader tests in `crates/dojo-cli/src/modules.rs`), then `./dojo validate <course> --strict` on a course that uses the module.
+
 ## 10. When something fails
 - `dojo validate` codes and meanings: `./dojo schema --brief` (last section).
 - Build says "no UI translation": see section 9.

@@ -5,9 +5,9 @@ const COURSE: &str = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"
 
 #[test]
 fn same_prompt_diff_answers_gap_japanese_different_readings() {
-    // Two gap items with same prompt but different answers [九,きゅう] vs [九,く]
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9 in Japanese?","answers":["九","きゅう"]}"#;
-    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9 in Japanese?","answers":["九","く"]}"#;
+    // Two gap items with same prompt but different answers [nine,nyu] vs [nine,n]
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9 in Japanese?","answers":["nine","nyu"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9 in Japanese?","answers":["nine","n"]}"#;
     let d = run(COURSE, &[l1, l2]);
     let codes = codes(&d);
     assert!(codes.contains(&"same_prompt_different_answers"), "Expected same_prompt_different_answers warning, got {d:?}");
@@ -102,8 +102,8 @@ fn choice_items_not_checked() {
 
 #[test]
 fn gap_answer_order_does_not_matter() {
-    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["九","きゅう"]}"#;
-    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9?","answers":["きゅう","九"]}"#;
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine","nyu"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9?","answers":["nyu","nine"]}"#;
     let d = run(COURSE, &[l1, l2]);
     assert!(!codes(&d).contains(&"same_prompt_different_answers"), "got {d:?}");
 }

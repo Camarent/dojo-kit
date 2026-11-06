@@ -32,12 +32,12 @@
 
   var DojoSessionScreen = dep('DojoSessionScreen', './session-screen.js');
   var DojoResults = dep('DojoResults', './results.js');
-  var sessionParts = DojoSessionScreen.create({ Stimulus: Stimulus, kanjiRows: shared.kanjiRows, tagInfo: shared.tagInfo, captionFor: shared.captionFor, fmtClock: shared.fmtClock });
+  var sessionParts = DojoSessionScreen.create({ Stimulus: Stimulus, fbRows: shared.fbRows, tagInfo: shared.tagInfo, captionFor: shared.captionFor, fmtClock: shared.fmtClock });
   var SessionBoundary = sessionParts.SessionBoundary;
   var SessionScreen = sessionParts.SessionScreen;
   var Results = DojoResults.create({ percent: shared.percent, fmtClock: shared.fmtClock, itemLabel: shared.itemLabel, dupeSet: shared.dupeSet }).Results;
   var DojoPlacement = dep('DojoPlacement', './placement.js');
-  var placementParts = DojoPlacement.create({ uniqueSorted: shared.uniqueSorted, tagInfo: shared.tagInfo, toggle: shared.toggle, Stimulus: Stimulus, kanjiRows: shared.kanjiRows });
+  var placementParts = DojoPlacement.create({ uniqueSorted: shared.uniqueSorted, tagInfo: shared.tagInfo, toggle: shared.toggle, Stimulus: Stimulus, fbRows: shared.fbRows });
   var PracticeSetup = placementParts.PracticeSetup;
   var PlacementScreen = placementParts.PlacementScreen;
   var PlacementSession = placementParts.PlacementSession;

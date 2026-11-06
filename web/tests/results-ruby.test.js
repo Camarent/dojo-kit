@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const H = require('./app-harness.js');
 
-const item = { id: 'g1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['{川|かわ}で{泳|およ}ぐ'] };
+const item = { id: 'g1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['{Ri|ri}ver{Sw|sw}im'] };
 const tr = (k) => k;
 
 async function render(review) {
@@ -16,7 +16,7 @@ async function render(review) {
 const types = (n) => { const r = []; H.walk(n, (x) => r.push(x.type)); return r; };
 
 test('results mistakes render expected and given answers as ruby, not raw markup', async () => {
-  const v = await render([{ id: 'g1', correct: false, given: '{泳|およ}って', expected: '{川|かわ}で{泳|およ}ぐ' }]);
+  const v = await render([{ id: 'g1', correct: false, given: '{Sw|sw}am', expected: '{Ri|ri}ver{Sw|sw}im' }]);
   const li = H.find(v, 'missed-g1');
   assert.ok(li);
   assert.ok(types(li).includes('ruby'), 'ruby element');

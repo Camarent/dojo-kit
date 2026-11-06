@@ -96,7 +96,7 @@ test('UI: every resume string exists in every locale and app.js has no hard-code
   const uiSources = bundleScripts().filter((s) => s.startsWith('ui/')).map((f) => readSource(f)).join('\n');
   const keys = Array.from(new Set((uiSources.match(/t\('(home\.resume\.[a-z.]+)'/g) || []).map((m) => m.slice(3, -1))));
   assert.ok(keys.length >= 6);
-  const locales = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
+  const locales = fs.readdirSync(dir).filter((f) => f.endsWith('.json') && f !== 'packs.json');
   assert.ok(locales.length >= 2);
   for (const f of locales) {
     const tr = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));

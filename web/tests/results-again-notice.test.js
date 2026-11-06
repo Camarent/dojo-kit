@@ -8,7 +8,7 @@ const summary = { mode: 'practice', raw: 1, total: 2, pct: 50, durationMs: 0, re
 
 test('results screen shows the notice when again cannot start a session', async () => {
   const m = await H.mount({ items: [item] });
-  const v = H.expand(m.sb.DojoApp._Results({ t: m.t, byId: { g1: item }, go() {}, onAgain() {}, summary, notice: 'Нет подходящих заданий.' }));
+  const v = H.expand(m.sb.DojoApp._Results({ t: m.t, byId: { g1: item }, go() {}, onAgain() {}, summary, notice: 'No matching items.' }));
   const n = H.find(v, 'notice');
   assert.ok(n, 'notice node not rendered');
 });

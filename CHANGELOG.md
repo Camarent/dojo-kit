@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- feat(validate): validator modules (`ValidatorModule`, `modules/registry`); `dojo schema --brief` lists module codes; new codes `module_missing`, `module_key_unlisted`
+- docs(modules): course.json `modules`, `web/i18n/packs.json` language packs, missing-module error; AUTHORING, CONTRACT section 13, AGENTS section 9a
+
+## [0.1.12] - 2026-11-06
+
+- chore(optional-modules): optional-modules/phases/04-finish
+
 ## [0.1.11] - 2026-11-06
 
 - fix(n5): retire duplicate feedback vocab items, add duplicate-word validator

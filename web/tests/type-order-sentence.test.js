@@ -71,8 +71,8 @@ test('list fallback for prompt without ___', () => {
 
 // Test 1: 3-step prompt with ___ - sentence mode
 test('3-step prompt with ___ uses sentence mode', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const r = render([], item, view);
   
   // Should use sentence mode - check for the prompt element with data-testid
@@ -97,8 +97,8 @@ test('3-step prompt with ___ uses sentence mode', () => {
 
 // Test 2: Tapping pool words fills slots in order
 test('tapping pool words fills slots in sentence mode', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const r = render([], item, view);
   
   // Tap first word (index 0)
@@ -129,11 +129,11 @@ test('tapping pool words fills slots in sentence mode', () => {
 
 // Test 3: Tapping a filled slot returns word to pool
 test('tapping a filled slot returns word to pool', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const r = render(['a', 'b', 'c'], item, view);
   
-  // Tap slot 1 (middle slot with 'в')
+  // Tap slot 1 (middle slot with 'at')
   find(r.vnode, 'order-slot-1')[0].props.onClick();
   assert.deepStrictEqual(plain(r.calls.states[0].placed), ['a', 'c'], 'b removed from placed');
   
@@ -147,8 +147,8 @@ test('tapping a filled slot returns word to pool', () => {
 
 // Test 4: Check disabled until all slots filled
 test('check disabled until all slots are filled', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   
   const r1 = render(['a'], item, view);
   assert.strictEqual(find(r1.vnode, 'btn-submit')[0].props.disabled, true, 'check disabled with 1/3');
@@ -162,8 +162,8 @@ test('check disabled until all slots are filled', () => {
 
 // Test 5: Submit sends correct sequence
 test('submit sends sequence of ids in tap order', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const r = render(['b', 'a', 'c'], item, view);
   
   find(r.vnode, 'btn-submit')[0].props.onClick();
@@ -172,8 +172,8 @@ test('submit sends sequence of ids in tap order', () => {
 
 // Test 6: Result marks right/wrong on slots
 test('result marks right/wrong on slots in sentence mode', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const result = { correct: false, detail: { firstWrong: 1 } };
   const r = render(['a', 'c', 'b'], item, view, { result: result });
   
@@ -191,8 +191,8 @@ test('result marks right/wrong on slots in sentence mode', () => {
 
 // Test 7: All-right result marks every slot right
 test('all-right result marks every slot right in sentence mode', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const result = { correct: true, detail: { firstWrong: null } };
   const r = render(['a', 'b', 'c'], item, view, { result: result });
   
@@ -215,8 +215,8 @@ test('count mismatch gives list fallback', () => {
 
 // Test 9: Single data-testid=prompt element
 test('exactly one data-testid=prompt element', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const r = render([], item, view);
   
   assert.strictEqual(find(r.vnode, 'prompt').length, 1, 'exactly one prompt element');
@@ -224,7 +224,7 @@ test('exactly one data-testid=prompt element', () => {
 
 // Test 10: ownsPrompt returns true for sentence mode
 test('ownsPrompt returns true when prompt has matching ___ count', () => {
-  const item = { prompt: 'Я ___ в ___ ___.', steps: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', steps: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] };
   const view = { steps: item.steps };
   assert.strictEqual(def.ownsPrompt(item, view), true);
 });
@@ -276,8 +276,8 @@ test('arrow navigation visits slots, pool, reset, check in order', () => {
 });
 
 test('unknown placed id renders an empty slot in sentence mode without throwing', () => {
-  const view = { steps: [{ label: 'я', id: 'a' }, { label: 'в', id: 'b' }, { label: 'домe', id: 'c' }] };
-  const item = { prompt: 'Я ___ в ___ ___.', type: 'order', steps: view.steps };
+  const view = { steps: [{ label: 'I', id: 'a' }, { label: 'at', id: 'b' }, { label: 'home', id: 'c' }] };
+  const item = { prompt: 'I ___ at ___ ___.', type: 'order', steps: view.steps };
   const r = render(['zzz'], item, view);
   assert.strictEqual(find(r.vnode, 'order-slot-0').length, 1);
   assert.ok(/empty/.test(find(r.vnode, 'order-slot-0')[0].props.class));

@@ -66,7 +66,7 @@ test('readJsonl error names the file and the 1-based line number of a bad line',
 
 test('writeJsonl then readJsonl round-trips unicode and nested rows', () => {
   const file = path.join(mkTmp(), 'rt.jsonl');
-  const rows = [{ word: '日本語', tags: ['x5', 'ü'] }, { a: { b: [1, 2, { c: 'x' }] } }];
+  const rows = [{ word: 'Café', tags: ['x5', 'ü'] }, { a: { b: [1, 2, { c: 'x' }] } }];
   writeJsonl(file, rows);
   assert.deepStrictEqual(readJsonl(file), rows);
 });

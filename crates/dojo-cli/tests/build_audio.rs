@@ -408,7 +408,7 @@ fn out_dir_resolving_to_the_course_dir_fails_and_keeps_its_audio() {
 fn manifest_with_clip_text_is_copied_verbatim() {
     let e = env("cliptext").unwrap();
     add_audio(&e, &[64]).unwrap();
-    let manifest = json!({"v": 1, "packs": [{"file": "pack-00.bin", "bytes": 64}], "clips": {"c-one": {"pack": 0, "off": 0, "len": 4, "ms": 100, "mime": "audio/wav", "text": "Il est midi", "tr": {"ru": "Полдень"}, "mt": true}}});
+    let manifest = json!({"v": 1, "packs": [{"file": "pack-00.bin", "bytes": 64}], "clips": {"c-one": {"pack": 0, "off": 0, "len": 4, "ms": 100, "mime": "audio/wav", "text": "Il est midi", "tr": {"ru": "\u{41f}\u{43e}\u{43b}\u{434}\u{435}\u{43d}\u{44c}"}, "mt": true}}});
     put(&e.course.join("audio/manifest.json"), &serde_json::to_string_pretty(&manifest).unwrap()).unwrap();
     let out = e.root.join("dist");
     let o = build(&e, &out).unwrap();

@@ -35,7 +35,7 @@ fn unknown_or_empty_input_script_is_an_error() {
 
 #[test]
 fn ruby_and_captions_parse_and_unknown_ruby_key_is_rejected() {
-    let ok = course(r#""ruby":{"skipTag":"core","skipKey":"meta.kanji","skip":"日"},"captions":{"meaning":"M"}"#);
+    let ok = course(r#""ruby":{"skipTag":"core","skipKey":"meta.kanji","skip":"\u65e5"},"captions":{"meaning":"M"}"#);
     let parsed = parse_course(&ok).unwrap();
     assert_eq!(parsed.ruby.unwrap().skip_tag.as_deref(), Some("core"));
     assert_eq!(parsed.captions.unwrap()["meaning"], "M");

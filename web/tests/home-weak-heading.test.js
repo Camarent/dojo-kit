@@ -4,6 +4,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { read, find, text, mount, NOW } = require('./app-harness.js');
+const RU = JSON.parse(read('i18n/ru.json'));
 
 const DAY = 86400000;
 
@@ -56,7 +57,7 @@ test('weak-chips: heading present with i18n text when weak list is non-empty', a
   const ruTree = ru.tree();
   const ruWeakTitle = find(ruTree, 'weak-title');
   assert.ok(ruWeakTitle, 'weak-title heading should exist in ru');
-  assert.strictEqual(text(ruWeakTitle), 'Слабые места', 'ru: heading should show "Слабые места"');
+  assert.strictEqual(text(ruWeakTitle), RU['home.weak'], 'ru: heading should show the home.weak text');
   
   assertNoBadStrings(tree);
   assertNoBadStrings(ruTree);

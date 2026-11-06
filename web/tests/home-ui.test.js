@@ -4,6 +4,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { read, find, findAll, text, walk, mount, NOW } = require('./app-harness.js');
+const RU = JSON.parse(read('i18n/ru.json'));
 
 const DAY = 86400000;
 function gap(id, unit, entity) {
@@ -123,9 +124,9 @@ for (const lang of ['en', 'ru']) {
     assert.strictEqual(ex.type, 'details');
     assert.ok(find(tree, 'unit-other-due'), 'due chip for a due unit');
     assert.ok(!find(tree, 'unit-o2-due'));
-    assert.ok(!/legend|Total, due|Всего, к/.test(all));
+    assert.ok(!/legend|Total, due/.test(all) && !all.includes(RU['unit.legend']));
     const cd = text(find(tree, 'exam-countdown'));
-    assert.ok(lang === 'en' ? /^7 days until the exam · /.test(cd) && /2025/.test(cd) : /^До экзамена 7 дней · /.test(cd) && /2025/.test(cd), cd);
+    assert.ok(lang === 'en' ? /^7 days until the exam · /.test(cd) && /2025/.test(cd) : cd.startsWith(RU['home.exam.countdown.many'].replace('{n}', '7') + ' · ') && /2025/.test(cd), cd);
   });
 }
 

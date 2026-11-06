@@ -113,6 +113,15 @@ pub const CODES: [(&str, Severity, &str); 113] = [
     ("check_failed", Severity::Error, "a course check reported a finding; the message has its code, item and text"),
     ("check_missing", Severity::Error, "a course check script file does not exist"),
     ("check_bad_output", Severity::Error, "a course check printed a line that is not a finding object or has an unknown severity"),
-    ("ruby_on_skip_kanji", Severity::Warning, "a {base|reading} ruby whose kanji the course ruby skip set already hides"),
-    ("ruby_missing", Severity::Warning, "a kanji drill item (ruby drillTags/drillUnits) has a kanji in its prompt with no {base|reading} ruby"),
+    ("module_missing", Severity::Error, "course.json lists a module (or a language pack requests one) that has no usable modules/<id>/module.json"),
+    ("module_key_unlisted", Severity::Error, "course.json uses a key or markup that a module provides, but the module is not in the course modules list"),
 ];
+
+/// [`CODES`] followed by the codes of each module, in module order.
+pub fn all_codes(modules: &[Box<dyn super::ValidatorModule>]) -> Vec<(&'static str, Severity, &'static str)> {
+    let mut out: Vec<(&'static str, Severity, &'static str)> = CODES.to_vec();
+    for m in modules {
+        out.extend_from_slice(m.codes());
+    }
+    out
+}

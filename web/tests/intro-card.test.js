@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
-const DojoExt = require('../ext.js');
+const DojoExt = require('./ja-ext.js');
 const { checkWasmFresh } = require('./loader.js');
 
 const NOW = 1760000000000;
@@ -194,27 +194,4 @@ test('doc.intros: "__proto__" entity is persisted as an own key and suppresses t
   assert.ok(Object.prototype.hasOwnProperty.call(t.doc.intros, '__proto__'));
   assert.strictEqual(Object.getPrototypeOf(t.doc.intros), Object.prototype);
   assert.strictEqual(mk().start('daily').introFor(p1), null);
-});
-
-// Neutral fixture (no real word): the intro card title and text render base|reading markup as ruby.
-test('intro card renders title and text markup as ruby (neutral fixture)', async () => {
-  const H = require('./app-harness.js');
-  const item = { id: 'n1', unit: 'u1', type: 'gap', prompt: 'Prompt n1', answers: ['a'], entity: 'N1', explanation: 'inline expl' };
-  const m = await H.mount({
-    items: [item],
-    intros: [{ id: 'N1', title: '{水|みず}', text: 'Kanji: {水|み}' }],
-    course: { id: 'c', title: 'C', uiLanguage: 'en', markup: 'ruby', ruby: { skip: '水' }, introNew: true, units: [{ id: 'u1', title: 'U' }] }
-  });
-  m.sb.DojoExt.use('ruby');
-  m.sb.DojoExt.useRuby({ skip: '水' }, [item]);
-  m.app.startMode('daily', {});
-  const tree = m.screen(m.sb.DojoApp._SessionScreen).view();
-  const title = H.find(tree, 'intro-title');
-  const text = H.find(tree, 'intro-text');
-  assert.ok(title && text);
-  const types = [];
-  H.walk(title, (n) => { if (n.type) types.push(n.type); });
-  assert.ok(types.includes('ruby'), 'title should have ruby: ' + H.text(title));
-  assert.ok(!/[{|}]/.test(H.text(title)), 'title should not have raw markup');
-  assert.ok(!/[{|}]/.test(H.text(text)), 'text should not have raw markup');
 });

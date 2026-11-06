@@ -74,8 +74,8 @@ function loadSandbox() {
   const win = new Node_(1, 'WINDOW');
   win.document = doc;
   const sb = { console: { warn() {}, log: console.log, error: console.error }, document: doc, window: win, setTimeout, clearTimeout, setInterval, clearInterval, Promise };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
-  vm.runInContext(read('../examples/plugins/ja-readings/ja-readings.js'), sb);
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/input-script.js', 'ext.js', '../modules/ja/web/ruby-dict.js', '../modules/ja/web/ruby.js', '../modules/ja/web/readings.js', '../modules/ja/web/kanji-rows.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
+  vm.runInContext(read('../modules/ja/examples/ja-readings/ja-readings.js'), sb);
   installRubyPlugin(sb);
   return { sb, win };
 }
@@ -108,10 +108,10 @@ function typeInto(m, id, value) {
 
 const ITEMS = [];
 for (let i = 0; i < 6; i++) {
-  ITEMS.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: '{冷|れい}蔵庫 ' + i, answers: ['れいぞうこ'], explanation: '{冷|れい}' });
-  ITEMS.push({ id: 'c' + i, unit: 'u', type: 'cloze', prompt: 'Fill', parts: ['すし', ['の'], '{私|わたし}'] });
+  ITEMS.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: '{Fri|fri}dge ' + i, answers: ['fridge'], explanation: '{Fri|fri}' });
+  ITEMS.push({ id: 'c' + i, unit: 'u', type: 'cloze', prompt: 'Fill', parts: ['sushi', ['no'], '{Me|wa}'] });
   ITEMS.push({ id: 'o' + i, unit: 'u', type: 'order', prompt: 'Order', steps: ['one', 'two', 'three'] });
-  ITEMS.push({ id: 'k' + i, unit: 'u', type: 'choice', prompt: 'Pick {冷|れい}', options: ['x', 'y'], correct: 0 });
+  ITEMS.push({ id: 'k' + i, unit: 'u', type: 'choice', prompt: 'Pick {Fri|fri}', options: ['x', 'y'], correct: 0 });
   ITEMS.push({ id: 'm' + i, unit: 'u', type: 'multi', prompt: 'Primes?', options: ['2', '4', '5'], correct: [0, 2] });
   ITEMS.push({ id: 'n' + i, unit: 'u', type: 'numeric', prompt: 'Two?', answer: 2 });
 }
@@ -127,11 +127,11 @@ const sessionOf = (m) => m.app.state.session;
 // Answer the current item wrongly (typed kana / generic), then optionally override, then Next, all without awaiting renders.
 async function answerCurrent(m, wrong) {
   if (q(m.rootEl, 'gap-input')) {
-    typeInto(m, 'gap-input', wrong ? 'れいぞうく' : 'れいぞうこ');
+    typeInto(m, 'gap-input', wrong ? 'fridgx' : 'fridge');
     await m.flush();
     q(m.rootEl, 'gap-form').fire('submit');
   } else if (q(m.rootEl, 'cloze')) {
-    typeInto(m, 'cloze-input-0', wrong ? 'の'.repeat(0) + 'ばつ' : 'の');
+    typeInto(m, 'cloze-input-0', wrong ? 'no'.repeat(0) + 'batsu' : 'no');
     await m.flush();
     click(m, 'btn-submit');
   } else {
@@ -253,7 +253,7 @@ test('typed wrong, override and Next fired twice each: one step, no error', asyn
   const m = await mount(ITEMS, { dontKnow: true });
   await startDaily(m);
   const s = sessionOf(m);
-  typeInto(m, 'gap-input', 'れいぞうく');
+  typeInto(m, 'gap-input', 'fridgx');
   await m.flush();
   q(m.rootEl, 'gap-form').fire('submit');
   q(m.rootEl, 'gap-form').fire('submit');

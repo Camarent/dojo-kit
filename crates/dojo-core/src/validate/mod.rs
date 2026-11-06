@@ -19,16 +19,16 @@ mod files;
 mod groups;
 mod items;
 mod course;
-mod lang;
+mod module;
 mod order_alt;
 mod order_split;
 mod quality;
-mod ruby;
 mod speech;
 mod dupes;
 use course::check_course;
 pub use checks::parse_findings;
-pub use codes::CODES;
+pub use codes::{CODES, all_codes};
+pub use module::{ItemChecker, ValidatorModule};
 pub use files::check_audio_files;
 
 const MAX_PROMPT_CHARS: usize = 600;
@@ -148,6 +148,18 @@ pub fn validate_all(
     stimuli: Option<&SourceFile>,
     intros: Option<&SourceFile>,
 ) -> Vec<Diagnostic> {
+    validate_with_modules(course_text, files, lock, stimuli, intros, &[])
+}
+
+/// Like [`validate_all`], also running the rules of `modules` on top of the built-in ones.
+pub fn validate_with_modules(
+    course_text: &str,
+    files: &[SourceFile],
+    lock: Option<&IdLock>,
+    stimuli: Option<&SourceFile>,
+    intros: Option<&SourceFile>,
+    modules: &[Box<dyn ValidatorModule>],
+) -> Vec<Diagnostic> {
     let mut course_sink = Sink { out: Vec::new() };
     let course = match parse_course(course_text) {
         Ok(c) => {
@@ -172,8 +184,14 @@ pub fn validate_all(
     let stimuli_info = files::check_stimuli_file(stimuli, course.as_ref(), &mut course_sink);
     files::check_intros_file(intros, &all, &mut course_sink);
 
-    let ruby_skip = ruby::skip_set(course.as_ref(), all.iter().map(|(_, _, i)| *i));
-    let ctx = files::ItemCtx { course: course.as_ref(), stimuli: &stimuli_info, ruby_skip };
+    let checkers: Vec<Box<dyn ItemChecker>> = match &course {
+        Some(c) => {
+            let items: Vec<&Item> = all.iter().map(|(_, _, i)| *i).collect();
+            modules.iter().filter_map(|m| m.course_checker(c, &items)).collect()
+        }
+        None => Vec::new(),
+    };
+    let ctx = files::ItemCtx { course: course.as_ref(), stimuli: &stimuli_info, modules, checkers };
     let file_diags = files::check_item_files(files, &parsed, &ctx);
 
     if let Some(c) = &course {

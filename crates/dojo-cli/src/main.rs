@@ -3,11 +3,12 @@
 mod build;
 mod cmd;
 mod course_files;
+mod modules;
 
 use cmd::{add::run_add, build::run_build, import_progress::run_import_progress, init::run_init, lock::run_lock, next_id::run_next_id, stats::run_stats, validate::run_validate};
 use course_files::{load, read, CourseFiles};
 use dojo_core::schema;
-use dojo_core::validate::{Diagnostic, Severity};
+use dojo_core::validate::{Diagnostic, Severity, ValidatorModule, all_codes};
 use std::fs;
 use std::path::Path;
 use std::process::ExitCode;
@@ -31,7 +32,8 @@ fn write_schemas(dir: &Path) -> std::io::Result<()> {
 fn run(args: &[String]) -> Result<u8, String> {
     match args {
         [cmd, flag] if cmd == "schema" && flag == "--brief" => {
-            print!("{}", schema::brief());
+            let validators: Vec<Box<dyn ValidatorModule>> = dojo_modules::ids().iter().filter_map(|id| dojo_modules::validator(id)).collect();
+            print!("{}", schema::brief_with_codes(&all_codes(&validators)));
             Ok(0)
         }
         [cmd, flag, dir] if cmd == "schema" && flag == "--out" => {

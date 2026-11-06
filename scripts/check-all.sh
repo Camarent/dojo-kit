@@ -54,10 +54,10 @@ COV="${DOJO_COVERAGE_DIR:-}"
 if [ -n "$COV" ]; then
     mkdir -p "$COV"
     step "cargo llvm-cov --workspace" cargo llvm-cov --workspace --lcov --output-path "$COV/rust.lcov.info"
-    step "node --test web/tests/*.test.js tests/*.test.js (coverage)" node --test --experimental-test-coverage --test-coverage-exclude='**/tests/**' --test-coverage-exclude='**/vendor/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination="$COV/js.lcov.info" web/tests/*.test.js tests/*.test.js
+    step "node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js (coverage)" node --test --experimental-test-coverage --test-coverage-exclude='**/tests/**' --test-coverage-exclude='**/vendor/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination="$COV/js.lcov.info" modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js
 else
     step "cargo test --workspace" cargo test --workspace
-    step "node --test web/tests/*.test.js tests/*.test.js" node --test web/tests/*.test.js tests/*.test.js
+    step "node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js" node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js
 fi
 step "node tests/wasm-smoke.js" node tests/wasm-smoke.js
 step "node tests/gen-vectors.js && git diff --exit-code -- tests/vectors" bash -c 'node tests/gen-vectors.js && git diff --exit-code -- tests/vectors'

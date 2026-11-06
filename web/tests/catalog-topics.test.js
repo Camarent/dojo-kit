@@ -77,7 +77,7 @@ test('search works and the count is in topics', async () => {
 
 test('topic title: meta.title wins over everything else', async () => {
   const c = await open({ items: [
-    Object.assign(gap('t1', 'ent1'), { meta: { title: 'My Title', kanji: '日本語', ru: 'японский' } })
+    Object.assign(gap('t1', 'ent1'), { meta: { title: 'My Title', kanji: 'Nihongo', ru: 'Japanese' } })
   ] });
   assert.strictEqual(label(c, 'ent1'), 'My Title');
 });

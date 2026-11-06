@@ -39,5 +39,5 @@ fn number_format_answers_are_not_ambiguous() {
 
 #[test]
 fn alphabetic_non_ascii_answers_are_ambiguous() {
-    assert!(amb(r#"["はし","ばし"]"#));
+    assert!(amb(r#"["été","ete"]"#));
 }

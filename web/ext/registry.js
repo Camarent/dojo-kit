@@ -5,8 +5,7 @@
   'use strict';
 
   var S = {
-    markups: {}, active: null, scriptGuard: null, guard: null, detailFn: null, introFn: null, preTextFn: null, rankFn: null, storageProvider: null,
-    rubySkip: null, rubyDict: null, rubyDictMax: 0,
+    markups: {}, active: null, scriptGuard: null, guard: null, detailFn: null, introFn: null, preTextFn: null, rankFn: null, feedbackRowsFn: null, storageProvider: null,
     pluginSettings: {}, settingsAccessor: null, settingsBound: false
   };
 
@@ -45,6 +44,49 @@
   function registerVoiceRank(fn) {
     if (typeof fn !== 'function') throw new Error('DojoExt.registerVoiceRank: function required');
     S.rankFn = fn;
+  }
+
+  // fn(item, ctx) returns an array of feedback rows ({ ch, meaning, on, kun }) or null.
+  // opts.fallback: a module default, used when the plugin hook is absent or yields null; reset() keeps it.
+  // opts.aliases: { field: [legacyName, ...] } legacy row field names read when the canonical field is absent
+  // (applies to every hook's rows; module-level, kept by reset()).
+  // opts.label: { lang: text } feedback label replacing the core session.fbLabel text (module-level, kept by reset()).
+  var fallbackRowsFn = null;
+  var rowLabel = null;
+  var rowAliases = {};
+  function registerFeedbackRows(fn, opts) {
+    if (typeof fn !== 'function') throw new Error('DojoExt.registerFeedbackRows: function required');
+    if (opts && opts.aliases) Object.keys(opts.aliases).forEach(function (k) { rowAliases[k] = [].concat(opts.aliases[k]); });
+    if (opts && opts.label && typeof opts.label === 'object') rowLabel = opts.label;
+    if (opts && opts.fallback) fallbackRowsFn = fn;
+    else S.feedbackRowsFn = fn;
+  }
+
+  function applyAliases(row) {
+    if (!row || typeof row !== 'object') return row;
+    Object.keys(rowAliases).forEach(function (field) {
+      if (row[field] !== undefined) return;
+      for (var i = 0; i < rowAliases[field].length; i++) {
+        var v = row[rowAliases[field][i]];
+        if (v !== undefined) { row[field] = v; return; }
+      }
+    });
+    return row;
+  }
+
+  function guardedRows(fn, item, ctx) {
+    try { var r = fn(item, ctx); return Array.isArray(r) ? r.map(applyAliases) : null; }
+    catch (e) { warn('feedbackRows failed', e); return null; }
+  }
+
+  // Label map registered with opts.label, or null.
+  function feedbackLabel() { return rowLabel; }
+
+  // Guarded like the other hooks: a throwing or null plugin hook falls back to the module default.
+  function feedbackRows(item, ctx) {
+    var r = S.feedbackRowsFn ? guardedRows(S.feedbackRowsFn, item, ctx) : null;
+    if (r || !fallbackRowsFn) return r;
+    return guardedRows(fallbackRowsFn, item, ctx);
   }
 
   // Storage provider for the progress document (openRef); one provider, a second call replaces the first.
@@ -136,174 +178,47 @@
     });
   }
 
-  var RD = root.DojoRubyDict || (typeof require !== 'undefined' ? require('./ruby-dict.js') : null);
-  var RUBY_RE = RD.RUBY_RE, rubyParse = RD.rubyParse, HAN_G = RD.HAN_G, hanOf = RD.hanOf, isHan = RD.isHan;
-  var pathValue = RD.pathValue, dictAdd = RD.dictAdd, buildRubyDict = RD.buildRubyDict;
+  // Markups that ship with modules (e.g. ruby); reset() keeps them, unlike registerMarkup ones.
+  var builtinMarkups = {};
 
-  function escHtml(s) {
-    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  function startsWordAt(str, j) {
-    for (var l = Math.min(S.rubyDictMax, str.length - j); l > 0; l--) {
-      if (Object.prototype.hasOwnProperty.call(S.rubyDict, str.substr(j, l))) return true;
+  function registerBuiltinMarkup(name, def) {
+    if (typeof name !== 'string' || name === '') throw new Error('DojoExt.registerBuiltinMarkup: name required');
+    if (!def || typeof def.render !== 'function' || typeof def.plain !== 'function') {
+      throw new Error('DojoExt.registerBuiltinMarkup: render and plain functions required');
     }
-    return false;
+    builtinMarkups[name] = def;
   }
 
-  // Longest known word starting at i, or null. A word followed by a kanji that starts no known word is skipped.
-  function longestWordAt(str, i) {
-    for (var len = Math.min(S.rubyDictMax, str.length - i); len > 0; len--) {
-      var w = str.substr(i, len);
-      if (!Object.prototype.hasOwnProperty.call(S.rubyDict, w)) continue;
-      var nx = i + len;
-      if (nx < str.length && isHan(str.charAt(nx)) && !startsWordAt(str, nx)) continue;
-      return w;
-    }
-    return null;
+  // Module state cleaners run by DojoExt.reset().
+  var resetFns = [];
+  function onReset(fn) {
+    if (typeof fn !== 'function') throw new Error('DojoExt.onReset: function required');
+    resetFns.push(fn);
   }
+  function runResets() { resetFns.forEach(function (fn) { fn(); }); }
 
-  // Aligns a word with okurigana to its reading so only kanji runs carry ruby: 飲み物/のみもの -> {飲|の}み{物|もの}. Whole word on failed alignment.
-  function splitRuby(base, reading) {
-    var runs = base.match(/[一-鿿㐀-䶿\u{20000}-\u{2CEAF}]+|[^一-鿿㐀-䶿\u{20000}-\u{2CEAF}]+/gu) || [];
-    if (runs.length < 2) return [{ base: base, reading: reading }];
-    var out = [];
-    var pos = 0;
-    for (var k = 0; k < runs.length; k++) {
-      var run = runs[k];
-      if (!isHan(run.charAt(0))) {
-        if (reading.substr(pos, run.length) !== run) return [{ base: base, reading: reading }];
-        out.push({ text: run });
-        pos += run.length;
-        continue;
-      }
-      var nextKana = k + 1 < runs.length ? runs[k + 1] : null;
-      var end = nextKana === null ? reading.length : reading.indexOf(nextKana, pos + 1);
-      if (end < 0 || end <= pos) return [{ base: base, reading: reading }];
-      out.push({ base: run, reading: reading.slice(pos, end) });
-      pos = end;
-    }
-    return pos === reading.length ? out : [{ base: base, reading: reading }];
-  }
-
-  // Splits plain text into text/ruby segments, longest known word first; unknown kanji stay bare.
-  function annotateText(str) {
-    if (!S.rubyDict || typeof str !== 'string') return [{ text: str }];
-    var out = [];
-    var buf = '';
-    var i = 0;
-    var lastEnd = -1;
-    while (i < str.length) {
-      var hit = i > 0 && i !== lastEnd && isHan(str.charAt(i - 1)) ? null : longestWordAt(str, i);
-      if (hit) {
-        if (buf) { out.push({ text: buf }); buf = ''; }
-        splitRuby(hit, S.rubyDict[hit]).forEach(function (x) { out.push(x); });
-        i += hit.length;
-        lastEnd = i;
-      } else {
-        buf += str.charAt(i);
-        i++;
-      }
-    }
-    if (buf) out.push({ text: buf });
-    return out;
-  }
-
-  function useRuby(cfg, items) {
-    S.rubySkip = null;
-    S.rubyDict = null;
-    S.rubyDictMax = 0;
-    if (!cfg || typeof cfg !== 'object') return false;
-    S.rubyDict = buildRubyDict(items, cfg.dictKeys, cfg.dict);
-    Object.keys(S.rubyDict).forEach(function (w) { if (w.length > S.rubyDictMax) S.rubyDictMax = w.length; });
-    var set = {};
-    var n = 0;
-    hanOf(cfg.skip).forEach(function (c) { set[c] = true; n++; });
-    if (typeof cfg.skipTag === 'string' && Array.isArray(items)) {
-      var key = typeof cfg.skipKey === 'string' && cfg.skipKey ? cfg.skipKey : 'meta.kanji';
-      items.forEach(function (it) {
-        if (!it || !Array.isArray(it.tags) || it.tags.indexOf(cfg.skipTag) < 0) return;
-        hanOf(pathValue(it, key)).forEach(function (c) { set[c] = true; n++; });
-      });
-    }
-    S.rubySkip = n ? set : null;
-    return !!S.rubySkip;
-  }
-
-  function rubyHidden(base) {
-    if (!S.rubySkip) return false;
-    var han = hanOf(base);
-    return han.length > 0 && han.every(function (c) { return S.rubySkip[c] === true; });
-  }
-
-  function rubyRender(str, h, opts) {
-    if (typeof str !== 'string') return str;
-    var all = opts && opts.all;
-    var annotate = opts && opts.annotate;
-    var hide = opts && opts.hide;
-    var segs = rubyParse(str);
-    if ((all || annotate) && S.rubyDict) {
-      var expanded = [];
-      segs.forEach(function (g) {
-        if (g.text != null) annotateText(g.text).forEach(function (x) { expanded.push(x); });
-        else expanded.push(g);
-      });
-      segs = expanded;
-    }
-    function shouldHide(g) {
-      if (!g.reading || typeof g.reading !== 'string') return false;
-      if (hide && Array.isArray(hide) && hide.indexOf(g.reading) >= 0) return true;
-      return false;
-    }
-    if (h) {
-      return segs.map(function (g) {
-        if (g.text != null) return h('span', null, g.text);
-        if (all || (!rubyHidden(g.base) && !shouldHide(g))) return h('ruby', null, h('span', null, g.base), h('rt', null, g.reading));
-        return h('span', null, g.base);
-      });
-    }
-    return segs.map(function (g) {
-      if (g.text != null) return escHtml(g.text);
-      if (all || (!rubyHidden(g.base) && !shouldHide(g))) return '<ruby>' + escHtml(g.base) + '<rt>' + escHtml(g.reading) + '</rt></ruby>';
-      return escHtml(g.base);
-    }).join('');
-  }
-
-  function rubyPlain(str) {
-    return typeof str === 'string' ? str.replace(RUBY_RE, '$1') : str;
-  }
-
-  var builtinMarkups = { ruby: { render: rubyRender, plain: rubyPlain, parse: rubyParse } };
 
   var api = {
     state: S,
     builtinMarkups: builtinMarkups,
-    RUBY_RE: RUBY_RE,
-    HAN_G: HAN_G,
     registerMarkup: registerMarkup,
     registerBeforeSubmit: registerBeforeSubmit,
     registerDetail: registerDetail,
     registerIntro: registerIntro,
     registerPreAnswerText: registerPreAnswerText,
     registerVoiceRank: registerVoiceRank,
+    registerFeedbackRows: registerFeedbackRows,
+    feedbackRows: feedbackRows, feedbackLabel: feedbackLabel,
     registerStorage: registerStorage,
     getStorageProvider: getStorageProvider,
     registerSetting: registerSetting,
     bindSettings: bindSettings,
     getSetting: getSetting,
     getRegisteredSettings: getRegisteredSettings,
-    useRuby: useRuby,
-    warn: warn,
-    rubyParse: rubyParse,
-    escHtml: escHtml,
-    hanOf: hanOf,
-    pathValue: pathValue,
-    dictAdd: dictAdd,
-    isHan: isHan,
-    annotateText: annotateText,
-    rubyHidden: rubyHidden,
-    rubyRender: rubyRender,
-    rubyPlain: rubyPlain
+    registerBuiltinMarkup: registerBuiltinMarkup,
+    onReset: onReset,
+    runResets: runResets,
+    warn: warn
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.DojoExtRegistry = api;

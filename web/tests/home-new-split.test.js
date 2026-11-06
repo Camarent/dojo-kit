@@ -13,7 +13,7 @@ const ITEMS = [].concat(mk('k', 'kanji', 14), mk('g', 'grammar', 6), mk('o', 'mi
 const COURSE = {
   newPerDay: 40,
   units: [{ id: 'kanji', title: 'Kanji' }, { id: 'grammar', title: 'Grammar' }, { id: 'misc', title: 'Misc', newPerDay: 5 }],
-  groups: [{ id: 'kw', title: 'Кандзи и слова', units: ['kanji'], newPerDay: 10 }, { id: 'gr', title: 'Grammar', units: ['grammar'], newPerDay: 2 }]
+  groups: [{ id: 'kw', title: 'Kanji and words', units: ['kanji'], newPerDay: 10 }, { id: 'gr', title: 'Grammar', units: ['grammar'], newPerDay: 2 }]
 };
 
 test('summary.parts: groups in order then other; sum equals newToday', async () => {

@@ -13,7 +13,7 @@ async function view(item, course) {
 }
 
 test('numeric item with its own prompt shows no second framework caption', async () => {
-  assert.strictEqual(await view({ id: 'n1', unit: 'u1', type: 'numeric', prompt: 'Напишите число', answer: 3 }), null);
+  assert.strictEqual(await view({ id: 'n1', unit: 'u1', type: 'numeric', prompt: 'Write the number', answer: 3 }), null);
 });
 
 test('a course caption for numeric is still shown', async () => {

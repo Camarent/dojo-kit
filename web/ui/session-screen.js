@@ -1,7 +1,7 @@
 /*
  * ui/session-screen.js — SessionBoundary and SessionScreen components
  * Globals expected: preact, htm, DojoTypes, DojoExt, DojoSpeech, DojoCommon, DojoDetail, DojoSessionFeedback.
- * create(deps) takes { Stimulus, kanjiRows, tagInfo, captionFor, fmtClock } and returns { SessionBoundary, SessionScreen }.
+ * create(deps) takes { Stimulus, fbRows, tagInfo, captionFor, fmtClock } and returns { SessionBoundary, SessionScreen }.
  */
 (function (root) {
   'use strict';

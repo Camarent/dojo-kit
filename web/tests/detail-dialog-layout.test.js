@@ -27,7 +27,7 @@ function createFakeWinWithBody() {
 
 // Lifecycle driver: setState re-renders and fires componentDidUpdate like Preact; mount fires componentDidMount.
 async function openCatalog() {
-  const items = [choice('a1', 'u1', { meta: { kanji: '一' } }), choice('a2', 'u1')];
+  const items = [choice('a1', 'u1', { meta: { kanji: 'I' } }), choice('a2', 'u1')];
   const course = { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1', detail: { glyph: 'meta.kanji' } }], detail: { glyph: 'meta.kanji' } };
   const m = await H.mount({ items, course, win: createFakeWinWithBody() });
   m.app.go('catalog');
@@ -94,8 +94,8 @@ test('header renders the glyph when item has meta.kanji, none otherwise', async 
   openRow();
   const g = H.find(H.find(cat.view(), 'catalog-detail-header'), 'detail-glyph');
   assert.ok(g, 'glyph in header');
-  assert.match(g.props.class, /\bkanji-ch\b/);
-  assert.strictEqual(H.text(g), '一');
+  assert.match(g.props.class, /\bglyph-ch\b/);
+  assert.strictEqual(H.text(g), 'I');
   click('btn-close-detail');
   const row = H.find(cat.view(), 'topic-a2');
   let btn = null;

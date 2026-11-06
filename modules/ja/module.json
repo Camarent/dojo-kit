@@ -1,0 +1,28 @@
+{
+  "manifestVersion": 1,
+  "id": "ja",
+  "description": "Japanese: ruby markup {base|reading}, word readings, kanji breakdown rows in feedback.",
+  "hooks": [
+    "markup",
+    "validator",
+    "ui"
+  ],
+  "web": {
+    "scripts": [
+      "web/ruby-dict.js",
+      "web/ruby.js",
+      "web/readings.js",
+      "web/kanji-rows.js"
+    ],
+    "styles": [
+      "web/ja.css"
+    ]
+  },
+  "courseKeys": [
+    "ruby",
+    "breakdown"
+  ],
+  "markups": [
+    "ruby"
+  ]
+}

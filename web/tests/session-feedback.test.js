@@ -72,8 +72,8 @@ function loadSandbox() {
   const win = new Node_(1, 'WINDOW');
   win.document = doc;
   const sb = { console: { warn() {}, log: console.log, error: console.error }, document: doc, window: win, setTimeout, clearTimeout, setInterval, clearInterval, Promise };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/ruby-dict.js', 'ext/registry.js','ext/ruby.js', 'ext/readings.js', 'ext.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
-  vm.runInContext(read('../examples/plugins/ja-readings/ja-readings.js'), sb);
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/input-script.js', 'ext.js', '../modules/ja/web/ruby-dict.js', '../modules/ja/web/ruby.js', '../modules/ja/web/readings.js', '../modules/ja/web/kanji-rows.js', 'types/registry.js', 'types/card.js', 'types/choice.js', 'types/cloze.js', 'types/gap.js', 'types/match.js', 'types/multi.js', 'types/numeric.js', 'types/order.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
+  vm.runInContext(read('../modules/ja/examples/ja-readings/ja-readings.js'), sb);
   installRubyPlugin(sb);
   return { sb, win };
 }
@@ -105,7 +105,7 @@ function typeInto(m, id, value) {
 
 const ITEMS = [];
 for (let i = 0; i < 4; i++) {
-  ITEMS.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: '{冷|れい}蔵庫 ' + i, answers: ['れいぞうこ'], explanation: '{冷|れい}' });
+  ITEMS.push({ id: 'g' + i, unit: 'u', type: 'gap', prompt: '{Fri|fri}dge ' + i, answers: ['fridge'], explanation: '{Fri|fri}' });
 }
 
 async function startDaily(m) {
@@ -126,7 +126,7 @@ async function answerGap(m, value) {
 test('typed correct answer shows right feedback with Correct verdict and no expected line', async () => {
   const m = await mount(ITEMS);
   await startDaily(m);
-  await answerGap(m, 'れいぞうこ');
+  await answerGap(m, 'fridge');
   const fb = q(m.rootEl, 'feedback');
   assert.ok(fb, 'feedback shown after answer');
   assert.ok(fb.attrs.class.split(' ').includes('right'), fb.attrs.class);
@@ -138,7 +138,7 @@ test('typed correct answer shows right feedback with Correct verdict and no expe
 test('typed wrong answer shows wrong feedback with Wrong verdict and expected line', async () => {
   const m = await mount(ITEMS);
   await startDaily(m);
-  await answerGap(m, 'れいぞうく');
+  await answerGap(m, 'fridgx');
   const fb = q(m.rootEl, 'feedback');
   assert.ok(fb, 'feedback shown after answer');
   assert.ok(fb.attrs.class.split(' ').includes('wrong'), fb.attrs.class);
@@ -146,5 +146,5 @@ test('typed wrong answer shows wrong feedback with Wrong verdict and expected li
   assert.strictEqual(txt(q(m.rootEl, 'verdict')), 'Wrong');
   const exp = q(m.rootEl, 'expected');
   assert.ok(exp, 'expected line shown for a wrong answer');
-  assert.ok(txt(exp).includes('れいぞうこ'), txt(exp));
+  assert.ok(txt(exp).includes('fridge'), txt(exp));
 });

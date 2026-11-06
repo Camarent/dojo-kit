@@ -111,13 +111,13 @@ test('Rendered notice contains Japanese for contentLanguage ja with en UI', asyn
   assert.ok(!noticeText.includes('{lang}'), 'should not contain raw {lang}');
 });
 
-test('Rendered notice contains Russian word for Japanese with ru UI', async () => {
-  const { scr } = await withNoVoice({ contentLanguage: 'ja', speech: {} }, 'ru');
+test('Rendered notice contains French word for Japanese with fr UI', async () => {
+  const { scr } = await withNoVoice({ contentLanguage: 'ja', speech: {} }, 'fr');
   const tree = scr.view();
   const notice = H.find(tree, 'play-item-notice');
   assert.ok(notice, 'should have notice');
   const noticeText = H.text(notice);
-  assert.ok(noticeText.includes('японск'), 'should contain Russian word for Japanese');
+  assert.ok(noticeText.includes('japonais'), 'should contain French word for Japanese');
   assert.ok(!noticeText.includes('{lang}'), 'should not contain raw {lang}');
 });
 

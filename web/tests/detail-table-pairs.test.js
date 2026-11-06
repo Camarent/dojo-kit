@@ -91,7 +91,7 @@ test('pairs field with custom keys renders both sides', async () => {
     ]
   });
   const items = [
-    choice('a', 'u1', { meta: { pairData: [{ jp: '日本語', ru: 'японский' }] } })
+    choice('a', 'u1', { meta: { pairData: [{ jp: 'Nihongo', ru: 'Japanese' }] } })
   ];
   const m = await H.mount({ items, course });
   m.app.go('catalog');
@@ -104,8 +104,8 @@ test('pairs field with custom keys renders both sides', async () => {
   
   // Check that custom key pair sides are rendered
   const pairsText = H.text(H.find(v, 'declarative-detail'));
-  assert.ok(/日本語/.test(pairsText), 'custom key jp value is rendered');
-  assert.ok(/японский/.test(pairsText), 'custom key ru value is rendered');
+  assert.ok(/Nihongo/.test(pairsText), 'custom key jp value is rendered');
+  assert.ok(/Japanese/.test(pairsText), 'custom key ru value is rendered');
 });
 
 test('table field escapes HTML in cells', async () => {
@@ -250,7 +250,7 @@ test('table cells, head and title pass through the course-text hook', async () =
     fields: [{ key: 'meta.rt', label: 'RT', type: 'table' }]
   }), { markup: 'ruby' });
   const items = [
-    choice('a', 'u1', { meta: { rt: { title: 'T', head: ['h{読|よ}'], rows: [['kanji{読|よ}']] } } })
+    choice('a', 'u1', { meta: { rt: { title: 'T', head: ['h{read|yo}'], rows: [['kanji{read|yo}']] } } })
   ];
   const m = await H.mount({ items, course });
   m.sb.DojoExt.use('ruby');

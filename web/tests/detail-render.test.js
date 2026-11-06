@@ -175,7 +175,7 @@ test('declarative detail honors ruby markup', async () => {
   }), { markup: 'ruby' });
   
   const items = [
-    choice('a', 'u1', { meta: { ruby: 'kanji{読|よ}' } })
+    choice('a', 'u1', { meta: { ruby: 'kanji{read|yo}' } })
   ];
   const m = await H.mount({ items, course });
   m.sb.DojoExt.use('ruby');

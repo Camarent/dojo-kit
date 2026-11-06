@@ -386,5 +386,5 @@
   "catalog.state.learning": "Изучается",
   "catalog.state.due": "Пора повторить",
   "catalog.state.learned": "Выучена",
-  "session.kanji": "Кандзи в слове"
+  "session.fbLabel": "Разбор"
 }

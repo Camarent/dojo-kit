@@ -3,7 +3,7 @@ use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm
 use super::quality::{check_ambiguous_answer, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
 use super::dupes::{check_same_answer_diff_prompts, check_same_prompt_diff_answers};
 use super::speech::validate_speak;
-use super::{COURSE_FILE, Diagnostic, LOCK_FILE, Severity, Sink, SourceFile, exam, is_valid_id};
+use super::{COURSE_FILE, Diagnostic, ItemChecker, LOCK_FILE, Severity, Sink, SourceFile, ValidatorModule, exam, is_valid_id};
 use super::groups::{check_bar_matches, check_entity_spans_groups, check_mixed_entity_scope};
 use crate::check::{Normalize, normalize};
 use crate::content::{Course, Item, ParsedItems, parse_intros, parse_stimuli};
@@ -70,8 +70,10 @@ pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, cou
 pub(super) struct ItemCtx<'a> {
     pub(super) course: Option<&'a Course>,
     pub(super) stimuli: &'a StimulusInfo,
-    /// Ruby skip set from `ruby::skip_set`; `None` when the skip rules are off.
-    pub(super) ruby_skip: Option<HashSet<char>>,
+    /// Extension modules; their word lists and fragment tables apply on top of the built-in ones.
+    pub(super) modules: &'a [Box<dyn ValidatorModule>],
+    /// Per-item checks from the modules' `course_checker`, run on every active item.
+    pub(super) checkers: Vec<Box<dyn ItemChecker>>,
 }
 
 type PromptKey<'a> = (&'a str, &'a str, Option<&'a str>, String, String);
@@ -141,11 +143,13 @@ fn check_one_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemCtx,
 
 fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemCtx, seen: &mut Seen<'a>, sink: &mut Sink) {
     let id = item.id();
-    check_prompt_type_mismatch(item.prompt(), item.item_type(), sink, name, line, id);
-    check_ambiguous_answer(item, sink, name, line);
+    check_prompt_type_mismatch(item.prompt(), item.item_type(), sink, name, line, id, ctx.modules);
+    check_ambiguous_answer(item, sink, name, line, ctx.modules);
     check_order_blanks_mismatch(item, sink, name, line);
-    super::order_split::check_order_split(item, ctx.course, sink, name, line);
-    super::ruby::check_ruby(item, ctx.course, ctx.ruby_skip.as_ref(), sink, name, line);
+    super::order_split::check_order_split(item, ctx.course, sink, name, line, ctx.modules);
+    for checker in &ctx.checkers {
+        sink.out.extend(checker.check(item, ctx.course, name, line));
+    }
 
     if let Some(c) = ctx.course {
         let whitelisted_scripts: HashSet<String> = c.scripts.iter().cloned().collect();

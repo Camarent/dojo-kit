@@ -66,11 +66,11 @@ test('registerMarkup rejects incomplete definitions', () => {
 test('beforeSubmit can block and otherwise passes; returned input is ignored', () => {
   ext.registerBeforeSubmit((item, input) => {
     if (input.text === 'bad') return { message: 'no latin' };
-    if (input.text === 'ア') return { input: { text: 'あ' } };
+    if (input.text === 'swap') return { input: { text: 'swapped' } };
     return null;
   });
   assert.deepStrictEqual(ext.beforeSubmit({}, { text: 'bad' }), { message: 'no latin' });
-  assert.strictEqual(ext.beforeSubmit({}, { text: 'ア' }), null);
+  assert.strictEqual(ext.beforeSubmit({}, { text: 'swap' }), null);
   assert.strictEqual(ext.beforeSubmit({}, { text: 'ok' }), null);
 });
 

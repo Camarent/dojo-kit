@@ -22,28 +22,28 @@ const S = { result: { correct: true }, cur: { stimulus: { id: 'st' } }, audioMar
 
 test('correct, wrong and timed-out show text and translation', () => {
   for (const result of [{ correct: true }, { correct: false }, { timedOut: true }]) {
-    const n = CT.render({ ...S, result }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Три' } }));
+    const n = CT.render({ ...S, result }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Three' } }));
     assert.strictEqual(text(find(n, 'clip-text')), 'session.clipText Trois');
-    assert.strictEqual(text(find(n, 'clip-tr')), 'session.clipTr Три');
+    assert.strictEqual(text(find(n, 'clip-tr')), 'session.clipTr Three');
   }
 });
 test('mt flag switches the label', () => {
-  const n = CT.render(S, t, 'ru', fake({ text: 'a', tr: { ru: 'б' }, mt: true }));
+  const n = CT.render(S, t, 'ru', fake({ text: 'a', tr: { ru: 'b' }, mt: true }));
   assert.strictEqual(text(find(n, 'clip-tr-label')), 'session.clipTrMachine');
 });
 test('no fallback to another language', () => {
-  const n = CT.render(S, t, 'en', fake({ text: 'a', tr: { ru: 'б' } }));
+  const n = CT.render(S, t, 'en', fake({ text: 'a', tr: { ru: 'b' } }));
   assert.ok(find(n, 'clip-text'));
   assert.strictEqual(find(n, 'clip-tr'), null);
 });
 test('translation equal to the expected answer is hidden', () => {
-  const n = CT.render({ ...S, result: { correct: true, expected: 'Три' } }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Три' } }));
+  const n = CT.render({ ...S, result: { correct: true, expected: 'Three' } }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Three' } }));
   assert.ok(find(n, 'clip-text'));
   assert.strictEqual(find(n, 'clip-tr'), null);
 });
 test('translation differing from the expected answer is shown', () => {
-  const n = CT.render({ ...S, result: { correct: true, expected: 'Trois' } }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Три' } }));
-  assert.strictEqual(text(find(n, 'clip-tr')), 'session.clipTr Три');
+  const n = CT.render({ ...S, result: { correct: true, expected: 'Trois' } }, t, 'ru', fake({ text: 'Trois', tr: { ru: 'Three' } }));
+  assert.strictEqual(text(find(n, 'clip-tr')), 'session.clipTr Three');
 });
 test('no fields, no result, no stimulus, not heard: nothing', () => {
   assert.strictEqual(CT.render(S, t, 'ru', fake({})), null);
@@ -73,7 +73,7 @@ function audioEnv() {
       createBufferSource() { return { connect() {}, start() { setImmediate(() => this.onended()); }, stop() {} }; }
     }
   };
-  const manifest = { v: 1, packs: [{ file: 'p', bytes: 4, enc: 'raw' }], clips: { a: { pack: 0, off: 0, len: 1, ms: 5, mime: 'x', text: 'T', tr: { ru: 'Т' }, mt: true } } };
+  const manifest = { v: 1, packs: [{ file: 'p', bytes: 4, enc: 'raw' }], clips: { a: { pack: 0, off: 0, len: 1, ms: 5, mime: 'x', text: 'T', tr: { ru: 'Tr' }, mt: true } } };
   AudioMod.configure({ manifest, win, fetch: async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(4) }) });
   return AudioMod;
 }
@@ -81,7 +81,7 @@ test('heardClip is null before playback started; clipMeta reads the manifest', (
   const A = audioEnv();
   A.pick('s', ['a'], () => 0);
   assert.strictEqual(A.heardClip('s', A.mark()), null);
-  assert.strictEqual(JSON.stringify(A.clipMeta('a')), JSON.stringify({ text: 'T', tr: { ru: 'Т' }, mt: true, supersedes: [] }));
+  assert.strictEqual(JSON.stringify(A.clipMeta('a')), JSON.stringify({ text: 'T', tr: { ru: 'Tr' }, mt: true, supersedes: [] }));
   assert.strictEqual(A.clipMeta('zz'), null);
 });
 test('a clip heard in an earlier item does not leak into the next', async () => {

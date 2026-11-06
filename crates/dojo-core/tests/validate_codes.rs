@@ -84,16 +84,33 @@ fn fires_empty_detail_glyph() {
     fires(&c, &[CHOICE], "empty_detail_glyph");
 }
 
-#[test]
-fn every_code_has_a_firing_test() {
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests");
-    let mut texts = Vec::new();
-    for entry in std::fs::read_dir(&dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.extension().is_some_and(|e| e == "rs") {
-            texts.push(std::fs::read_to_string(&path).unwrap());
+/// Source text of every `.rs` test that may fire a code: this crate's `tests/`, plus the CLI tests
+/// and the module tests (`modules/*/rust/tests`) under the repo root. Missing directories are skipped.
+fn rust_test_texts() -> Vec<String> {
+    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut dirs = vec![manifest.join("tests")];
+    if let Some(root) = manifest.ancestors().find(|a| a.join("crates").is_dir()) {
+        dirs.push(root.join("crates/dojo-cli/tests"));
+        for module in std::fs::read_dir(root.join("modules")).into_iter().flatten().flatten() {
+            dirs.push(module.path().join("rust/tests"));
         }
     }
+    let mut texts = Vec::new();
+    for dir in dirs {
+        let Ok(entries) = std::fs::read_dir(&dir) else { continue };
+        for entry in entries {
+            let path = entry.unwrap().path();
+            if path.extension().is_some_and(|e| e == "rs") {
+                texts.push(std::fs::read_to_string(&path).unwrap());
+            }
+        }
+    }
+    texts
+}
+
+#[test]
+fn every_code_has_a_firing_test() {
+    let texts = rust_test_texts();
     let missing: Vec<&str> = CODES
         .iter()
         .map(|c| c.0)
@@ -107,24 +124,6 @@ fn every_code_has_a_firing_test() {
         })
         .collect();
     assert!(missing.is_empty(), "codes without a test: {missing:?}");
-}
-
-#[test]
-fn fires_ruby_on_skip_kanji_and_ruby_missing() {
-    // ruby on a kanji the skip set already hides
-    let skip = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"日"}"#);
-    let hidden = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{日|にち}","options":["a","b"],"answer":0}"#;
-    fires(&skip, &[hidden], "ruby_on_skip_kanji");
-    let shown = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{学|がく}","options":["a","b"],"answer":0}"#;
-    assert!(!codes(&run(&skip, &[shown])).contains(&"ruby_on_skip_kanji"));
-
-    // drill item keeps its headword bare: exempt from ruby_missing
-    let drill = with_course(r#""markup":"ruby","ruby":{"checkQuestions":true,"skip":"x","drillUnits":["u"]}"#);
-    let bare = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"日本","options":["a","b"],"answer":0}"#;
-    assert!(!codes(&run(&drill, &[bare])).contains(&"ruby_missing"));
-
-    // no drill scope configured: bare kanji is fine
-    assert!(!codes(&run(COURSE, &[bare])).contains(&"ruby_missing"));
 }
 
 #[test]

@@ -272,6 +272,13 @@
         "boolean",
         "null"
       ]
+    },
+    "modules": {
+      "description": "Optional module ids this course enables; absent or empty = no optional modules.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "additionalProperties": false,

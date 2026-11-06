@@ -340,6 +340,9 @@ pub struct Course {
     /// Whether to track confusions (wrong answer patterns) in progress records.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub confusions: Option<bool>,
+    /// Optional module ids this course enables; absent or empty = no optional modules.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub modules: Vec<String>,
 }
 
 /// Kanji/Han breakdown configuration for kanjiIndex/kanjiBreakdown.
