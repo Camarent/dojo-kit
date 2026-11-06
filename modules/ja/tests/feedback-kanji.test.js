@@ -34,7 +34,7 @@ test('content has kanji items and a word item shows 2 rows with meanings', async
   
   const label = H.find(scr.view(), 'fb-label');
   assert.ok(label, 'kanji-label should be present');
-  assert.ok(/Kanji in this word/.test(H.text(label)), 'Label text should match');
+  assert.ok(/Breakdown/.test(H.text(label)), 'Label text should match');
   
   const rows = H.findAll(scr.view(), /^fb-row$/);
   assert.strictEqual(rows.length, 2, 'Should have 2 kanji rows');

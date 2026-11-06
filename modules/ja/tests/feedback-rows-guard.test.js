@@ -68,7 +68,7 @@ test('feedback rows: label and reading texts are pinned', async () => {
   const { root } = await feedbackRows();
   const rows = H.findAll(root, /^fb-row$/);
   assert.strictEqual(rows.length, 2, 'one row per kanji of the word');
-  assert.strictEqual(H.text(H.find(root, 'fb-label')), 'Kanji in this word');
+  assert.strictEqual(H.text(H.find(root, 'fb-label')), 'Breakdown');
   assert.strictEqual(H.text(H.find(rows[0], 'fb-ch')), NICHI);
   assert.strictEqual(H.text(H.find(rows[0], 'fb-on')), ON_NICHI + ' / ' + ON_JITSU);
   assert.strictEqual(H.text(H.find(rows[0], 'fb-kun')), KUN_HI + ' / ' + KUN_BI);

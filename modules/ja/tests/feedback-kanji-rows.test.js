@@ -151,7 +151,7 @@ test('kanji-rows: label uses i18n key session.kanji', async () => {
   const label = H.find(scr.view(), 'fb-label');
   assert.ok(label, 'kanji-label should be present');
   const labelText = H.text(label);
-  assert.strictEqual(labelText, 'Kanji in this word', 'Label should use i18n session.kanji key');
+  assert.strictEqual(labelText, 'Breakdown', 'Label should use i18n session.fbLabel key');
 });
 
 test('kanji-rows: at max-width 390px the row stays one compact line (3 columns kept)', async () => {

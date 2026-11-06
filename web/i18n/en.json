@@ -360,5 +360,5 @@
   "catalog.state.learning": "Learning",
   "catalog.state.due": "Review due",
   "catalog.state.learned": "Learned",
-  "session.fbLabel": "Kanji in this word"
+  "session.fbLabel": "Breakdown"
 }
