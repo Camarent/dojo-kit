@@ -92,10 +92,8 @@ pub(super) fn has_foreign_script(text: &str, whitelisted_scripts: &HashSet<Strin
 pub(super) fn get_prompt_type_mismatch_data() -> &'static [(&'static str, &'static [ItemType])] {
     &[("write", &[ItemType::Choice, ItemType::Order, ItemType::Match, ItemType::Card]),
       ("type", &[ItemType::Choice, ItemType::Order, ItemType::Match, ItemType::Card]),
-      ("напишите", &[ItemType::Choice, ItemType::Order, ItemType::Match, ItemType::Card]),
       ("choose", &[ItemType::Gap]),
-      ("pick", &[ItemType::Gap]),
-      ("выберите", &[ItemType::Gap]),]
+      ("pick", &[ItemType::Gap]),]
 }
 
 /// Check for prompt type mismatch
@@ -140,10 +138,8 @@ pub(super) fn check_ambiguous_answer(item: &Item, sink: &mut Sink, file: &str, l
             {
                 let prompt_lower = g.prompt.to_lowercase();
                 let has_disambiguation = g.prompt.chars().any(|c| c.is_ascii_digit()) 
-                    || prompt_lower.contains("любой")
                     || prompt_lower.split(|c: char| !c.is_alphanumeric()).any(|w| w == "any")
                     || prompt_lower.contains("one of")
-                    || prompt_lower.contains("или")
                     || modules.iter().flat_map(|m| m.disambiguation_words().iter()).any(|w| prompt_lower.contains(w));
                 if !has_disambiguation {
                     sink.warning("ambiguous_answer", file, line, format!("item '{id}' gap has {} answers but no disambiguation hint in prompt", g.answers.len()));
@@ -154,7 +150,7 @@ pub(super) fn check_ambiguous_answer(item: &Item, sink: &mut Sink, file: &str, l
             // (b) choice options containing "/" outside brackets
             for (idx, opt) in c.options.iter().enumerate() {
                 if has_slash_outside_brackets(opt) {
-                    sink.warning("ambiguous_answer", file, line, format!("item '{id}' choice option[{idx}] has '/' between alternatives: '{opt}'; split into separate options or reword with \"or\"/\"или\" (a '/' inside parentheses is fine)"));
+                    sink.warning("ambiguous_answer", file, line, format!("item '{id}' choice option[{idx}] has '/' between alternatives: '{opt}'; split into separate options or reword with \"or\" (a '/' inside parentheses is fine)"));
                 }
             }
             // (c) two options of one choice item that are equal after normalization
@@ -172,7 +168,7 @@ pub(super) fn check_ambiguous_answer(item: &Item, sink: &mut Sink, file: &str, l
             // (b) multi options containing "/" outside brackets
             for (idx, opt) in m.options.iter().enumerate() {
                 if has_slash_outside_brackets(opt) {
-                    sink.warning("ambiguous_answer", file, line, format!("item '{id}' multi option[{idx}] has '/' between alternatives: '{opt}'; split into separate options or reword with \"or\"/\"или\" (a '/' inside parentheses is fine)"));
+                    sink.warning("ambiguous_answer", file, line, format!("item '{id}' multi option[{idx}] has '/' between alternatives: '{opt}'; split into separate options or reword with \"or\" (a '/' inside parentheses is fine)"));
                 }
             }
             // (c) duplicate options after normalization

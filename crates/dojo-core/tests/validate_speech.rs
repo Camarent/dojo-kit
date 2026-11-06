@@ -88,13 +88,6 @@ fn prompt_type_mismatch_type_on_choice() {
 }
 
 #[test]
-fn prompt_type_mismatch_na_pisite_on_choice() {
-    let l = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"напишите ответ","options":["A","B"],"answer":0}"#;
-    let d = run(COURSE, &[l]);
-    assert!(d.iter().any(|d| d.code == "prompt_type_mismatch"));
-}
-
-#[test]
 fn prompt_type_mismatch_choose_on_gap() {
     let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"Please choose the answer","answers":["A"]}"#;
     let d = run(COURSE, &[l]);
@@ -104,13 +97,6 @@ fn prompt_type_mismatch_choose_on_gap() {
 #[test]
 fn prompt_type_mismatch_pick_on_gap() {
     let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"Please pick the answer","answers":["A"]}"#;
-    let d = run(COURSE, &[l]);
-    assert!(d.iter().any(|d| d.code == "prompt_type_mismatch"));
-}
-
-#[test]
-fn prompt_type_mismatch_vyberite_on_gap() {
-    let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"выберите ответ","answers":["A"]}"#;
     let d = run(COURSE, &[l]);
     assert!(d.iter().any(|d| d.code == "prompt_type_mismatch"));
 }
@@ -162,20 +148,6 @@ fn ambiguous_answer_gap_multiple_with_any_hint() {
 #[test]
 fn ambiguous_answer_gap_multiple_with_one_of_hint() {
     let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is one of the capitals?","answers":["Paris","Roma"]}"#;
-    let d = run(COURSE, &[l]);
-    assert!(!d.iter().any(|d| d.code == "ambiguous_answer"));
-}
-
-#[test]
-fn ambiguous_answer_gap_multiple_with_lyuboy_hint() {
-    let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"Назовите любой столицу","answers":["Paris","Roma"]}"#;
-    let d = run(COURSE, &[l]);
-    assert!(!d.iter().any(|d| d.code == "ambiguous_answer"));
-}
-
-#[test]
-fn ambiguous_answer_gap_multiple_with_ili_hint() {
-    let l = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"Paris или Roma?","answers":["Paris","Roma"]}"#;
     let d = run(COURSE, &[l]);
     assert!(!d.iter().any(|d| d.code == "ambiguous_answer"));
 }
