@@ -14,10 +14,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 - [tests](modules/tests.md) - golden vectors, vector generator, WASM smoke test, wrapper end-to-end script.
 - [prompts](modules/prompts.md) - copy-paste prompts for AI assistants (build, add content, review, chat-only).
 - [examples](modules/examples.md) - sample courses.
-- [modules](modules/modules.md) - optional language modules `ja` and `ru` (validator crates, browser scripts, manifests) and the `modules/registry` crate.
-- [module-system](modules/module-system.md) - how a course enables modules (`modules/<id>/module.json`, registry, validator trait, module rules).
-- [module-ja](modules/module-ja.md) - the `ja` module: ruby markup and checks, readings, kanji breakdown.
-- [module-ru](modules/module-ru.md) - the `ru` module: validator trigger and disambiguation words.
+- [modules](modules/modules.md) - optional language modules `ja` (ruby markup and checks, readings, kanji breakdown) and `ru` (validator words), module system (`modules/<id>/module.json`, `modules/registry`, validator trait, `module_missing`/`module_key_unlisted` rules), and the `modules/registry` crate.
 - [scripts](modules/scripts.md) - `scripts/build-wasm.sh`, check chain (`check-all.sh`), `ci.sh` (local CI mirror), `validate-examples.sh`.
 - [workspace](modules/workspace.md) - gitignored folder for local courses.
 

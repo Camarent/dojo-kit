@@ -6,7 +6,7 @@ summary: Rust workspace - dojo-core (pure logic), dojo-cli (the dojo binary), do
 
 Three crates: `crates/dojo-core`, `crates/dojo-cli`, `crates/dojo-wasm`. Sections below follow that order.
 
-Optional module validator crates live outside this workspace list at `modules/<id>/rust` (`ja`, `ru`), reached through `modules/registry`; the CLI loads `modules/<id>/module.json`. See [module-system.md](module-system.md).
+Optional module validator crates at `modules/<id>/rust` (`ja`, `ru`) are workspace members (`Cargo.toml:3`), reached through `modules/registry`; the CLI loads `modules/<id>/module.json`. See [modules.md](modules.md).
 
 ## crates/dojo-core
 
