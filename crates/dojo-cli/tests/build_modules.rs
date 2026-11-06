@@ -219,7 +219,7 @@ fn ja_module_ships_its_web_files_in_order_only_when_listed() -> Res {
     course_with(&e, "en", &[])?;
     let plain = build_html(&e, &e.root.join("dist-plain"))?;
     assert!(markers.iter().all(|m| !plain.contains(m)), "course without ja ships no ja script");
-    assert!(!plain.contains(".kanji-row-grid"), "course without ja ships no ja style");
+    assert!(!plain.contains(".fb-row-grid"), "course without ja ships no ja style");
     course_with(&e, "en", &["ja"])?;
     let html = build_html(&e, &e.root.join("dist"))?;
     let mut last = html.find("var CORE=1;").ok_or("core missing")?;
@@ -228,6 +228,6 @@ fn ja_module_ships_its_web_files_in_order_only_when_listed() -> Res {
         assert!(last < at, "{m} out of order");
         last = at;
     }
-    assert!(html.contains(".kanji-row-grid"), "ja.css shipped");
+    assert!(html.contains(".fb-row-grid"), "ja.css shipped");
     Ok(())
 }
