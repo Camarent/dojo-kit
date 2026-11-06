@@ -2,7 +2,7 @@
 // Mutation coverage: ignore dictKeys -> custom dictKeys test fails.
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('./ja-ext.js');
+const Ext = require('./harness.js').jaExt;
 
 const itemsWithWords = [
   { id: 'a', meta: { examples: [{ w: '日本', r: 'にほん' }], irregular: [{ w: '日本語', r: 'にほんご' }], words: [{ w: '学生', r: 'がくせい' }] } },

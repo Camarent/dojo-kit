@@ -1,5 +1,5 @@
 'use strict';
-// Setup copied from web/tests/ruby-unlearned.test.js
+// Setup copied from modules/ja/tests/ruby-unlearned.test.js
 const test = require('node:test');
 const assert = require('node:assert');
 const Ext = require('./ja-ext.js');

@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('./ja-ext.js');
+const Ext = require('./harness.js').jaExt;
 
 test.beforeEach(() => { Ext.reset(); Ext.use('ruby'); });
 

@@ -2,7 +2,7 @@
 // Mutation coverage: removing the `seen[c]` dedupe check turns 'duplicate kanji deduped' red.
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('./ja-ext.js');
+const Ext = require('./harness.js').jaExt;
 
 test.beforeEach(() => { Ext.reset(); Ext.use('ruby'); });
 

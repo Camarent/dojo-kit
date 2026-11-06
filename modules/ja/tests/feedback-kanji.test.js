@@ -2,7 +2,7 @@
 // Mutation coverage: remove the kanjiRows call from renderFeedback -> every test fails.
 const test = require('node:test');
 const assert = require('node:assert');
-const H = require('./app-harness.js');
+const H = require('./harness.js').appHarness;
 
 const kanji = (id, prompt, extra) => Object.assign({ id, unit: 'u1', type: 'card', prompt, back: prompt, tags: ['t1'], meta: { kanji: id, en: prompt + '-mean' } }, extra);
 const word = (id, prompt, extra) => Object.assign({ id, unit: 'u1', type: 'gap', prompt, answers: [prompt], tags: ['t1'], meta: {} }, extra);

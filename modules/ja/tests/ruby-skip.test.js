@@ -3,7 +3,7 @@
 // drop rubySkip = null in reset -> 'reset clears the skip set' fails.
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('./ja-ext.js');
+const Ext = require('./harness.js').jaExt;
 
 const items = [
   { id: 'a', tags: ['core'], meta: { kanji: '甲' } },

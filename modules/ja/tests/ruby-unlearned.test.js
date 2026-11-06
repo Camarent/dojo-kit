@@ -2,7 +2,7 @@
 // Mutation coverage: restricting annotation to opts.all or ignoring opts.annotate turns the first two tests red.
 const test = require('node:test');
 const assert = require('node:assert');
-const Ext = require('./ja-ext.js');
+const Ext = require('./harness.js').jaExt;
 
 const items = [
   { id: 'k1', tags: ['band1'], meta: { kanji: '日本語' } },

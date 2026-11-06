@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 require('node:path');
-const { loadBundle } = require('./load-bundle.js');
+const { loadBundle } = require('./harness.js');
 
 function load() {
   const sb = { console };

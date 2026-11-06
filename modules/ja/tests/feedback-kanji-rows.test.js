@@ -2,7 +2,7 @@
 // Mutation coverage: temporarily making kanjiRows return null should make cases 1 and 4 fail.
 const test = require('node:test');
 const assert = require('node:assert');
-const H = require('./app-harness.js');
+const H = require('./harness.js').appHarness;
 
 const kanji = (id, prompt, metaExtra) => {
   const base = { id, unit: 'u1', type: 'card', prompt, back: prompt, tags: ['t1'], meta: { kanji: id, en: prompt + '-mean' } };
@@ -72,7 +72,7 @@ test('kanji-rows: gap item with 日本 prompt shows 2 rows with readings in sepa
   }
 });
 
-test('kanji-rows: single-kanji prompt shows no rows', { todo: 'app renders rows for a single-kanji prompt; spec says none' }, async () => {
+test('kanji-rows: single-kanji prompt shows no rows', async () => {
   const items = [
     word('w-日', '日'),
     kanji('日', '日', { on: ['ニチ'], kun: ['ひ'] })
