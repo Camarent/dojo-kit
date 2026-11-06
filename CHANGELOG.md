@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-06
+
+Optional language packs and logic modules (ja, ru); dojo-kit core is English only. Items below.
+
 - feat(validate): validator modules (`ValidatorModule`, `modules/registry`); `dojo schema --brief` lists module codes; new codes `module_missing`, `module_key_unlisted`
 - docs(modules): course.json `modules`, `web/i18n/packs.json` language packs, missing-module error; AUTHORING, CONTRACT section 13, AGENTS section 9a
 
