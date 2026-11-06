@@ -5,6 +5,20 @@ use std::path::Path;
 use crate::build;
 use crate::cmd::build::{failed, fatal, Step, Stop};
 use crate::course_files::{plugin_files, read};
+use crate::modules;
+
+/// Module ids listed in `course.json` `modules`; the field is optional.
+fn course_module_ids(course: &serde_json::Value) -> Result<Vec<String>, String> {
+    let Some(value) = course.get("modules") else { return Ok(Vec::new()) };
+    let arr = value.as_array().ok_or_else(|| "course.json: \"modules\" must be an array of strings".to_string())?;
+    arr.iter()
+        .map(|v| v.as_str().map(str::to_string).ok_or_else(|| "course.json: \"modules\" must be an array of strings".to_string()))
+        .collect()
+}
+
+fn read_all(paths: &[std::path::PathBuf]) -> Result<Vec<String>, String> {
+    paths.iter().map(|p| read(p)).collect()
+}
 
 fn string_list(bundle: &serde_json::Value, key: &str) -> Result<Vec<String>, String> {
     let arr = bundle.get(key).and_then(|v| v.as_array()).ok_or_else(|| format!("bundle.json: \"{key}\" must be an array of strings"))?;
@@ -44,10 +58,28 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
         return Err(Stop::Fail("bundle.json: scripts has no \"@course\" marker but the course declares plugin scripts".to_string()));
     }
 
+    let course_modules = fatal(course_module_ids(course_json))?;
+    let resolved = failed(modules::resolve(web, &lang, &course_modules))?;
+    let module_scripts = failed(read_all(&failed(modules::web_paths(web, &resolved, |w| w.scripts.as_slice()))?))?;
+    let module_styles = failed(read_all(&failed(modules::web_paths(web, &resolved, |w| w.styles.as_slice()))?))?;
+    if !module_scripts.is_empty() && !scripts.iter().any(|r| r == "@modules") {
+        return Err(Stop::Fail("bundle.json: scripts has no \"@modules\" marker but the course lists modules with scripts".to_string()));
+    }
+    if !module_styles.is_empty() && !styles.iter().any(|r| r == "@modules") {
+        return Err(Stop::Fail("bundle.json: styles has no \"@modules\" marker but the course lists modules with styles".to_string()));
+    }
+
     let mut script_html = String::new();
     for rel in &scripts {
         if rel == "@course" {
             for t in &plugin_scripts {
+                script_html.push_str(&build::script_tag(t));
+                script_html.push('\n');
+            }
+            continue;
+        }
+        if rel == "@modules" {
+            for t in &module_scripts {
                 script_html.push_str(&build::script_tag(t));
                 script_html.push('\n');
             }
@@ -60,6 +92,13 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
     let mut css = String::new();
     for rel in &styles {
         if rel == "@course" {
+            continue;
+        }
+        if rel == "@modules" {
+            for t in &module_styles {
+                css.push_str(t);
+                css.push('\n');
+            }
             continue;
         }
         css.push_str(&failed(read_listed(web, rel))?);

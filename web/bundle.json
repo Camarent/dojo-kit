@@ -39,6 +39,7 @@
     "types/order.js",
     "types/cloze.js",
     "types/numeric.js",
+    "@modules",
     "@course",
     "ui/i18n.js",
     "ui/play-button.js",
@@ -79,6 +80,7 @@
     "styles/types-order.css",
     "styles/types-cloze.css",
     "styles/types-numeric.css",
+    "@modules",
     "@course"
   ],
   "i18n": [

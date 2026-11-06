@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fs;
-use std::path::{Component, Path};
+use std::path::{Component, Path, PathBuf};
 
 const MANIFEST_VERSION: u32 = 1;
 
@@ -53,10 +53,7 @@ struct Pack {
 /// Effective module set for a course and UI language, dependencies first, then id ascending.
 /// `web_dir` is the `web/` directory; modules live in its sibling `modules/`.
 pub(crate) fn resolve(web_dir: &Path, lang: &str, course_modules: &[String]) -> Result<Vec<Manifest>, String> {
-    let root = web_dir
-        .parent()
-        .ok_or_else(|| format!("cannot find the modules directory next to {}", web_dir.display()))?;
-    let modules_dir = root.join("modules");
+    let modules_dir = modules_dir(web_dir)?;
 
     let mut queue: VecDeque<(String, String)> = VecDeque::new();
     queue.extend(course_modules.iter().map(|id| (id.clone(), "listed in course.json modules".to_string())));
@@ -81,6 +78,24 @@ pub(crate) fn resolve(web_dir: &Path, lang: &str, course_modules: &[String]) -> 
         }
     }
     Ok(out)
+}
+
+/// Web files a resolved set lists (picked by `pick`: `web.scripts` or `web.styles`), in set order.
+/// Each path is `modules/<id>/<rel>`, next to `web_dir`.
+pub(crate) fn web_paths(web_dir: &Path, modules: &[Manifest], pick: fn(&Web) -> &[String]) -> Result<Vec<PathBuf>, String> {
+    let dir = modules_dir(web_dir)?;
+    Ok(modules
+        .iter()
+        .filter_map(|m| m.web.as_ref().map(|w| (m, w)))
+        .flat_map(|(m, w)| pick(w).iter().map(|rel| dir.join(&m.id).join(rel)))
+        .collect())
+}
+
+fn modules_dir(web_dir: &Path) -> Result<PathBuf, String> {
+    let root = web_dir
+        .parent()
+        .ok_or_else(|| format!("cannot find the modules directory next to {}", web_dir.display()))?;
+    Ok(root.join("modules"))
 }
 
 /// Topological order; among modules whose requirements are all placed, the smallest id goes first.
