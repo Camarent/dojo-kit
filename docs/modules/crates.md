@@ -6,6 +6,8 @@ summary: Rust workspace - dojo-core (pure logic), dojo-cli (the dojo binary), do
 
 Three crates: `crates/dojo-core`, `crates/dojo-cli`, `crates/dojo-wasm`. Sections below follow that order.
 
+Optional module validator crates live outside this workspace list at `modules/<id>/rust` (`ja`, `ru`), reached through `modules/registry`; the CLI loads `modules/<id>/module.json`. See [module-system.md](module-system.md).
+
 ## crates/dojo-core
 
 `learnedStage` (course.json, integer >= 1) is typed here and validated (`bad_learned_stage`); core reads it in the groups logic: `group_counts` (`crates/dojo-core/src/groups/counts.rs`) applies `DEFAULT_LEARNED_STAGE` = 4 when unset; `entity_stats` takes the stage as a parameter. The browser clamps the unit threshold to the unit ladder's last index in `web/session/overrides.js` (`getUnitThreshold`).

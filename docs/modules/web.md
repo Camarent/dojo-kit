@@ -23,6 +23,7 @@ The home screen shows segmented progress bars (new/learning/learned) for each un
 Single-page app that runs a course in the browser. Grading, scheduling, merge and sampling are not done here; they are delegated to WASM through `DojoWasm`. The app renders, navigates, stores progress and looks up translations.
 
 ## Public surface
+- Optional module browser code lives in `modules/<id>/web/` (`ja`: `modules/ja/web/*.js`, `modules/ja/web/ja.css`); the module manifest `modules/<id>/module.json` lists it under `web`. See [module-system.md](module-system.md).
 - `web/boot.js` - IIFE that loads WASM (`DojoWasm.load(window.__DOJO_WASM__)`) and `data/content.json`, then calls `DojoApp.start`. Errors go to `DojoApp.fail`.
 - `web/dojo-wasm.js` `DojoWasm.load(source) -> Promise<{call(name, args)}>`; `call` is the JSON ABI of `crates/dojo-core/src/api/`. Exports `DojoError`.
 - `web/migrate.js` `DojoMigrate.create({dojo, items}) -> function(doc) -> doc|null` (null = nothing folded; it keeps items with `supersedes` or `status === 'retired'`, so for a course with retired items `migrateProgress` runs on every commit and load; no WASM call only when there are no such items; a refusal or WASM error warns once and disables it). Wired as `store` option `migrate` (`web/ui/app.js`, `web/storage/store.js`): applied after merge in commit (`web/storage/store.js`) and on load (`web/storage/store.js`); a load that folds nothing writes nothing. `web/migrate.js` is listed before storage in `web/bundle.json`.
