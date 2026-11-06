@@ -360,5 +360,5 @@
   "catalog.state.learning": "En apprentissage",
   "catalog.state.due": "À réviser",
   "catalog.state.learned": "Acquis",
-  "session.kanji": "Kanji de ce mot"
+  "session.fbLabel": "Kanji de ce mot"
 }

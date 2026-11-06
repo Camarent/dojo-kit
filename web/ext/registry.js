@@ -46,17 +46,34 @@
     S.rankFn = fn;
   }
 
-  // fn(item, ctx) returns an array of feedback rows ({ kanji, meaning, on, kun }) or null.
+  // fn(item, ctx) returns an array of feedback rows ({ ch, meaning, on, kun }) or null.
   // opts.fallback: a module default, used when the plugin hook is absent or yields null; reset() keeps it.
+  // opts.aliases: { field: [legacyName, ...] } legacy row field names read when the canonical field is absent
+  // (applies to every hook's rows; module-level, kept by reset()).
   var fallbackRowsFn = null;
+  var rowAliases = {};
   function registerFeedbackRows(fn, opts) {
     if (typeof fn !== 'function') throw new Error('DojoExt.registerFeedbackRows: function required');
+    if (opts && opts.aliases) Object.keys(opts.aliases).forEach(function (k) { rowAliases[k] = [].concat(opts.aliases[k]); });
     if (opts && opts.fallback) fallbackRowsFn = fn;
     else S.feedbackRowsFn = fn;
   }
 
+  function applyAliases(row) {
+    if (!row || typeof row !== 'object') return row;
+    var out = row;
+    Object.keys(rowAliases).forEach(function (field) {
+      if (out[field] !== undefined) return;
+      for (var i = 0; i < rowAliases[field].length; i++) {
+        var v = row[rowAliases[field][i]];
+        if (v !== undefined) { if (out === row) out = Object.assign({}, row); out[field] = v; return; }
+      }
+    });
+    return out;
+  }
+
   function guardedRows(fn, item, ctx) {
-    try { var r = fn(item, ctx); return Array.isArray(r) ? r : null; }
+    try { var r = fn(item, ctx); return Array.isArray(r) ? r.map(applyAliases) : null; }
     catch (e) { warn('feedbackRows failed', e); return null; }
   }
 

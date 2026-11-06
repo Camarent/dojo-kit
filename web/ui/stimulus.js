@@ -1,7 +1,7 @@
 /*
- * ui/stimulus.js — Stimulus, kanjiRows and small format helpers
+ * ui/stimulus.js — Stimulus, fbRows and small format helpers
  * Globals expected: preact, htm, DojoCommon, DojoExt, optional DojoSession.
- * create() returns { itemLabel(item, stimulus, dupes), dupeSet(prompts), Stimulus, kanjiRows, tagInfo, captionFor, fmtClock, percent, uniqueSorted, toggle, localDay }.
+ * create() returns { itemLabel(item, stimulus, dupes), dupeSet(prompts), Stimulus, fbRows, tagInfo, captionFor, fmtClock, percent, uniqueSorted, toggle, localDay }.
  */
 (function (root) {
   'use strict';
@@ -102,34 +102,34 @@
     return Array.isArray(list) && list.length > 0 ? list.join(' / ') : null;
   }
 
-  function kanjiRow(k) {
+  function fbRow(k) {
     var onRead = readingText(k.on);
     var kunRead = readingText(k.kun);
-    return html`<li class="kanji-row-grid" data-testid="kanji-row">
-      <span class="glyph-ch" data-testid="kanji-ch">${k.kanji}</span>
-      <span class="kanji-mean" data-testid="kanji-mean">${k.meaning}</span>
-      ${onRead || kunRead ? html`<span class="kanji-read muted" data-testid="kanji-read">
-        ${onRead ? html`<span data-testid="kanji-on">${onRead}</span>` : null}
+    return html`<li class="fb-row-grid" data-testid="fb-row">
+      <span class="glyph-ch" data-testid="fb-ch">${k.ch}</span>
+      <span class="fb-mean" data-testid="fb-mean">${k.meaning}</span>
+      ${onRead || kunRead ? html`<span class="fb-read muted" data-testid="fb-read">
+        ${onRead ? html`<span data-testid="fb-on">${onRead}</span>` : null}
         ${onRead && kunRead ? ' / ' : ''}
-        ${kunRead ? html`<span data-testid="kanji-kun">${kunRead}</span>` : null}
+        ${kunRead ? html`<span data-testid="fb-kun">${kunRead}</span>` : null}
       </span>` : null}
     </li>`;
   }
 
-  // Rows from DojoExt.registerFeedbackRows (a course plugin, else a module fallback such as ja kanji rows).
+  // Rows from DojoExt.registerFeedbackRows (a course plugin, else a module fallback such as the ja breakdown).
   function feedbackRowsFor(p, s, examMode) {
     var item = s.cur && s.cur.item;
     if (!item || !s.result || !DojoExt.feedbackRows) return null;
     return DojoExt.feedbackRows(item, { examMode: !!examMode, items: p.content ? p.content.items : undefined, course: p.course });
   }
 
-  function kanjiRows(p, s, examMode) {
+  function fbRows(p, s, examMode) {
     var breakdown = feedbackRowsFor(p, s, examMode);
     if (!breakdown || !breakdown.length) return null;
     var t = p.t;
-    return html`<ul class="kanji-rows" data-testid="kanji-rows">
-      <li class="muted" data-testid="kanji-label">${t('session.kanji')}</li>
-      ${breakdown.map(kanjiRow)}
+    return html`<ul class="fb-rows" data-testid="fb-rows">
+      <li class="muted" data-testid="fb-label">${t('session.fbLabel')}</li>
+      ${breakdown.map(fbRow)}
     </ul>`;
   }
 
@@ -151,7 +151,7 @@
   }
 
   function create() {
-    return { itemLabel: itemLabel, dupeSet: dupeSet, Stimulus: Stimulus, kanjiRows: kanjiRows, tagInfo: tagInfo, captionFor: captionFor, fmtClock: fmtClock, percent: percent, uniqueSorted: uniqueSorted, toggle: toggle, localDay: localDay };
+    return { itemLabel: itemLabel, dupeSet: dupeSet, Stimulus: Stimulus, fbRows: fbRows, tagInfo: tagInfo, captionFor: captionFor, fmtClock: fmtClock, percent: percent, uniqueSorted: uniqueSorted, toggle: toggle, localDay: localDay };
   }
 
   var api = { create: create, hasPlayableSource: hasPlayableSource };

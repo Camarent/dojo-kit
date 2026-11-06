@@ -1,7 +1,7 @@
 /*
  * ui/placement.js — PracticeSetup, PlacementScreen, PlacementSession components
  * Globals expected: preact, htm, DojoTypes, DojoCommon.
- * create(deps) takes { uniqueSorted, tagInfo, toggle, Stimulus, kanjiRows } and returns { PracticeSetup, PlacementScreen, PlacementSession }.
+ * create(deps) takes { uniqueSorted, tagInfo, toggle, Stimulus, fbRows } and returns { PracticeSetup, PlacementScreen, PlacementSession }.
  */
 (function (root) {
   'use strict';
@@ -304,7 +304,7 @@
   }
 
   function create(deps) {
-    var shared = DojoSessionScreen.createShared({ kanjiRows: deps.kanjiRows, tagInfo: deps.tagInfo });
+    var shared = DojoSessionScreen.createShared({ fbRows: deps.fbRows, tagInfo: deps.tagInfo });
     var Session = bind(PlacementSession, deps);
     Session.prototype.submit = shared.answer;
     ['dontKnowAnswer', 'audioProps', 'renderDontKnow', 'feedbackDetail', 'renderFeedback'].forEach(function (k) { Session.prototype[k] = shared[k]; });

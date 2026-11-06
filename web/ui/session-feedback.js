@@ -1,7 +1,7 @@
 /*
  * ui/session-feedback.js — answer, don't-know, override and feedback-panel methods shared by SessionScreen and PlacementSession.
  * Globals expected: preact, htm, DojoTypes, DojoExt, DojoSpeech, DojoCommon, DojoDetail.
- * createShared({ kanjiRows, tagInfo }) returns the method table; `this` is the host component.
+ * createShared({ fbRows, tagInfo }) returns the method table; `this` is the host component.
  */
 (function (root) {
   'use strict';
@@ -100,7 +100,7 @@
   }
 
   function createShared(deps) {
-    var kanjiRows = deps.kanjiRows;
+    var fbRows = deps.fbRows;
     var tagInfo = deps.tagInfo;
     return {
     answer: answer,
@@ -120,7 +120,7 @@
       if (res && exam) {
         body = html`<p class="muted" data-testid="recorded">${t('session.recorded')}</p>`;
       } else if (res) {
-        body = resultBody(this, p, s, kanjiRows);
+        body = resultBody(this, p, s, fbRows);
       } else if (s.retry) {
         body = html`<div class="feedback retry" data-testid="feedback-retry" role="status"><b>${t('session.retry')}</b> <span data-testid="retry-message">${t('session.retry.message')}</span></div>`;
       }
@@ -188,7 +188,7 @@
     return html`<button type="button" class="btn" data-testid="btn-override" onClick=${function () { host.overrideAnswer(); }}>${p.t('session.override')}</button>`;
   }
 
-  function resultBody(host, p, s, kanjiRows) {
+  function resultBody(host, p, s, fbRows) {
     var t = p.t;
     var res = s.result;
     var def = DojoTypes.get(s.cur.item.type) || {};
@@ -200,7 +200,7 @@
         ${def.Extra ? h(def.Extra, { result: res, t: t, raw: s.qstate && s.qstate.text }) : null}
         ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}
         ${host.feedbackDetail(p, s)}
-        ${kanjiRows(p, s, host.isExamMode())}
+        ${fbRows(p, s, host.isExamMode())}
         ${overrideButton(host, p, s)}
         ${flagButton(host, p, s)}
       </div>`;

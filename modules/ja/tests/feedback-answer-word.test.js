@@ -48,7 +48,7 @@ test('answer and explanation words get ruby although all kanji are band1', async
 
 test('kanji rows list each kanji of the answer word with its main meaning', async () => {
   const v = await fb();
-  const rows = H.findAll(v, /^kanji-row$/).map((r) => H.text(r));
+  const rows = H.findAll(v, /^fb-row$/).map((r) => H.text(r));
   assert.ok(rows.some((r) => r.includes('二') && r.includes('два')), rows.join('|'));
   assert.ok(rows.some((r) => r.includes('月') && r.includes('месяц; луна')), rows.join('|'));
   assert.ok(rows.some((r) => r.includes('雪') && r.includes('снег')), rows.join('|'));

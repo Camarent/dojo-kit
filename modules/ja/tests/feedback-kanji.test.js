@@ -29,14 +29,14 @@ test('content has kanji items and a word item shows 2 rows with meanings', async
   const { scr } = await start();
   scr.answer({ text: 'wrong' });
   
-  const fb = H.find(scr.view(), 'kanji-rows');
+  const fb = H.find(scr.view(), 'fb-rows');
   assert.ok(fb, 'kanji-rows should be present');
   
-  const label = H.find(scr.view(), 'kanji-label');
+  const label = H.find(scr.view(), 'fb-label');
   assert.ok(label, 'kanji-label should be present');
   assert.ok(/Kanji in this word/.test(H.text(label)), 'Label text should match');
   
-  const rows = H.findAll(scr.view(), /^kanji-row$/);
+  const rows = H.findAll(scr.view(), /^fb-row$/);
   assert.strictEqual(rows.length, 2, 'Should have 2 kanji rows');
   
   const fullText = H.text(fb);
@@ -57,7 +57,7 @@ test('a kanji without an item in the course is absent from the rows', async () =
   const { scr } = await start({ items });
   scr.answer({ text: 'wrong' });
   
-  const fb = H.find(scr.view(), 'kanji-rows');
+  const fb = H.find(scr.view(), 'fb-rows');
   assert.ok(fb, 'kanji-rows should be present');
   
   const fullText = H.text(fb);
@@ -78,7 +78,7 @@ test('exam mode shows no rows', async () => {
     m.app.startMode('exam', {});
     const scr = m.screen(m.sb.DojoApp._SessionScreen);
     scr.answer({ text });
-    assert.strictEqual(H.find(scr.view(), 'kanji-rows'), null, 'kanji-rows should not be present in exam mode (' + text + ')');
+    assert.strictEqual(H.find(scr.view(), 'fb-rows'), null, 'kanji-rows should not be present in exam mode (' + text + ')');
   }
 });
 
@@ -89,7 +89,7 @@ test('a kanji item itself shows no rows', async () => {
   const { scr } = await start({ items });
   scr.answer({ text: 'wrong' });
   
-  const fb = H.find(scr.view(), 'kanji-rows');
+  const fb = H.find(scr.view(), 'fb-rows');
   assert.strictEqual(fb, null, 'kanji-rows should not be present for a kanji item itself');
 });
 
@@ -97,10 +97,10 @@ test('correct answer shows kanji rows too', async () => {
   const { scr } = await start();
   scr.answer({ text: '学校' });
   
-  const fb = H.find(scr.view(), 'kanji-rows');
+  const fb = H.find(scr.view(), 'fb-rows');
   assert.ok(fb, 'kanji-rows should be present for correct answers');
   
-  const rows = H.findAll(scr.view(), /^kanji-row$/);
+  const rows = H.findAll(scr.view(), /^fb-row$/);
   assert.strictEqual(rows.length, 2, 'Should have 2 kanji rows for correct answer');
   
   const fullText = H.text(fb);
@@ -118,7 +118,7 @@ test('empty kun reading should not show trailing slash', async () => {
   const { scr } = await start({ items, course: course });
   scr.answer({ text: 'wrong' });
   
-  const fb = H.find(scr.view(), 'kanji-rows');
+  const fb = H.find(scr.view(), 'fb-rows');
   assert.ok(fb, 'kanji-rows should be present');
   
   const fullText = H.text(fb);
@@ -135,13 +135,13 @@ test('both on and kun present should show on / kun structure in separate element
   const { scr } = await start({ items, course: course });
   scr.answer({ text: 'wrong' });
   
-  const readEl = H.find(scr.view(), 'kanji-read');
+  const readEl = H.find(scr.view(), 'fb-read');
   assert.ok(readEl, 'kanji-read element should be present');
   
-  const onEl = H.find(scr.view(), 'kanji-on');
+  const onEl = H.find(scr.view(), 'fb-on');
   assert.ok(onEl, 'kanji-on element should be present');
   
-  const kunEl = H.find(scr.view(), 'kanji-kun');
+  const kunEl = H.find(scr.view(), 'fb-kun');
   assert.ok(kunEl, 'kanji-kun element should be present');
   
   const readText = H.text(readEl);
@@ -150,5 +150,5 @@ test('both on and kun present should show on / kun structure in separate element
 
 test('no kanji rows before the answer', async () => {
   const { scr } = await start();
-  assert.strictEqual(H.find(scr.view(), 'kanji-rows'), null);
+  assert.strictEqual(H.find(scr.view(), 'fb-rows'), null);
 });
