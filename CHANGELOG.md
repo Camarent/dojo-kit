@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-11-07
+
+- test(dojo-kit): remove temp dirs created by tests and add leak guard
+
 ## [0.3.2] - 2026-11-07
 
 - feat(i18n): optional ru/fr/ja language packs, English-only core bundle

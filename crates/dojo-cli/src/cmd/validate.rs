@@ -229,11 +229,21 @@ mod tests {
     static SCRIPT_LOCK: Mutex<()> = Mutex::new(());
     use std::os::unix::fs::PermissionsExt;
 
+    /// Removes the scratch tree on drop, also when the test panics.
+    struct Cleanup(std::path::PathBuf);
+
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
     #[test]
     fn script_over_timeout_is_killed_and_reported_as_check_failed() {
         let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-timeout-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
+        let _cleanup = Cleanup(dir.clone());
         fs::create_dir_all(&dir).unwrap();
         let script = dir.join("slow.sh");
         fs::write(&script, "#!/bin/sh\nexec sleep 30\n").unwrap();
@@ -251,6 +261,7 @@ mod tests {
         let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let base = std::env::temp_dir().join(format!("dojo-check-symlink-{}", std::process::id()));
         let _ = fs::remove_dir_all(&base);
+        let _cleanup = Cleanup(base.clone());
         let (dir, outside) = (base.join("course"), base.join("outside"));
         fs::create_dir_all(&dir).unwrap();
         fs::create_dir_all(&outside).unwrap();
@@ -271,6 +282,7 @@ mod tests {
         let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-grandchild-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
+        let _cleanup = Cleanup(dir.clone());
         fs::create_dir_all(&dir).unwrap();
         let script = dir.join("bg.sh");
         fs::write(&script, "#!/bin/sh\nsleep 5 &\n").unwrap();
@@ -288,6 +300,7 @@ mod tests {
         let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-group-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
+        let _cleanup = Cleanup(dir.clone());
         fs::create_dir_all(&dir).unwrap();
         let script = dir.join("tree.sh");
         fs::write(&script, "#!/bin/sh\n(sleep 1; touch \"$1/late\") &\nsleep 30\n").unwrap();
@@ -307,6 +320,7 @@ mod tests {
         let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-cap-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
+        let _cleanup = Cleanup(dir.clone());
         fs::create_dir_all(&dir).unwrap();
         let script = dir.join("big.sh");
         fs::write(&script, "#!/bin/sh\nyes x | head -c 17000000\n").unwrap();
@@ -324,6 +338,7 @@ mod tests {
         let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-stderr-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
+        let _cleanup = Cleanup(dir.clone());
         fs::create_dir_all(&dir).unwrap();
         let script = dir.join("err.sh");
         fs::write(&script, "#!/bin/sh\nhead -c 5000 /dev/zero | tr '\\0' a >&2\necho END >&2\nexit 3\n").unwrap();
@@ -342,6 +357,7 @@ mod tests {
         let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let dir = std::env::temp_dir().join(format!("dojo-check-nochecks-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
+        let _cleanup = Cleanup(dir.clone());
         fs::create_dir_all(dir.join("content")).unwrap();
         fs::write(dir.join("course.json"), r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"}],"checks":[{"id":"c1","script":"ok.sh"}]}"#).unwrap();
         let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/checks/content/u.jsonl");

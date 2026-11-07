@@ -263,14 +263,23 @@ mod plugin_files_tests {
     use std::os::unix::fs as unix_fs;
     use std::path::PathBuf;
 
-    fn setup(tag: &str) -> (PathBuf, PathBuf) {
+    /// Removes the scratch tree on drop, also when the test panics.
+    struct Cleanup(PathBuf);
+
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn setup(tag: &str) -> (Cleanup, PathBuf, PathBuf) {
         let base = std::env::temp_dir().join(format!("dojo-pf-{tag}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&base);
         let root = base.join("course");
         let outside = base.join("outside");
         fs::create_dir_all(&root).unwrap();
         fs::create_dir_all(&outside).unwrap();
-        (fs::canonicalize(&root).unwrap(), fs::canonicalize(&outside).unwrap())
+        (Cleanup(base), fs::canonicalize(&root).unwrap(), fs::canonicalize(&outside).unwrap())
     }
 
     fn course(path: &str) -> serde_json::Value {
@@ -279,14 +288,14 @@ mod plugin_files_tests {
 
     #[test]
     fn plugin_files_reads_regular_file_inside_root() {
-        let (root, _) = setup("ok");
+        let (_clean, root, _) = setup("ok");
         fs::write(root.join("a.js"), "A").unwrap();
         assert_eq!(plugin_files(&root, &course("a.js"), "scripts").unwrap(), vec!["A".to_string()]);
     }
 
     #[test]
     fn plugin_files_rejects_dotdot_escape() {
-        let (root, outside) = setup("dotdot");
+        let (_clean, root, outside) = setup("dotdot");
         fs::write(outside.join("o.js"), "O").unwrap();
         let err = plugin_files(&root, &course("../outside/o.js"), "scripts").unwrap_err();
         assert!(err.contains("outside the course folder"), "{err}");
@@ -294,7 +303,7 @@ mod plugin_files_tests {
 
     #[test]
     fn plugin_files_rejects_symlinked_directory_pointing_outside() {
-        let (root, outside) = setup("dirlink");
+        let (_clean, root, outside) = setup("dirlink");
         fs::write(outside.join("o.js"), "O").unwrap();
         unix_fs::symlink(&outside, root.join("sub")).unwrap();
         let err = plugin_files(&root, &course("sub/o.js"), "scripts").unwrap_err();
@@ -303,7 +312,7 @@ mod plugin_files_tests {
 
     #[test]
     fn plugin_files_rejects_symlink_file_even_when_target_is_inside_root() {
-        let (root, _) = setup("filelink");
+        let (_clean, root, _) = setup("filelink");
         fs::write(root.join("real.js"), "R").unwrap();
         unix_fs::symlink(root.join("real.js"), root.join("link.js")).unwrap();
         let err = plugin_files(&root, &course("link.js"), "scripts").unwrap_err();

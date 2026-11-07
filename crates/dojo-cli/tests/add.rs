@@ -1,3 +1,6 @@
+mod common;
+
+use common::TempDir;
 use dojo_core::content::parse_items;
 use std::fs;
 use std::io::{self, Write};
@@ -10,14 +13,6 @@ fn dojo() -> Command {
 
 fn demo() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/demo")
-}
-
-fn unique_dir(tag: &str) -> io::Result<PathBuf> {
-    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!("dojo-cli-{tag}-{}-{}", std::process::id(), N.fetch_add(1, std::sync::atomic::Ordering::SeqCst)));
-    let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(&dir)?;
-    Ok(dir)
 }
 
 fn copy_dir(from: &Path, to: &Path) -> io::Result<()> {
@@ -34,8 +29,8 @@ fn copy_dir(from: &Path, to: &Path) -> io::Result<()> {
     Ok(())
 }
 
-fn course(tag: &str) -> io::Result<PathBuf> {
-    let dir = unique_dir(tag)?;
+fn course(tag: &str) -> io::Result<TempDir> {
+    let dir = TempDir::new(&format!("dojo-cli-{tag}"))?;
     copy_dir(&demo(), &dir)?;
     Ok(dir)
 }
@@ -301,7 +296,7 @@ fn usage_and_io_errors_exit_2() -> io::Result<()> {
     assert_eq!(code(&add(&dir.join("missing"), "geo", &[], CHOICE)?), Some(2));
     fs::remove_file(dir.join("course.json"))?;
     assert_eq!(code(&add(&dir, "geo", &[], CHOICE)?), Some(2));
-    assert_eq!(code(&dojo().arg("add").arg(&dir).output()?), Some(2));
+    assert_eq!(code(&dojo().arg("add").arg(&*dir).output()?), Some(2));
     Ok(())
 }
 
@@ -323,7 +318,7 @@ fn appended_file_parses_back_and_validates() -> io::Result<()> {
     let parsed = parse_items(&read(&dir, "content/geo.jsonl")?);
     assert!(parsed.errors.is_empty());
     assert_eq!(parsed.items.len(), before + 2);
-    let validate = dojo().arg("validate").arg(&dir).output()?;
+    let validate = dojo().arg("validate").arg(&*dir).output()?;
     assert_eq!(code(&validate), Some(0), "{}{}", stdout(&validate), stderr(&validate));
     Ok(())
 }

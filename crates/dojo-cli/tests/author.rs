@@ -1,3 +1,6 @@
+mod common;
+
+use common::TempDir;
 use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -15,12 +18,8 @@ fn demo() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/demo")
 }
 
-fn unique_dir(tag: &str) -> std::io::Result<PathBuf> {
-    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!("dojo-cli-{tag}-{}-{}", std::process::id(), N.fetch_add(1, std::sync::atomic::Ordering::SeqCst)));
-    let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(&dir)?;
-    Ok(dir)
+fn unique_dir(tag: &str) -> std::io::Result<TempDir> {
+    TempDir::new(&format!("dojo-cli-{tag}"))
 }
 
 fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
@@ -54,7 +53,7 @@ fn stdout(out: &Output) -> String {
 #[test]
 fn init_creates_required_files() {
     let dir = unique_dir("init-creates").unwrap();
-    let out = dojo().arg("init").arg("test-course").arg("--workspace").arg(&dir).output().unwrap();
+    let out = dojo().arg("init").arg("test-course").arg("--workspace").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(0));
 
     let course_dir = dir.join("test-course");
@@ -75,7 +74,7 @@ fn init_creates_required_files() {
 fn init_refuses_existing_directory() {
     let dir = unique_dir("init-exists").unwrap();
     fs::create_dir_all(dir.join("test-course")).unwrap();
-    let out = dojo().arg("init").arg("test-course").arg("--workspace").arg(&dir).output().unwrap();
+    let out = dojo().arg("init").arg("test-course").arg("--workspace").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(1));
     assert!(stderr(&out).contains("already exists"));
 }
@@ -83,7 +82,7 @@ fn init_refuses_existing_directory() {
 #[test]
 fn init_refuses_invalid_id() {
     let dir = unique_dir("init-bad-id").unwrap();
-    let out = dojo().arg("init").arg("BadID").arg("--workspace").arg(&dir).output().unwrap();
+    let out = dojo().arg("init").arg("BadID").arg("--workspace").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(1));
     assert!(stderr(&out).contains("invalid course id"));
     assert!(!dir.join("BadID").exists());
@@ -92,7 +91,7 @@ fn init_refuses_invalid_id() {
 #[test]
 fn init_respects_workspace_flag() {
     let dir = unique_dir("init-workspace").unwrap();
-    let out = dojo().arg("init").arg("mycourse").arg("--workspace").arg(&dir).arg("--title").arg("My Course").output().unwrap();
+    let out = dojo().arg("init").arg("mycourse").arg("--workspace").arg(&*dir).arg("--title").arg("My Course").output().unwrap();
     assert_eq!(code(&out), Some(0));
     assert!(dir.join("mycourse/course.json").exists());
     let course_json = fs::read_to_string(dir.join("mycourse/course.json")).unwrap();
@@ -103,7 +102,7 @@ fn init_respects_workspace_flag() {
 #[test]
 fn init_default_title() {
     let dir = unique_dir("init-default-title").unwrap();
-    let out = dojo().arg("init").arg("my-course").arg("--workspace").arg(&dir).output().unwrap();
+    let out = dojo().arg("init").arg("my-course").arg("--workspace").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(0));
     let course_json = fs::read_to_string(dir.join("my-course/course.json")).unwrap();
     let v: Value = serde_json::from_str(&course_json).unwrap();
@@ -113,7 +112,7 @@ fn init_default_title() {
 #[test]
 fn init_content_lang_defaults_to_ui() {
     let dir = unique_dir("init-content-lang").unwrap();
-    let out = dojo().arg("init").arg("mycourse").arg("--workspace").arg(&dir).arg("--ui").arg("fr").output().unwrap();
+    let out = dojo().arg("init").arg("mycourse").arg("--workspace").arg(&*dir).arg("--ui").arg("fr").output().unwrap();
     assert_eq!(code(&out), Some(0));
     let course_json = fs::read_to_string(dir.join("mycourse/course.json")).unwrap();
     let v: Value = serde_json::from_str(&course_json).unwrap();
@@ -124,7 +123,7 @@ fn init_content_lang_defaults_to_ui() {
 #[test]
 fn init_created_course_passes_validate_except_unit_empty() {
     let dir = unique_dir("init-validates").unwrap();
-    let out = dojo().arg("init").arg("valid-test").arg("--workspace").arg(&dir).output().unwrap();
+    let out = dojo().arg("init").arg("valid-test").arg("--workspace").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(0));
 
     let validate_out = dojo().arg("validate").arg(dir.join("valid-test")).output().unwrap();
@@ -205,7 +204,7 @@ fn stats_json_structure() {
 fn stats_on_empty_course() {
     let dir = unique_dir("stats-empty").unwrap();
     copy_dir(&fixture("warn"), &dir).unwrap();
-    let out = dojo().arg("stats").arg(&dir).output().unwrap();
+    let out = dojo().arg("stats").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(0));
 }
 
@@ -215,7 +214,7 @@ fn stats_on_empty_course() {
 fn next_id_known_prefix() {
     let dir = unique_dir("next-id-known").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("geo").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("geo").output().unwrap();
     assert_eq!(code(&out), Some(0));
     let text = stdout(&out);
     let text = text.trim();
@@ -227,7 +226,7 @@ fn next_id_known_prefix() {
 fn next_id_new_prefix() {
     let dir = unique_dir("next-id-new").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("new").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("new").output().unwrap();
     assert_eq!(code(&out), Some(0));
     let text = stdout(&out);
     let text = text.trim();
@@ -238,7 +237,7 @@ fn next_id_new_prefix() {
 fn next_id_with_count() {
     let dir = unique_dir("next-id-count").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("geo").arg("--count").arg("3").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("geo").arg("--count").arg("3").output().unwrap();
     assert_eq!(code(&out), Some(0));
     let text = stdout(&out);
     assert_eq!(text.trim(), "geo-9\ngeo-10\ngeo-11");
@@ -249,7 +248,7 @@ fn next_id_honors_retired_ids() {
     let dir = unique_dir("next-id-retired").unwrap();
     copy_dir(&demo(), &dir).unwrap();
     // geo-8 is retired in ids.lock, but geo-9 should still be next
-    let out = dojo().arg("next-id").arg(&dir).arg("geo").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("geo").output().unwrap();
     assert_eq!(code(&out), Some(0));
     assert_eq!(stdout(&out).trim(), "geo-9");
 }
@@ -258,7 +257,7 @@ fn next_id_honors_retired_ids() {
 fn next_id_count_zero_exit_2() {
     let dir = unique_dir("next-id-zero").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("geo").arg("--count").arg("0").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("geo").arg("--count").arg("0").output().unwrap();
     assert_eq!(code(&out), Some(2));
 }
 
@@ -266,7 +265,7 @@ fn next_id_count_zero_exit_2() {
 fn next_id_count_too_large_exit_2() {
     let dir = unique_dir("next-id-large").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("geo").arg("--count").arg("501").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("geo").arg("--count").arg("501").output().unwrap();
     assert_eq!(code(&out), Some(2));
 }
 
@@ -274,7 +273,7 @@ fn next_id_count_too_large_exit_2() {
 fn next_id_invalid_prefix_exit_2() {
     let dir = unique_dir("next-id-bad").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("BadPrefix").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("BadPrefix").output().unwrap();
     assert_eq!(code(&out), Some(2));
 }
 
@@ -282,7 +281,7 @@ fn next_id_invalid_prefix_exit_2() {
 fn next_id_prefix_with_underscore_exit_2() {
     let dir = unique_dir("next-id-underscore").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("my_prefix").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("my_prefix").output().unwrap();
     assert_eq!(code(&out), Some(2));
 }
 
@@ -290,7 +289,7 @@ fn next_id_prefix_with_underscore_exit_2() {
 fn next_id_prefix_with_hyphen_exit_2() {
     let dir = unique_dir("next-id-hyphen").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("my-prefix").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("my-prefix").output().unwrap();
     assert_eq!(code(&out), Some(2));
 }
 
@@ -298,7 +297,7 @@ fn next_id_prefix_with_hyphen_exit_2() {
 fn next_id_prefix_valid_with_numbers() {
     let dir = unique_dir("next-id-nums").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    let out = dojo().arg("next-id").arg(&dir).arg("test123").output().unwrap();
+    let out = dojo().arg("next-id").arg(&*dir).arg("test123").output().unwrap();
     assert_eq!(code(&out), Some(0));
     assert_eq!(stdout(&out).trim(), "test123-1");
 }

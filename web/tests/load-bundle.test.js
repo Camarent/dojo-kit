@@ -6,8 +6,13 @@ const os = require('node:os');
 const path = require('node:path');
 const { loadBundle, bundleScripts, readSource } = require('./load-bundle.js');
 
+// Fixture dirs are removed when the file's tests end, also after a failure.
+const fixtureDirs = [];
+test.after(() => { for (const d of fixtureDirs) fs.rmSync(d, { recursive: true, force: true }); });
+
 function fixture(files, scripts) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lb-'));
+  fixtureDirs.push(dir);
   for (const [f, src] of Object.entries(files)) fs.writeFileSync(path.join(dir, f), src);
   const bundlePath = path.join(dir, 'bundle.json');
   fs.writeFileSync(bundlePath, JSON.stringify({ scripts }));

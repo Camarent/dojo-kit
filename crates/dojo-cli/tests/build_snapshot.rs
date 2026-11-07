@@ -1,13 +1,15 @@
 // Snapshot test for build output determinism.
 // Computes sha256 over build artefacts and compares against stored snapshots.
 
+mod common;
+
+use common::TempDir;
 use serde_json::{json, Value};
 use std::collections::BTreeSet;
 use std::env;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 // Pure Rust SHA-256 implementation (no external crates).
 const K: [u32; 64] = [
@@ -173,17 +175,9 @@ fn fixture_web(root: &Path) -> io::Result<PathBuf> {
     Ok(web)
 }
 
-/// Create a unique temp directory
-fn unique_dir(tag: &str) -> io::Result<PathBuf> {
-    static N: AtomicUsize = AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!(
-        "dojo-snapshot-{tag}-{}-{}",
-        std::process::id(),
-        N.fetch_add(1, Ordering::SeqCst)
-    ));
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir)?;
-    Ok(dir)
+/// Create a unique temp directory, removed when dropped
+fn unique_dir(tag: &str) -> io::Result<TempDir> {
+    TempDir::new(&format!("dojo-snapshot-{tag}"))
 }
 
 /// Get the path to the dojo CLI binary

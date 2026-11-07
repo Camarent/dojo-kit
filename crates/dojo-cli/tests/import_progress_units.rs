@@ -1,18 +1,18 @@
 //! import-progress: unit ladders, unit scope, retired members, course field, parse errors.
 
+mod common;
+
+use common::TempDir;
 use serde_json::{json, Value};
 use std::error::Error;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{Command, Output};
 
 type TestResult = Result<(), Box<dyn Error>>;
 
-fn unique_dir(tag: &str) -> Result<PathBuf, Box<dyn Error>> {
-    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let n = N.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    let dir = std::env::temp_dir().join(format!("dojo-cli-impunits-{tag}-{}-{n}", std::process::id()));
-    let _ = fs::remove_dir_all(&dir);
+fn unique_dir(tag: &str) -> Result<TempDir, Box<dyn Error>> {
+    let dir = TempDir::new(&format!("dojo-cli-impunits-{tag}"))?;
     fs::create_dir_all(dir.join("content"))?;
     Ok(dir)
 }
@@ -29,7 +29,7 @@ fn gap(id: &str, entity: Option<&str>, retired: bool) -> Result<String, Box<dyn 
     Ok(serde_json::to_string(&v)?)
 }
 
-fn fixture(tag: &str, unit_srs: Value, lines: &[String]) -> Result<PathBuf, Box<dyn Error>> {
+fn fixture(tag: &str, unit_srs: Value, lines: &[String]) -> Result<TempDir, Box<dyn Error>> {
     let dir = unique_dir(tag)?;
     let course = json!({
         "id": "unit-course", "title": "T", "uiLanguage": "en", "contentLanguage": "en",

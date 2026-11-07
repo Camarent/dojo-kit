@@ -19,6 +19,7 @@ function run(args, courses) {
   try {
     write('scripts/check-all.sh', SCRIPT, 0o755);
     write('scripts/build-wasm.sh', OK, 0o755);
+    write('scripts/tmp-leak-check.sh', '#!/usr/bin/env bash\nshift\n"$@"\n', 0o755);
     write('scripts/course-test.sh',
       '#!/usr/bin/env bash\necho "COURSE-TEST $1"\n[ -f "$1/fail" ] && exit 1\nexit 0\n', 0o755);
     write('tests/wasm-smoke.js', '');

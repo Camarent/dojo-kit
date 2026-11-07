@@ -1,9 +1,11 @@
+mod common;
+
+use common::TempDir;
 use serde_json::Value;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 fn dojo() -> Command {
     Command::new(env!("CARGO_BIN_EXE_dojo"))
@@ -17,12 +19,8 @@ fn demo() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/demo")
 }
 
-fn unique_dir(tag: &str) -> io::Result<PathBuf> {
-    static N: AtomicUsize = AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!("dojo-cli-{tag}-{}-{}", std::process::id(), N.fetch_add(1, Ordering::SeqCst)));
-    let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(&dir)?;
-    Ok(dir)
+fn unique_dir(tag: &str) -> io::Result<TempDir> {
+    TempDir::new(&format!("dojo-cli-{tag}"))
 }
 
 fn copy_dir(from: &Path, to: &Path) -> io::Result<()> {
@@ -96,20 +94,20 @@ fn json_output_is_a_single_object_with_matching_counts() {
 #[test]
 fn usage_and_io_errors_exit_2() {
     let missing = std::env::temp_dir().join("dojo-cli-does-not-exist");
-    assert_eq!(code(&dojo().arg("validate").arg(&missing).output().unwrap()), Some(2));
+    assert_eq!(code(&dojo().arg("validate").arg(&*missing).output().unwrap()), Some(2));
     assert_eq!(code(&dojo().arg("validate").output().unwrap()), Some(2));
     assert_eq!(code(&dojo().arg("validate").arg(demo()).arg("--bogus").output().unwrap()), Some(2));
     assert_eq!(code(&dojo().arg("validate").arg(fixture("badlock")).output().unwrap()), Some(2));
     assert_eq!(code(&dojo().arg("lock").output().unwrap()), Some(2));
     let empty = unique_dir("empty").unwrap();
-    assert_eq!(code(&dojo().arg("validate").arg(&empty).output().unwrap()), Some(2));
+    assert_eq!(code(&dojo().arg("validate").arg(&*empty).output().unwrap()), Some(2));
 }
 
 #[test]
 fn lock_refuses_to_write_on_errors() {
     let dir = unique_dir("lock-err").unwrap();
     copy_dir(&fixture("errors"), &dir).unwrap();
-    let out = dojo().arg("lock").arg(&dir).output().unwrap();
+    let out = dojo().arg("lock").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(1));
     assert!(stdout(&out).contains("error[unknown_unit]"));
     assert!(!dir.join("ids.lock").exists());
@@ -119,7 +117,7 @@ fn lock_refuses_to_write_on_errors() {
 fn lock_writes_sorted_output_and_demo_passes_with_it() {
     let dir = unique_dir("lock-ok").unwrap();
     copy_dir(&fixture("warn"), &dir).unwrap();
-    let out = dojo().arg("lock").arg(&dir).output().unwrap();
+    let out = dojo().arg("lock").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(0));
     assert_eq!(stdout(&out), "ids.lock: 2 ids, 0 retired\n");
     let text = fs::read_to_string(dir.join("ids.lock")).unwrap();
@@ -129,23 +127,23 @@ fn lock_writes_sorted_output_and_demo_passes_with_it() {
 
     let demo_copy = unique_dir("demo").unwrap();
     copy_dir(&demo(), &demo_copy).unwrap();
-    assert_eq!(code(&dojo().arg("lock").arg(&demo_copy).output().unwrap()), Some(0));
+    assert_eq!(code(&dojo().arg("lock").arg(&*demo_copy).output().unwrap()), Some(0));
     assert!(demo_copy.join("ids.lock").exists());
-    let again = dojo().arg("validate").arg(&demo_copy).arg("--strict").output().unwrap();
+    let again = dojo().arg("validate").arg(&*demo_copy).arg("--strict").output().unwrap();
     assert_eq!(code(&again), Some(0));
-    assert_eq!(code(&dojo().arg("lock").arg(&demo_copy).output().unwrap()), Some(0));
+    assert_eq!(code(&dojo().arg("lock").arg(&*demo_copy).output().unwrap()), Some(0));
 }
 
 #[test]
 fn validate_with_lock_detects_removed_id() {
     let dir = unique_dir("removed").unwrap();
     copy_dir(&demo(), &dir).unwrap();
-    assert_eq!(code(&dojo().arg("lock").arg(&dir).output().unwrap()), Some(0));
+    assert_eq!(code(&dojo().arg("lock").arg(&*dir).output().unwrap()), Some(0));
     let geo = dir.join("content/geo.jsonl");
     let text = fs::read_to_string(&geo).unwrap();
     let kept: Vec<&str> = text.lines().filter(|l| !l.contains(r#""id":"geo-1""#)).collect();
     fs::write(&geo, kept.join("\n")).unwrap();
-    let out = dojo().arg("validate").arg(&dir).output().unwrap();
+    let out = dojo().arg("validate").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(1));
     assert!(stdout(&out).contains("error[id_removed] ids.lock: "));
 }
@@ -172,7 +170,7 @@ fn symlink_content_file_is_rejected() {
     let symlink_path = dir.join("content/symlink.jsonl");
     unix_fs::symlink(&target, &symlink_path).unwrap();
 
-    let out = dojo().arg("validate").arg(&dir).output().unwrap();
+    let out = dojo().arg("validate").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(2));
     assert!(stderr_text(&out).contains("symlink"));
 }
@@ -194,7 +192,7 @@ fn symlink_ids_lock_is_rejected() {
     unix_fs::symlink(target, &symlink_path).unwrap();
 
     // This should fail when trying to load (exit code 2 for IO errors)
-    let out = dojo().arg("validate").arg(&dir).output().unwrap();
+    let out = dojo().arg("validate").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(2));
     let stderr = stderr_text(&out);
     assert!(stderr.contains("symlink") || stderr.contains("ids.lock"));
@@ -207,7 +205,7 @@ fn dangling_ids_lock_symlink_is_rejected_and_target_not_created() {
     let target = dir.join("elsewhere.lock");
     fs::remove_file(dir.join("ids.lock")).unwrap();
     std::os::unix::fs::symlink(&target, dir.join("ids.lock")).unwrap();
-    let out = dojo().arg("lock").arg(&dir).output().unwrap();
+    let out = dojo().arg("lock").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(2), "{}", String::from_utf8_lossy(&out.stderr));
     assert!(String::from_utf8_lossy(&out.stderr).contains("symlink"));
     assert!(!target.exists());
@@ -216,7 +214,7 @@ fn dangling_ids_lock_symlink_is_rejected_and_target_not_created() {
 const EN: &str = r#"{"hi":"Hello {name}","bye":"Bye","lang":"Language: {lang}"}"#;
 
 /// Copies the demo to a fresh dir with `i18n/xx.json` = `file`, plus a fresh web dir with `i18n/en.json` = `en`.
-fn i18n_setup_with(tag: &str, file: &str, en: &str) -> io::Result<(PathBuf, PathBuf)> {
+fn i18n_setup_with(tag: &str, file: &str, en: &str) -> io::Result<(TempDir, TempDir)> {
     let dir = unique_dir(tag)?;
     copy_dir(&demo(), &dir)?;
     fs::create_dir_all(dir.join("i18n"))?;
@@ -227,7 +225,7 @@ fn i18n_setup_with(tag: &str, file: &str, en: &str) -> io::Result<(PathBuf, Path
     Ok((dir, web))
 }
 
-fn i18n_setup(tag: &str, file: &str) -> io::Result<(PathBuf, PathBuf)> {
+fn i18n_setup(tag: &str, file: &str) -> io::Result<(TempDir, TempDir)> {
     i18n_setup_with(tag, file, EN)
 }
 
@@ -332,7 +330,7 @@ fn i18n_invalid_json_is_an_error() {
 fn i18n_check_is_skipped_without_a_web_dir() {
     let (dir, _web) = i18n_setup("i18n-noweb", r#"{"hi":"Salut"}"#).unwrap();
     let cwd = unique_dir("i18n-noweb-cwd").unwrap();
-    let out = dojo().current_dir(&cwd).arg("validate").arg(&dir).output().unwrap();
+    let out = dojo().current_dir(&*cwd).arg("validate").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(0));
     assert_eq!(stdout(&out), "0 errors, 0 warnings\n");
 }
@@ -343,14 +341,14 @@ fn i18n_errors_are_shown_by_lock() {
     let root = unique_dir("i18n-lock-root").unwrap();
     copy_dir(&web, &root.join("web")).unwrap();
     fs::write(root.join("web/bundle.json"), "{}").unwrap();
-    let out = dojo().current_dir(&root).arg("lock").arg(&dir).output().unwrap();
+    let out = dojo().current_dir(&*root).arg("lock").arg(&*dir).output().unwrap();
     assert_eq!(code(&out), Some(1));
     assert!(stdout(&out).contains("error[i18n_placeholder]"), "{}", stdout(&out));
 }
 
 const EN_PLURAL: &str = r#"{"n.one":"{n} item","n.other":"{n} items","hi":"Hello {name}"}"#;
 
-fn i18n_plural_setup(tag: &str, file: &str) -> io::Result<(PathBuf, PathBuf)> {
+fn i18n_plural_setup(tag: &str, file: &str) -> io::Result<(TempDir, TempDir)> {
     i18n_setup_with(tag, file, EN_PLURAL)
 }
 
@@ -411,13 +409,13 @@ fn i18n_reserved_plugin_course_keys_do_not_warn() {
 
     let build_result = dojo()
         .arg("build")
-        .arg(&dir)
+        .arg(&*dir)
         .arg("--out")
-        .arg(&build_out)
+        .arg(&*build_out)
         .arg("--wasm")
         .arg(wasm.join("tiny.wasm"))
         .arg("--web")
-        .arg(&build_web)
+        .arg(&*build_web)
         .output()
         .unwrap();
     assert_eq!(code(&build_result), Some(0), "{}", String::from_utf8_lossy(&build_result.stderr));

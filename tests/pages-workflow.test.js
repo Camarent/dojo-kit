@@ -2,7 +2,7 @@
 // permissions, SHA-pinned actions, build order (wasm, dojo build, URL scan, upload). The scan
 // command is read from pages.yml and run with bash -e, as GitHub does. The sub-path check serves
 // a build under /dojo-kit/ and fetches every asset its HTML names: a fixture, then the real showcase.
-const { test } = require('node:test');
+const { test, after } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -75,6 +75,15 @@ test('scan pattern is read from pages.yml and flags root-absolute URLs only', ()
   assert.doesNotMatch('<a href="index.html">', ABS_URL);
 });
 
+// Temp dirs made by tmpDir() are removed when the file's tests end, also after a failure.
+const tmpDirs = [];
+after(() => { for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true }); });
+function tmpDir(prefix) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  tmpDirs.push(d);
+  return d;
+}
+
 // Runs the workflow's scan step in a directory, as GitHub runs it (bash -e from the repo root).
 function runScan(cwd) {
   return spawnSync('bash', ['-e', '-c', SCAN_BODY], { cwd, encoding: 'utf8' });
@@ -82,13 +91,13 @@ function runScan(cwd) {
 
 test('scan step fails when dist/showcase is missing', () => {
   assert.ok(SCAN_BODY, 'scan step block not found in pages.yml');
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pages-scan-'));
+  const dir = tmpDir('pages-scan-');
   const r = runScan(dir);
   assert.notStrictEqual(r.status, 0, r.stderr);
 });
 
 test('scan step passes on clean output and fails on a root-absolute URL', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pages-scan-'));
+  const dir = tmpDir('pages-scan-');
   const out = path.join(dir, 'dist', 'showcase');
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, 'index.html'), '<a href="index.html">x</a>');
@@ -137,7 +146,7 @@ async function unloadedRefs(dir) {
 }
 
 test('sub-path check: relative assets load under /dojo-kit/', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pages-subpath-'));
+  const dir = tmpDir('pages-subpath-');
   fs.writeFileSync(path.join(dir, 'index.html'),
     '<link rel="stylesheet" href="app.css"><script src="app.js"></script><a href="#top">t</a>');
   fs.writeFileSync(path.join(dir, 'app.css'), 'body{background:url(bg.png)}');
@@ -149,7 +158,7 @@ test('sub-path check: relative assets load under /dojo-kit/', async () => {
 // Builds examples/showcase as the workflow does (needs the wasm from scripts/build-wasm.sh), then
 // runs the workflow's scan step and the /dojo-kit/ load check on the real output.
 test('real showcase build: scan passes and every ref loads under /dojo-kit/', async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pages-build-'));
+  const root = tmpDir('pages-build-');
   const dist = path.join(root, 'dist');
   const b = spawnSync(path.join(REPO, 'dojo'), ['build', 'examples/showcase', '--out', dist],
     { cwd: REPO, encoding: 'utf8', timeout: 300000 });
@@ -160,7 +169,7 @@ test('real showcase build: scan passes and every ref loads under /dojo-kit/', as
 });
 
 test('sub-path check: a root-absolute asset does not load under /dojo-kit/', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pages-subpath-'));
+  const dir = tmpDir('pages-subpath-');
   fs.writeFileSync(path.join(dir, 'index.html'), '<script src="/app.js"></script>');
   fs.writeFileSync(path.join(dir, 'app.js'), '');
   assert.deepStrictEqual(await unloadedRefs(dir), ['/app.js']);

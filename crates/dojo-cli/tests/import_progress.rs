@@ -1,22 +1,20 @@
 //! Integration tests for import-progress subcommand.
 
+mod common;
+
+use common::TempDir;
 use serde_json::json;
 use std::error::Error;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{Command, Output, Stdio};
 
 fn dojo() -> Command {
     Command::new(env!("CARGO_BIN_EXE_dojo"))
 }
 
-fn unique_dir(tag: &str) -> PathBuf {
-    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!("dojo-cli-import-{tag}-{}-{}", std::process::id(), N.fetch_add(1, std::sync::atomic::Ordering::SeqCst)));
-    let _ = fs::remove_dir_all(&dir);
-    // Failure surfaces in create_test_course, which creates the same dir.
-    let _ = fs::create_dir_all(&dir);
-    dir
+fn unique_dir(tag: &str) -> TempDir {
+    TempDir::new(&format!("dojo-cli-import-{tag}")).expect("create test dir")
 }
 
 fn code(out: &Output) -> Option<i32> {
