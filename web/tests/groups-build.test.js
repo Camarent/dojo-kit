@@ -8,8 +8,9 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..', '..');
 
-test('./dojo build of a small course with groups, bars and entities keeps them in content.json', () => {
+test('./dojo build of a small course with groups, bars and entities keeps them in content.json', (t) => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dojo-groups-'));
+  t.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
   const src = path.join(tmp, 'course');
   fs.cpSync(path.join(ROOT, 'examples', 'demo'), src, { recursive: true });
   const cp = path.join(src, 'course.json');
@@ -28,5 +29,4 @@ test('./dojo build of a small course with groups, bars and entities keeps them i
   assert.strictEqual(content.course.groups[0].id, 'g');
   assert.strictEqual(content.course.bars[0].title, 'Caps');
   assert.ok(content.items.some((i) => i.entity === 'E1'));
-  fs.rmSync(tmp, { recursive: true, force: true });
 });

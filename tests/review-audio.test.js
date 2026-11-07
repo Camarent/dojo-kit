@@ -6,7 +6,17 @@ const os = require('os');
 const path = require('path');
 const vm = require('vm');
 const { execFileSync } = require('child_process');
+const { after } = require('node:test');
 const { buildReviewPage } = require('../tools/review-audio.js');
+
+// Temp dirs made by tmpDir() are removed when the file's tests end, also after a failure.
+const tmpDirs = [];
+after(() => { for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true }); });
+function tmpDir(prefix) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  tmpDirs.push(d);
+  return d;
+}
 
 const BYTES = Uint8Array.from([1, 2, 3, 4, 5, 6]);
 const ROWS = [
@@ -17,7 +27,7 @@ const ROWS = [
 ];
 
 function tmpManifest(clips, enc) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rev-'));
+  const dir = tmpDir('rev-');
   const p = path.join(dir, 'manifest.json');
   fs.writeFileSync(p, JSON.stringify({ packs: [{ file: 'p0', enc }], clips }));
   return p;
@@ -109,7 +119,7 @@ test('group headings once each in input order, ungrouped first; every row presen
 });
 
 test('CLI writes the page and rejects bad usage', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'revcli-'));
+  const dir = tmpDir('revcli-');
   const rows = path.join(dir, 'rows.json'), out = path.join(dir, 'o.html');
   fs.writeFileSync(rows, JSON.stringify(ROWS));
   const tool = path.join(__dirname, '..', 'tools', 'review-audio.js');
