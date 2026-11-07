@@ -218,3 +218,27 @@ fn unsafe_web_path_is_a_build_error() -> Res {
     assert!(err.contains("must be relative inside the module"), "stderr: {err}");
     Ok(())
 }
+
+#[cfg(unix)]
+#[test]
+fn web_path_through_symlink_leaving_module_is_a_build_error() -> Res {
+    let e = env("symlinkescape")?;
+    put(&e.root.join("outside.js"), "var X=1;")?;
+    module_raw(&e, "base", r#"{"manifestVersion":1,"id":"base","web":{"scripts":["link.js"]}}"#)?;
+    std::os::unix::fs::symlink(e.root.join("outside.js"), e.root.join("modules/base/link.js"))?;
+    course_with(&e, "en", &["base"])?;
+    let err = failing_build_stderr(&e)?;
+    assert!(err.contains("must be relative inside the module"), "stderr: {err}");
+    Ok(())
+}
+
+#[test]
+fn web_path_in_module_subdir_is_accepted() -> Res {
+    let e = env("subdirok")?;
+    module_raw(&e, "base", r#"{"manifestVersion":1,"id":"base","web":{"scripts":["sub/n.js"]}}"#)?;
+    put(&e.root.join("modules/base/sub/n.js"), "var N=1;")?;
+    course_with(&e, "en", &["base"])?;
+    let o = build(&e, &e.root.join("dist"))?;
+    assert!(o.status.success(), "stderr: {}", String::from_utf8_lossy(&o.stderr));
+    Ok(())
+}

@@ -162,7 +162,7 @@ fn load(modules_dir: &Path, id: &str, origin: &str) -> Result<Manifest, String> 
         return Err(format!("{}: id \"{}\" must equal the folder name \"{id}\"", path.display(), manifest.id));
     }
     if let Some(web) = &manifest.web
-        && let Some(bad) = web.scripts.iter().chain(&web.styles).find(|p| !safe_rel(p))
+        && let Some(bad) = web.scripts.iter().chain(&web.styles).find(|p| !safe_rel(p) || escapes_dir(&modules_dir.join(id), p))
     {
         return Err(format!("{}: web path \"{bad}\" must be relative inside the module", path.display()));
     }
@@ -177,6 +177,15 @@ fn valid_id(id: &str) -> bool {
 
 fn safe_rel(path: &str) -> bool {
     !path.is_empty() && Path::new(path).components().all(|c| matches!(c, Component::Normal(_)))
+}
+
+/// True when `rel` exists under `dir` but its real path (symlinks followed) lies outside `dir`.
+/// A missing path is not an escape: the later file read reports it.
+fn escapes_dir(dir: &Path, rel: &str) -> bool {
+    match (dir.canonicalize(), dir.join(rel).canonicalize()) {
+        (Ok(base), Ok(full)) => !full.starts_with(base),
+        _ => false,
+    }
 }
 
 #[cfg(test)]
