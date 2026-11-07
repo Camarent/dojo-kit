@@ -1,8 +1,11 @@
 //! Tests for --now flag timestamp parsing
 
+mod common;
+
+use common::TempDir;
 use std::error::Error;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{Command, Output, Stdio};
 
 type Res<T = ()> = Result<T, Box<dyn Error>>;
@@ -11,16 +14,8 @@ fn dojo() -> Command {
     Command::new(env!("CARGO_BIN_EXE_dojo"))
 }
 
-fn unique_dir(tag: &str) -> Res<PathBuf> {
-    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!(
-        "dojo-cli-now-{tag}-{}-{}",
-        std::process::id(),
-        N.fetch_add(1, std::sync::atomic::Ordering::SeqCst)
-    ));
-    let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(&dir)?;
-    Ok(dir)
+fn unique_dir(tag: &str) -> Res<TempDir> {
+    Ok(TempDir::new(&format!("dojo-cli-now-{tag}"))?)
 }
 
 fn code(out: &Output) -> Option<i32> {
