@@ -28,6 +28,11 @@ The `modules/registry` crate maps ids to validator implementations; the CLI and 
 - `modules/ja/web/readings.js` - `kanjiBreakdown` at :87.
 - `modules/ja/examples/ja-readings/ja-readings.js` - example DojoExt plugin (not a module; `registerSetting` :272, `registerMarkup` :287).
 
+## Two tiers of module
+- Course tier: ids listed in the course's `course.json` `modules` array. A module ships only when listed (or required by a listed module).
+- Pack tier: `web/i18n/packs.json` maps a UI language to `modules`, e.g. `"ru": {"modules": ["ru"]}`. When the course `uiLanguage` matches the key, those modules ship too, even if the course does not list them (`pack_modules` at `crates/dojo-cli/src/modules.rs:136`).
+- Both tiers feed the same `resolve` queue; `dependency_order` puts required modules first.
+
 ## Invariants and gotchas
 - A module folder without a loadable `module.json` is skipped by `all_manifests` (`crates/dojo-cli/src/modules.rs:95`); a course that lists it gets `module_missing` (`crates/dojo-cli/src/course_files.rs:173`).
 - A course that uses a `ja` key or markup without listing `ja` in `modules` gets `module_key_unlisted` (`crates/dojo-cli/src/course_files.rs:131`).
