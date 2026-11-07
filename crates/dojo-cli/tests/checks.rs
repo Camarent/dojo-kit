@@ -1,9 +1,11 @@
+mod common;
+
+use common::TempDir;
 use std::fs;
 use std::io;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 fn dojo() -> Command {
     Command::new(env!("CARGO_BIN_EXE_dojo"))
@@ -11,10 +13,8 @@ fn dojo() -> Command {
 
 /// Copies the checks fixture into a fresh dir, adds one check `c1` running `ok.sh`, and writes `ok.sh`
 /// (`body`, default exit 0), made executable here: the fixture itself has no check, so no snapshot runs a script.
-fn course_with(tag: &str, body: Option<&str>) -> io::Result<PathBuf> {
-    static N: AtomicUsize = AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!("dojo-checks-{tag}-{}-{}", std::process::id(), N.fetch_add(1, Ordering::SeqCst)));
-    let _ = fs::remove_dir_all(&dir);
+fn course_with(tag: &str, body: Option<&str>) -> io::Result<TempDir> {
+    let dir = TempDir::new(&format!("dojo-checks-{tag}"))?;
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/checks");
     fs::create_dir_all(dir.join("content"))?;
     let base = fs::read_to_string(fixture.join("course.json"))?;
