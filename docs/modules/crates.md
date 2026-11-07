@@ -144,6 +144,7 @@ Commands (`USAGE` and dispatch `run` in `crates/dojo-cli/src/main.rs`; each comm
 - `src/course_files.rs` - `CourseFiles`, `load`, `check_symlink`, `i18n_check`, `validate_course`, `plugin_files`.
 - `src/cmd/build_audio.rs` - audio pack limits used by `dojo build`: `MAX_FILE_BYTES` 16 MiB, `MAX_DIST_BYTES` 60 MiB, `MAX_FILES` 250; the build fails above them. Manifest copied to `data/audio/manifest.json`, packs to `data/audio/<file>`.
 - `src/build/` - pure helpers for the build step: `text.rs` (encoding, escaping, template filling), `i18n.rs` (`select_language`, UI language files).
+- UI languages: the core bundle ships `en` only (`web/bundle.json` `i18n`). `ru`, `fr`, `ja` are packs in `web/i18n/packs.json`; `pack_languages` (`crates/dojo-cli/src/modules.rs:151`) adds their keys to the available set (`select_lang`, `crates/dojo-cli/src/build/assets.rs:126`). A pack may request logic modules: `ru` to `ru`, `ja` to `ja` (`pack_modules`, `crates/dojo-cli/src/modules.rs:146`).
 - `crates/dojo-cli/src/cmd/add.rs` - the `add` command (id assignment, unit check, append to JSONL).
 - `tests/*.rs` - integration tests that spawn the `dojo` binary (`CARGO_BIN_EXE_dojo`) on fixtures and `examples/`.
 

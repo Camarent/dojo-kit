@@ -113,7 +113,7 @@ Exam-only questions (soft rule: warnings only, never blocks `dojo validate`):
 Progress storage is not a course setting. Plugin code (a `<script>` listed in `plugins.scripts`) may call `DojoExt.registerStorage(provider)`; `provider.openRef({courseId, key})` resolves `{ref, snap}`. One provider; a second call replaces the first. Without one, progress uses localStorage and the artifact db when available. Full contract: CONTRACT section 6.
 
 ## UI and content languages
-`uiLanguage` (`en` and `ru` are shipped) and `contentLanguage`. For another UI language the course supplies `i18n/<lang>.json` next to `course.json`, with the keys of `web/i18n/en.json` (AGENTS.md section 9); `dojo build` overlays it on the shipped file key by key, and a missing language falls back to en with a warning. Ru plural forms are `.one`, `.few`, `.many`, `.other`; other languages use `.one` and `.other` only. Items are written in the content language; do not mix in other scripts.
+`uiLanguage` (`en` is shipped; `ru`, `fr`, `ja` are packs in `web/i18n/packs.json`) and `contentLanguage`. For another UI language the course supplies `i18n/<lang>.json` next to `course.json`, with the keys of `web/i18n/en.json` (AGENTS.md section 9); `dojo build` overlays it on the shipped file key by key, and a missing language falls back to en with a warning. Ru plural forms are `.one`, `.few`, `.many`, `.other`; other languages use `.one` and `.other` only. Items are written in the content language; do not mix in other scripts.
 
 Keys starting with `plugin.` or `course.` in `i18n/<lang>.json` are reserved for plugins and the course and are never reported as unknown.
 
