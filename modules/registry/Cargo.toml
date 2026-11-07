@@ -5,9 +5,9 @@ license.workspace = true
 version.workspace = true
 
 [dependencies]
-dojo-core = { version = "0.2.0", path = "../../crates/dojo-core" }
-dojo-module-ja = { version = "0.2.0", path = "../ja/rust" }
-dojo-module-ru = { version = "0.2.0", path = "../ru/rust" }
+dojo-core = { version = "0.3.0", path = "../../crates/dojo-core" }
+dojo-module-ja = { version = "0.3.0", path = "../ja/rust" }
+dojo-module-ru = { version = "0.3.0", path = "../ru/rust" }
 
 [dev-dependencies]
 serde_json = { version = "1.0.154" }
