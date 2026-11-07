@@ -10,6 +10,8 @@ const TEMPLATE: &str = "<title><!--DOJO:TITLE--></title>\n<style><!--DOJO:CSS-->
 
 const BUNDLE_WITH_MARKERS: &str = r#"{"scripts":["core.js","@modules","@course"],"styles":["s.css","@modules","@course"],"i18n":["en","ru","fr"],"licenses":["L.txt"]}"#;
 
+const BUNDLE_EN_ONLY: &str = r#"{"scripts":["core.js","@modules","@course"],"styles":["s.css","@modules","@course"],"i18n":["en"],"licenses":["L.txt"]}"#;
+
 const BUNDLE_WITHOUT_SCRIPT_MARKER: &str = r#"{"scripts":["core.js"],"styles":["s.css","@modules"],"i18n":["en","ru","fr"],"licenses":["L.txt"]}"#;
 
 /// Removes its directory when the test ends, also on panic.
@@ -190,11 +192,35 @@ fn module_css_closing_style_tag_is_escaped() -> Res {
 
 #[test]
 fn fr_ui_course_ships_en_and_fr_only() -> Res {
-    let e = env("fr", BUNDLE_WITH_MARKERS)?;
+    let e = env("fr", BUNDLE_EN_ONLY)?;
+    put(&e.web.join("i18n/packs.json"), r#"{"fr":{"modules":[]}}"#)?;
     course_with(&e, "fr", &[])?;
     let html = build_html(&e, &e.root.join("dist"))?;
     assert_eq!(i18n_keys(&html)?, vec!["en".to_string(), "fr".to_string()]);
     assert!(!html.contains("Privet"));
+    Ok(())
+}
+
+#[test]
+fn ui_language_without_pack_or_bundle_entry_falls_back_to_en() -> Res {
+    // web/i18n/fr.json exists, but neither packs.json nor the bundle lists fr: it is not available.
+    let e = env("nofr", BUNDLE_EN_ONLY)?;
+    course_with(&e, "fr", &[])?;
+    let o = build(&e, &e.root.join("dist"))?;
+    assert_eq!(o.status.code(), Some(0), "{}", String::from_utf8_lossy(&o.stderr));
+    assert!(String::from_utf8_lossy(&o.stderr).contains("no UI translation for \"fr\"; falling back to en"));
+    assert_eq!(i18n_keys(&std::fs::read_to_string(e.root.join("dist/demo/index.html"))?)?, vec!["en".to_string()]);
+    Ok(())
+}
+
+#[test]
+fn pack_language_without_i18n_file_is_file_not_found() -> Res {
+    let e = env("packnofile", BUNDLE_EN_ONLY)?;
+    put(&e.web.join("i18n/packs.json"), r#"{"de":{"modules":[]}}"#)?;
+    course_with(&e, "de", &[])?;
+    let o = build(&e, &e.root.join("dist"))?;
+    assert_ne!(o.status.code(), Some(0));
+    assert!(String::from_utf8_lossy(&o.stderr).contains("i18n/de.json: file not found"));
     Ok(())
 }
 

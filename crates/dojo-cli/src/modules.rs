@@ -133,15 +133,23 @@ fn dependency_order(loaded: &BTreeMap<String, Manifest>) -> Result<Vec<String>, 
     Ok(order)
 }
 
-fn pack_modules(web_dir: &Path, lang: &str) -> Result<Vec<String>, String> {
+/// The parsed `web/i18n/packs.json`; empty when the file is missing.
+fn read_packs(web_dir: &Path) -> Result<BTreeMap<String, Pack>, String> {
     let path = web_dir.join("i18n").join("packs.json");
     if !path.is_file() {
-        return Ok(Vec::new());
+        return Ok(BTreeMap::new());
     }
     let text = fs::read_to_string(&path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
-    let packs: BTreeMap<String, Pack> =
-        serde_json::from_str(&text).map_err(|e| format!("invalid {}: {e}", path.display()))?;
-    Ok(packs.get(lang).map_or_else(Vec::new, |p| p.modules.clone()))
+    serde_json::from_str(&text).map_err(|e| format!("invalid {}: {e}", path.display()))
+}
+
+fn pack_modules(web_dir: &Path, lang: &str) -> Result<Vec<String>, String> {
+    Ok(read_packs(web_dir)?.get(lang).map_or_else(Vec::new, |p| p.modules.clone()))
+}
+
+/// UI languages that have a pack in `web/i18n/packs.json`, in key order.
+pub(crate) fn pack_languages(web_dir: &Path) -> Result<Vec<String>, String> {
+    Ok(read_packs(web_dir)?.into_keys().collect())
 }
 
 fn load(modules_dir: &Path, id: &str, origin: &str) -> Result<Manifest, String> {

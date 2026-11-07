@@ -82,9 +82,7 @@
     "@course"
   ],
   "i18n": [
-    "en",
-    "ru",
-    "fr"
+    "en"
   ],
   "licenses": [
     "vendor/preact.LICENSE",

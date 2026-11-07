@@ -117,17 +117,18 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
 /// `bundle_languages` is the bundle's `i18n` list; `web` is the `web/` directory.
 pub(crate) fn course_lang_modules(dir: &Path, web: &Path, course_json: &serde_json::Value, bundle_languages: &[String]) -> Step<(String, Vec<modules::Manifest>)> {
     let ui_language = course_json.get("uiLanguage").and_then(|v| v.as_str()).unwrap_or_default();
-    let lang = select_lang(dir, ui_language, bundle_languages)?;
+    let lang = select_lang(dir, web, ui_language, bundle_languages)?;
     let course_modules = fatal(course_module_ids(course_json))?;
     let resolved = failed(modules::resolve(web, &lang, &course_modules))?;
     Ok((lang, resolved))
 }
 
-fn select_lang(dir: &Path, ui_language: &str, bundle_languages: &[String]) -> Step<String> {
-    // Collect all available languages: bundle i18n UNION course i18n/*.json stems
+fn select_lang(dir: &Path, web: &Path, ui_language: &str, bundle_languages: &[String]) -> Step<String> {
+    // Collect all available languages: bundle i18n UNION language packs UNION course i18n/*.json stems
     let course_languages = failed(build::collect_course_languages(dir))?;
+    let pack_languages = failed(modules::pack_languages(web))?;
     let mut all_available: Vec<String> = bundle_languages.to_vec();
-    for lang in &course_languages {
+    for lang in pack_languages.iter().chain(&course_languages) {
         if !all_available.contains(lang) {
             all_available.push(lang.clone());
         }
@@ -164,10 +165,11 @@ pub(crate) fn build_i18n(dir: &Path, web: &Path, lang: &str, bundle_languages: &
     if lang != "en" {
         wanted.push(lang.to_string());
     }
+    let pack_languages = failed(modules::pack_languages(web))?;
     for l in &wanted {
         let web_rel = format!("i18n/{l}.json");
         let base = failed(load_i18n_file(&web.join(&web_rel), &web_rel))?;
-        if base.is_none() && (l == "en" || bundle_languages.contains(l)) {
+        if base.is_none() && (l == "en" || bundle_languages.contains(l) || pack_languages.contains(l)) {
             return Err(Stop::Fail(format!("{}: file not found", web_rel)));
         }
         let course_rel = format!("i18n/{l}.json");
