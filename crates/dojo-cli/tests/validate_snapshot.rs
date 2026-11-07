@@ -2,6 +2,9 @@
 // discovers every course.json, runs `dojo validate <dir> --json`, compares stdout+exit code.
 // UPDATE_SNAPSHOT=1 rewrites snapshots.
 
+mod common;
+
+use common::TempDir;
 use serde_json::Value;
 use std::collections::BTreeSet;
 use std::env;
@@ -276,17 +279,9 @@ fn create_synthetic_courses() -> Vec<(String, Vec<u8>)> {
     ]
 }
 
-/// Create a temporary course directory with the given files.
-fn create_temp_course(tag: &str, files: &[(String, Vec<u8>)]) -> Result<PathBuf, Box<dyn Error>> {
-    use std::sync::atomic::{AtomicUsize, Ordering};
-    static N: AtomicUsize = AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!(
-        "dojo-snapshot-{tag}-{}-{}",
-        std::process::id(),
-        N.fetch_add(1, Ordering::SeqCst)
-    ));
-    let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(&dir)?;
+/// Create a temporary course directory with the given files; removed when dropped.
+fn create_temp_course(tag: &str, files: &[(String, Vec<u8>)]) -> Result<TempDir, Box<dyn Error>> {
+    let dir = TempDir::new(&format!("dojo-snapshot-{tag}"))?;
 
     for (name, content) in files {
         let path = dir.join(name);

@@ -1,13 +1,16 @@
+mod common;
+
+use common::TempDir;
 use serde_json::{json, Value};
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 const MIB: u64 = 1024 * 1024;
 
 struct Env {
+    _guard: TempDir,
     root: PathBuf,
     course: PathBuf,
     web: PathBuf,
@@ -35,9 +38,8 @@ fn copy_dir(from: &Path, to: &Path) -> io::Result<()> {
 }
 
 fn env(tag: &str) -> io::Result<Env> {
-    static N: AtomicUsize = AtomicUsize::new(0);
-    let root = std::env::temp_dir().join(format!("dojo-baudio-{tag}-{}-{}", std::process::id(), N.fetch_add(1, Ordering::SeqCst)));
-    let _ = fs::remove_dir_all(&root);
+    let guard = TempDir::new(&format!("dojo-baudio-{tag}"))?;
+    let root = guard.to_path_buf();
     let course = root.join("course");
     copy_dir(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/demo"), &course)?;
     let _ = fs::remove_file(course.join("ids.lock"));
@@ -48,7 +50,7 @@ fn env(tag: &str) -> io::Result<Env> {
     put(&web.join("index.template.html"), "<!--DOJO:TITLE--><!--DOJO:CSS--><!--DOJO:WASM--><!--DOJO:I18N--><!--DOJO:SCRIPTS--><!--DOJO:LICENSES-->")?;
     let wasm = root.join("tiny.wasm");
     fs::write(&wasm, [0u8, 0x61, 0x73, 0x6d, 1, 0, 0, 0])?;
-    Ok(Env { root, course, web, wasm })
+    Ok(Env { _guard: guard, root, course, web, wasm })
 }
 
 fn edit_course(e: &Env, f: impl FnOnce(&mut Value)) -> io::Result<()> {

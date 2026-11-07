@@ -1,8 +1,10 @@
+mod common;
+
+use common::TempDir;
 use serde_json::Value;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 type Res<T = ()> = Result<T, Box<dyn Error>>;
 
@@ -10,12 +12,8 @@ fn demo() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/demo")
 }
 
-fn unique_dir(tag: &str) -> Res<PathBuf> {
-    static N: AtomicUsize = AtomicUsize::new(0);
-    let dir = std::env::temp_dir().join(format!("dojo-build-{tag}-{}-{}", std::process::id(), N.fetch_add(1, Ordering::SeqCst)));
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir)?;
-    Ok(dir)
+fn unique_dir(tag: &str) -> Res<TempDir> {
+    Ok(TempDir::new(&format!("dojo-build-{tag}"))?)
 }
 
 fn copy_dir(from: &Path, to: &Path) -> Res {
@@ -58,6 +56,7 @@ fn fixture_web(root: &Path) -> Res<PathBuf> {
 }
 
 struct Env {
+    _guard: TempDir,
     root: PathBuf,
     course: PathBuf,
     web: PathBuf,
@@ -65,14 +64,15 @@ struct Env {
 }
 
 fn env(tag: &str) -> Res<Env> {
-    let root = unique_dir(tag)?;
+    let guard = unique_dir(tag)?;
+    let root = guard.to_path_buf();
     let course = root.join("course");
     copy_dir(&demo(), &course)?;
     let _ = std::fs::remove_file(course.join("ids.lock"));
     let web = fixture_web(&root)?;
     let wasm = root.join("tiny.wasm");
     std::fs::write(&wasm, [0u8, 0x61, 0x73, 0x6d, 1, 0, 0, 0])?;
-    Ok(Env { root, course, web, wasm })
+    Ok(Env { _guard: guard, root, course, web, wasm })
 }
 
 fn build(e: &Env, out: &Path) -> Res<Output> {
