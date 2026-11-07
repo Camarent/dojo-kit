@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-07
+
+Validator fixes, web and ja test hardening, CLI symlink fix, session review counts. Items below.
+
+- fix(cli): reject web paths that resolve through a symlink out of the module
+- fix(validate): same-prompt skips retired items; dup_word keeps kana reading hints apart; same_prompt_different_answers compares items of one type only
+- fix(dup_word): cover choice items, unclosed brace, pairing by prompt key, rename check
+- fix(ja): applyAliases copies row; splitRuby astral kanji, lower complexity
+- fix(session): home review count uses the session queue
+- fix(web-tests): load ja harness from its own dir; loader discovers module scripts
+- feat(i18n): add fr pack entry and document module tiers
+- feat(hooks): allow commit type ci, warn when AUDIT.md is missing
+- refactor(validate): precompute closing brace index in dupes prompt parser
+- refactor(tests): move double-ruby test out of the kit; justify or drop dead_code allows in shared test helpers
+- test(cli): cover module manifest, i18n and bundle load errors; core trait defaults
+- test(web): core fixtures part 3 drop ja ruby scripts from loadBundle lists; intro-card test uses core ext harness
+- test(session): cover gap retry variations not counted
+- test(ext): compare feedback rows by structure, applyAliases returns copies
+- test(ja): keep double-ruby test data Latin-only for core-latin guard
+- docs(modules): sync crates, modules, web and schema docs with stage code
+
 ## [0.2.0] - 2026-11-06
 
 Optional language packs and logic modules (ja, ru); dojo-kit core is English only. Items below.

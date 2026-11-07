@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "dojo-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dojo-core",
  "dojo-modules",
@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "dojo-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "schemars",
  "serde",
@@ -23,21 +23,21 @@ dependencies = [
 
 [[package]]
 name = "dojo-module-ja"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dojo-core",
 ]
 
 [[package]]
 name = "dojo-module-ru"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dojo-core",
 ]
 
 [[package]]
 name = "dojo-modules"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dojo-core",
  "dojo-module-ja",
@@ -47,7 +47,7 @@ dependencies = [
 
 [[package]]
 name = "dojo-wasm"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dojo-core",
 ]
