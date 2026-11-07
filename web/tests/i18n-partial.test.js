@@ -23,7 +23,7 @@ test('placeholders survive fallback path', () => {
   const sb = loadApp();
   const i18n = { en: { x: 'Hello {lang}' }, fr: {} };
   const t = sb.DojoApp._makeT(i18n, 'fr');
-  assert.strictEqual(t('x', { lang: 'ja' }), 'Hello ja');
+  assert.strictEqual(t('x', { lang: 'de' }), 'Hello de');
 });
 
 test('placeholder is kept when its variable is not supplied', () => {

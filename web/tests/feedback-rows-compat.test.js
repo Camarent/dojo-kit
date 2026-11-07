@@ -8,7 +8,7 @@ const { loadBundle } = require('./load-bundle.js');
 
 const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 
-// Real registry + ext, then the stimulus UI that renders feedback rows. No ja module loaded.
+// Real registry + ext, then the stimulus UI that renders feedback rows. No extra module loaded.
 function loadStimulus() {
   const sb = { console: { warn() {}, log() {} } };
   loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext.js'] });

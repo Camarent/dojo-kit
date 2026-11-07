@@ -16,7 +16,7 @@ const mounted = [];
 async function mount(items, courseExtra, intros) {
   const { sb, win } = loadSandbox();
   const dojo = await DojoWasm.load(fs.readFileSync(checkWasmFresh()));
-  const course = Object.assign({ id: 'c', title: 'C', units: [{ id: 'u' }], markup: 'ja-readings' }, courseExtra);
+  const course = Object.assign({ id: 'c', title: 'C', units: [{ id: 'u' }] }, courseExtra);
   const content = { v: 1, course, items, version: 't', lock: items.map((i) => i.id) };
   if (intros) content.intros = intros;
   const d = { v: 1, t: 0, items: {}, stats: { days: {}, newByDay: {} }, settings: {}, exams: {} };

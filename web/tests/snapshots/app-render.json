@@ -2053,7 +2053,7 @@
                   "data-testid": "speech-diag",
                   "class": "muted",
                   "children": [
-                    "Speech synthesis: yes; voices: 1; for ja: 1"
+                    "Speech synthesis: yes; voices: 1; for fr: 1"
                   ]
                 }
               },
@@ -2097,9 +2097,9 @@
                                   {
                                     "type": "option",
                                     "props": {
-                                      "value": "Kyoko",
+                                      "value": "Amelie",
                                       "children": [
-                                        "Kyoko (ja-JP)"
+                                        "Amelie (fr-FR)"
                                       ]
                                     }
                                   }
@@ -3032,7 +3032,7 @@
                   "data-testid": "speech-diag",
                   "class": "muted",
                   "children": [
-                    "Speech synthesis: yes; voices: 1; for ja: 1"
+                    "Speech synthesis: yes; voices: 1; for fr: 1"
                   ]
                 }
               },
@@ -3076,9 +3076,9 @@
                                   {
                                     "type": "option",
                                     "props": {
-                                      "value": "Kyoko",
+                                      "value": "Amelie",
                                       "children": [
-                                        "Kyoko (ja-JP)"
+                                        "Amelie (fr-FR)"
                                       ]
                                     }
                                   }
@@ -4388,7 +4388,7 @@
                   "data-testid": "speech-diag",
                   "class": "muted",
                   "children": [
-                    "Speech synthesis: yes; voices: 1; for ja: 1"
+                    "Speech synthesis: yes; voices: 1; for fr: 1"
                   ]
                 }
               },
@@ -4432,9 +4432,9 @@
                                   {
                                     "type": "option",
                                     "props": {
-                                      "value": "Kyoko",
+                                      "value": "Amelie",
                                       "children": [
-                                        "Kyoko (ja-JP)"
+                                        "Amelie (fr-FR)"
                                       ]
                                     }
                                   }
@@ -5203,7 +5203,7 @@
                     "class": "notice",
                     "role": "status",
                     "children": [
-                      "This device has no voice for \"Japanese\". Install one in your system speech settings."
+                      "This device has no voice for \"French\". Install one in your system speech settings."
                     ]
                   }
                 }

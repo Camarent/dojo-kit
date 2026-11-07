@@ -18,10 +18,10 @@ function mkContent() {
   return {
     items,
     course: {
-      id: 'c', title: 'C', contentLanguage: 'ja', uiLanguage: 'en', units,
+      id: 'c', title: 'C', contentLanguage: 'fr', uiLanguage: 'en', units,
       groups: [{ id: 'g1', title: 'Group 1', units: ['u1'], newPerDay: 5 }],
       exams: [{ id: 'm1', title: 'Mock Exam', passMark: 0.5, minutes: 30, sections: [{ title: 'Section A', count: 3, tags: ['a'] }, { title: 'Section B', count: 3, tags: ['b'] }] }],
-      speech: { lang: 'ja' },
+      speech: { lang: 'fr' },
       newPerDay: 10,
       bars: [{ title: 'Unit A bar', units: ['u1'], learnedStage: 1 }],
       placement: { mode: 'check' }
@@ -62,7 +62,7 @@ function serializeNode(n) {
   return { type: n.type.name || String(n.type), props };
 }
 
-const VOICES = [{ name: 'Kyoko', lang: 'ja-JP' }];
+const VOICES = [{ name: 'Amelie', lang: 'fr-FR' }];
 const WRONG_LANG_VOICES = [{ name: 'Samantha', lang: 'en-US' }];
 
 function snapshotAll(m) {

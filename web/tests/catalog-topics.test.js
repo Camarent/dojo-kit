@@ -77,13 +77,13 @@ test('search works and the count is in topics', async () => {
 
 test('topic title: meta.title wins over everything else', async () => {
   const c = await open({ items: [
-    Object.assign(gap('t1', 'ent1'), { meta: { title: 'My Title', kanji: 'Nihongo', ru: 'Japanese' } })
+    Object.assign(gap('t1', 'ent1'), { meta: { title: 'My Title', alpha: 'Nihongo', beta: 'Japanese' } })
   ] });
   assert.strictEqual(label(c, 'ent1'), 'My Title');
 });
 
 test('topic title: no meta.title uses the entity intro title', async () => {
-  const c = await open({ items: [gap('t2', 'ent2', { meta: { kanji: 'x' } })], intros: [{ id: 'ent2', title: 'Intro Word', text: 'gloss' }] });
+  const c = await open({ items: [gap('t2', 'ent2', { meta: { alpha: 'x' } })], intros: [{ id: 'ent2', title: 'Intro Word', text: 'gloss' }] });
   assert.strictEqual(label(c, 'ent2'), 'Intro Word');
 });
 
@@ -93,7 +93,7 @@ test('topic title: meta.title beats the intro title', async () => {
 });
 
 test('topic title: no topic source never shows the prompt; unit title is used', async () => {
-  const c = await open({ items: [gap('t4', 'ent4', { prompt: 'Hiragana: a' })], course: { units: [{ id: 'u1', title: 'U1' }] } });
+  const c = await open({ items: [gap('t4', 'ent4', { prompt: 'Hint: a' })], course: { units: [{ id: 'u1', title: 'U1' }] } });
   assert.strictEqual(label(c, 'ent4'), 'U1');
 });
 

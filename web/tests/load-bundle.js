@@ -26,7 +26,7 @@ function bundleScripts(bundle = DEFAULT_BUNDLE) {
   return b.scripts.filter((s) => s !== '@course' && s !== '@modules');
 }
 
-// Bundle scripts with "@modules" replaced by the ja module scripts and "@course" dropped.
+// Bundle scripts with "@modules" replaced by the module scripts and "@course" dropped.
 function withModules(bundle) {
   const b = typeof bundle === 'string' ? JSON.parse(fs.readFileSync(bundle, 'utf8')) : bundle;
   return b.scripts.flatMap((s) => (s === '@modules' ? moduleScripts() : s === '@course' ? [] : [s]));
