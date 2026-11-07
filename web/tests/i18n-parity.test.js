@@ -13,7 +13,10 @@ const dicts = fs.readdirSync(i18nDir).filter((f) => f.endsWith('.json') && f !==
 const en = readJson('en.json');
 
 test('every web/i18n dictionary has the en.json keys (plural families folded)', () => {
-  assert.ok(dicts.includes('fr.json') && dicts.includes('ru.json'), dicts.join(','));
+  const packLangs = Object.keys(readJson(PACKS));
+  ['fr', 'ru', 'ja'].forEach((lang) => {
+    assert.ok(packLangs.includes(lang) && dicts.includes(lang + '.json'), 'pack ' + lang + ' missing from packs.json or dictionaries: ' + dicts.join(','));
+  });
   const want = bases(en);
   dicts.forEach((f) => {
     const got = bases(readJson(f));
