@@ -56,7 +56,7 @@ if [ -n "$COV" ]; then
     step "cargo llvm-cov --workspace" cargo llvm-cov --workspace --lcov --output-path "$COV/rust.lcov.info"
     step "node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js (coverage)" node --test --experimental-test-coverage --test-coverage-exclude='**/tests/**' --test-coverage-exclude='**/vendor/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination="$COV/js.lcov.info" modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js
 else
-    step "cargo test --workspace" cargo test --workspace
+    step "cargo test --workspace" bash scripts/tmp-leak-check.sh -- cargo test --workspace
     step "node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js" node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js
 fi
 step "node tests/wasm-smoke.js" node tests/wasm-smoke.js
