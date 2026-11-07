@@ -10,8 +10,8 @@ const H = require('./app-harness.js');
 
 async function start(o) {
   const m = await H.mount(Object.assign({ 
-    win: H.fakeWin([{ name: 'Kyoko', lang: 'ja-JP' }]), 
-    course: { contentLanguage: 'ja' }, 
+    win: H.fakeWin([{ name: 'Alex', lang: 'en-US' }]),
+    course: { contentLanguage: 'en' },
     items: [{ id: 'i1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['a'], speak: 'hello' }] 
   }, o));
   m.app.startMode('daily', {});
