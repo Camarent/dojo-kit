@@ -5,7 +5,7 @@ const { loadBundle } = require('./load-bundle.js');
 
 function ext() {
   const sb = { console: { warn() {}, log() {} } };
-  loadBundle(sb, { only: ['ext/registry.js', 'ext/input-script.js', 'ext.js', '../modules/ja/web/ruby-dict.js', '../modules/ja/web/ruby.js', '../modules/ja/web/readings.js', '../modules/ja/web/kanji-rows.js'] });
+  loadBundle(sb, { only: ['ext/registry.js', 'ext/input-script.js', 'ext.js'] });
   return sb.DojoExt;
 }
 

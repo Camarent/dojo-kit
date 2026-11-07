@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const DojoWasm = require('../dojo-wasm.js');
 const DojoSession = require('../session.js');
-const DojoExt = require('./ja-ext.js');
+const DojoExt = require('../ext.js');
 const { checkWasmFresh } = require('./loader.js');
 
 const NOW = 1760000000000;

@@ -1,6 +1,6 @@
 mod common;
 use common::*;
-use dojo_core::content::{Course, Item, ItemType};
+use dojo_core::content::{Course, Item, ItemType, parse_course};
 use dojo_core::validate::{CODES, Diagnostic, ItemChecker, Severity, ValidatorModule, all_codes, validate_with_modules};
 
 /// Fires one code through every hook: checker, fragment table, prompt trigger, disambiguation word.
@@ -93,4 +93,32 @@ fn all_codes_merges_module_codes() {
     names.dedup();
     assert_eq!(names.len(), all.len(), "duplicate code in all_codes");
     assert_eq!(all_codes(&[]).len(), CODES.len());
+}
+
+/// Overrides only `id`, so every other hook takes its trait default.
+struct Bare;
+
+impl ValidatorModule for Bare {
+    fn id(&self) -> &'static str {
+        "bare"
+    }
+}
+
+#[test]
+fn trait_defaults_are_no_ops() {
+    let course = parse_course(&with_course(r#""contentLanguage":"xx""#)).unwrap();
+    let module = Bare;
+    assert!(module.codes().is_empty());
+    assert!(module.fragment_check("xx").is_none());
+    assert!(module.prompt_triggers().is_empty());
+    assert!(module.disambiguation_words().is_empty());
+    assert!(module.course_checker(&course, &[]).is_none());
+}
+
+#[test]
+fn module_with_only_defaults_matches_validate() {
+    let course = with_course(r#""contentLanguage":"xx""#);
+    let files = [file("content/u.jsonl", &[ZAP, ORDER, CAT].join("\n"))];
+    let modules: Vec<Box<dyn ValidatorModule>> = vec![Box::new(Bare)];
+    assert_eq!(validate_with_modules(&course, &files, None, None, None, &modules), dojo_core::validate::validate(&course, &files, None));
 }

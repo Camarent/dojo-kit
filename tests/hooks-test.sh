@@ -560,6 +560,26 @@ new_repo; echo s > s.txt; git add s.txt
 expect_refused "Test 30: set dojo.owner refuses another login, numeric form too" "noreply address" git -c user.email="3629354+other@users.noreply.github.com" commit --quiet -m "feat(core): add thing"
 cd "$scratch"
 
+# Test 31-33: type ci is allowed, unknown types stay refused; a missing AUDIT.md warns but never refuses
+made=""
+new_repo; made="$made $d"; echo s > s.txt; git add s.txt
+expect_ok "Test 31: type ci with area is accepted" git commit --quiet -m "ci(x): y" --author="$A"
+cd "$scratch"
+new_repo; made="$made $d"; echo s > s.txt; git add s.txt
+expect_refused "Test 31b: unknown type bogus is refused" "subject must match" git commit --quiet -m "bogus(x): y" --author="$A"
+cd "$scratch"
+new_repo; made="$made $d"; echo s > s.txt; git add s.txt
+echo "Test 32: missing AUDIT.md warns on stderr and the commit still passes"
+out=$(git commit --quiet -m "feat(core): no audit" --author="$A" 2>&1)
+if [ $? -eq 0 ] && echo "$out" | grep -q "AUDIT.md missing"; then echo "PASS"; else echo "FAIL: no warning, or commit refused"; fail_count=$((fail_count + 1)); fi
+cd "$scratch"
+new_repo; made="$made $d"; echo s > s.txt; git add s.txt; echo x > AUDIT.md
+echo "Test 33: present AUDIT.md gives no warning"
+out=$(git commit --quiet -m "feat(core): with audit" --author="$A" 2>&1)
+if [ $? -eq 0 ] && ! echo "$out" | grep -q "AUDIT.md missing"; then echo "PASS"; else echo "FAIL: warning printed or commit refused"; fail_count=$((fail_count + 1)); fi
+cd "$scratch"
+rm -rf $made
+
 # Internal process paths come from the untracked .git/info/guard-paths, never from the public hook:
 # without the file they pass, with it they are refused (git add -f simulates a missing ignore rule)
 gp=$(git rev-parse --git-path info/guard-paths)

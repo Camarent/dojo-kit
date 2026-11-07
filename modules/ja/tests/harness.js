@@ -16,7 +16,7 @@ const bundle = require(path.join(web, 'tests', 'load-bundle.js'));
 module.exports = {
   web,
   appHarness: require(path.join(web, 'tests', 'app-harness.js')),
-  jaExt: require(path.join(web, 'tests', 'ja-ext.js')),
+  jaExt: require('./ja-ext.js'),
   ext: require(path.join(web, 'ext.js')),
   loadBundle: bundle.loadBundle,
   readSource: bundle.readSource,

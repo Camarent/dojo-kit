@@ -31,6 +31,11 @@ fn normalize_answer_set(item: &Item, course_norm: Option<&Normalize>) -> Vec<Vec
                 })
                 .collect()
         }
+        Item::Choice(c) => {
+            // The answer is the correct option; a bad index is reported by the item check, not here.
+            let v: Vec<String> = c.options.get(c.answer).map(|o| normalize(o, &norm_opts)).into_iter().collect();
+            vec![v]
+        }
         Item::Numeric(n) => {
             // For numeric, we convert the answer to a normalized string representation
             vec![vec![format!("{:.6}", n.answer)]]
@@ -51,19 +56,19 @@ fn effective_norm(item: &Item, course_norm: Option<&Normalize>) -> Normalize {
 
 /// Check for items with same prompt but different answers
 pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
-    // Group items by normalized prompt, but only for gap, cloze, and numeric types
+    // Group items by type and normalized prompt, but only for gap, cloze, numeric, and choice types
     // and only for non-stimulus items
     let mut by_prompt: BTreeMap<String, Vec<(&str, usize, &Item)>> = BTreeMap::new();
     
     for (file, line, item) in items {
-        // Skip stimulus items
-        if item.stimulus().is_some() {
+        // Skip stimulus and retired items
+        if item.stimulus().is_some() || item.is_retired() {
             continue;
         }
         
-        // Only check gap, cloze, and numeric
+        // Only check gap, cloze, numeric, and choice
         let item_type = item.item_type();
-        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric) {
+        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric | ItemType::Choice) {
             continue;
         }
         
@@ -76,7 +81,8 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
             continue;
         }
         
-        by_prompt.entry(norm_prompt).or_default().push((*file, *line, *item));
+        // Different types are different skills (e.g. meaning choice vs reading gap on one headword)
+        by_prompt.entry(format!("{item_type:?}\u{0}{norm_prompt}")).or_default().push((*file, *line, *item));
     }
     
     // For each prompt with multiple items, check if they have different answer sets
@@ -108,43 +114,86 @@ pub(super) fn check_same_prompt_diff_answers(items: &[(&str, usize, &Item)], sin
 
 /// Prompt reduced for duplicate matching: lowercase, `{base|reading}` ruby kept as base, parenthesised hints removed, whitespace collapsed, trailing punctuation trimmed.
 fn dup_prompt_key(prompt: &str) -> String {
+    prompt_parts(prompt).0
+}
+
+/// Kana-only parenthesised hints (readings, a reading hint after a kanji headword) and ruby readings of a prompt.
+fn prompt_readings(prompt: &str) -> (Vec<String>, Vec<String>) {
+    let parts = prompt_parts(prompt);
+    (parts.1, parts.2)
+}
+
+/// True when the prompts carry kana hints that name different cards: a hint that is neither the other prompt's hint nor a ruby reading of either prompt.
+fn kana_hints_differ(a: &str, b: &str) -> bool {
+    let (ah, ar) = prompt_readings(a);
+    let (bh, br) = prompt_readings(b);
+    let only = |own: &[String], other: &[String]| own.iter().any(|h| !other.contains(h) && !ar.contains(h) && !br.contains(h));
+    only(&ah, &bh) || only(&bh, &ah)
+}
+
+/// (key, kana hints, ruby readings) of a prompt.
+fn prompt_parts(prompt: &str) -> (String, Vec<String>, Vec<String>) {
     let mut out = String::new();
     let mut depth = 0usize;
     let mut in_ruby_reading = false;
     let mut in_ruby = false;
-    for c in prompt.chars() {
+    let mut hint = String::new();
+    let mut hints: Vec<String> = Vec::new();
+    let mut readings: Vec<String> = Vec::new();
+    let last_close = prompt.rfind('}');
+    for (idx, c) in prompt.char_indices() {
         match c {
-            '(' | '\u{ff08}' => depth += 1,
-            ')' | '\u{ff09}' => depth = depth.saturating_sub(1),
-            _ if depth > 0 => {}
-            '{' => in_ruby = true,
+            '(' | '\u{ff08}' => {
+                if depth == 0 {
+                    hint.clear();
+                }
+                depth += 1;
+            }
+            ')' | '\u{ff09}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 && !hint.is_empty() && hint.chars().all(|k| ('\u{3040}'..='\u{30ff}').contains(&k)) {
+                    hints.push(hint.clone());
+                }
+            }
+            _ if depth > 0 => hint.push(c),
+            // An unclosed `{` is plain text, so it cannot hide the rest of the prompt.
+            '{' if last_close.is_some_and(|close| close > idx) => {
+                in_ruby = true;
+                readings.push(String::new());
+            }
             '|' if in_ruby => in_ruby_reading = true,
             '}' if in_ruby => {
                 in_ruby = false;
                 in_ruby_reading = false;
             }
-            _ if in_ruby_reading => {}
+            _ if in_ruby_reading => {
+                if let Some(r) = readings.last_mut() {
+                    r.push(c);
+                }
+            }
             _ => out.extend(c.to_lowercase()),
         }
     }
     let collapsed = out.split_whitespace().collect::<Vec<_>>().join(" ");
-    collapsed.trim_end_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace() || "\u{3002}\u{3001}\u{ff01}\u{ff1f}\u{2026}".contains(c)).to_string()
+    let key = collapsed.trim_end_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace() || "\u{3002}\u{3001}\u{ff01}\u{ff1f}\u{2026}".contains(c)).to_string();
+    (key, hints, readings)
 }
 
-/// One candidate for the dup_word check: file, line, item, prompt key, flat answer set.
-type DupCandidate<'a> = (&'a str, usize, &'a Item, String, BTreeSet<String>);
+/// One candidate for the dup_word check: file, line, item, flat answer set.
+type DupCandidate<'a> = (&'a str, usize, &'a Item, BTreeSet<String>);
 
 /// Check for live items in the same unit and type whose prompts match (after normalization) and whose one answer set contains the other (likely one word entered twice)
-pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
+pub(super) fn check_dup_word(items: &[(&str, usize, &Item)], sink: &mut Sink, course_norm: Option<&Normalize>) {
     let superseded: BTreeSet<&str> = items.iter().filter_map(|(_, _, it)| it.supersedes_field()).flatten().map(String::as_str).collect();
-    let mut by_group: BTreeMap<(String, &str), Vec<DupCandidate>> = BTreeMap::new();
+    // Grouped by unit, type and prompt key, so only items with the same prompt are compared pairwise.
+    let mut by_group: BTreeMap<(String, &str, String), Vec<DupCandidate>> = BTreeMap::new();
 
     for (file, line, item) in items {
         if item.stimulus().is_some() || item.is_retired() || superseded.contains(item.id()) {
             continue;
         }
         let item_type = item.item_type();
-        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric) {
+        if !matches!(item_type, ItemType::Gap | ItemType::Cloze | ItemType::Numeric | ItemType::Choice) {
             continue;
         }
         let answers: BTreeSet<String> = normalize_answer_set(item, course_norm).into_iter().flatten().collect();
@@ -155,13 +204,13 @@ pub(super) fn check_same_answer_diff_prompts(items: &[(&str, usize, &Item)], sin
         if key.is_empty() {
             continue;
         }
-        by_group.entry((item.unit().to_string(), item_type.as_str())).or_default().push((*file, *line, *item, key, answers));
+        by_group.entry((item.unit().to_string(), item_type.as_str(), key)).or_default().push((*file, *line, *item, answers));
     }
 
     for group in by_group.values() {
         for (i, a) in group.iter().enumerate() {
             for b in group.iter().skip(i + 1) {
-                if a.3 != b.3 || !(a.4.is_subset(&b.4) || b.4.is_subset(&a.4)) {
+                if !(a.3.is_subset(&b.3) || b.3.is_subset(&a.3)) || kana_hints_differ(a.2.prompt(), b.2.prompt()) {
                     continue;
                 }
                 sink.warning(

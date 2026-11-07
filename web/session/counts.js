@@ -64,7 +64,8 @@
     var bq = ctx.fn.builtQueue();
     var newToday = bq.fresh.length;
     var totals = { total: active.length, fresh: t.fresh, learning: t.learning, learned: t.learned };
-    var out = { total: ctx.items.length, active: active.length, due: t.due, fresh: t.fresh, learning: t.learning, learned: t.learned, newToday: newToday, queue: bq.due.length + bq.fresh.length, byUnit: st.byUnit, totals: totals };
+    // Due = the due items the session will show (same builtQueue), not every due item of every unit.
+    var out = { total: ctx.items.length, active: active.length, due: bq.due.length, fresh: t.fresh, learning: t.learning, learned: t.learned, newToday: newToday, queue: bq.due.length + bq.fresh.length, byUnit: st.byUnit, totals: totals };
     if (ctx.groupList.length || (ctx.course.bars && ctx.course.bars.length)) {
       var gc = groupCounts(ctx);
       out.groups = gc.groups;

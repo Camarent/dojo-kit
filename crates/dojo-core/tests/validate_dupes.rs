@@ -91,13 +91,47 @@ fn numeric_same_prompt_diff_answers() {
 }
 
 #[test]
-fn choice_items_not_checked() {
-    // Choice items should not be checked (only gap, cloze, numeric)
+fn choice_items_same_prompt_different_correct_option_warn() {
+    // The answer of a choice item is its correct option, so different correct options warn
     let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"What is 9?","options":["nine","ten"],"answer":0}"#;
     let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"What is 9?","options":["eleven","twelve"],"answer":0}"#;
     let d = run(COURSE, &[l1, l2]);
     let codes = codes(&d);
-    assert!(!codes.contains(&"same_prompt_different_answers"), "Should not warn for choice items, got {d:?}");
+    assert!(codes.contains(&"same_prompt_different_answers"), "Expected same_prompt_different_answers for choice, got {d:?}");
+}
+
+#[test]
+fn choice_same_prompt_different_options_no_warning() {
+    // Same prompt and same correct option, only the distractors differ -> no warning
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"What is 9?","options":["nine","ten"],"answer":0}"#;
+    let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"What is 9?","options":["nine","eleven"],"answer":0}"#;
+    let d = run(COURSE, &[l1, l2]);
+    assert!(!codes(&d).contains(&"same_prompt_different_answers"), "distractors alone must not warn, got {d:?}");
+}
+
+#[test]
+fn same_options_diff_answers_warns() {
+    // Same prompt and same option set, different correct option -> warning
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"What is 9?","options":["nine","ten"],"answer":0}"#;
+    let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"What is 9?","options":["nine","ten"],"answer":1}"#;
+    let d = run(COURSE, &[l1, l2]);
+    assert!(codes(&d).contains(&"same_prompt_different_answers"), "same options, different answer must warn, got {d:?}");
+}
+
+#[test]
+fn choice_and_gap_with_same_prompt_do_not_warn() {
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"nine","options":["\u0434\u0435\u0432\u044f\u0442\u044c","\u0434\u0435\u0441\u044f\u0442\u044c"],"answer":0}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"nine","answers":["\u304d\u3085\u3046"]}"#;
+    let d = run(COURSE, &[l1, l2]);
+    assert!(!codes(&d).contains(&"same_prompt_different_answers"), "cross-type pair must not warn, got {d:?}");
+}
+
+#[test]
+fn retired_item_does_not_warn_same_prompt() {
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"What is 9?","answers":["nine"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"What is 9?","answers":["ten"],"status":"retired"}"#;
+    let d = run(COURSE, &[l1, l2]);
+    assert!(!codes(&d).contains(&"same_prompt_different_answers"), "retired item must not warn, got {d:?}");
 }
 
 #[test]
@@ -162,6 +196,20 @@ fn dup_word_hint_prompt_vs_plain_prompt_overlapping_answers() {
     for id in ["u-1", "u-2"] {
         assert!(w[0].message.contains(id), "message lists {id}: {}", w[0].message);
     }
+}
+
+#[test]
+fn dup_word_kana_hints_name_different_cards() {
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"\u4e03 (\u0441\u043b\u043e\u0432\u043e)","options":["\u0441\u0435\u043c\u044c","\u0434\u0432\u0430"],"answer":0}"#;
+    let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"\u4e03 (\u3057\u3061)","options":["\u0442\u0440\u0438","\u0441\u0435\u043c\u044c"],"answer":1}"#;
+    assert!(!dup_word_fires(&[l1, l2]), "different reading hints are different cards");
+}
+
+#[test]
+fn dup_word_kana_hint_equal_to_ruby_reading_still_fires() {
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"{\u660e\u65e5|\u3042\u3059}","options":["\u0437\u0430\u0432\u0442\u0440\u0430","\u0434\u0432\u0430"],"answer":0}"#;
+    let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"\u660e\u65e5 (\u3042\u3059)","options":["\u0442\u0440\u0438","\u0437\u0430\u0432\u0442\u0440\u0430"],"answer":1}"#;
+    assert!(dup_word_fires(&[l1, l2]), "hint equal to the ruby reading is the same card");
 }
 
 #[test]
@@ -232,6 +280,21 @@ fn dup_word_other_unit_no_fire() {
 fn dup_word_other_type_no_fire() {
     let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"nine","answers":["9"]}"#;
     let l2 = r#"{"type":"numeric","id":"u-2","unit":"u","prompt":"nine","answer":9}"#;
+    assert!(!dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_choice_same_prompt_same_correct_option_fires() {
+    let l1 = r#"{"type":"choice","id":"u-1","unit":"u","prompt":"swim","options":["swim","sink"],"answer":0}"#;
+    let l2 = r#"{"type":"choice","id":"u-2","unit":"u","prompt":"swim","options":["swim","run"],"answer":0}"#;
+    assert!(dup_word_fires(&[l1, l2]));
+}
+
+#[test]
+fn dup_word_unclosed_brace_keeps_rest_of_prompt() {
+    // An unclosed `{` is plain text: the readings after `|` must not be dropped
+    let l1 = r#"{"type":"gap","id":"u-1","unit":"u","prompt":"swim {x|y","answers":["swim"]}"#;
+    let l2 = r#"{"type":"gap","id":"u-2","unit":"u","prompt":"swim {x|z","answers":["swim"]}"#;
     assert!(!dup_word_fires(&[l1, l2]));
 }
 

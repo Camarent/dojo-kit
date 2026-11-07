@@ -62,16 +62,18 @@
     else S.feedbackRowsFn = fn;
   }
 
+  // Returns a copy: the plugin's row may be frozen or shared, so it is never written to.
   function applyAliases(row) {
     if (!row || typeof row !== 'object') return row;
+    var out = Object.assign({}, row);
     Object.keys(rowAliases).forEach(function (field) {
-      if (row[field] !== undefined) return;
+      if (out[field] !== undefined) return;
       for (var i = 0; i < rowAliases[field].length; i++) {
         var v = row[rowAliases[field][i]];
-        if (v !== undefined) { row[field] = v; return; }
+        if (v !== undefined) { out[field] = v; return; }
       }
     });
-    return row;
+    return out;
   }
 
   function guardedRows(fn, item, ctx) {

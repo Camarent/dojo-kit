@@ -18,6 +18,11 @@ Reference implementation of the progress document and SRS logic (taken from the 
 - `tools/jsonl.js` `writeJsonl(file, rows)` (`module.exports`, line 42) - overwrites `file` with one `JSON.stringify(row)` per line; no rows gives an empty file. Companions `readJson`, `readJsonl`.
 - `tools/review-audio.js` `buildReviewPage({ manifestPath, rows, base })` (line 64) returns the HTML of a self-contained audio review page; `esc` is also exported. CLI: `node tools/review-audio.js <manifest.json> <rows.json> <out.html>` (`main`, line 79). The page inlines `web/audio.js`, plays only through `DojoAudio.configure/play`, and its flag export is `{"v":1,"ids":[...]}`, the shape of `audio/blocklist.json`.
 
+## Intake
+- No file in `tools/` implements intake. The `tools/` files are the frozen reference and the helpers listed above (`check-progress.js`, `fw-root.js`, `jsonl.js`, `real-exports.js`, `review-audio.js`, `reference/`).
+- Intake is the first step of building a course, described in `AGENTS.md` section 1 ("Intake (ask once, then decide)"). It is agent procedure, not code, so it lives outside `tools/`.
+- Course-building docs: `docs/AUTHORING.md` (field lists, existing-work check near line 44).
+
 ## Key files
 - `reference/progress.js` - progress sanitize, merge, stable JSON.
 - `reference/srs.js` - ladder scheduling and variant picking.

@@ -50,7 +50,8 @@ test('registerFeedbackRows: the hook result replaces rows; null when unset or th
   assert.strictEqual(E.feedbackRows({ prompt: 'p' }, {}), null);
   const rows = [{ kanji: 'D', meaning: 'day', on: ['NICHI'], kun: [] }];
   E.registerFeedbackRows((item, ctx) => (ctx.examMode ? null : rows));
-  assert.deepStrictEqual(E.feedbackRows({ prompt: 'p' }, { examMode: false }), rows);
+  // applyAliases returns copies, built in the ext vm realm: compare structure, not identity or prototypes.
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(E.feedbackRows({ prompt: 'p' }, { examMode: false }))), rows);
   assert.strictEqual(E.feedbackRows({ prompt: 'p' }, { examMode: true }), null);
   E.registerFeedbackRows(() => { throw new Error('boom'); });
   assert.strictEqual(E.feedbackRows({ prompt: 'p' }, {}), null);

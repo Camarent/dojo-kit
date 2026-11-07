@@ -26,7 +26,7 @@ Machine-readable description of the authoring format, for editors and AI agents.
 - `speech.voices[role].prefer` is a string array and `inputScript` a string array in `course.schema.json`; their semantic checks are `bad_voice_pattern` and `unknown_input_script` (`crates/dojo-core/src/validate/`). `ruby.drillTags`, `ruby.drillUnits` and `ruby.checkQuestions` are typed in `course.schema.json`; their checks are `ruby_missing` and `ruby_on_skip_kanji` (`crates/dojo-core/src/validate/ruby.rs`).
 - `tagLabels` values are `string | {label?, kind?}` (`$defs/TagLabel`, `$defs/TagLabelDetail` in `course.schema.json`).
 - `modules` (top-level, optional string array; the `"modules"` property in `schema/course.schema.json`): module ids the course enables; absent or empty means none. Existence of each id is checked by `dojo validate` (`module_missing`), see `docs/modules/modules.md`.
-- Duplicate words: `dup_word` (warning, `dojo validate`, `crates/dojo-core/src/validate/dupes.rs`) flags two live gap/cloze/numeric items with equal prompts and nested answer sets in the same unit and type. Fix it by retiring the duplicate (`lock.retired`) or by `supersedes` on the kept item; the schema itself does not check it.
+- Duplicate words: `dup_word` (warning, `dojo validate`, `crates/dojo-core/src/validate/dupes.rs`) flags two live gap/cloze/numeric/choice items with equal prompts and nested answer sets in the same unit and type. Fix it by retiring the duplicate (`lock.retired`) or by `supersedes` on the kept item; the schema itself does not check it.
 - There is no JSON Schema file for `stimuli.jsonl` or `intros.jsonl`; their shape (including stimulus `speak.lines`) is in the Rust types and in `dojo schema --brief`.
 
 ## Depends on / used by

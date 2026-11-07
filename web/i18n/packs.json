@@ -1,5 +1,8 @@
 {
   "ru": {
     "modules": ["ru"]
+  },
+  "fr": {
+    "modules": []
   }
 }
