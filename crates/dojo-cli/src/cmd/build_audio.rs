@@ -119,10 +119,20 @@ fn fill(obj: &mut Value) -> Result<(), String> {
 mod tests {
     use super::*;
 
+    /// Removes the scratch tree on drop, also when the test panics.
+    struct Cleanup(PathBuf);
+
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
     #[test]
     fn manifest_bytes_are_read_once_and_copied_from_memory() -> Result<(), Box<dyn std::error::Error>> {
         let tmp = std::env::temp_dir().join(format!("dojo-audio-once-{}", std::process::id()));
         let _ = fs::remove_dir_all(&tmp);
+        let _cleanup = Cleanup(tmp.clone());
         fs::create_dir_all(&tmp)?;
         fs::write(tmp.join("m.json"), r#"{"packs":[]}"#)?;
         let course = serde_json::json!({"audio": {"manifest": "m.json"}});
