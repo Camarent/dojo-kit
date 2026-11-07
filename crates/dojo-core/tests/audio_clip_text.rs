@@ -5,6 +5,9 @@ use dojo_core::validate::{check_audio_files, Diagnostic};
 use std::fs;
 use std::path::Path;
 
+mod common;
+use common::TempDir;
+
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 
@@ -25,15 +28,10 @@ fn audio_diags(dir: &Path, manifest: &str) -> Result<Vec<Diagnostic>, Box<dyn st
 }
 
 fn diags_for(m: &str) -> Result<Vec<Diagnostic>, Box<dyn std::error::Error>> {
-    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let n = N.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    let dir = std::env::temp_dir().join(format!("dojo-cliptext-{}-{n}", std::process::id()));
-    let _ = fs::remove_dir_all(&dir);
+    let dir = TempDir::new();
     write_manifest(&dir, "manifest.json", m)?;
     fs::write(dir.join("p.bin"), vec![0u8; 12])?;
-    let d = audio_diags(&dir, "manifest.json");
-    let _ = fs::remove_dir_all(&dir);
-    d
+    audio_diags(&dir, "manifest.json")
 }
 
 fn clip(extra: &str) -> String {

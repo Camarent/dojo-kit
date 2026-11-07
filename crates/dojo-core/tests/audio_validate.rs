@@ -112,25 +112,6 @@ fn stimulus_without_audio_serialises_unchanged() {
 // Audio file validation tests (require file I/O)
 // ============================================================================
 
-/// Creates a temporary directory for testing
-fn create_temp_dir() -> (std::path::PathBuf, impl Drop) {
-    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let n = N.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    let base = std::env::temp_dir().join(format!("dojo-audio-test-{}-{}", std::process::id(), n));
-    let path = base.join("test");
-    let _ = fs::remove_dir_all(&path);
-    fs::create_dir_all(&path).unwrap_or_else(|e| fail(&e.to_string()));
-
-    struct Cleanup(std::path::PathBuf);
-    impl Drop for Cleanup {
-        fn drop(&mut self) {
-            let _ = fs::remove_dir_all(&self.0);
-        }
-    }
-    
-    (path, Cleanup(base))
-}
-
 fn make_course_with_audio(manifest_path: &str) -> Course {
     Course {
         id: "test".to_string(),
@@ -178,7 +159,7 @@ fn make_course_with_audio(manifest_path: &str) -> Course {
 fn audio_without_manifest_path() {
     let course = make_course_with_audio("");
     
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let d = check_audio_files(&course, &temp_dir, &None);
     
     assert!(d.iter().any(|d| d.code == "audio_without_manifest"), "audio_without_manifest not in {d:?}");
@@ -188,7 +169,7 @@ fn audio_without_manifest_path() {
 fn audio_manifest_file_missing() {
     let course = make_course_with_audio("audio/manifest.json");
     
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let d = check_audio_files(&course, &temp_dir, &None);
     
     assert!(d.iter().any(|d| d.code == "audio_manifest_missing"), "audio_manifest_missing not in {d:?}");
@@ -197,7 +178,7 @@ fn audio_manifest_file_missing() {
 #[test]
 fn audio_unknown_clip() {
     // Create a temp dir with a good manifest
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let manifest_path = temp_dir.join("manifest.json");
     fs::write(&manifest_path, r#"{"v":1,"packs":[{"file":"p.bin","bytes":100,"enc":"raw"}],"clips":{}}"#).unwrap();
     
@@ -222,7 +203,7 @@ fn audio_unknown_clip() {
 #[test]
 fn audio_pack_missing() {
     // Create a temp dir with a manifest referencing a missing pack
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let manifest_path = temp_dir.join("manifest.json");
     fs::write(&manifest_path, r#"{"v":1,"packs":[{"file":"missing.bin","bytes":100,"enc":"raw"}],"clips":{}}"#).unwrap();
     
@@ -236,7 +217,7 @@ fn audio_pack_missing() {
 #[test]
 fn audio_pack_mismatch() {
     // Create a temp dir with a manifest and a pack file with wrong size
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let manifest_path = temp_dir.join("manifest.json");
     fs::write(&manifest_path, r#"{"v":1,"packs":[{"file":"p.bin","bytes":100,"enc":"raw"}],"clips":{}}"#).unwrap();
     
@@ -254,7 +235,7 @@ fn audio_pack_mismatch() {
 #[test]
 fn audio_good_course_no_errors() {
     // Create a complete valid setup
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     
     // Create manifest
     let manifest_path = temp_dir.join("manifest.json");
@@ -281,7 +262,7 @@ fn audio_good_course_no_errors() {
 
 #[test]
 fn audio_bad_manifest_version() {
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/audio/bad_version_manifest.json");
     fs::copy(fixture, temp_dir.join("manifest.json")).unwrap();
     fs::write(temp_dir.join("p.bin"), vec![0u8; 100]).unwrap();
@@ -293,7 +274,7 @@ fn audio_bad_manifest_version() {
 
 #[test]
 fn check_audio_files_does_not_repeat_pure_checks() {
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let course = make_course(r#""timer":{"baseMs":100},"srsByType":{"choice":{"mode":"errorWeighted"}}"#);
     let d = check_audio_files(&course, &temp_dir, &None);
     assert!(d.is_empty(), "{d:?}");
@@ -304,7 +285,7 @@ fn check_audio_files_does_not_repeat_pure_checks() {
 
 #[test]
 fn audio_bad_clip_id() {
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     fs::write(temp_dir.join("manifest.json"), r#"{"v":1,"packs":[{"file":"p.bin","bytes":10}],"clips":{"Bad_ID":{"pack":0,"off":0,"len":10,"ms":1,"mime":"audio/mp3"}}}"#).unwrap();
     fs::write(temp_dir.join("p.bin"), vec![0u8; 10]).unwrap();
     let d = check_audio_files(&make_course_with_audio("manifest.json"), &temp_dir, &None);
@@ -313,7 +294,7 @@ fn audio_bad_clip_id() {
 
 #[test]
 fn audio_stimulus_clip_count() {
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     let many: Vec<String> = (0..33).map(|i| format!("\"c{i}\"")).collect();
     for list in ["[]".to_string(), format!("[{}]", many.join(","))] {
         let stim = Some(SourceFile { name: "stimuli.jsonl".into(), text: format!(r#"{{"id":"s1","text":"T","audio":{list}}}"#) });
@@ -325,7 +306,7 @@ fn audio_stimulus_clip_count() {
 
 #[test]
 fn audio_manifest_path_escape() {
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     for m in ["../manifest.json", "/etc/passwd", "a/../../m.json"] {
         let d = check_audio_files(&make_course_with_audio(m), &temp_dir, &None);
         assert!(d.iter().any(|d| d.code == "audio_path_escape"), "{m}: {d:?}");
@@ -334,7 +315,7 @@ fn audio_manifest_path_escape() {
 
 #[test]
 fn audio_pack_path_escape() {
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     fs::write(temp_dir.join("manifest.json"), r#"{"v":1,"packs":[{"file":"../p.bin","bytes":10}],"clips":{}}"#).unwrap();
     let d = check_audio_files(&make_course_with_audio("manifest.json"), &temp_dir, &None);
     assert!(d.iter().any(|d| d.code == "audio_bad_manifest"), "{d:?}");
@@ -342,7 +323,7 @@ fn audio_pack_path_escape() {
 
 #[test]
 fn audio_bad_manifest_not_json() {
-    let (temp_dir, _cleanup) = create_temp_dir();
+    let temp_dir = TempDir::new();
     fs::write(temp_dir.join("manifest.json"), "{nope").unwrap();
     let course = make_course_with_audio("manifest.json");
     let d = check_audio_files(&course, &temp_dir, &None);
@@ -373,7 +354,7 @@ const ONE_PACK: &str = r#"{"v":1,"packs":[{"file":"pack-00.bin","bytes":100}],"c
 
 #[test]
 fn pack_resolved_against_manifest_dir() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     write_manifest(&dir, "audio/manifest.json", ONE_PACK);
     fs::write(dir.join("audio/pack-00.bin"), vec![0u8; 100]).unwrap();
     assert!(audio_diags(&dir, "audio/manifest.json", None).is_empty());
@@ -381,7 +362,7 @@ fn pack_resolved_against_manifest_dir() {
 
 #[test]
 fn pack_in_course_root_is_missing_for_subdir_manifest() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     write_manifest(&dir, "audio/manifest.json", ONE_PACK);
     fs::write(dir.join("pack-00.bin"), vec![0u8; 100]).unwrap();
     let d = audio_diags(&dir, "audio/manifest.json", None);
@@ -390,7 +371,7 @@ fn pack_in_course_root_is_missing_for_subdir_manifest() {
 
 #[test]
 fn pack_file_with_separator_is_bad_manifest() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     let m = ONE_PACK.replace("pack-00.bin", "audio/p.bin");
     write_manifest(&dir, "manifest.json", &m);
     let d = audio_diags(&dir, "manifest.json", None);
@@ -401,7 +382,7 @@ const STIMS_NO_AUDIO_CFG: &str = "{\"id\":\"s1\",\"text\":\"T\",\"audio\":[\"a\"
 
 #[test]
 fn stimulus_audio_without_course_audio() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     let stim = Some(SourceFile { name: "stimuli.jsonl".into(), text: STIMS_NO_AUDIO_CFG.into() });
     let d = check_audio_files(&make_course(r#""confusions":true"#), &dir, &stim);
     assert_eq!(
@@ -417,7 +398,7 @@ fn stimulus_audio_without_course_audio() {
 
 #[test]
 fn stimulus_duplicate_clip_ids() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     write_manifest(&dir, "manifest.json", ONE_PACK);
     fs::write(dir.join("pack-00.bin"), vec![0u8; 100]).unwrap();
     let d = audio_diags(&dir, "manifest.json", Some(r#"{"id":"s","text":"T","audio":["a","a"]}"#));
@@ -426,7 +407,7 @@ fn stimulus_duplicate_clip_ids() {
 
 #[test]
 fn diagnostics_have_contract_order_and_are_repeatable() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     let m = r#"{"v":1,"packs":[{"file":"p0.bin","bytes":10},{"file":"p1.bin","bytes":10}],"clips":{"zz":{"pack":5,"off":0,"len":1,"ms":1,"mime":"m"},"aa":{"pack":0,"off":0,"len":0,"ms":1,"mime":"m"}}}"#;
     write_manifest(&dir, "manifest.json", m);
     fs::write(dir.join("p1.bin"), vec![0u8; 3]).unwrap();
@@ -455,7 +436,7 @@ fn manifest_with_clip(pack: &str, clip: &str) -> String {
 }
 
 fn bad_manifest_count(m: &str) -> usize {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     write_manifest(&dir, "manifest.json", m);
     fs::write(dir.join("p.bin"), vec![0u8; 12]).unwrap_or_else(|e| fail(&e.to_string()));
     audio_diags(&dir, "manifest.json", None).iter().filter(|d| d.code == "audio_bad_manifest").count()
@@ -501,7 +482,7 @@ fn manifest_unknown_fields_are_ignored() {
 
 #[test]
 fn manifest_wrong_type_names_parser_error() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     write_manifest(&dir, "manifest.json", r#"{"v":1,"packs":[{"file":"p.bin","bytes":"12"}],"clips":{}}"#);
     let d = audio_diags(&dir, "manifest.json", None);
     assert_eq!(d.len(), 1, "{d:?}");
@@ -531,7 +512,7 @@ fn timer_defaults_are_materialised() {
 
 #[test]
 fn empty_manifest_path_still_checks_stimulus_lists() {
-    let (dir, _c) = create_temp_dir();
+    let dir = TempDir::new();
     let d = audio_diags(&dir, "", Some(r#"{"id":"s","text":"T","audio":["a","a"]}"#));
     assert_eq!(
         triples(&d),

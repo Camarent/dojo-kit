@@ -4,7 +4,35 @@ use dojo_core::content::{Item, parse_items};
 use dojo_core::lock::IdLock;
 use serde_json::Value;
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::ops::Deref;
+use std::path::{Path, PathBuf};
+
+/// A fresh directory under the system temp dir. Dropping it removes the whole tree, also when the test panics.
+pub struct TempDir(PathBuf);
+
+impl TempDir {
+    pub fn new() -> Self {
+        static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let n = N.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let path = std::env::temp_dir().join(format!("dojo-test-{}-{n}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&path);
+        std::fs::create_dir_all(&path).unwrap_or_else(|e| fail(&e.to_string()));
+        TempDir(path)
+    }
+}
+
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+impl Deref for TempDir {
+    type Target = Path;
+    fn deref(&self) -> &Path {
+        &self.0
+    }
+}
 
 /// Fails the test with `msg`. Always panics: `msg` is never empty.
 pub fn fail(msg: &str) -> ! {
