@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-07
+
+- chore(release-v0-3-0): release-v0-3-0/phases/06-finish
+
 ## [0.3.0] - 2026-11-07
 
 Validator fixes, web and ja test hardening, CLI symlink fix, session review counts. Items below.
