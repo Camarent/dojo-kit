@@ -111,7 +111,7 @@ Add items with `./dojo add` (new ids are assigned for you), or retire items. Nev
 The core bundle ships `en` only (`web/bundle.json` `i18n`). `ru`, `fr` and `ja` are language packs listed in `web/i18n/packs.json`; a pack language is available when `uiLanguage` names its key. If the course `uiLanguage` has no `web/i18n/<lang>.json`, translate `web/i18n/en.json` into `workspace/<course-id>/i18n/<lang>.json`: keep every key and every `{placeholder}`, translate the values, keep plural suffixes. Then run validate and build (section 7). Do not edit the framework for this.
 - Plural forms: `ru` uses `.one`, `.few`, `.many`, `.other`; every other language uses `.one` and `.other` only. Other plural categories (ar, pl, cs, ...) are not supported precisely: translate them to `one`/`other`.
 - A course file overlays the shipped file key by key, so it can also override single strings (for example `speech.novoice`). Keys missing from the course file fall back to en at runtime.
-- Shipping a language for everyone is framework-owner work, only when the user asks: copy `web/i18n/en.json` to `web/i18n/<lang>.json`, translate it, add `"<lang>"` to `web/bundle.json` `i18n`, and run `node --test web/tests/i18n.test.js`.
+- Shipping a language for everyone is framework-owner work, only when the user asks: copy `web/i18n/en.json` to `web/i18n/<lang>.json`, translate it, add a `"<lang>": {"modules": [...]}` entry to `web/i18n/packs.json`, and run `node --test web/tests/i18n.test.js`.
 
 ## 9a. Add a module or language pack (framework owner, only when asked)
 Course builders do not do this; it changes the framework. Rules: CONTRACT section 13.
