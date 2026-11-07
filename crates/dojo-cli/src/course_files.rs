@@ -112,7 +112,8 @@ fn module_set(dir: &Path, web: &Path, course_json: &serde_json::Value) -> Result
     if build::collect_course_languages(dir).is_err() {
         return Ok(None);
     }
-    match build::course_lang_modules(dir, web, course_json, &bundle_languages(web)) {
+    let packs = modules::read_packs(web)?;
+    match build::course_lang_modules(dir, web, course_json, &bundle_languages(web), &packs) {
         Ok((_, set)) => Ok(Some(set)),
         Err(Stop::Fail(message) | Stop::Err(message)) => Err(message),
     }

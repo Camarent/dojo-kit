@@ -46,19 +46,22 @@ pub(crate) struct Manifest {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Pack {
+pub(crate) struct Pack {
     #[serde(default)]
-    modules: Vec<String>,
+    pub(crate) modules: Vec<String>,
 }
 
+/// The parsed `web/i18n/packs.json`, keyed by UI language.
+pub(crate) type Packs = BTreeMap<String, Pack>;
+
 /// Effective module set for a course and UI language, dependencies first, then id ascending.
-/// `web_dir` is the `web/` directory; modules live in its sibling `modules/`.
-pub(crate) fn resolve(web_dir: &Path, lang: &str, course_modules: &[String]) -> Result<Vec<Manifest>, String> {
+/// `web_dir` is the `web/` directory; modules live in its sibling `modules/`; `packs` comes from `read_packs`.
+pub(crate) fn resolve(web_dir: &Path, packs: &Packs, lang: &str, course_modules: &[String]) -> Result<Vec<Manifest>, String> {
     let modules_dir = modules_dir(web_dir)?;
 
     let mut queue: VecDeque<(String, String)> = VecDeque::new();
     queue.extend(course_modules.iter().map(|id| (id.clone(), "listed in course.json modules".to_string())));
-    let pack = pack_modules(web_dir, lang)?;
+    let pack = packs.get(lang).map_or_else(Vec::new, |p| p.modules.clone());
     queue.extend(pack.into_iter().map(|id| (id, format!("requested by language pack \"{lang}\""))));
 
     let mut loaded: BTreeMap<String, Manifest> = BTreeMap::new();
@@ -134,22 +137,14 @@ fn dependency_order(loaded: &BTreeMap<String, Manifest>) -> Result<Vec<String>, 
 }
 
 /// The parsed `web/i18n/packs.json`; empty when the file is missing.
-fn read_packs(web_dir: &Path) -> Result<BTreeMap<String, Pack>, String> {
+/// Read once per build and passed on: `packs` keys are the UI languages that have a pack, in key order.
+pub(crate) fn read_packs(web_dir: &Path) -> Result<Packs, String> {
     let path = web_dir.join("i18n").join("packs.json");
     if !path.is_file() {
         return Ok(BTreeMap::new());
     }
     let text = fs::read_to_string(&path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
     serde_json::from_str(&text).map_err(|e| format!("invalid {}: {e}", path.display()))
-}
-
-fn pack_modules(web_dir: &Path, lang: &str) -> Result<Vec<String>, String> {
-    Ok(read_packs(web_dir)?.get(lang).map_or_else(Vec::new, |p| p.modules.clone()))
-}
-
-/// UI languages that have a pack in `web/i18n/packs.json`, in key order.
-pub(crate) fn pack_languages(web_dir: &Path) -> Result<Vec<String>, String> {
-    Ok(read_packs(web_dir)?.into_keys().collect())
 }
 
 fn load(modules_dir: &Path, id: &str, origin: &str) -> Result<Manifest, String> {
@@ -245,15 +240,20 @@ mod tests {
         ids.iter().map(|s| s.to_string()).collect()
     }
 
+    /// `resolve` with the packs read from `web` first, as a build does once.
+    fn resolve_web(web: &Path, lang: &str, course_modules: &[String]) -> Result<Vec<Manifest>, String> {
+        resolve(web, &read_packs(web)?, lang, course_modules)
+    }
+
     #[test]
     fn order_puts_dependencies_first_then_id_ascending() {
         let s = Scratch::new();
         s.module("a", &manifest("a", &["z"]));
         s.module("b", &manifest("b", &[]));
         s.module("z", &manifest("z", &[]));
-        let got = resolve(&s.web(), "en", &course(&["a", "b"])).unwrap();
+        let got = resolve_web(&s.web(),"en", &course(&["a", "b"])).unwrap();
         assert_eq!(ids(&got), ["b", "z", "a"]);
-        let only_a = resolve(&s.web(), "en", &course(&["a"])).unwrap();
+        let only_a = resolve_web(&s.web(),"en", &course(&["a"])).unwrap();
         assert_eq!(ids(&only_a), ["z", "a"]);
     }
 
@@ -263,9 +263,9 @@ mod tests {
         s.module("b", &manifest("b", &[]));
         s.module("z", &manifest("z", &[]));
         s.packs(&serde_json::json!({"ru": {"modules": ["b", "z"]}}));
-        let got = resolve(&s.web(), "ru", &course(&["b", "b"])).unwrap();
+        let got = resolve_web(&s.web(),"ru", &course(&["b", "b"])).unwrap();
         assert_eq!(ids(&got), ["b", "z"]);
-        let other_lang = resolve(&s.web(), "en", &course(&[])).unwrap();
+        let other_lang = resolve_web(&s.web(),"en", &course(&[])).unwrap();
         assert!(other_lang.is_empty());
     }
 
@@ -274,14 +274,14 @@ mod tests {
         let s = Scratch::new();
         s.module("x", &manifest("x", &["y"]));
         s.module("y", &manifest("y", &["x"]));
-        let err = resolve(&s.web(), "en", &course(&["x"])).unwrap_err();
+        let err = resolve_web(&s.web(),"en", &course(&["x"])).unwrap_err();
         assert!(err.contains("module dependency cycle"), "{err}");
     }
 
     #[test]
     fn missing_listed_module_is_an_error() {
         let s = Scratch::new();
-        let err = resolve(&s.web(), "en", &course(&["nope"])).unwrap_err();
+        let err = resolve_web(&s.web(),"en", &course(&["nope"])).unwrap_err();
         assert_eq!(err, r#"module "nope" not found (listed in course.json modules): no modules/nope/module.json"#);
     }
 
@@ -289,7 +289,7 @@ mod tests {
     fn missing_pack_module_is_an_error() {
         let s = Scratch::new();
         s.packs(&serde_json::json!({"ru": {"modules": ["ghost"]}}));
-        let err = resolve(&s.web(), "ru", &course(&[])).unwrap_err();
+        let err = resolve_web(&s.web(),"ru", &course(&[])).unwrap_err();
         assert_eq!(err, r#"module "ghost" not found (requested by language pack "ru"): no modules/ghost/module.json"#);
     }
 
@@ -297,7 +297,7 @@ mod tests {
     fn missing_required_module_is_an_error() {
         let s = Scratch::new();
         s.module("a", &manifest("a", &["ghost"]));
-        let err = resolve(&s.web(), "en", &course(&["a"])).unwrap_err();
+        let err = resolve_web(&s.web(),"en", &course(&["a"])).unwrap_err();
         assert_eq!(err, r#"module "ghost" not found (required by module "a"): no modules/ghost/module.json"#);
     }
 
@@ -305,9 +305,9 @@ mod tests {
     fn unknown_hook_and_unknown_field_are_rejected() {
         let s = Scratch::new();
         s.module("a", &serde_json::json!({"manifestVersion": 1, "id": "a", "hooks": ["bogus"]}));
-        assert!(resolve(&s.web(), "en", &course(&["a"])).unwrap_err().starts_with("invalid "));
+        assert!(resolve_web(&s.web(),"en", &course(&["a"])).unwrap_err().starts_with("invalid "));
         s.module("a", &serde_json::json!({"manifestVersion": 1, "id": "a", "extra": true}));
-        assert!(resolve(&s.web(), "en", &course(&["a"])).unwrap_err().starts_with("invalid "));
+        assert!(resolve_web(&s.web(),"en", &course(&["a"])).unwrap_err().starts_with("invalid "));
     }
 
     #[test]
