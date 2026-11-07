@@ -37,6 +37,7 @@ pub(crate) struct Assets {
     pub(crate) css: String,
     pub(crate) license_texts: Vec<String>,
     pub(crate) bundle_languages: Vec<String>,
+    pub(crate) pack_languages: Vec<String>,
     pub(crate) lang: String,
 }
 
@@ -48,7 +49,9 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
     let bundle_languages = fatal(string_list(&bundle, "i18n"))?;
     let licenses = fatal(string_list(&bundle, "licenses"))?;
 
-    let (lang, resolved) = course_lang_modules(dir, web, course_json, &bundle_languages)?;
+    let packs = failed(modules::read_packs(web))?;
+    let (lang, resolved) = course_lang_modules(dir, web, course_json, &bundle_languages, &packs)?;
+    let pack_languages: Vec<String> = packs.into_keys().collect();
 
     let canonical_root = fatal(fs::canonicalize(dir).map_err(|e| format!("cannot canonicalize course directory: {e}")))?;
     let plugin_scripts = failed(plugin_files(&canonical_root, course_json, "scripts"))?;
@@ -110,28 +113,36 @@ pub(crate) fn collect_assets(dir: &Path, web: &Path, course_json: &serde_json::V
     for rel in &licenses {
         license_texts.push(failed(read_listed(web, rel))?);
     }
-    Ok(Assets { script_html, css, license_texts, bundle_languages, lang })
+    Ok(Assets { script_html, css, license_texts, bundle_languages, pack_languages, lang })
 }
 
 /// UI language and effective module set of a course, shared by `dojo build` and `dojo validate`.
 /// `bundle_languages` is the bundle's `i18n` list; `web` is the `web/` directory.
-pub(crate) fn course_lang_modules(dir: &Path, web: &Path, course_json: &serde_json::Value, bundle_languages: &[String]) -> Step<(String, Vec<modules::Manifest>)> {
+/// `packs` is the `packs.json` map from `modules::read_packs`, read once by the caller.
+pub(crate) fn course_lang_modules(dir: &Path, web: &Path, course_json: &serde_json::Value, bundle_languages: &[String], packs: &modules::Packs) -> Step<(String, Vec<modules::Manifest>)> {
     let ui_language = course_json.get("uiLanguage").and_then(|v| v.as_str()).unwrap_or_default();
-    let lang = select_lang(dir, ui_language, bundle_languages)?;
+    let pack_languages: Vec<String> = packs.keys().cloned().collect();
+    let lang = select_lang(dir, ui_language, bundle_languages, &pack_languages)?;
     let course_modules = fatal(course_module_ids(course_json))?;
-    let resolved = failed(modules::resolve(web, &lang, &course_modules))?;
+    let resolved = failed(modules::resolve(web, packs, &lang, &course_modules))?;
     Ok((lang, resolved))
 }
 
-fn select_lang(dir: &Path, ui_language: &str, bundle_languages: &[String]) -> Step<String> {
-    // Collect all available languages: bundle i18n UNION course i18n/*.json stems
-    let course_languages = failed(build::collect_course_languages(dir))?;
-    let mut all_available: Vec<String> = bundle_languages.to_vec();
-    for lang in &course_languages {
-        if !all_available.contains(lang) {
-            all_available.push(lang.clone());
+/// Languages a course can use: `bundle`, then `packs`, then `course`, without repeats.
+fn language_union(bundle: &[String], packs: &[String], course: &[String]) -> Vec<String> {
+    let mut all: Vec<String> = bundle.to_vec();
+    for lang in packs.iter().chain(course) {
+        if !all.contains(lang) {
+            all.push(lang.clone());
         }
     }
+    all
+}
+
+fn select_lang(dir: &Path, ui_language: &str, bundle_languages: &[String], pack_languages: &[String]) -> Step<String> {
+    // Collect all available languages: bundle i18n UNION language packs UNION course i18n/*.json stems
+    let course_languages: Vec<String> = failed(build::collect_course_languages(dir))?.into_iter().collect();
+    let all_available = language_union(bundle_languages, pack_languages, &course_languages);
     Ok(match build::select_language(ui_language, &all_available) {
         Some(l) => l,
         None => {
@@ -158,16 +169,17 @@ fn load_i18n_file(path: &Path, label: &str) -> Result<Option<serde_json::Map<Str
     Ok(Some(map.clone()))
 }
 
-pub(crate) fn build_i18n(dir: &Path, web: &Path, lang: &str, bundle_languages: &[String]) -> Step<serde_json::Map<String, serde_json::Value>> {
+pub(crate) fn build_i18n(dir: &Path, web: &Path, lang: &str, bundle_languages: &[String], pack_languages: &[String]) -> Step<serde_json::Map<String, serde_json::Value>> {
     let mut i18n = serde_json::Map::new();
     let mut wanted = vec!["en".to_string()];
     if lang != "en" {
         wanted.push(lang.to_string());
     }
+    let declared = language_union(bundle_languages, pack_languages, &[]);
     for l in &wanted {
         let web_rel = format!("i18n/{l}.json");
         let base = failed(load_i18n_file(&web.join(&web_rel), &web_rel))?;
-        if base.is_none() && (l == "en" || bundle_languages.contains(l)) {
+        if base.is_none() && (l == "en" || declared.contains(l)) {
             return Err(Stop::Fail(format!("{}: file not found", web_rel)));
         }
         let course_rel = format!("i18n/{l}.json");

@@ -5,7 +5,7 @@ license.workspace = true
 version.workspace = true
 
 [dependencies]
-dojo-core = { version = "0.3.1", path = "../dojo-core" }
+dojo-core = { version = "0.3.2", path = "../dojo-core" }
 
 [lib]
 crate-type = ["cdylib"]

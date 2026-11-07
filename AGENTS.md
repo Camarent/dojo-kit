@@ -15,7 +15,7 @@ Field lists, unambiguous-answer rules, unit/exam/plugin settings and the content
 ## 1. Intake (ask once, then decide)
 Find out, asking the user only what you cannot infer from the materials:
 1. Topic or exam, level, and the date if there is one.
-2. UI language (`uiLanguage`: `en` and `ru` are shipped; any other code needs a translation file, see section 9) and content language.
+2. UI language (`uiLanguage`: `en` is shipped in the core bundle, `ru`, `fr`, `ja` are packs; any other code needs a translation file, see section 9) and content language.
 3. Exam format and pass rule. Ask: is there an official exam for this topic? If yes: its sections, question counts, minutes and its official pass rule (total points, minimum per section, whether scores are scaled) and where it is published; mirror it as closely as possible (`scoring`, `passPoints`, `pass: {basis:"official", source, scaled}`). If there is no official exam, say the default is 60% correct and ask whether they want another rule; record the answer (`passMark`, `pass.basis:"author"`). Never invent a pass rule.
 4. Which question types they want (section 4). Default: a mix, mostly `choice`, with `gap`, `cloze`, `multi` and `numeric` where they fit, and `card` for pure memorization.
 5. Where to publish. Today the supported target is a Claude artifact (section 7). Other targets are planned.
@@ -108,10 +108,10 @@ Add items with `./dojo add` (new ids are assigned for you), or retire items. Nev
 - Self-check: each gap has one answer unless the prompt says "any", "one of", or similar; each option is unique after normalization; each order prompt's `___` count matches its steps count; no two non-stimulus items of the same type (gap/cloze/numeric/choice) share the same normalized prompt with different normalized answer sets (`same_prompt_different_answers`).
 
 ## 9. Other UI languages
-`en` and `ru` are shipped in `web/i18n/`. If the course `uiLanguage` has no `web/i18n/<lang>.json`, translate `web/i18n/en.json` into `workspace/<course-id>/i18n/<lang>.json`: keep every key and every `{placeholder}`, translate the values, keep plural suffixes. Then run validate and build (section 7). Do not edit the framework for this.
+The core bundle ships `en` only (`web/bundle.json` `i18n`). `ru`, `fr` and `ja` are language packs listed in `web/i18n/packs.json`; a pack language is available when `uiLanguage` names its key. If the course `uiLanguage` has no `web/i18n/<lang>.json`, translate `web/i18n/en.json` into `workspace/<course-id>/i18n/<lang>.json`: keep every key and every `{placeholder}`, translate the values, keep plural suffixes. Then run validate and build (section 7). Do not edit the framework for this.
 - Plural forms: `ru` uses `.one`, `.few`, `.many`, `.other`; every other language uses `.one` and `.other` only. Other plural categories (ar, pl, cs, ...) are not supported precisely: translate them to `one`/`other`.
 - A course file overlays the shipped file key by key, so it can also override single strings (for example `speech.novoice`). Keys missing from the course file fall back to en at runtime.
-- Shipping a language for everyone is framework-owner work, only when the user asks: copy `web/i18n/en.json` to `web/i18n/<lang>.json`, translate it, add `"<lang>"` to `web/bundle.json` `i18n`, and run `node --test web/tests/i18n.test.js`.
+- Shipping a language for everyone is framework-owner work, only when the user asks: copy `web/i18n/en.json` to `web/i18n/<lang>.json`, translate it, add a `"<lang>": {"modules": [...]}` entry to `web/i18n/packs.json`, and run `node --test web/tests/i18n.test.js`.
 
 ## 9a. Add a module or language pack (framework owner, only when asked)
 Course builders do not do this; it changes the framework. Rules: CONTRACT section 13.

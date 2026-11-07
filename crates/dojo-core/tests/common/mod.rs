@@ -1,5 +1,5 @@
 //! Shared test fixtures. Each test binary uses a subset, so unused items are expected.
-#![allow(dead_code)]
+#![allow(dead_code)] // each test binary includes this module and uses only a subset of the helpers
 use dojo_core::content::{Item, parse_items};
 use dojo_core::lock::IdLock;
 use serde_json::Value;

@@ -4,5 +4,8 @@
   },
   "fr": {
     "modules": []
+  },
+  "ja": {
+    "modules": ["ja"]
   }
 }

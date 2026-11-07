@@ -15,12 +15,12 @@ function gap(id, unit, entity) {
 // Helper to create items with markup in prompt
 
 const ITEMS = [
-  gap('k1', 'kanji', 'E1'),
+  gap('k1', 'letters', 'E1'),
   gap('v1', 'vocab', 'E1'),
-  gap('k2', 'kanji', 'E2'),
+  gap('k2', 'letters', 'E2'),
   gap('v2', 'vocab', 'E2'),
-  gap('k3', 'kanji', 'E3'),
-  gap('k4', 'kanji', 'E4'),
+  gap('k3', 'letters', 'E3'),
+  gap('k4', 'letters', 'E4'),
   gap('g1', 'grammar'),
   gap('g2', 'grammar'),
   gap('g3', 'grammar'),
@@ -32,7 +32,7 @@ const ITEMS = [
 const COURSE = {
   learnedStage: 1,
   units: [
-    { id: 'kanji', title: 'Kanji' },
+    { id: 'letters', title: 'Letters' },
     { id: 'vocab', title: 'Vocab' },
     { id: 'grammar', title: 'Grammar' },
     { id: 'other', title: 'Other unit' }

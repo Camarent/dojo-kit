@@ -60,7 +60,7 @@ function session(questions, mode) {
 function ui(sb, win, questions, opts = {}) {
   const SS = sb.DojoApp._SessionScreen;
   const t = (k) => k;
-  const props = { t, session: session(questions, opts.mode), now: () => 0, win, course: opts.course || { contentLanguage: 'ja' }, onEnd() {}, onExit() {} };
+  const props = { t, session: session(questions, opts.mode), now: () => 0, win, course: opts.course || { contentLanguage: 'es' }, onEnd() {}, onExit() {} };
   const inst = new SS(props);
   inst.setState = function (patch) { inst.state = Object.assign({}, inst.state, patch); };
   inst.props = props;
@@ -72,7 +72,7 @@ function ui(sb, win, questions, opts = {}) {
 
 const item = (id, extra) => Object.assign({ id, unit: 'u', type: 'gap', prompt: 'P' + id, answers: ['a'] }, extra);
 const stim = (extra) => Object.assign({ id: 's', text: 'Hello text', speak: { lines: [{ voice: 'f', text: 'Hello' }] } }, extra);
-const JA = () => fakeWin([V('Kyoko', 'ja-JP')]);
+const JA = () => fakeWin([V('Mira', 'es-ES')]);
 
 test('UI: no speak anywhere => no play button, no notice', () => {
   const sb = load();

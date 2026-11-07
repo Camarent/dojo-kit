@@ -5,7 +5,7 @@ const H = require('./app-harness.js');
 
 // Simple test without stimuli first
 async function start(o) {
-  const m = await H.mount(Object.assign({ win: H.fakeWin([{ name: 'Kyoko', lang: 'ja-JP' }]), course: { contentLanguage: 'ja' }, items: [{ id: 'i1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['a'], speak: 'hello' }] }, o));
+  const m = await H.mount(Object.assign({ win: H.fakeWin([{ name: 'Mira', lang: 'es-ES' }]), course: { contentLanguage: 'es' }, items: [{ id: 'i1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['a'], speak: 'hello' }] }, o));
   m.app.startMode('daily', {});
   const scr = m.screen(m.sb.DojoApp._SessionScreen);
   return { m, scr };

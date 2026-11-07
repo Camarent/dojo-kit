@@ -47,8 +47,8 @@ function getText(n) {
 // Test (a): Harness mount with stimulus, lines, and intro card
 async function start(o) {
   const m = await H.mount(Object.assign({ 
-    win: H.fakeWin([{ name: 'Kyoko', lang: 'ja-JP' }]), 
-    course: { contentLanguage: 'ja', speech: true }, 
+    win: H.fakeWin([{ name: 'Alex', lang: 'en-US' }]),
+    course: { contentLanguage: 'en', speech: true },
     items: [{ id: 'i1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['a'], speak: 'hello' }] 
   }, o));
   m.app.startMode('daily', {});
@@ -88,7 +88,7 @@ test('Stimulus play button is in qline with stimulus text', async () => {
 
 test('Intro card play button is in qline with intro text', async () => {
   const { scr } = await start({
-    course: { contentLanguage: 'ja', intros: true },
+    course: { contentLanguage: 'en', intros: true },
     items: [{ id: 'i1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['a'] }],
     intros: [{ id: 'i1', title: 'Intro', text: 'Intro text', speak: true }]
   });

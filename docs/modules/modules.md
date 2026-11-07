@@ -30,7 +30,7 @@ The `modules/registry` crate maps ids to validator implementations; the CLI and 
 
 ## Two tiers of module
 - Course tier: ids listed in the course's `course.json` `modules` array. A module ships only when listed (or required by a listed module).
-- Pack tier: `web/i18n/packs.json` maps a UI language to `modules`, e.g. `"ru": {"modules": ["ru"]}`. When the course `uiLanguage` matches the key, those modules ship too, even if the course does not list them (`pack_modules` at `crates/dojo-cli/src/modules.rs:136`). A key with `"modules": []` (currently `fr`) adds no module.
+- Pack tier: `web/i18n/packs.json` maps a UI language to `modules`, e.g. `"ru": {"modules": ["ru"]}`. When the course `uiLanguage` matches the key, those modules ship too, even if the course does not list them (`pack_modules` at `crates/dojo-cli/src/modules.rs:146`). A key with `"modules": []` (currently `fr`) adds no module. The shipped packs request logic modules: `ru` to `ru`, `ja` to `ja`.
 - Both tiers feed the same `resolve` queue; `dependency_order` puts required modules first.
 
 ## Invariants and gotchas

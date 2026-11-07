@@ -118,7 +118,7 @@ fn build_course(args: &[String]) -> Step<u8> {
     let title = course_json.get("title").and_then(|v| v.as_str()).unwrap_or_default().to_string();
 
     let assets = collect_assets(dir, &web, &course_json)?;
-    let i18n = build_i18n(dir, &web, &assets.lang, &assets.bundle_languages)?;
+    let i18n = build_i18n(dir, &web, &assets.lang, &assets.bundle_languages, &assets.pack_languages)?;
     let template = fatal(read(&web.join("index.template.html")))?;
     let wasm = fatal(fs::read(&wasm_path).map_err(|e| format!("cannot read wasm {}: {e}", wasm_path.display())))?;
     let content = build_content(&course, &course_json)?;

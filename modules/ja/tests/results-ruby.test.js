@@ -2,7 +2,7 @@
 // Mutation: drop renderText around r.expected / label(r, r.given) in Results -> both tests fail.
 const test = require('node:test');
 const assert = require('node:assert');
-const H = require('./app-harness.js');
+const H = require('./harness.js').appHarness;
 
 const item = { id: 'g1', unit: 'u1', type: 'gap', prompt: 'P', answers: ['{Ri|ri}ver{Sw|sw}im'] };
 const tr = (k) => k;

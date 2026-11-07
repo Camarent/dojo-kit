@@ -62,7 +62,7 @@ test('Empty voices + voiceschanged fired -> status no_voice', () => {
   const sb = load();
   const S = sb.DojoSpeech;
   const win = fakeWinWithEvents([]);
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   assert.strictEqual(S.status(cfg, win), 'ok');
   const listeners = win.listeners['voiceschanged'] || [];
   listeners.forEach((fn) => fn());
@@ -73,7 +73,7 @@ test('Empty voices + voiceschanged not fired -> status ok', () => {
   const sb = load();
   const S = sb.DojoSpeech;
   const win = fakeWinWithEvents([]);
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   assert.strictEqual(S.status(cfg, win), 'ok');
 });
 
@@ -81,9 +81,9 @@ test('Start never fires -> onError called exactly once; timer cleared', (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const sb = load();
   const S = sb.DojoSpeech;
-  const win = fakeWinWithEvents([V('Kyoko', 'ja-JP')]);
+  const win = fakeWinWithEvents([V('Mira', 'es-ES')]);
   let errorCalled = 0;
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   const lines = [{ text: 'test' }];
   
   S.play(lines, cfg, { onError: () => { errorCalled++; } }, win);
@@ -98,10 +98,10 @@ test('Start never fires -> onError called exactly once; timer cleared', (t) => {
 test('Start fires -> no error', () => {
   const sb = load();
   const S = sb.DojoSpeech;
-  const win = fakeWinWithEvents([V('Kyoko', 'ja-JP')]);
+  const win = fakeWinWithEvents([V('Mira', 'es-ES')]);
   let errorCalled = 0;
   let endCalled = 0;
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   const lines = [{ text: 'test' }];
   
   S.play(lines, cfg, { 
@@ -125,8 +125,8 @@ test('Start fires -> no error', () => {
 test('Voices arrive late (after voiceschanged) -> status ok', () => {
   const sb = load();
   const S = sb.DojoSpeech;
-  const win = fakeWinWithEvents([V('Kyoko', 'ja-JP')]);
-  const cfg = { lang: 'ja' };
+  const win = fakeWinWithEvents([V('Mira', 'es-ES')]);
+  const cfg = { lang: 'es' };
   assert.strictEqual(S.status(cfg, win), 'ok');
 });
 
@@ -134,7 +134,7 @@ test('Empty voices with no speech synthesis -> unavailable', () => {
   const sb = load();
   const S = sb.DojoSpeech;
   const win = fakeWin([], { noApi: true });
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   assert.strictEqual(S.status(cfg, win), 'unavailable');
 });
 
@@ -142,9 +142,9 @@ test('Watchdog timer is cleared on start event', (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const sb = load();
   const S = sb.DojoSpeech;
-  const win = fakeWinWithEvents([V('Kyoko', 'ja-JP')]);
+  const win = fakeWinWithEvents([V('Mira', 'es-ES')]);
   let errorCalled = 0;
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   const lines = [{ text: 'test' }];
   
   S.play(lines, cfg, { onError: () => { errorCalled++; } }, win);
@@ -163,9 +163,9 @@ test('Watchdog timer is cleared on error event', (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const sb = load();
   const S = sb.DojoSpeech;
-  const win = fakeWinWithEvents([V('Kyoko', 'ja-JP')]);
+  const win = fakeWinWithEvents([V('Mira', 'es-ES')]);
   let errorCalled = 0;
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   const lines = [{ text: 'test' }];
   
   S.play(lines, cfg, { onError: () => { errorCalled++; } }, win);
@@ -184,7 +184,7 @@ test('status() called twice registers one listener', () => {
   const sb = load();
   const S = sb.DojoSpeech;
   const win = fakeWinWithEvents([]);
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   S.status(cfg, win);
   const count1 = (win.listeners['voiceschanged'] || []).length;
   S.status(cfg, win);
@@ -198,7 +198,7 @@ test('Two different fake windows do not share the flag', () => {
   const S = sb.DojoSpeech;
   const win1 = fakeWinWithEvents([]);
   const win2 = fakeWinWithEvents([]);
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   
   assert.strictEqual(S.status(cfg, win1), 'ok');
   assert.strictEqual(S.status(cfg, win2), 'ok');
@@ -217,7 +217,7 @@ test('A synth that never fires the event keeps ok', () => {
   const sb = load();
   const S = sb.DojoSpeech;
   const win = fakeWinWithEvents([]);
-  const cfg = { lang: 'ja' };
+  const cfg = { lang: 'es' };
   
   // Call status multiple times without firing the event
   assert.strictEqual(S.status(cfg, win), 'ok');
