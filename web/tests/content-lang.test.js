@@ -7,7 +7,7 @@ const path = require('node:path');
 const H = require('./app-harness.js');
 
 test('root lang follows course.contentLanguage, else uiLanguage', () => {
-  [[{ contentLanguage: 'ja', uiLanguage: 'ru' }, 'ja'], [{ uiLanguage: 'ru' }, 'ru']].forEach(([course, want]) => {
+  [[{ contentLanguage: 'es', uiLanguage: 'ru' }, 'es'], [{ uiLanguage: 'ru' }, 'ru']].forEach(([course, want]) => {
     const sb = H.loadApp();
     sb.preact.render = () => {};
     const attrs = {};

@@ -34,7 +34,7 @@ test('status: addEventListener that throws is ignored; getVoices throwing = empt
   assert.strictEqual(sp.status({}, w), 'ok');
   assert.strictEqual(sp.available(w), true);
   const w2 = mk([{ name: 'a', lang: 'en-US' }]);
-  assert.strictEqual(sp.status({ lang: 'ja' }, w2), 'no_voice');
+  assert.strictEqual(sp.status({ lang: 'es' }, w2), 'no_voice');
   assert.strictEqual(sp.status({ speech: { lang: 'en' } }, w2), 'ok');
 });
 
@@ -50,13 +50,13 @@ test('play: unavailable, empty, no_voice', () => {
   assert.strictEqual(sp.play([{ text: 'a' }], {}, {}, {}).reason, 'unavailable');
   assert.strictEqual(sp.play([], {}, {}, mk([])).reason, 'empty');
   assert.strictEqual(sp.play(null, {}, {}, mk([])).reason, 'empty');
-  assert.strictEqual(sp.play([{ text: 'a' }], { lang: 'ja' }, null, mk([{ name: 'a', lang: 'en' }])).reason, 'no_voice');
+  assert.strictEqual(sp.play([{ text: 'a' }], { lang: 'es' }, null, mk([{ name: 'a', lang: 'en' }])).reason, 'no_voice');
 });
 
 test('play: options, end callback, error callback, cancel errors ignored', () => {
-  const w = mk([{ name: 'Kyoko', lang: 'ja-JP' }]);
+  const w = mk([{ name: 'Mira', lang: 'es-ES' }]);
   const ev = [];
-  const cfg = { lang: 'ja', pitch: 5, speech: { rate: 1.2, voices: { f: { name: 'Kyoko', pitch: 1, rate: 0.9 } } } };
+  const cfg = { lang: 'es', pitch: 5, speech: { rate: 1.2, voices: { f: { name: 'Mira', pitch: 1, rate: 0.9 } } } };
   const r = sp.play([{ text: 'a', voice: 'f' }, { text: 'b' }], cfg, { onEnd: () => ev.push('end'), onError: (e) => ev.push(e.error) }, w);
   assert.ok(r.ok);
   const [u1, u2] = w.spoken;
@@ -68,33 +68,33 @@ test('play: options, end callback, error callback, cancel errors ignored', () =>
   u2.onend();
   assert.deepStrictEqual(ev, ['end']);
   // error path
-  const w2 = mk([{ name: 'K', lang: 'ja' }]);
+  const w2 = mk([{ name: 'K', lang: 'es' }]);
   const ev2 = [];
-  sp.play([{ text: 'a' }], { lang: 'ja' }, { onError: (e) => ev2.push(e.error) }, w2);
+  sp.play([{ text: 'a' }], { lang: 'es' }, { onError: (e) => ev2.push(e.error) }, w2);
   w2.spoken[0].onerror({ error: 'canceled' });
   w2.spoken[0].onerror({ error: 'boom' });
   assert.deepStrictEqual(ev2, ['boom']);
   // no cb at all
-  const w3 = mk([{ name: 'K', lang: 'ja' }]);
-  sp.play([{ text: 'a' }], { lang: 'ja' }, undefined, w3);
+  const w3 = mk([{ name: 'K', lang: 'es' }]);
+  sp.play([{ text: 'a' }], { lang: 'es' }, undefined, w3);
   w3.spoken[0].onend();
   w3.spoken[0].onerror({ error: 'x' });
 });
 
 test('play: watchdog fires no-start; stale/started watchdog silent; speak throwing', () => {
-  const w = mk([{ name: 'K', lang: 'ja' }]);
+  const w = mk([{ name: 'K', lang: 'es' }]);
   const ev = [];
-  sp.play([{ text: 'a' }], { lang: 'ja' }, { onError: (e) => ev.push(e.error) }, w);
+  sp.play([{ text: 'a' }], { lang: 'es' }, { onError: (e) => ev.push(e.error) }, w);
   w.timers[0]();
   assert.deepStrictEqual(ev, ['no-start']);
-  const w2 = mk([{ name: 'K', lang: 'ja' }]);
-  sp.play([{ text: 'a' }], { lang: 'ja' }, { onError: () => ev.push('bad') }, w2);
+  const w2 = mk([{ name: 'K', lang: 'es' }]);
+  sp.play([{ text: 'a' }], { lang: 'es' }, { onError: () => ev.push('bad') }, w2);
   w2.spoken[0].onstart();
   w2.timers[0]();
   assert.deepStrictEqual(ev, ['no-start']);
-  const w3 = mk([{ name: 'K', lang: 'ja' }], { speak() { throw new Error('s'); } });
+  const w3 = mk([{ name: 'K', lang: 'es' }], { speak() { throw new Error('s'); } });
   assert.strictEqual(sp.play([{ text: 'a' }], {}, {}, w3).reason, 'unavailable');
-  const w4 = mk([{ name: 'K', lang: 'ja' }]);
+  const w4 = mk([{ name: 'K', lang: 'es' }]);
   sp.play([{ text: 'a' }], {}, {}, w4);
   sp.stop(w4);
   w4.timers[0]();

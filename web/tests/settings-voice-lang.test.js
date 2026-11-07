@@ -15,12 +15,12 @@ async function settingsFor(course, voices) {
   return () => scr.view();
 }
 
-const VOICES = [V('Milena', 'ru-RU'), V('Otoya', 'ja-JP')];
+const VOICES = [V('Milena', 'ru-RU'), V('Oscar', 'es-ES')];
 
-test('speech.lang wins over contentLanguage: only ja voices are listed', async () => {
-  const v = await settingsFor({ contentLanguage: 'ru', speech: { lang: 'ja' } }, VOICES);
+test('speech.lang wins over contentLanguage: only es voices are listed', async () => {
+  const v = await settingsFor({ contentLanguage: 'ru', speech: { lang: 'es' } }, VOICES);
   const text = H.text(H.find(v(), 'speech-voice-default'));
-  assert.ok(/Otoya/.test(text), 'ja voice listed');
+  assert.ok(/Oscar/.test(text), 'es voice listed');
   assert.ok(!/Milena/.test(text), 'ru voice not listed');
 });
 
@@ -28,5 +28,5 @@ test('no speech.lang: falls back to contentLanguage', async () => {
   const v = await settingsFor({ contentLanguage: 'ru', speech: { rate: 1 } }, VOICES);
   const text = H.text(H.find(v(), 'speech-voice-default'));
   assert.ok(/Milena/.test(text), 'ru voice listed');
-  assert.ok(!/Otoya/.test(text), 'ja voice not listed');
+  assert.ok(!/Oscar/.test(text), 'es voice not listed');
 });

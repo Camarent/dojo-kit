@@ -11,9 +11,9 @@ const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 test('lines: stimulus speak lines, item speak string, none without speak, plain() applied', () => {
   const sb = load(true);
   const S = sb.DojoSpeech;
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(S.lines({ text: 'x', speak: { lines: [{ voice: 'a', text: '{Kan|kan}ji' }, { text: 'b' }] } }))),
-    [{ text: 'Kanji', voice: 'a' }, { text: 'b' }]);
-  assert.strictEqual(S.lines({ speak: '{Ni|ni}hon' })[0].text, 'Nihon');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S.lines({ text: 'x', speak: { lines: [{ voice: 'a', text: '{Ca|ca}t' }, { text: 'b' }] } }))),
+    [{ text: 'Cat', voice: 'a' }, { text: 'b' }]);
+  assert.strictEqual(S.lines({ speak: '{Ta|ta}ble' })[0].text, 'Table');
   assert.deepStrictEqual(J(S.lines({ text: 'visible text' })), []);
   assert.deepStrictEqual(J(S.lines({ prompt: 'p' })), []);
   assert.deepStrictEqual(J(S.lines(null)), []);
@@ -21,18 +21,18 @@ test('lines: stimulus speak lines, item speak string, none without speak, plain(
 
 test('play: queue order, lang, rate/pitch, voice match, default voice of lang', () => {
   const S = load().DojoSpeech;
-  const win = fakeWin([V('Alpha', 'en-US'), V('Kyoko Premium', 'ja-JP'), V('Otoya', 'ja-JP')]);
-  const cfg = { lang: 'en', speech: { lang: 'ja-JP', rate: 0.8, voices: { f: { match: 'kyoko', pitch: 1.5 }, m: { match: 'nobody', rate: 1.2 } } } };
+  const win = fakeWin([V('Alpha', 'en-US'), V('Mira Premium', 'es-ES'), V('Oscar', 'es-ES')]);
+  const cfg = { lang: 'en', speech: { lang: 'es-ES', rate: 0.8, voices: { f: { match: 'mira', pitch: 1.5 }, m: { match: 'nobody', rate: 1.2 } } } };
   const r = S.play([{ text: 'one', voice: 'f' }, { text: 'two', voice: 'm' }, { text: 'three' }], cfg, {}, win);
   assert.deepStrictEqual(J(r), { ok: true });
   assert.deepStrictEqual(win.spoken.map((u) => u.text), ['one', 'two', 'three']);
-  assert.ok(win.spoken.every((u) => u.lang === 'ja-JP'));
-  assert.strictEqual(win.spoken[0].voice.name, 'Kyoko Premium');
+  assert.ok(win.spoken.every((u) => u.lang === 'es-ES'));
+  assert.strictEqual(win.spoken[0].voice.name, 'Mira Premium');
   assert.strictEqual(win.spoken[0].pitch, 1.5);
   assert.strictEqual(win.spoken[0].rate, 0.8);
-  assert.strictEqual(win.spoken[1].voice.name, 'Kyoko Premium');
+  assert.strictEqual(win.spoken[1].voice.name, 'Mira Premium');
   assert.strictEqual(win.spoken[1].rate, 1.2);
-  assert.strictEqual(win.spoken[2].voice.lang, 'ja-JP');
+  assert.strictEqual(win.spoken[2].voice.lang, 'es-ES');
 });
 
 test('play: lang falls back to the course content language; onEnd fires after the last utterance only', () => {
@@ -62,8 +62,8 @@ test('stop cancels and silences callbacks; no API or no voice never throws', () 
   assert.deepStrictEqual(J(S.play([{ text: 'a' }], {}, {}, none)), { ok: false, reason: 'unavailable' });
   S.stop(none);
   const fr = fakeWin([V('A', 'fr-FR')]);
-  assert.strictEqual(S.status({ lang: 'ja' }, fr), 'no_voice');
-  assert.deepStrictEqual(J(S.play([{ text: 'a' }], { lang: 'ja' }, {}, fr)), { ok: false, reason: 'no_voice' });
+  assert.strictEqual(S.status({ lang: 'es' }, fr), 'no_voice');
+  assert.deepStrictEqual(J(S.play([{ text: 'a' }], { lang: 'es' }, {}, fr)), { ok: false, reason: 'no_voice' });
 });
 
 test('speech.js is bundled after ext.js and before ui/app.js; i18n keys exist', () => {
@@ -96,13 +96,13 @@ test('pickVoice prefers voices with localService === true', () => {
 
 // ---- effective() and voice choice ----
 const S2 = require('../speech.js');
-const COURSE = { contentLanguage: 'ja-JP', speech: { lang: 'ja-JP', rate: 0.9, voices: { M: { pitch: 0.8, rate: 1, match: 'otoya' }, F: { pitch: 1.2 }, N: {} } } };
+const COURSE = { contentLanguage: 'es-ES', speech: { lang: 'es-ES', rate: 0.9, voices: { M: { pitch: 0.8, rate: 1, match: 'oscar' }, F: { pitch: 1.2 }, N: {} } } };
 
 test('effective: no settings returns the course values and does not mutate the input', () => {
   const before = J(COURSE);
   const cfg = S2.effective(COURSE, {});
   assert.deepStrictEqual(cfg.speech, COURSE.speech);
-  assert.strictEqual(cfg.lang, 'ja-JP');
+  assert.strictEqual(cfg.lang, 'es-ES');
   assert.deepStrictEqual(J(COURSE), before);
   assert.deepStrictEqual(S2.effective(undefined, undefined), { speech: {}, lang: undefined });
 });
@@ -115,7 +115,7 @@ test('effective: rate and pitch multiply per role so M and F stay distinct', () 
   assert.strictEqual(cfg.speech.voices.F.pitch, 1.2 * 1.5);
   assert.strictEqual(cfg.speech.voices.F.rate, 0.45);
   assert.notStrictEqual(cfg.speech.voices.M.pitch, cfg.speech.voices.F.pitch);
-  assert.strictEqual(cfg.speech.voices.M.match, 'otoya');
+  assert.strictEqual(cfg.speech.voices.M.match, 'oscar');
 });
 
 test('effective: learner rate and pitch are clamped, junk and null are ignored', () => {
@@ -131,22 +131,22 @@ test('effective: learner rate and pitch are clamped, junk and null are ignored',
 });
 
 test('effective: voice names for default and per role', () => {
-  const cfg = S2.effective(COURSE, { 'speech:voice': 'Kyoko', 'speech:voice:M': 'Ichiro' });
-  assert.strictEqual(cfg.speech.voiceName, 'Kyoko');
-  assert.strictEqual(cfg.speech.voices.M.name, 'Ichiro');
+  const cfg = S2.effective(COURSE, { 'speech:voice': 'Mira', 'speech:voice:M': 'Ivan' });
+  assert.strictEqual(cfg.speech.voiceName, 'Mira');
+  assert.strictEqual(cfg.speech.voices.M.name, 'Ivan');
   assert.strictEqual(cfg.speech.voices.F.name, undefined);
 });
 
 test('pickVoice: exact chosen name beats match and language; unknown name falls back', () => {
   const voices = [
-    { name: 'Otoya', lang: 'ja-JP', localService: true },
-    { name: 'Kyoko', lang: 'ja-JP', localService: true },
+    { name: 'Oscar', lang: 'es-ES', localService: true },
+    { name: 'Mira', lang: 'es-ES', localService: true },
     { name: 'Alex', lang: 'en-US', localService: true }
   ];
-  assert.strictEqual(S2.pickVoice(voices, 'ja-JP', 'otoya', { name: 'Kyoko' }).name, 'Kyoko');
-  assert.strictEqual(S2.pickVoice(voices, 'ja-JP', null, { name: 'Alex' }).name, 'Alex');
-  assert.strictEqual(S2.pickVoice(voices, 'ja-JP', 'otoya', { name: 'Gone' }).name, 'Otoya');
-  assert.strictEqual(S2.pickVoice(voices, 'ja-JP', null, { name: 'otoya' }).name, 'Otoya', 'name is exact, falls back to language pool');
+  assert.strictEqual(S2.pickVoice(voices, 'es-ES', 'oscar', { name: 'Mira' }).name, 'Mira');
+  assert.strictEqual(S2.pickVoice(voices, 'es-ES', null, { name: 'Alex' }).name, 'Alex');
+  assert.strictEqual(S2.pickVoice(voices, 'es-ES', 'oscar', { name: 'Gone' }).name, 'Oscar');
+  assert.strictEqual(S2.pickVoice(voices, 'es-ES', null, { name: 'oscar' }).name, 'Oscar', 'name is exact, falls back to language pool');
 });
 
 test('pickVoice: DojoExt.voiceRank orders the language pool per role', () => {
@@ -154,12 +154,12 @@ test('pickVoice: DojoExt.voiceRank orders the language pool per role', () => {
   const prev = global.DojoExt;
   global.DojoExt = Ext;
   try {
-    const voices = [{ name: 'Kyoko', lang: 'ja-JP' }, { name: 'Otoya', lang: 'ja-JP' }, { name: 'Ichiro', lang: 'ja-JP', localService: true }];
-    assert.strictEqual(S2.pickVoice(voices, 'ja-JP', null, { role: 'M' }).name, 'Ichiro');
-    Ext.registerVoiceRank((v, role) => ({ M: { Otoya: 2, Ichiro: 1 }, F: { Kyoko: 2 } }[role] || {})[v.name] || 0);
-    assert.strictEqual(S2.pickVoice(voices, 'ja-JP', null, { role: 'M' }).name, 'Otoya');
-    assert.strictEqual(S2.pickVoice(voices, 'ja-JP', null, { role: 'F' }).name, 'Kyoko');
-    assert.strictEqual(S2.pickVoice(voices, 'ja-JP', null, {}).name, 'Ichiro', 'no role: all ranks 0, local wins');
+    const voices = [{ name: 'Mira', lang: 'es-ES' }, { name: 'Oscar', lang: 'es-ES' }, { name: 'Ivan', lang: 'es-ES', localService: true }];
+    assert.strictEqual(S2.pickVoice(voices, 'es-ES', null, { role: 'M' }).name, 'Ivan');
+    Ext.registerVoiceRank((v, role) => ({ M: { Oscar: 2, Ivan: 1 }, F: { Mira: 2 } }[role] || {})[v.name] || 0);
+    assert.strictEqual(S2.pickVoice(voices, 'es-ES', null, { role: 'M' }).name, 'Oscar');
+    assert.strictEqual(S2.pickVoice(voices, 'es-ES', null, { role: 'F' }).name, 'Mira');
+    assert.strictEqual(S2.pickVoice(voices, 'es-ES', null, {}).name, 'Ivan', 'no role: all ranks 0, local wins');
   } finally {
     Ext.reset();
     if (prev === undefined) delete global.DojoExt; else global.DojoExt = prev;
@@ -167,13 +167,13 @@ test('pickVoice: DojoExt.voiceRank orders the language pool per role', () => {
 });
 
 test('play: uses effective() cfg, chosen voice name per role and the role-less default', () => {
-  const voices = [{ name: 'Otoya', lang: 'ja-JP' }, { name: 'Kyoko', lang: 'ja-JP' }, { name: 'Ichiro', lang: 'ja-JP' }];
+  const voices = [{ name: 'Oscar', lang: 'es-ES' }, { name: 'Mira', lang: 'es-ES' }, { name: 'Ivan', lang: 'es-ES' }];
   const win = fakeWin(voices);
-  const cfg = S2.effective(COURSE, { 'speech:rate': 1.5, 'speech:voice': 'Kyoko', 'speech:voice:F': 'Ichiro' });
+  const cfg = S2.effective(COURSE, { 'speech:rate': 1.5, 'speech:voice': 'Mira', 'speech:voice:F': 'Ivan' });
   const r = S2.play([{ text: 'a', voice: 'M' }, { text: 'b', voice: 'F' }, { text: 'c', voice: undefined }], cfg, {}, win);
   assert.ok(r.ok);
   const [m, f, n] = win.spoken;
-  assert.deepStrictEqual([m.voice.name, f.voice.name, n.voice.name], ['Otoya', 'Ichiro', 'Kyoko']);
+  assert.deepStrictEqual([m.voice.name, f.voice.name, n.voice.name], ['Oscar', 'Ivan', 'Mira']);
   assert.strictEqual(m.rate, 1.5);
   assert.strictEqual(m.pitch, 0.8);
   assert.strictEqual(f.pitch, 1.2);
