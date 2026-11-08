@@ -41,6 +41,7 @@
     "@course",
     "ui/i18n.js",
     "ui/play-button.js",
+    "ui/answer-block.js",
     "ui/common.js",
     "ui/detail.js",
     "ui/catalog-audio.js",
@@ -77,6 +78,7 @@
     "styles/types-match.css",
     "styles/types-order.css",
     "styles/types-cloze.css",
+    "styles/answer-block.css",
     "styles/types-numeric.css",
     "@modules",
     "@course"

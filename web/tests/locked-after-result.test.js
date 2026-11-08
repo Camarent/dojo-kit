@@ -6,7 +6,7 @@ const { loadBundle } = require('./load-bundle.js');
 // Load type components directly
 function loadType(typeName) {
   const sb = { console };
-  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', `types/${typeName}.js`] });
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'ui/answer-block.js', `types/${typeName}.js`] });
   return sb.DojoTypes.get(typeName);
 }
 

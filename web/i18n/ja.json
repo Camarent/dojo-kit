@@ -207,6 +207,7 @@
   "q.order.alsoCorrect": "これも正解: {order}",
   "q.cloze.hint": "空欄を埋めてください。",
   "q.cloze.blank": "空欄 {n}",
+  "q.cloze.locked": "未採点",
   "q.numeric.readAs": "あなたの回答: {value}",
   "q.numeric.invalid": "有効な数字ではありません。",
   "q.result.missing": "不足",

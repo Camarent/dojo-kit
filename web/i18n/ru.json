@@ -221,6 +221,7 @@
   "q.order.alsoCorrect": "Также верно: {order}",
   "q.cloze.hint": "Заполните пропуски.",
   "q.cloze.blank": "Пропуск {n}",
+  "q.cloze.locked": "не проверяется",
   "q.numeric.readAs": "Ваш ответ: {value}",
   "q.numeric.invalid": "Это не похоже на число.",
   "q.result.missing": "Не выбрано",

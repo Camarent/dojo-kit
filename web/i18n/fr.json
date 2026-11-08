@@ -207,6 +207,7 @@
   "q.order.alsoCorrect": "Également correct : {order}",
   "q.cloze.hint": "Complétez les trous.",
   "q.cloze.blank": "Trou {n}",
+  "q.cloze.locked": "non vérifié",
   "q.numeric.readAs": "Votre réponse : {value}",
   "q.numeric.invalid": "Ce n'est pas un nombre valide.",
   "q.result.missing": "Manquant",

@@ -10,7 +10,7 @@ const read = (p) => fs.readFileSync(path.join(web, p), 'utf8');
 const en = JSON.parse(read('i18n/en.json'));
 
 const sandbox = { console };
-loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/cloze.js'] });
+loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/answer-block.js', 'types/registry.js', 'types/cloze.js'] });
 const def = sandbox.DojoTypes.get('cloze');
 
 const same = (a, b) => assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), b);

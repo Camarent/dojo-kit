@@ -42,8 +42,10 @@
   function blankField(c, n, fill) {
     var value = c.inputs[n] || '';
     var ok = c.marks ? c.marks[n] : null;
+    // Answered without a mark (exam): the field is read-only and says it is not checked.
+    var locked = !!c.res && (ok === null || ok === undefined);
     return html`<span class="cloze-blank" key=${'b' + n}>
-        <input type="text" class=${cls('cloze-field', ok === true && 'right', ok === false && 'wrong')}
+        <input type="text" class=${cls('cloze-field', ok === true && 'right', ok === false && 'wrong', locked && 'locked')}
           id=${'cloze-input-' + n} data-testid=${'cloze-input-' + n} name=${'blank-' + n} value=${value} readOnly=${!!c.res} aria-readonly=${c.res ? 'true' : null}
           style=${fill ? null : { '--blank-w': Math.max(value.length + 2, 6) + 'ch' }}
           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck=${false}
@@ -53,7 +55,7 @@
             next[n] = e.target.value;
             c.p.setState({ inputs: next });
           }} />
-        ${blankMark(c.t, ok)}
+        ${locked ? html`<span class="cloze-caption" data-testid=${'cloze-caption-' + n}>${c.t('q.cloze.locked')}</span>` : blankMark(c.t, ok)}
       </span>`;
   }
 
@@ -134,24 +136,21 @@
     var blanksCount = p.view.segments.filter(function (seg) { return seg.blank !== undefined; }).length;
     var isMultiBlank = blanksCount >= 2;
 
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    var hint = html`<p class="cloze-hint">${t('q.cloze.hint')}</p>`;
+    var submit = !res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
+      onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null;
+
     if (isMultiBlank) {
-      return html`<div class="cloze" data-testid="cloze">
-        <p class="cloze-hint">${t('q.cloze.hint')}</p>
-        <div class="cloze-groups">${renderGrouped(c, p.view.segments)}</div>
-        ${!res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
-          onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null}
-      </div>`;
+      return AnswerBlock({ cls: 'cloze', testid: 'cloze', prompt: hint, submit: submit,
+        fields: html`<div class="cloze-groups">${renderGrouped(c, p.view.segments)}</div>` });
     } else {
-      return html`<div class="cloze" data-testid="cloze">
-        <p class="cloze-hint">${t('q.cloze.hint')}</p>
-        <p class="cloze-sentence">${p.view.segments.map(function (seg, i) {
-          if (seg.blank !== undefined) return blankField(c, seg.blank);
-          if (seg.locked !== undefined) return lockedField(seg, 'l' + i);
-          return h('span', { key: 't' + i }, renderText(segText(seg)));
-        })}</p>
-        ${!res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
-          onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null}
-      </div>`;
+      var sentence = html`<p class="cloze-sentence">${p.view.segments.map(function (seg, i) {
+        if (seg.blank !== undefined) return blankField(c, seg.blank);
+        if (seg.locked !== undefined) return lockedField(seg, 'l' + i);
+        return h('span', { key: 't' + i }, renderText(segText(seg)));
+      })}</p>`;
+      return AnswerBlock({ cls: 'cloze', testid: 'cloze', prompt: hint, submit: submit, fields: sentence });
     }
   }
 

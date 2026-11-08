@@ -5,7 +5,7 @@ const { loadBundle } = require('./load-bundle.js');
 
 const sb = { console };
 sb.self = sb;
-loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/choice.js', 'types/multi.js', 'types/match.js', 'types/order.js', 'types/card.js', 'types/gap.js', 'types/numeric.js', 'types/cloze.js'] });
+loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/answer-block.js', 'types/registry.js', 'types/choice.js', 'types/multi.js', 'types/match.js', 'types/order.js', 'types/card.js', 'types/gap.js', 'types/numeric.js', 'types/cloze.js'] });
 
 const t = (k) => k;
 function walk(n, fn) {
