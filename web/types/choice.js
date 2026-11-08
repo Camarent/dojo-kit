@@ -35,7 +35,8 @@
 
   function Question(p) {
     var right = correctIndexes(p.item);
-    return html`<ul class="opts" data-testid="options" data-arrow-own>${p.view.options.map(function (o, i) {
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    var options = html`<ul class="opts" data-testid="options" data-arrow-own>${p.view.options.map(function (o, i) {
       var state = optionState(p, o, right);
       var mark = optionMark(p, o, right);
       return html`<li key=${o.index}><button type="button" class=${cls('opt', state)} disabled=${!!p.result}
@@ -43,6 +44,7 @@
         onClick=${function () { p.onSubmit({ index: o.index }, o.index); }}>
         <span class="key" aria-hidden="true">${i + 1}</span><span class="opt-text">${renderText(o.label)}</span>${mark}</button></li>`;
     })}</ul>`;
+    return AnswerBlock({ cls: 'choice', testid: 'choice', fields: options });
   }
 
   function focusedOption(e, p) {

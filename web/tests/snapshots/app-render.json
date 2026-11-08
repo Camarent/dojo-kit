@@ -5058,32 +5058,57 @@
                 }
               },
               {
-                "type": "form",
+                "type": "div",
                 "props": {
-                  "data-testid": "gap-form",
-                  "class": "gap",
+                  "data-testid": "gap",
+                  "class": "gap-block",
                   "children": [
                     {
-                      "type": "input",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-input",
-                        "class": "field",
-                        "value": "",
-                        "aria-label": "Your answer",
-                        "type": "text",
-                        "readOnly": false,
-                        "autocomplete": "off"
+                        "class": "ab-fields",
+                        "children": [
+                          {
+                            "type": "form",
+                            "props": {
+                              "data-testid": "gap-form",
+                              "class": "gap",
+                              "children": [
+                                {
+                                  "type": "input",
+                                  "props": {
+                                    "data-testid": "gap-input",
+                                    "class": "field",
+                                    "value": "",
+                                    "aria-label": "Your answer",
+                                    "type": "text",
+                                    "readOnly": false,
+                                    "autocomplete": "off"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
                       }
                     },
                     {
-                      "type": "button",
+                      "type": "div",
                       "props": {
-                        "data-testid": "btn-submit",
-                        "class": "btn primary",
-                        "disabled": true,
-                        "type": "submit",
+                        "class": "ab-submit",
                         "children": [
-                          "Check"
+                          {
+                            "type": "button",
+                            "props": {
+                              "data-testid": "btn-submit",
+                              "class": "btn primary",
+                              "disabled": true,
+                              "type": "button",
+                              "children": [
+                                "Check"
+                              ]
+                            }
+                          }
                         ]
                       }
                     }
@@ -5214,32 +5239,57 @@
                   "style": "display: contents",
                   "children": [
                     {
-                      "type": "form",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-form",
-                        "class": "gap",
+                        "data-testid": "gap",
+                        "class": "gap-block",
                         "children": [
                           {
-                            "type": "input",
+                            "type": "div",
                             "props": {
-                              "data-testid": "gap-input",
-                              "class": "field",
-                              "value": "",
-                              "aria-label": "Your answer",
-                              "type": "text",
-                              "readOnly": false,
-                              "autocomplete": "off"
+                              "class": "ab-fields",
+                              "children": [
+                                {
+                                  "type": "form",
+                                  "props": {
+                                    "data-testid": "gap-form",
+                                    "class": "gap",
+                                    "children": [
+                                      {
+                                        "type": "input",
+                                        "props": {
+                                          "data-testid": "gap-input",
+                                          "class": "field",
+                                          "value": "",
+                                          "aria-label": "Your answer",
+                                          "type": "text",
+                                          "readOnly": false,
+                                          "autocomplete": "off"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
                             }
                           },
                           {
-                            "type": "button",
+                            "type": "div",
                             "props": {
-                              "data-testid": "btn-submit",
-                              "class": "btn primary",
-                              "disabled": true,
-                              "type": "submit",
+                              "class": "ab-submit",
                               "children": [
-                                "Check"
+                                {
+                                  "type": "button",
+                                  "props": {
+                                    "data-testid": "btn-submit",
+                                    "class": "btn primary",
+                                    "disabled": true,
+                                    "type": "button",
+                                    "children": [
+                                      "Check"
+                                    ]
+                                  }
+                                }
                               ]
                             }
                           }
@@ -5402,32 +5452,57 @@
                   "style": "display: contents",
                   "children": [
                     {
-                      "type": "form",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-form",
-                        "class": "gap",
+                        "data-testid": "gap",
+                        "class": "gap-block",
                         "children": [
                           {
-                            "type": "input",
+                            "type": "div",
                             "props": {
-                              "data-testid": "gap-input",
-                              "class": "field",
-                              "value": "",
-                              "aria-label": "Your answer",
-                              "type": "text",
-                              "readOnly": false,
-                              "autocomplete": "off"
+                              "class": "ab-fields",
+                              "children": [
+                                {
+                                  "type": "form",
+                                  "props": {
+                                    "data-testid": "gap-form",
+                                    "class": "gap",
+                                    "children": [
+                                      {
+                                        "type": "input",
+                                        "props": {
+                                          "data-testid": "gap-input",
+                                          "class": "field",
+                                          "value": "",
+                                          "aria-label": "Your answer",
+                                          "type": "text",
+                                          "readOnly": false,
+                                          "autocomplete": "off"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
                             }
                           },
                           {
-                            "type": "button",
+                            "type": "div",
                             "props": {
-                              "data-testid": "btn-submit",
-                              "class": "btn primary",
-                              "disabled": true,
-                              "type": "submit",
+                              "class": "ab-submit",
                               "children": [
-                                "Check"
+                                {
+                                  "type": "button",
+                                  "props": {
+                                    "data-testid": "btn-submit",
+                                    "class": "btn primary",
+                                    "disabled": true,
+                                    "type": "button",
+                                    "children": [
+                                      "Check"
+                                    ]
+                                  }
+                                }
                               ]
                             }
                           }
@@ -5590,21 +5665,38 @@
                   "style": "display: contents",
                   "children": [
                     {
-                      "type": "form",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-form",
-                        "class": "gap",
+                        "data-testid": "gap",
+                        "class": "gap-block",
                         "children": [
                           {
-                            "type": "input",
+                            "type": "div",
                             "props": {
-                              "data-testid": "gap-input",
-                              "class": "field wrong",
-                              "value": "",
-                              "aria-label": "Your answer",
-                              "type": "text",
-                              "readOnly": true,
-                              "autocomplete": "off"
+                              "class": "ab-fields",
+                              "children": [
+                                {
+                                  "type": "form",
+                                  "props": {
+                                    "data-testid": "gap-form",
+                                    "class": "gap",
+                                    "children": [
+                                      {
+                                        "type": "input",
+                                        "props": {
+                                          "data-testid": "gap-input",
+                                          "class": "field wrong",
+                                          "value": "",
+                                          "aria-label": "Your answer",
+                                          "type": "text",
+                                          "readOnly": true,
+                                          "autocomplete": "off"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
                             }
                           }
                         ]

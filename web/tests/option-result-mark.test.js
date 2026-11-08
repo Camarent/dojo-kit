@@ -7,7 +7,7 @@ const path = require('path');
 const { loadBundle } = require('./load-bundle.js');
 const web = path.join(__dirname, '..');
 const sb = { console };
-loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/choice.js'] });
+loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/answer-block.js', 'types/registry.js', 'types/choice.js'] });
 
 const t = (k) => k;
 function walk(n, fn) {
