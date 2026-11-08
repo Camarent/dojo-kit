@@ -919,7 +919,7 @@
       ]
     },
     "ClozePart": {
-      "description": "A cloze part: literal text, or a blank listing its accepted alternatives.",
+      "description": "A cloze part: literal text, a blank listing its accepted alternatives, or\nlocked text (shown to the learner, not a blank, and not typed).",
       "anyOf": [
         {
           "type": "string"
@@ -929,7 +929,23 @@
           "items": {
             "type": "string"
           }
+        },
+        {
+          "$ref": "#/$defs/LockedPart"
         }
+      ]
+    },
+    "LockedPart": {
+      "description": "The object form `{\"locked\": \"...\"}` of a cloze part.",
+      "type": "object",
+      "properties": {
+        "locked": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "locked"
       ]
     }
   }

@@ -206,12 +206,21 @@ pub struct OrderItem {
     pub topic: Option<String>,
 }
 
-/// A cloze part: literal text, or a blank listing its accepted alternatives.
+/// A cloze part: literal text, a blank listing its accepted alternatives, or
+/// locked text (shown to the learner, not a blank, and not typed).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(untagged)]
 pub enum ClozePart {
     Text(String),
     Blank(Vec<String>),
+    Locked(LockedPart),
+}
+
+/// The object form `{"locked": "..."}` of a cloze part.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct LockedPart {
+    pub locked: String,
 }
 
 /// Fill-in-the-blanks item built from `parts`.

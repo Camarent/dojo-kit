@@ -1,3 +1,4 @@
+use dojo_core::content::{ClozePart, Item, LockedPart, parse_items};
 use dojo_core::lock::{parse_lock, update};
 use dojo_core::validate::{Severity, validate};
 mod common;
@@ -129,6 +130,33 @@ fn cloze_empty_parts() {
     assert!(has(&[&cloze("[]")], "cloze_empty_parts"));
     assert!(!has(&[&cloze(r#"[" ",["a"]]"#)], "cloze_empty_parts"));
     assert!(!has(&[&cloze(r#"["x",[""]]"#)], "cloze_empty_parts"));
+}
+
+#[test]
+fn cloze_locked_part_parses() {
+    let line = cloze(r#"["x ",{"locked":"Hi"},["a"]]"#);
+    let parsed = parse_items(&line);
+    assert!(parsed.errors.is_empty(), "{:?}", parsed.errors);
+    let Item::Cloze(c) = &parsed.items[0].1 else { panic!("not a cloze item") };
+    assert_eq!(c.parts[1], ClozePart::Locked(LockedPart { locked: "Hi".into() }));
+    assert!(!has(&[&line], "cloze_empty_locked"));
+}
+
+#[test]
+fn cloze_locked_part_rejects_unknown_key() {
+    let parsed = parse_items(&cloze(r#"["x ",{"locked":"Hi","extra":1},["a"]]"#));
+    assert!(!parsed.errors.is_empty());
+}
+
+#[test]
+fn cloze_empty_locked() {
+    assert!(has(&[&cloze(r#"["x ",{"locked":" "},["a"]]"#)], "cloze_empty_locked"));
+    assert!(!has(&[&cloze(r#"["x ",{"locked":"Hi"},["a"]]"#)], "cloze_empty_locked"));
+}
+
+#[test]
+fn cloze_only_locked_needs_blank() {
+    assert!(has(&[&cloze(r#"[{"locked":"Hi"}]"#)], "cloze_no_blank"));
 }
 
 #[test]

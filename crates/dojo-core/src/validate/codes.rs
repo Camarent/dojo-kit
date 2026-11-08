@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 113] = [
+pub const CODES: [(&str, Severity, &str); 114] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -42,6 +42,7 @@ pub const CODES: [(&str, Severity, &str); 113] = [
     ("cloze_too_many_blanks", Severity::Error, "cloze has more than 10 blanks"),
     ("cloze_empty_alternative", Severity::Error, "cloze has an empty alternative after normalization"),
     ("cloze_empty_parts", Severity::Error, "cloze has no non-empty text or alternatives"),
+    ("cloze_empty_locked", Severity::Error, "cloze has a locked part with empty text after normalization"),
     ("numeric_bad_answer", Severity::Error, "numeric answer is not finite"),
     ("numeric_bad_tolerance", Severity::Error, "numeric tolerance is negative or not finite"),
     ("duplicate_prompt", Severity::Warning, "same unit, type, prompt and stimulus as an earlier active item"),

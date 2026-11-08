@@ -196,6 +196,7 @@ fn item_has_foreign_script(item: &Item, scripts: &HashSet<String>) -> bool {
         Item::Cloze(c) => {
             c.parts.iter().any(|part| match part {
                 crate::content::ClozePart::Text(t) => foreign(t),
+                crate::content::ClozePart::Locked(l) => foreign(&l.locked),
                 crate::content::ClozePart::Blank(alts) => alts.iter().any(|a| foreign(a)),
             }) || explained(&c.explanation)
         }

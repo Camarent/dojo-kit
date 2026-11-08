@@ -13,7 +13,7 @@ pub use course::{
 };
 pub use input_mode::InputMode;
 pub use item::{
-    CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, MatchItem, MultiItem,
+    CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, LockedPart, MatchItem, MultiItem,
     NumericItem, OrderItem, Pair,
 };
 pub use item_kind::{ItemType, NewOrder, Status};
