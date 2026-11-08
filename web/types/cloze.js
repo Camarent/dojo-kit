@@ -57,6 +57,14 @@
       </span>`;
   }
 
+  // Locked part: shown in a read-only field, skipped by tab order and never the first focus target.
+  function lockedField(seg, key) {
+    var text = seg.locked;
+    return html`<input type="text" class="cloze-field locked" key=${key} name=${'locked-' + key} value=${text}
+      readonly=${true} tabIndex=${-1} aria-readonly="true" aria-label=${text}
+      autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck=${false} />`;
+  }
+
   // Text of a view segment: locked parts carry `locked`; `text` is the older shape.
   function segText(seg) { return seg.locked !== undefined ? seg.locked : seg.text; }
 
@@ -71,6 +79,10 @@
         currentGroup.push(seg);
         groups.push(currentGroup);
         currentGroup = [];
+      } else if (seg.locked !== undefined) {
+        // A locked part ends the group before it and opens the next one.
+        if (currentGroup.length > 0) groups.push(currentGroup);
+        currentGroup = [seg];
       } else {
         currentGroup.push(seg);
       }
@@ -90,6 +102,9 @@
         var seg = group[j];
         if (seg.blank !== undefined) {
           blankEl = renderBlank(seg.blank, true);
+        } else if (seg.locked !== undefined) {
+          textParts.push(lockedField(seg, keyPrefix + 'l' + textIndex));
+          textIndex++;
         } else {
           textParts.push(h('span', { key: keyPrefix + 't' + textIndex }, renderText(textIndex === 0 && typeof segText(seg) === 'string' ? segText(seg).replace(/^ +/, '') : segText(seg))));
           textIndex++;
@@ -130,7 +145,9 @@
       return html`<div class="cloze" data-testid="cloze">
         <p class="cloze-hint">${t('q.cloze.hint')}</p>
         <p class="cloze-sentence">${p.view.segments.map(function (seg, i) {
-          return seg.blank === undefined ? h('span', { key: 't' + i }, renderText(segText(seg))) : blankField(c, seg.blank);
+          if (seg.blank !== undefined) return blankField(c, seg.blank);
+          if (seg.locked !== undefined) return lockedField(seg, 'l' + i);
+          return h('span', { key: 't' + i }, renderText(segText(seg)));
         })}</p>
         ${!res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
           onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null}

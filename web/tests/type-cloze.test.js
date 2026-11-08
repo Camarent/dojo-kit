@@ -166,3 +166,44 @@ test('group label drops its leading space so the second label aligns with the fi
   const text = (n) => JSON.stringify(n.props.children);
   assert.ok(text(labels[1]).includes('kun: ') && !text(labels[1]).includes('" kun'));
 });
+
+const lockedOf = (node) => find(node, (n) => n.type === 'input' && n.props.class === 'cloze-field locked');
+const lockedView = { segments: [{ locked: 'Start ' }, { blank: 0 }, { locked: ' middle ' }, { blank: 1 }, { locked: ' end' }], blanks: 2 };
+
+test('locked part renders as a read-only, untabbable field labelled with its text', () => {
+  const locked = lockedOf(def.Question(props({ view: lockedView, state: def.initialState(lockedView) })));
+  assert.deepStrictEqual(locked.map((n) => n.props.value), ['Start ', ' middle ', ' end']);
+  for (const n of locked) {
+    assert.strictEqual(n.props.readonly, true);
+    assert.ok(n.props.name, 'form field name for the form-field check');
+    assert.strictEqual(n.props.tabIndex, -1);
+    assert.strictEqual(n.props['aria-readonly'], 'true');
+    assert.strictEqual(n.props['aria-label'], n.props.value);
+    assert.strictEqual(n.ref, undefined);
+    assert.strictEqual(n.props.id, undefined);
+  }
+});
+
+test('locked field is never the first focus target: blank 0 keeps the input ref', () => {
+  const ins = inputs(def.Question(props({ view: lockedView, state: def.initialState(lockedView) })));
+  const withRef = ins.filter((n) => n.ref !== undefined && n.ref !== null);
+  assert.deepStrictEqual(withRef.map((n) => n.props['data-testid']), ['cloze-input-0']);
+});
+
+test('locked part in a single-blank sentence is a locked field, blanks keep their ids', () => {
+  const v1 = { segments: [{ locked: 'Hi ' }, { blank: 0 }], blanks: 1 };
+  const v = def.Question(props({ view: v1, state: def.initialState(v1) }));
+  assert.strictEqual(lockedOf(v).length, 1);
+  assert.deepStrictEqual(inputs(v).filter((n) => n.props.class !== 'cloze-field locked').map((n) => n.props.id), ['cloze-input-0']);
+});
+
+test('a locked part ends the group before it: each locked+blank pair is its own row', () => {
+  const v = def.Question(props({ view: lockedView, state: def.initialState(lockedView) }));
+  assert.strictEqual(find(v, (n) => n.props && n.props.class === 'cloze-groups').length, 1);
+  assert.strictEqual(find(v, (n) => n.props && n.props.class === 'cloze-group').length, 2);
+  assert.strictEqual(find(v, (n) => n.props && n.props.class === 'cloze-group cloze-group-text').length, 1);
+});
+
+test('answerTexts keeps only blank answers, never the locked text', () => {
+  same(def.answerTexts({ parts: ['Start ', ['x'], ' middle ', ['y', 'z'], ' end'] }), ['x', 'y']);
+});
