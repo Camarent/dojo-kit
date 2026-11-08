@@ -149,21 +149,17 @@
       firstUnplaced: firstUnplaced, firstWrong: firstWrong
     });
     var sentencePieces = p.item && p.item.prompt ? splitPrompt(p.item.prompt, steps.length) : null;
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    var hint = html`<p class="muted order-hint">${t('q.order.hint')}</p>`;
+    var actions = renderActions(ctx);
 
+    // data-arrow-own sits on a wrapper: the arrow-key owner marker must stay on the order tree.
     if (sentencePieces !== null) {
-      return html`<div class="order sentence" data-testid="order" data-arrow-own>
-        <p class="muted order-hint">${t('q.order.hint')}</p>
-        ${renderSentence(ctx, sentencePieces)}
-        ${renderPool(ctx)}
-        ${renderActions(ctx)}
-      </div>`;
+      return html`<div data-arrow-own>${AnswerBlock({ cls: 'order sentence', testid: 'order', prompt: hint,
+        fields: html`${renderSentence(ctx, sentencePieces)}${renderPool(ctx)}`, submit: actions })}</div>`;
     }
-    return html`<div class="order" data-testid="order" data-arrow-own>
-      <p class="muted order-hint">${t('q.order.hint')}</p>
-      ${renderPool(ctx)}
-      ${renderList(ctx)}
-      ${renderActions(ctx)}
-    </div>`;
+    return html`<div data-arrow-own>${AnswerBlock({ cls: 'order', testid: 'order', prompt: hint,
+      fields: html`${renderPool(ctx)}${renderList(ctx)}`, submit: actions })}</div>`;
   }
 
   function Extra(p) {
