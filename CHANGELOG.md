@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-11-08
+
+- chore(n5-feedback-2): n5-feedback-2/phases/03-finish
+
 ## [0.3.3] - 2026-11-07
 
 - test(dojo-kit): remove temp dirs created by tests and add leak guard

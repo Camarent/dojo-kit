@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const { loadBundle } = require('./load-bundle.js');
 
 const sandbox = {};
-loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/multi.js'] });
+loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/answer-block.js','types/registry.js', 'types/multi.js'] });
 const def = sandbox.DojoTypes.get('multi');
 
 const view = { options: [

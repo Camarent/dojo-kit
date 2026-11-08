@@ -28,6 +28,7 @@ Machine-readable description of the authoring format, for editors and AI agents.
 - `modules` (top-level, optional string array; the `"modules"` property in `schema/course.schema.json`): module ids the course enables; absent or empty means none. Existence of each id is checked by `dojo validate` (`module_missing`), see `docs/modules/modules.md`.
 - Duplicate words: `dup_word` (warning, `dojo validate`, `crates/dojo-core/src/validate/dupes.rs`) flags two live gap/cloze/numeric/choice items with equal prompts and nested answer sets in the same unit and type. Fix it by retiring the duplicate (`lock.retired`) or by `supersedes` on the kept item; the schema itself does not check it.
 - There is no JSON Schema file for `stimuli.jsonl` or `intros.jsonl`; their shape (including stimulus `speak.lines`) is in the Rust types and in `dojo schema --brief`.
+- Cloze `parts` accept `{"locked": "text"}` (`LockedPart`, `schema/item.schema.json:938`): shown to the learner, read-only, never a blank. Empty text after normalization is `cloze_empty_locked` (`dojo validate`, see `docs/modules/crates.md`).
 
 ## Depends on / used by
 - Depends on: `crates/dojo-core` (schemars derive on the content types).

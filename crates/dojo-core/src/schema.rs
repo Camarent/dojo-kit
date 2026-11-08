@@ -67,7 +67,7 @@ pub fn brief_with_codes(codes: &[(&str, Severity, &str)]) -> String {
     s.push_str(EXAMPLE_LINES[4]);
     s.push_str("\n\nTYPE order\n  steps [string] REQUIRED (in correct order)\n  example: ");
     s.push_str(EXAMPLE_LINES[5]);
-    s.push_str("\n\nTYPE cloze\n  parts [string|[string]] REQUIRED (text or blank with alternatives)\n  normalize object optional: caseSensitive bool, trim bool, collapseSpaces bool, stripPunctuation bool, fold [[from,to]] optional\n  example: ");
+    s.push_str("\n\nTYPE cloze\n  parts [string|[string]|{locked:string}] REQUIRED (text, blank with alternatives, or locked text shown and not typed)\n  normalize object optional: caseSensitive bool, trim bool, collapseSpaces bool, stripPunctuation bool, fold [[from,to]] optional\n  example: ");
     s.push_str(EXAMPLE_LINES[6]);
     s.push_str("\n\nTYPE numeric\n  answer number REQUIRED\n  tolerance number optional (absolute)\n  unitLabel string optional (display unit)\n  example: ");
     s.push_str(EXAMPLE_LINES[7]);

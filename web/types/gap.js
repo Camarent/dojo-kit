@@ -16,15 +16,21 @@
     var res = p.result;
     var text = p.state.text;
     var state = res && !p.exam ? (res.correct ? 'right' : 'wrong') : '';
-    return html`<form class="gap" data-testid="gap-form" onSubmit=${function (e) {
-      e.preventDefault();
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    function submit() {
       if (!res && canSubmit(p.state)) p.onSubmit({ text: text }, text);
+    }
+    var field = html`<form class="gap" data-testid="gap-form" onSubmit=${function (e) {
+      e.preventDefault();
+      submit();
     }}>
       <input type="text" inputmode=${p.item && p.item.inputMode ? p.item.inputMode : null} class=${cls('field', state)} value=${text} readOnly=${!!res} aria-readonly=${res ? 'true' : null} autocomplete="off" autocapitalize="off"
         autocorrect="off" spellcheck=${false} aria-label=${t('session.your_answer')} data-testid="gap-input" name="answer"
         ref=${p.inputRef} onInput=${function (e) { p.setState({ text: e.target.value }); }} />
-      ${!res ? html`<button type="submit" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit">${t('session.check')}</button>` : null}
     </form>`;
+    var button = !res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
+      onClick=${submit}>${t('session.check')}</button>` : null;
+    return AnswerBlock({ cls: 'gap-block', testid: 'gap', fields: field, submit: button });
   }
 
   function Extra(p) {

@@ -17,6 +17,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 - [modules](modules/modules.md) - optional modules `ja` (ruby markup and checks, readings, kanji breakdown) and `ru` (validator words), module system (`modules/<id>/module.json`, `modules/registry`, validator trait, `module_missing`/`module_key_unlisted` rules), and the `modules/registry` crate.
 - [scripts](modules/scripts.md) - `scripts/build-wasm.sh`, check chain (`check-all.sh`), `ci.sh` (local CI mirror), `validate-examples.sh`.
 - [workspace](modules/workspace.md) - gitignored folder for local courses.
+- [answer block UX spec](ux-answer-block.md) - block order, answer shapes per item type, read-only caption after submit. Some rules are unconfirmed (marked in the spec).
 
 ## Layering (CONTRACT section 3)
 - Rules that decide what is correct or scheduled live in `dojo-core`. The browser reaches them only through `dojo-wasm`.

@@ -188,12 +188,14 @@
     return html`<button type="button" class="btn" data-testid="btn-override" onClick=${function () { host.overrideAnswer(); }}>${p.t('session.override')}</button>`;
   }
 
+  // Result view on the shared answer block: Extra part (verdict, detail, rows) in the feedback slot, answer texts after it.
   function resultBody(host, p, s, fbRows) {
     var t = p.t;
     var res = s.result;
     var def = DojoTypes.get(s.cur.item.type) || {};
-    return html`<div class=${cls('feedback', res.correct ? 'right' : 'wrong')} data-testid="feedback" role="status">
-        <b data-testid="verdict">${verdictText(def, res, t)}</b>
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    return AnswerBlock({ cls: cls('feedback', res.correct ? 'right' : 'wrong'), testid: 'feedback', role: 'status',
+      feedback: html`<b data-testid="verdict">${verdictText(def, res, t)}</b>
         ${expectedLine(def, res, t)}
         ${revealedLine(s, t)}
         ${root.DojoClipText ? root.DojoClipText.render(s, t, p.lang) : null}
@@ -202,8 +204,7 @@
         ${host.feedbackDetail(p, s)}
         ${fbRows(p, s, host.isExamMode())}
         ${overrideButton(host, p, s)}
-        ${flagButton(host, p, s)}
-      </div>`;
+        ${flagButton(host, p, s)}` });
   }
 
   var api = { createShared: createShared, flagButton: flagButton };

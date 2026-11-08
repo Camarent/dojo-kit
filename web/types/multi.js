@@ -25,9 +25,9 @@
     var res = p.result;
     var selected = p.state.selected;
     var judged = res && !p.exam && res.detail;
-    return html`<div class="multi" data-testid="multi">
-      ${res ? null : html`<p class="muted" data-testid="multi-hint">${t('q.multi.hint')}</p>`}
-      <ul class="opts" data-testid="options">${p.view.options.map(function (o, i) {
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    var hint = res ? null : html`<p class="muted" data-testid="multi-hint">${t('q.multi.hint')}</p>`;
+    var options = html`<ul class="opts" data-testid="options">${p.view.options.map(function (o, i) {
         var on = selected.indexOf(o.id) >= 0;
         var state = '';
         if (judged) state = isRight(res, o, on) ? 'right' : (on ? 'wrong' : '');
@@ -37,10 +37,10 @@
           onClick=${function () { p.setState({ selected: toggled(selected, o.id) }); }}>
           <span class="key" aria-hidden="true">${i + 1}</span><span class="opt-text">${renderText(o.label)}</span>
           <span class="multi-mark" aria-hidden="true">${on ? '✓' : ''}</span></button></li>`;
-      })}</ul>
-      <button type="button" class="btn primary" disabled=${!!res || !canSubmit(p.state)} data-testid="btn-submit"
-        onClick=${function () { if (!res && canSubmit(p.state)) p.onSubmit({ ids: selected }, selected); }}>${t('session.check')}</button>
-    </div>`;
+      })}</ul>`;
+    var submit = html`<button type="button" class="btn primary" disabled=${!!res || !canSubmit(p.state)} data-testid="btn-submit"
+      onClick=${function () { if (!res && canSubmit(p.state)) p.onSubmit({ ids: selected }, selected); }}>${t('session.check')}</button>`;
+    return AnswerBlock({ cls: 'multi', testid: 'multi', prompt: hint, fields: options, submit: submit });
   }
 
   function onKey(e, p) {

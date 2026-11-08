@@ -5058,32 +5058,58 @@
                 }
               },
               {
-                "type": "form",
+                "type": "div",
                 "props": {
-                  "data-testid": "gap-form",
-                  "class": "gap",
+                  "data-testid": "gap",
+                  "class": "gap-block",
+                  "role": null,
                   "children": [
                     {
-                      "type": "input",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-input",
-                        "class": "field",
-                        "value": "",
-                        "aria-label": "Your answer",
-                        "type": "text",
-                        "readOnly": false,
-                        "autocomplete": "off"
+                        "class": "ab-fields",
+                        "children": [
+                          {
+                            "type": "form",
+                            "props": {
+                              "data-testid": "gap-form",
+                              "class": "gap",
+                              "children": [
+                                {
+                                  "type": "input",
+                                  "props": {
+                                    "data-testid": "gap-input",
+                                    "class": "field",
+                                    "value": "",
+                                    "aria-label": "Your answer",
+                                    "type": "text",
+                                    "readOnly": false,
+                                    "autocomplete": "off"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
                       }
                     },
                     {
-                      "type": "button",
+                      "type": "div",
                       "props": {
-                        "data-testid": "btn-submit",
-                        "class": "btn primary",
-                        "disabled": true,
-                        "type": "submit",
+                        "class": "ab-submit",
                         "children": [
-                          "Check"
+                          {
+                            "type": "button",
+                            "props": {
+                              "data-testid": "btn-submit",
+                              "class": "btn primary",
+                              "disabled": true,
+                              "type": "button",
+                              "children": [
+                                "Check"
+                              ]
+                            }
+                          }
                         ]
                       }
                     }
@@ -5214,32 +5240,58 @@
                   "style": "display: contents",
                   "children": [
                     {
-                      "type": "form",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-form",
-                        "class": "gap",
+                        "data-testid": "gap",
+                        "class": "gap-block",
+                        "role": null,
                         "children": [
                           {
-                            "type": "input",
+                            "type": "div",
                             "props": {
-                              "data-testid": "gap-input",
-                              "class": "field",
-                              "value": "",
-                              "aria-label": "Your answer",
-                              "type": "text",
-                              "readOnly": false,
-                              "autocomplete": "off"
+                              "class": "ab-fields",
+                              "children": [
+                                {
+                                  "type": "form",
+                                  "props": {
+                                    "data-testid": "gap-form",
+                                    "class": "gap",
+                                    "children": [
+                                      {
+                                        "type": "input",
+                                        "props": {
+                                          "data-testid": "gap-input",
+                                          "class": "field",
+                                          "value": "",
+                                          "aria-label": "Your answer",
+                                          "type": "text",
+                                          "readOnly": false,
+                                          "autocomplete": "off"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
                             }
                           },
                           {
-                            "type": "button",
+                            "type": "div",
                             "props": {
-                              "data-testid": "btn-submit",
-                              "class": "btn primary",
-                              "disabled": true,
-                              "type": "submit",
+                              "class": "ab-submit",
                               "children": [
-                                "Check"
+                                {
+                                  "type": "button",
+                                  "props": {
+                                    "data-testid": "btn-submit",
+                                    "class": "btn primary",
+                                    "disabled": true,
+                                    "type": "button",
+                                    "children": [
+                                      "Check"
+                                    ]
+                                  }
+                                }
                               ]
                             }
                           }
@@ -5402,32 +5454,58 @@
                   "style": "display: contents",
                   "children": [
                     {
-                      "type": "form",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-form",
-                        "class": "gap",
+                        "data-testid": "gap",
+                        "class": "gap-block",
+                        "role": null,
                         "children": [
                           {
-                            "type": "input",
+                            "type": "div",
                             "props": {
-                              "data-testid": "gap-input",
-                              "class": "field",
-                              "value": "",
-                              "aria-label": "Your answer",
-                              "type": "text",
-                              "readOnly": false,
-                              "autocomplete": "off"
+                              "class": "ab-fields",
+                              "children": [
+                                {
+                                  "type": "form",
+                                  "props": {
+                                    "data-testid": "gap-form",
+                                    "class": "gap",
+                                    "children": [
+                                      {
+                                        "type": "input",
+                                        "props": {
+                                          "data-testid": "gap-input",
+                                          "class": "field",
+                                          "value": "",
+                                          "aria-label": "Your answer",
+                                          "type": "text",
+                                          "readOnly": false,
+                                          "autocomplete": "off"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
                             }
                           },
                           {
-                            "type": "button",
+                            "type": "div",
                             "props": {
-                              "data-testid": "btn-submit",
-                              "class": "btn primary",
-                              "disabled": true,
-                              "type": "submit",
+                              "class": "ab-submit",
                               "children": [
-                                "Check"
+                                {
+                                  "type": "button",
+                                  "props": {
+                                    "data-testid": "btn-submit",
+                                    "class": "btn primary",
+                                    "disabled": true,
+                                    "type": "button",
+                                    "children": [
+                                      "Check"
+                                    ]
+                                  }
+                                }
                               ]
                             }
                           }
@@ -5590,21 +5668,39 @@
                   "style": "display: contents",
                   "children": [
                     {
-                      "type": "form",
+                      "type": "div",
                       "props": {
-                        "data-testid": "gap-form",
-                        "class": "gap",
+                        "data-testid": "gap",
+                        "class": "gap-block",
+                        "role": null,
                         "children": [
                           {
-                            "type": "input",
+                            "type": "div",
                             "props": {
-                              "data-testid": "gap-input",
-                              "class": "field wrong",
-                              "value": "",
-                              "aria-label": "Your answer",
-                              "type": "text",
-                              "readOnly": true,
-                              "autocomplete": "off"
+                              "class": "ab-fields",
+                              "children": [
+                                {
+                                  "type": "form",
+                                  "props": {
+                                    "data-testid": "gap-form",
+                                    "class": "gap",
+                                    "children": [
+                                      {
+                                        "type": "input",
+                                        "props": {
+                                          "data-testid": "gap-input",
+                                          "class": "field wrong",
+                                          "value": "",
+                                          "aria-label": "Your answer",
+                                          "type": "text",
+                                          "readOnly": true,
+                                          "autocomplete": "off"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
                             }
                           }
                         ]
@@ -5629,78 +5725,86 @@
                   "role": "status",
                   "children": [
                     {
-                      "type": "b",
+                      "type": "div",
                       "props": {
-                        "data-testid": "verdict",
+                        "class": "ab-feedback",
                         "children": [
-                          "Wrong"
-                        ]
-                      }
-                    },
-                    {
-                      "type": "p",
-                      "props": {
-                        "data-testid": "expected",
-                        "children": [
-                          "Correct:",
-                          " ",
                           {
-                            "type": "span",
+                            "type": "b",
                             "props": {
-                              "class": "pre",
+                              "data-testid": "verdict",
                               "children": [
-                                "au12"
+                                "Wrong"
                               ]
                             }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "p",
-                      "props": {
-                        "data-testid": "explanation",
-                        "class": "pre",
-                        "children": [
-                          "e"
-                        ]
-                      }
-                    },
-                    {
-                      "type": "section",
-                      "props": {
-                        "data-testid": "feedback-detail",
-                        "class": "feedback-detail",
-                        "children": [
+                          },
                           {
                             "type": "p",
                             "props": {
-                              "data-testid": "feedback-tags",
-                              "class": "tags",
+                              "data-testid": "expected",
                               "children": [
+                                "Correct:",
+                                " ",
                                 {
                                   "type": "span",
                                   "props": {
-                                    "class": "chip tag",
+                                    "class": "pre",
                                     "children": [
-                                      "A"
+                                      "au12"
                                     ]
                                   }
                                 }
                               ]
                             }
+                          },
+                          {
+                            "type": "p",
+                            "props": {
+                              "data-testid": "explanation",
+                              "class": "pre",
+                              "children": [
+                                "e"
+                              ]
+                            }
+                          },
+                          {
+                            "type": "section",
+                            "props": {
+                              "data-testid": "feedback-detail",
+                              "class": "feedback-detail",
+                              "children": [
+                                {
+                                  "type": "p",
+                                  "props": {
+                                    "data-testid": "feedback-tags",
+                                    "class": "tags",
+                                    "children": [
+                                      {
+                                        "type": "span",
+                                        "props": {
+                                          "class": "chip tag",
+                                          "children": [
+                                            "A"
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "data-testid": "btn-override",
+                              "class": "btn",
+                              "type": "button",
+                              "children": [
+                                "Count as correct (typo)"
+                              ]
+                            }
                           }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "button",
-                      "props": {
-                        "data-testid": "btn-override",
-                        "class": "btn",
-                        "type": "button",
-                        "children": [
-                          "Count as correct (typo)"
                         ]
                       }
                     }

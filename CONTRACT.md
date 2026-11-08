@@ -9,6 +9,7 @@ Artifact sandbox: CSP blocks all network (`connect-src`). WASM (inlined as base6
 ## 1. Scope
 - Target: Claude artifact. No network use at runtime.
 - Item types: `choice` (incl. true/false), `gap` (typed, normalized, several accepted, optional `retry` readings), `card` (self-rated, SRS), `multi`, `match`, `order`, `cloze`, `numeric`. Only `card` is self-rated; the others grade to a boolean.
+- Cloze part `{locked: text}`: shown to the learner, read-only, not a blank, not typed, not checked. Empty `locked` text after normalization is `cloze_empty_locked`.
 - Modes: daily SRS, practice by tag/unit, weak points, placement test (when `course.placement` is set), timed mock exams (sections, pass rule, optional timing groups and scoring parts; only auto-scorable types).
 - UI language is a course setting; `en` and `ru` ship; content language is independent.
 

@@ -7,7 +7,7 @@ function loadGlobals() {
   const sandbox = { console: console, document: {} };
   sandbox.self = sandbox;
   sandbox.global = sandbox;
-  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/match.js'] });
+  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/answer-block.js','types/registry.js', 'types/match.js'] });
 
   return sandbox;
 }

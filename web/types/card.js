@@ -14,19 +14,19 @@
     var t = p.t;
     var back = p.view.back;
     var res = p.result;
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
     if (back === undefined) {
-      return html`<div class="card-slot"><button type="button" class="btn primary" data-testid="btn-show" data-autofocus="true"
-        onClick=${function () { p.onReveal(); }}>${t('session.show')}</button></div>`;
+      return AnswerBlock({ cls: 'card-slot', testid: 'card', submit: html`<button type="button" class="btn primary" data-testid="btn-show" data-autofocus="true"
+        onClick=${function () { p.onReveal(); }}>${t('session.show')}</button>` });
     }
-    return html`<div class="card-slot">
-      <p class="back" data-testid="card-back">${renderText(back)}</p>
-      <div class="row">
+    var rate = html`<div class="row">
         <button type="button" class="btn danger-soft" disabled=${!!res} data-testid="btn-again" data-refocus="true"
           onClick=${function () { p.onSubmit({ rating: 'again' }, 'again'); }}>${t('session.again')}</button>
         <button type="button" class="btn good-soft" disabled=${!!res} data-testid="btn-known"
           onClick=${function () { p.onSubmit({ rating: 'known' }, 'known'); }}>${t('session.known')}</button>
-      </div>
-    </div>`;
+      </div>`;
+    return AnswerBlock({ cls: 'card-slot', testid: 'card',
+      fields: html`<p class="back" data-testid="card-back">${renderText(back)}</p>`, submit: rate });
   }
 
   root.DojoTypes.register('card', {

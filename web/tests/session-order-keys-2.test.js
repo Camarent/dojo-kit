@@ -11,7 +11,7 @@ const web = path.join(__dirname, '..');
 
 function load() {
   const sandbox = { console };
-  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/order.js'] });
+  loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/answer-block.js','types/registry.js', 'types/order.js'] });
   return sandbox;
 }
 

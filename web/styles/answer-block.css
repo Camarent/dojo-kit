@@ -1,0 +1,15 @@
+/* Answer block (ui/answer-block.js). Mobile first: single column, full-width submit, wrapping text. */
+.answer-block { display: flex; flex-direction: column; gap: var(--fs, 1rem); width: 100%; max-width: 100%; }
+.ab-fields { min-width: 0; }
+.ab-submit .btn { width: 100%; min-height: var(--tap, 44px); }
+.ab-caption { margin: 0; font-size: var(--fs, 1rem); color: var(--fg); }
+.ab-feedback, .ab-answers { min-width: 0; overflow-wrap: anywhere; }
+.ab-feedback { display: flex; flex-direction: column; gap: var(--space-2); }
+
+/* Read-only field after submit: no focus, no typing. */
+.cloze-field.locked { cursor: default; color: var(--fg); background: var(--bg); opacity: 0.85; }
+.cloze-caption { display: inline-block; margin-left: 0.4em; font-size: var(--fs, 1rem); color: var(--fg); }
+
+@media (min-width: 768px) {
+  .ab-submit .btn { width: auto; }
+}

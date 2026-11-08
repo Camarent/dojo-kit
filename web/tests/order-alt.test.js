@@ -10,7 +10,7 @@ const gradeMod = require('../session/grade.js');
 
 const EN = 'Also correct: {order}';
 const sandbox = { console };
-loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'types/registry.js', 'types/order.js'] });
+loadBundle(sandbox, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/answer-block.js','types/registry.js', 'types/order.js'] });
 const def = sandbox.DojoTypes.get('order');
 
 function textOf(node) {

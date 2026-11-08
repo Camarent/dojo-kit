@@ -39,11 +39,21 @@
       aria-label=${t(ok ? 'q.result.blankRight' : 'q.result.blankWrong')}>${ok ? '✓' : '✗'}</span>`;
   }
 
+  // Answered without a mark (exam): the field is read-only and says it is not checked.
+  function isUnchecked(c, ok) {
+    return !!c.res && (ok === null || ok === undefined);
+  }
+
+  function blankClass(ok, locked) {
+    return cls('cloze-field', ok === true && 'right', ok === false && 'wrong', locked && 'locked');
+  }
+
   function blankField(c, n, fill) {
     var value = c.inputs[n] || '';
     var ok = c.marks ? c.marks[n] : null;
+    var locked = isUnchecked(c, ok);
     return html`<span class="cloze-blank" key=${'b' + n}>
-        <input type="text" class=${cls('cloze-field', ok === true && 'right', ok === false && 'wrong')}
+        <input type="text" class=${blankClass(ok, locked)}
           id=${'cloze-input-' + n} data-testid=${'cloze-input-' + n} name=${'blank-' + n} value=${value} readOnly=${!!c.res} aria-readonly=${c.res ? 'true' : null}
           style=${fill ? null : { '--blank-w': Math.max(value.length + 2, 6) + 'ch' }}
           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck=${false}
@@ -53,9 +63,20 @@
             next[n] = e.target.value;
             c.p.setState({ inputs: next });
           }} />
-        ${blankMark(c.t, ok)}
+        ${locked ? html`<span class="cloze-caption" data-testid=${'cloze-caption-' + n}>${c.t('q.cloze.locked')}</span>` : blankMark(c.t, ok)}
       </span>`;
   }
+
+  // Locked part: shown in a read-only field, skipped by tab order and never the first focus target.
+  function lockedField(seg, key) {
+    var text = seg.locked;
+    return html`<input type="text" class="cloze-field locked" key=${key} name=${'locked-' + key} value=${text}
+      readonly=${true} tabIndex=${-1} aria-readonly="true" aria-label=${text}
+      autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck=${false} />`;
+  }
+
+  // Text of a view segment: locked parts carry `locked`; `text` is the older shape.
+  function segText(seg) { return seg.locked !== undefined ? seg.locked : seg.text; }
 
   function renderGrouped(c, segments) {
     function renderBlank(n, fill) { return blankField(c, n, fill); }
@@ -68,6 +89,10 @@
         currentGroup.push(seg);
         groups.push(currentGroup);
         currentGroup = [];
+      } else if (seg.locked !== undefined) {
+        // A locked part ends the group before it and opens the next one.
+        if (currentGroup.length > 0) groups.push(currentGroup);
+        currentGroup = [seg];
       } else {
         currentGroup.push(seg);
       }
@@ -87,8 +112,11 @@
         var seg = group[j];
         if (seg.blank !== undefined) {
           blankEl = renderBlank(seg.blank, true);
+        } else if (seg.locked !== undefined) {
+          textParts.push(lockedField(seg, keyPrefix + 'l' + textIndex));
+          textIndex++;
         } else {
-          textParts.push(h('span', { key: keyPrefix + 't' + textIndex }, renderText(textIndex === 0 && typeof seg.text === 'string' ? seg.text.replace(/^ +/, '') : seg.text)));
+          textParts.push(h('span', { key: keyPrefix + 't' + textIndex }, renderText(textIndex === 0 && typeof segText(seg) === 'string' ? segText(seg).replace(/^ +/, '') : segText(seg))));
           textIndex++;
         }
       }
@@ -116,22 +144,21 @@
     var blanksCount = p.view.segments.filter(function (seg) { return seg.blank !== undefined; }).length;
     var isMultiBlank = blanksCount >= 2;
 
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    var hint = html`<p class="cloze-hint">${t('q.cloze.hint')}</p>`;
+    var submit = !res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
+      onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null;
+
     if (isMultiBlank) {
-      return html`<div class="cloze" data-testid="cloze">
-        <p class="cloze-hint">${t('q.cloze.hint')}</p>
-        <div class="cloze-groups">${renderGrouped(c, p.view.segments)}</div>
-        ${!res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
-          onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null}
-      </div>`;
+      return AnswerBlock({ cls: 'cloze', testid: 'cloze', prompt: hint, submit: submit,
+        fields: html`<div class="cloze-groups">${renderGrouped(c, p.view.segments)}</div>` });
     } else {
-      return html`<div class="cloze" data-testid="cloze">
-        <p class="cloze-hint">${t('q.cloze.hint')}</p>
-        <p class="cloze-sentence">${p.view.segments.map(function (seg, i) {
-          return seg.blank === undefined ? h('span', { key: 't' + i }, renderText(seg.text)) : blankField(c, seg.blank);
-        })}</p>
-        ${!res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
-          onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null}
-      </div>`;
+      var sentence = html`<p class="cloze-sentence">${p.view.segments.map(function (seg, i) {
+        if (seg.blank !== undefined) return blankField(c, seg.blank);
+        if (seg.locked !== undefined) return lockedField(seg, 'l' + i);
+        return h('span', { key: 't' + i }, renderText(segText(seg)));
+      })}</p>`;
+      return AnswerBlock({ cls: 'cloze', testid: 'cloze', prompt: hint, submit: submit, fields: sentence });
     }
   }
 
@@ -139,7 +166,7 @@
     Question: Question,
     canSubmit: canSubmit,
     answerTexts: function (item) {
-      return (item.parts || []).filter(function (p) { return typeof p !== 'string'; }).map(function (p) { return p[0]; });
+      return (item.parts || []).filter(function (p) { return Array.isArray(p); }).map(function (p) { return p[0]; });
     },
     initialState: initialState,
     onKey: onKey

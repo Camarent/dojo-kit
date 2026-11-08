@@ -22,6 +22,7 @@ pub(super) fn item_body(item: &Item) -> String {
                 .iter()
                 .flat_map(|p| match p {
                     ClozePart::Text(t) => vec![t.as_str()],
+                    ClozePart::Locked(l) => vec![l.locked.as_str()],
                     ClozePart::Blank(alts) => std::iter::once("\u{1e}").chain(alts.iter().map(String::as_str)).collect(),
                 })
                 .collect(),
@@ -225,11 +226,19 @@ fn check_cloze(c: &crate::content::ClozeItem, id: &str, file: &str, line: usize,
         sink.warning("cloze_many_blanks", file, line, format!("item '{id}' has {} blanks (> 5)", blank_count));
     }
     let mut has_empty_alt = false;
+    let mut has_empty_locked = false;
     let mut has_content = false;
     for p in &c.parts {
         match p {
             ClozePart::Text(t) => {
                 if !normalize(t, &norm).is_empty() {
+                    has_content = true;
+                }
+            }
+            ClozePart::Locked(l) => {
+                if normalize(&l.locked, &norm).is_empty() {
+                    has_empty_locked = true;
+                } else {
                     has_content = true;
                 }
             }
@@ -249,6 +258,9 @@ fn check_cloze(c: &crate::content::ClozeItem, id: &str, file: &str, line: usize,
     }
     if has_empty_alt {
         sink.error("cloze_empty_alternative", file, line, format!("item '{id}' has an empty alternative"));
+    }
+    if has_empty_locked {
+        sink.error("cloze_empty_locked", file, line, format!("item '{id}' has an empty locked part"));
     }
     if !has_content {
         sink.error("cloze_empty_parts", file, line, format!("item '{id}' has no non-empty parts"));

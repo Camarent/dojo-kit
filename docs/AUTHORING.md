@@ -18,7 +18,7 @@ Common: `type`, `prompt` (required); optional `tags`, `explanation`, `source`, `
 | `choice` | `options` (2+; use 3-5), `answer` (0-based index) | | true/false is `["True","False"]`; the app shuffles options |
 | `multi` | `options` (3+), `correct` (indices, non-empty, fewer than options) | | prompt says several answers are right |
 | `gap` | `answers` (all accepted forms) | `retry`, `normalize`, `inputMode` | `retry` = readings that are close but not correct; must differ from `answers`. `inputMode` = `numeric` \| `decimal` \| `text` sets the input's `inputmode` attribute (keyboard hint only, grading unchanged); any other value is a parse error |
-| `cloze` | `parts`: strings (text) and arrays of strings (blank + alternatives) | `normalize` | 1-5 blanks (more warns, over 10 errors) |
+| `cloze` | `parts`: strings (text), arrays of strings (blank + alternatives), and `{"locked": "text"}` (read-only text shown to the learner, not a blank, not typed) | `normalize` | 1-5 blanks (more warns, over 10 errors); at least one blank is required (`cloze_no_blank`); empty locked text is `cloze_empty_locked` |
 | `numeric` | `answer` | `tolerance` (absolute), `unitLabel` (display) | |
 | `match` | `pairs` `[{left,right}]` (2-6; 2-8 allowed) | `distractors` | lefts distinct, rights (and distractors) distinct |
 | `order` | `steps` in correct order (3-7; 2-10 allowed) | `altOrders` (other accepted step orders: permutations of the step indices, not the identity, no repeats; `order_alt_invalid`) | the app shuffles; with one `___` per step the words are tapped into the sentence; without `___` they are listed. A `★` right after a `___` (`___★`) marks that slot with a star; only the first is used |
@@ -30,7 +30,9 @@ Example shapes (from `examples/showcase/content/shapes.jsonl`):
 {"type":"multi","prompt":"Select all shapes with four sides.","options":["Square","Triangle","Rectangle","Pentagon"],"correct":[0,2]}
 {"type":"gap","prompt":"A right angle measures ___ degrees.","answers":["90","ninety"]}
 {"type":"cloze","prompt":"Fill in the blanks","parts":["A triangle has ",["3","three"]," sides."]}
+{"type":"cloze","prompt":"Fill in the blank","parts":[{"locked":"Triangle: "},["3","three"]," sides."]}
 ```
+A locked part is shown as fixed text: the learner never types it and it is not counted as a blank. A cloze still needs at least one blank.
 `normalize` (gap, cloze, or course-wide in `course.json`): `caseSensitive` (default false), `trim` (true), `collapseSpaces` (true), `stripPunctuation` (false), `fold` `[[from,to]]`.
 
 ## Adding items

@@ -70,18 +70,19 @@
 
     var submitDisabled = !!res || !canSubmit(fullState);
 
-    return html`<form class="match" data-testid="match" onSubmit=${handleSubmit}>
-      <p class="match-hint muted">${t('q.match.hint')}</p>
-      ${rows}
-      <div class="match-actions row wrap">
+    var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    var hint = html`<p class="match-hint muted">${t('q.match.hint')}</p>`;
+    var actions = html`<div class="match-actions row wrap">
         <button type="button" class="btn" disabled=${!!res} data-testid="match-reset" onClick=${handleReset}>
           ${t('q.match.reset')}
         </button>
         <button type="submit" class="btn primary" disabled=${submitDisabled} data-testid="btn-submit">
           ${t('session.check')}
         </button>
-      </div>
-    </form>`;
+      </div>`;
+    // The form owns submit (Enter and the submit button); the block lays out the slots inside it.
+    return html`<form class="match" data-testid="match" onSubmit=${handleSubmit}>${AnswerBlock({
+      cls: 'match-block', testid: 'match-block', prompt: hint, fields: rows, submit: actions })}</form>`;
   }
 
   function Extra(p) {
