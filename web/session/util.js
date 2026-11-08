@@ -64,7 +64,10 @@
     if (item.type === 'multi') return item.correct.map(function (i) { return item.options[i]; }).join(', ');
     if (item.type === 'match') return item.pairs.map(function (p) { return p.left + ' = ' + p.right; }).join('; ');
     if (item.type === 'order') return item.steps.map(function (st, i) { return (i + 1) + '. ' + st; }).join('; ');
-    if (item.type === 'cloze') return item.parts.map(function (p) { return typeof p === 'string' ? p : p[0]; }).join('');
+    if (item.type === 'cloze') return item.parts.map(function (p) {
+      if (typeof p === 'string') return p;
+      return Array.isArray(p) ? p[0] : p.locked;
+    }).join('');
     if (item.type === 'numeric') {
       var out = String(item.answer);
       if (item.unitLabel) out += ' ' + item.unitLabel;
@@ -94,7 +97,7 @@
     return perm;
   }
   function clozeBlanks(item) {
-    return item.parts.filter(function (p) { return typeof p !== 'string'; });
+    return item.parts.filter(function (p) { return Array.isArray(p); });
   }
   function correctIndexes(item) {
     return Array.isArray(item.answer) ? item.answer : [item.answer];

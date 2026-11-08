@@ -27,7 +27,11 @@
   function clozeView(item) {
     var n = 0;
     return {
-      segments: item.parts.map(function (p) { return typeof p === 'string' ? { locked: p } : { blank: n++ }; }),
+      segments: item.parts.map(function (p) {
+        if (typeof p === 'string') return { text: p };
+        if (Array.isArray(p)) return { blank: n++ };
+        return { locked: p.locked };
+      }),
       blanks: n
     };
   }

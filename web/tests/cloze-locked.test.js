@@ -4,22 +4,29 @@ const assert = require('node:assert');
 const util = require('../session/util.js');
 const { create } = require('../session/run-view.js');
 
-// Plain strings are locked text (shown, never typed); arrays are blanks with accepted answers.
+// Plain strings are text (shown, not a field); {locked: text} objects are read-only fields; arrays are blanks with accepted answers.
 const ITEM = { id: 'cl1', type: 'cloze', parts: ['Start ', ['x'], ' middle ', ['y', 'z'], ' end'] };
+const LOCKED_ITEM = { id: 'cl3', type: 'cloze', parts: ['Start ', ['x'], ' ', { locked: 'rare' }, ' end'] };
 const view = (item) => create({}, { session: { id: 's1' } }).viewFor(item);
 
-test('answer text shows the locked text with each blank replaced by its first answer', () => {
+test('answer text shows the text and locked text with each blank replaced by its first answer', () => {
   assert.strictEqual(util.expectedFor(ITEM), 'Start x middle y end');
+  assert.strictEqual(util.expectedFor(LOCKED_ITEM), 'Start x rare end');
 });
 
-test('clozeBlanks returns only the blank parts, not the locked text', () => {
+test('clozeBlanks returns only the blank parts, not the text or locked parts', () => {
   assert.deepStrictEqual(util.clozeBlanks(ITEM), [['x'], ['y', 'z']]);
+  assert.deepStrictEqual(util.clozeBlanks(LOCKED_ITEM), [['x']]);
 });
 
-test('run view yields locked segments and numbers blanks from 0', () => {
+test('run view yields text and locked segments and numbers blanks from 0', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(view(ITEM))), {
-    segments: [{ locked: 'Start ' }, { blank: 0 }, { locked: ' middle ' }, { blank: 1 }, { locked: ' end' }],
+    segments: [{ text: 'Start ' }, { blank: 0 }, { text: ' middle ' }, { blank: 1 }, { text: ' end' }],
     blanks: 2
+  });
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(view(LOCKED_ITEM))), {
+    segments: [{ text: 'Start ' }, { blank: 0 }, { text: ' ' }, { locked: 'rare' }, { text: ' end' }],
+    blanks: 1
   });
 });
 

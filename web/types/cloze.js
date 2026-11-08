@@ -39,13 +39,21 @@
       aria-label=${t(ok ? 'q.result.blankRight' : 'q.result.blankWrong')}>${ok ? '✓' : '✗'}</span>`;
   }
 
+  // Answered without a mark (exam): the field is read-only and says it is not checked.
+  function isUnchecked(c, ok) {
+    return !!c.res && (ok === null || ok === undefined);
+  }
+
+  function blankClass(ok, locked) {
+    return cls('cloze-field', ok === true && 'right', ok === false && 'wrong', locked && 'locked');
+  }
+
   function blankField(c, n, fill) {
     var value = c.inputs[n] || '';
     var ok = c.marks ? c.marks[n] : null;
-    // Answered without a mark (exam): the field is read-only and says it is not checked.
-    var locked = !!c.res && (ok === null || ok === undefined);
+    var locked = isUnchecked(c, ok);
     return html`<span class="cloze-blank" key=${'b' + n}>
-        <input type="text" class=${cls('cloze-field', ok === true && 'right', ok === false && 'wrong', locked && 'locked')}
+        <input type="text" class=${blankClass(ok, locked)}
           id=${'cloze-input-' + n} data-testid=${'cloze-input-' + n} name=${'blank-' + n} value=${value} readOnly=${!!c.res} aria-readonly=${c.res ? 'true' : null}
           style=${fill ? null : { '--blank-w': Math.max(value.length + 2, 6) + 'ch' }}
           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck=${false}
@@ -158,7 +166,7 @@
     Question: Question,
     canSubmit: canSubmit,
     answerTexts: function (item) {
-      return (item.parts || []).filter(function (p) { return typeof p !== 'string'; }).map(function (p) { return p[0]; });
+      return (item.parts || []).filter(function (p) { return Array.isArray(p); }).map(function (p) { return p[0]; });
     },
     initialState: initialState,
     onKey: onKey
