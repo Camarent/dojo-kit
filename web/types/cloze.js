@@ -57,6 +57,9 @@
       </span>`;
   }
 
+  // Text of a view segment: locked parts carry `locked`; `text` is the older shape.
+  function segText(seg) { return seg.locked !== undefined ? seg.locked : seg.text; }
+
   function renderGrouped(c, segments) {
     function renderBlank(n, fill) { return blankField(c, n, fill); }
     var groups = [];
@@ -88,7 +91,7 @@
         if (seg.blank !== undefined) {
           blankEl = renderBlank(seg.blank, true);
         } else {
-          textParts.push(h('span', { key: keyPrefix + 't' + textIndex }, renderText(textIndex === 0 && typeof seg.text === 'string' ? seg.text.replace(/^ +/, '') : seg.text)));
+          textParts.push(h('span', { key: keyPrefix + 't' + textIndex }, renderText(textIndex === 0 && typeof segText(seg) === 'string' ? segText(seg).replace(/^ +/, '') : segText(seg))));
           textIndex++;
         }
       }
@@ -127,7 +130,7 @@
       return html`<div class="cloze" data-testid="cloze">
         <p class="cloze-hint">${t('q.cloze.hint')}</p>
         <p class="cloze-sentence">${p.view.segments.map(function (seg, i) {
-          return seg.blank === undefined ? h('span', { key: 't' + i }, renderText(seg.text)) : blankField(c, seg.blank);
+          return seg.blank === undefined ? h('span', { key: 't' + i }, renderText(segText(seg))) : blankField(c, seg.blank);
         })}</p>
         ${!res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
           onClick=${function () { p.onSubmit({ inputs: inputs }, inputs); }}>${t('session.check')}</button>` : null}
