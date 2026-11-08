@@ -5062,6 +5062,7 @@
                 "props": {
                   "data-testid": "gap",
                   "class": "gap-block",
+                  "role": null,
                   "children": [
                     {
                       "type": "div",
@@ -5243,6 +5244,7 @@
                       "props": {
                         "data-testid": "gap",
                         "class": "gap-block",
+                        "role": null,
                         "children": [
                           {
                             "type": "div",
@@ -5456,6 +5458,7 @@
                       "props": {
                         "data-testid": "gap",
                         "class": "gap-block",
+                        "role": null,
                         "children": [
                           {
                             "type": "div",
@@ -5669,6 +5672,7 @@
                       "props": {
                         "data-testid": "gap",
                         "class": "gap-block",
+                        "role": null,
                         "children": [
                           {
                             "type": "div",
@@ -5721,78 +5725,86 @@
                   "role": "status",
                   "children": [
                     {
-                      "type": "b",
+                      "type": "div",
                       "props": {
-                        "data-testid": "verdict",
+                        "class": "ab-feedback",
                         "children": [
-                          "Wrong"
-                        ]
-                      }
-                    },
-                    {
-                      "type": "p",
-                      "props": {
-                        "data-testid": "expected",
-                        "children": [
-                          "Correct:",
-                          " ",
                           {
-                            "type": "span",
+                            "type": "b",
                             "props": {
-                              "class": "pre",
+                              "data-testid": "verdict",
                               "children": [
-                                "au12"
+                                "Wrong"
                               ]
                             }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "p",
-                      "props": {
-                        "data-testid": "explanation",
-                        "class": "pre",
-                        "children": [
-                          "e"
-                        ]
-                      }
-                    },
-                    {
-                      "type": "section",
-                      "props": {
-                        "data-testid": "feedback-detail",
-                        "class": "feedback-detail",
-                        "children": [
+                          },
                           {
                             "type": "p",
                             "props": {
-                              "data-testid": "feedback-tags",
-                              "class": "tags",
+                              "data-testid": "expected",
                               "children": [
+                                "Correct:",
+                                " ",
                                 {
                                   "type": "span",
                                   "props": {
-                                    "class": "chip tag",
+                                    "class": "pre",
                                     "children": [
-                                      "A"
+                                      "au12"
                                     ]
                                   }
                                 }
                               ]
                             }
+                          },
+                          {
+                            "type": "p",
+                            "props": {
+                              "data-testid": "explanation",
+                              "class": "pre",
+                              "children": [
+                                "e"
+                              ]
+                            }
+                          },
+                          {
+                            "type": "section",
+                            "props": {
+                              "data-testid": "feedback-detail",
+                              "class": "feedback-detail",
+                              "children": [
+                                {
+                                  "type": "p",
+                                  "props": {
+                                    "data-testid": "feedback-tags",
+                                    "class": "tags",
+                                    "children": [
+                                      {
+                                        "type": "span",
+                                        "props": {
+                                          "class": "chip tag",
+                                          "children": [
+                                            "A"
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "props": {
+                              "data-testid": "btn-override",
+                              "class": "btn",
+                              "type": "button",
+                              "children": [
+                                "Count as correct (typo)"
+                              ]
+                            }
                           }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "button",
-                      "props": {
-                        "data-testid": "btn-override",
-                        "class": "btn",
-                        "type": "button",
-                        "children": [
-                          "Count as correct (typo)"
                         ]
                       }
                     }

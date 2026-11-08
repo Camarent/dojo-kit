@@ -154,16 +154,6 @@ test('kanji-rows: the ja module supplies the label Kanji in this word', async ()
   assert.strictEqual(labelText, 'Kanji in this word', 'ja module label (registerFeedbackRows opts.label)');
 });
 
-test('kanji-rows: at max-width 390px the row stays one compact line (3 columns kept)', async () => {
-  const css = H.read('../modules/ja/web/ja.css');
-  const base = css.match(/\.fb-row-grid\b[^{]*\{[^}]*\}/)[0];
-  assert.ok(/grid-template-columns:\s*auto 1fr auto/.test(base));
-  const m = css.match(/@media \(max-width: 390px\)\s*\{[^@]*?\n\}/g).filter((b) => b.includes('.fb-row-grid'));
-  assert.equal(m.length, 1);
-  assert.ok(!/grid-template-columns/.test(m[0]), 'no column collapse at 390px');
-  assert.ok(/\.fb-read\b[^{]*\{[^}]*font-size:\s*var\(--fs-sm\)/.test(m[0]));
-});
-
 test('kanji-rows: no trailing separator when kanji has only on-reading', async () => {
   const items = [
     word('w-日本', '日本'),

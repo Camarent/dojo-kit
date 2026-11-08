@@ -4,6 +4,7 @@
 .ab-submit .btn { width: 100%; min-height: var(--tap, 44px); }
 .ab-caption { margin: 0; font-size: var(--fs, 1rem); color: var(--fg); }
 .ab-feedback, .ab-answers { min-width: 0; overflow-wrap: anywhere; }
+.ab-feedback { display: flex; flex-direction: column; gap: var(--space-2); }
 
 /* Read-only field after submit: no focus, no typing. */
 .cloze-field.locked { cursor: default; color: var(--fg); background: var(--bg); opacity: 0.85; }

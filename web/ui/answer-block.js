@@ -9,9 +9,9 @@
   var html = htm.bind(h);
 
   // Each slot is optional: a null or undefined slot renders nothing.
-  // props: { cls, testid, prompt, fields, submit, caption, feedback, answers }
+  // props: { cls, testid, role, prompt, fields, submit, caption, feedback, answers }
   function AnswerBlock(p) {
-    return html`<div class=${p.cls || 'answer-block'} data-testid=${p.testid || 'answer-block'}>
+    return html`<div class=${p.cls || 'answer-block'} data-testid=${p.testid || 'answer-block'} role=${p.role || null}>
       ${p.prompt ? html`<div class="ab-prompt">${p.prompt}</div>` : null}
       ${p.fields ? html`<div class="ab-fields">${p.fields}</div>` : null}
       ${p.submit ? html`<div class="ab-submit">${p.submit}</div>` : null}
