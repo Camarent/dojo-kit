@@ -181,8 +181,9 @@ fn symlink_ids_lock_is_rejected() {
     let dir = unique_dir("symlink-lock").unwrap();
     copy_dir(&demo(), &dir).unwrap();
 
-    // Replace ids.lock with a symlink to /tmp
-    let target = Path::new("/tmp/dojo-test-ids.lock");
+    // Replace ids.lock with a symlink to a file inside the test's own dir
+    let target = dir.join("real-ids.lock");
+    let target = target.as_path();
     let symlink_path = dir.join("ids.lock");
     // Create the target file first
     fs::write(target, "test").unwrap();
