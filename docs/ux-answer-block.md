@@ -78,6 +78,8 @@ After an answer is submitted, the question part becomes read-only. A caption dir
 - It stays until the learner moves to the next item.
 - Tapping an answered option or input does nothing and does not show an error.
 
+Status: the caption is not implemented. No `Answered` string in `web/ui/answer-block.js` or `web/i18n/*.json`; cloze shows `q.cloze.locked` ("not checked", exam only), per `docs/modules/web.md`.
+
 Note: "locked" is not used for this state. It names the cloze part `{locked: string}` (fixed text shown, not typed; `crates/dojo-core/src/content/item.rs:219`), a different concept. This section names the caption "locked" only as the read-only state of the question part.
 
 ## Spacing
@@ -91,6 +93,8 @@ Proposed, not from the audit: none of the rules below appear in `answer-block-au
 - Text inside the block never gets a smaller font size than the prompt.
 
 ## Mobile first
+
+Status: not met by `modules/ja/web/ja.css`, which uses only `max-width` media queries (lines 5, 8; desktop-first).
 
 - Single column. No side-by-side layout below the tablet width.
 - Long options wrap; they do not truncate.
