@@ -53,7 +53,7 @@ Source: the kanji unit file of the audit (`answer-block-audit.md`, type inventor
 | Item type | Shape | Question part | Submit | Extra part |
 |---|---|---|---|---|
 | choice | 4 options | option buttons, stacked vertically on narrow screens | none; tapping an option grades it | none |
-| choice | with speak | same as choice, 4 options; speak is not read by the choice renderer (`choice.js:36-46`) | none | none |
+| choice | with speak | same as choice, 4 options; speak is not read by the choice renderer (`web/types/choice.js:36-46`) | none | none |
 | gap | one accepted answer | single-line text input | submit button | none |
 | gap | several accepted answers | single-line text input | submit button | shows the accepted list |
 | cloze | one blank | single-line text input inline with the sentence | submit button | none |
