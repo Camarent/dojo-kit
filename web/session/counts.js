@@ -70,14 +70,14 @@
       var gc = groupCounts(ctx);
       out.groups = gc.groups;
       out.bars = gc.bars;
-      if (ctx.groupList.length) out.summary = summarize(ctx, gc.groups, st.byUnit, bq);
+      if (ctx.groupList.length) out.summary = summarize(ctx, gc.groups, bq);
     }
     return out;
   }
 
   // Home summary of a course with groups, consistent with the group cards: due = group due (entities) + due items of
   // ungrouped units; newToday = group newToday (entities) + fresh items of ungrouped units in today's queue.
-  function summarize(ctx, groups, byUnit, bq) {
+  function summarize(ctx, groups, bq) {
     var due = 0;
     var newToday = 0;
     var parts = [];
@@ -88,7 +88,9 @@
     Object.keys(groups).forEach(function (id) { due += groups[id].due; newToday += groups[id].newToday; });
     var unitOf = {};
     ctx.items.forEach(function (it) { unitOf[it.id] = it.unit; });
-    Object.keys(byUnit).forEach(function (u) { if (!(u in ctx.unitGroup)) due += byUnit[u].due; });
+    // Ungrouped due = due items the queue will show (examOnly items drop out while shared items exist).
+    // Ungrouped due = due items the queue will show (examOnly items drop out while shared items exist).
+    bq.due.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) due++; });
     var other = 0;
     bq.fresh.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) { newToday++; other++; } });
     if (other > 0) parts.push({ id: 'other', title: null, newToday: other });
@@ -140,7 +142,7 @@
   function create(ctx) {
     return {
       counts: function () { return counts(ctx); },
-      summarize: function (groups, byUnit, bq) { return summarize(ctx, groups, byUnit, bq); },
+      summarize: function (groups, bq) { return summarize(ctx, groups, bq); },
       groupCounts: function () { return groupCounts(ctx); },
       entityStates: function () { return entityStates(ctx); },
       topicLevels: function () { return topicLevels(ctx); }
