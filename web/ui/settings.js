@@ -1,6 +1,6 @@
 /*
  * ui/settings.js — SettingsScreen, renderPluginSettings
- * Globals expected: preact, htm, DojoExt, DojoSpeech, DojoCommon, DojoSettingsSections, DojoSettingsDialogs.
+ * Globals expected: preact, htm, DojoExt, DojoSpeech, DojoCommon, DojoSettingsSections, DojoSettingsPlugin, DojoSettingsDialogs.
  * create(deps) takes { renderSpeechSettings } and returns { SettingsScreen, renderPluginSettings }.
  */
 (function (root) {
@@ -16,6 +16,7 @@
   }
 
   var DojoSettingsSections = dep('DojoSettingsSections', './settings-sections.js');
+  var DojoSettingsPlugin = dep('DojoSettingsPlugin', './settings-plugin.js');
   var DojoSettingsDialogs = dep('DojoSettingsDialogs', './settings-dialogs.js');
   var DojoClipFlagsSection = dep('DojoClipFlagsSection', './clip-flags-section.js');
   var DojoCommon = dep('DojoCommon', './common.js');
@@ -139,6 +140,7 @@
       var self = this;
       var sec = SettingsScreen.parts.sec;
       var renderSpeechSettings = SettingsScreen.parts.renderSpeechSettings;
+      var renderPluginSettings = SettingsScreen.parts.renderPluginSettings;
       return html`<main class="screen settings-screen" data-testid="settings">
         <header class="head"><h1>${t('settings.title')}</h1><${StatusChip} t=${t} status=${p.status} /></header>
         <${Notice} text=${p.notice} />
@@ -154,7 +156,7 @@
         ${sec.sectionImport(s, t, self)}
         ${sec.sectionReset(s, t, self)}
         ${renderSpeechSettings(p, self)}
-        ${sec.renderPluginSettings(p, self)}
+        ${renderPluginSettings(p, self)}
         ${DojoClipFlagsSection.render ? DojoClipFlagsSection.render(p, t, self) : null}
         ${sec.sectionAbout(p, t)}
         <div class="row"><button type="button" class="btn" data-testid="btn-back" onClick=${function () { p.go('home'); }}>${t('back')}</button></div>
@@ -166,9 +168,10 @@
 
   function create(deps) {
     var sec = DojoSettingsSections.create();
-    SettingsScreen.parts = { sec: sec, renderSpeechSettings: deps.renderSpeechSettings };
+    var plugin = DojoSettingsPlugin.create();
+    SettingsScreen.parts = { sec: sec, renderSpeechSettings: deps.renderSpeechSettings, renderPluginSettings: plugin.renderPluginSettings };
     DojoSettingsDialogs.create().install(SettingsScreen);
-    return { SettingsScreen: SettingsScreen, renderPluginSettings: sec.renderPluginSettings };
+    return { SettingsScreen: SettingsScreen, renderPluginSettings: plugin.renderPluginSettings };
   }
 
   var api = { create: create };

@@ -69,6 +69,7 @@
     "ui/settings-timer.js",
     "ui/settings-topics.js",
     "ui/settings-sections.js",
+    "ui/settings-plugin.js",
     "ui/settings-dialogs.js",
     "ui/settings.js",
     "ui/app-screens.js",
