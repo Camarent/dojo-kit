@@ -62,22 +62,24 @@
     active.forEach(function (it) { tallyItem(ctx, st, it); });
     var t = st.t;
     var bq = ctx.fn.builtQueue();
+    // Topics: due = due topics over the uncapped queue (the cap limits one session, not the home number).
+    var dueQ = ctx.course.topics ? ctx.fn.builtQueue(true) : bq;
     var newToday = bq.fresh.length;
     var totals = { total: active.length, fresh: t.fresh, learning: t.learning, learned: t.learned };
     // Due = the due items the session will show (same builtQueue), not every due item of every unit.
-    var out = { total: ctx.items.length, active: active.length, due: bq.due.length, fresh: t.fresh, learning: t.learning, learned: t.learned, newToday: newToday, queue: bq.due.length + bq.fresh.length, byUnit: st.byUnit, totals: totals };
+    var out = { total: ctx.items.length, active: active.length, due: dueQ.due.length, fresh: t.fresh, learning: t.learning, learned: t.learned, newToday: newToday, queue: bq.due.length + bq.fresh.length, byUnit: st.byUnit, totals: totals };
     if (ctx.groupList.length || (ctx.course.bars && ctx.course.bars.length)) {
       var gc = groupCounts(ctx);
       out.groups = gc.groups;
       out.bars = gc.bars;
-      if (ctx.groupList.length) out.summary = summarize(ctx, gc.groups, bq);
+      if (ctx.groupList.length) out.summary = summarize(ctx, gc.groups, bq, dueQ);
     }
     return out;
   }
 
   // Home summary of a course with groups, consistent with the group cards: due = group due (entities) + due items of
   // ungrouped units; newToday = group newToday (entities) + fresh items of ungrouped units in today's queue.
-  function summarize(ctx, groups, bq) {
+  function summarize(ctx, groups, bq, dueQ) {
     var due = 0;
     var newToday = 0;
     var parts = [];
@@ -88,9 +90,10 @@
     Object.keys(groups).forEach(function (id) { due += groups[id].due; newToday += groups[id].newToday; });
     var unitOf = {};
     ctx.items.forEach(function (it) { unitOf[it.id] = it.unit; });
+    // Topics: due = due topics of the uncapped queue (dueQ), group cards keep entity counts.
     // Ungrouped due = due items the queue will show (examOnly items drop out while shared items exist).
-    // Ungrouped due = due items the queue will show (examOnly items drop out while shared items exist).
-    bq.due.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) due++; });
+    if (ctx.course.topics) due = dueQ.due.length;
+    else dueQ.due.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) due++; });
     var other = 0;
     bq.fresh.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) { newToday++; other++; } });
     if (other > 0) parts.push({ id: 'other', title: null, newToday: other });
@@ -142,7 +145,7 @@
   function create(ctx) {
     return {
       counts: function () { return counts(ctx); },
-      summarize: function (groups, bq) { return summarize(ctx, groups, bq); },
+      summarize: function (groups, bq, dueQ) { return summarize(ctx, groups, bq, dueQ || bq); },
       groupCounts: function () { return groupCounts(ctx); },
       entityStates: function () { return entityStates(ctx); },
       topicLevels: function () { return topicLevels(ctx); }

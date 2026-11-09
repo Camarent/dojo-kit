@@ -254,12 +254,12 @@
   }
 
   function queueHelpers(ctx, h) {
-    h.rawBuiltQueue = function (sharedOnly) {
+    h.rawBuiltQueue = function (sharedOnly, uncapped) {
       var order = ctx.fn.activeItems().map(function (it) { return it.id; });
       if (sharedOnly) order = h.preferShared(order);
       order = shuffleRandomUnits(ctx, h, order);
       var args = { items: ctx.fn.records(), order: order, now: ctx.now(), newAllowance: h.newAllowance(), unitNewCaps: h.buildUnitNewCaps(), itemUnits: h.buildItemUnits() };
-      var ta = h.topicArgs(); if (ta) { args.topics = ta; args.itemEntities = ctx.itemEntities; args.records = args.items; }
+      var ta = h.topicArgs(uncapped); if (ta) { args.topics = ta; args.itemEntities = ctx.itemEntities; args.records = args.items; }
       var sa = h.scopedArgs();
       if (sa) args.scopedMembers = sa.scopedMembers;
       var ga = h.groupQueueArgs();
@@ -267,11 +267,11 @@
       Object.keys(ga).forEach(function (k) { args[k] = ga[k]; });
       return queueWithExtraNew(ctx, h, args, order);
     };
-    // Queue without examOnly items unless that would leave the whole queue empty.
-    h.builtQueue = function () {
-      var q = h.rawBuiltQueue(true);
+    // Queue without examOnly items unless that would leave the whole queue empty. uncapped: see topicArgs.
+    h.builtQueue = function (uncapped) {
+      var q = h.rawBuiltQueue(true, uncapped);
       if (q.due.length + q.fresh.length > 0) return q;
-      return h.rawBuiltQueue(false);
+      return h.rawBuiltQueue(false, uncapped);
     };
     h.dailyQueue = function (groupId) {
       var q = h.builtQueue();
