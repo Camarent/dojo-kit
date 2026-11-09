@@ -14,10 +14,12 @@ mod entity;
 mod queue;
 #[cfg(test)]
 mod queue_tests;
+mod topics;
 
 pub use counts::{group_counts, group_counts_scoped};
 pub use entity::{entity_flags, entity_id, entity_stats, entity_stats_scoped, item_matches_bar, EntityStats};
 pub use queue::{build_queue_scoped, build_queue_with_groups, shuffle_entities, GroupQueueInput, Scope};
+pub use topics::{aspect_of, topic_levels, topic_once, AspectRule, TopicLevel, DEFAULT_ASPECT};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
