@@ -25,6 +25,7 @@ mod order_split;
 mod quality;
 mod speech;
 mod dupes;
+mod topics;
 use course::check_course;
 pub use checks::parse_findings;
 pub use codes::{CODES, all_codes};
@@ -164,6 +165,7 @@ pub fn validate_with_modules(
     let course = match parse_course(course_text) {
         Ok(c) => {
             check_course(&c, &mut course_sink);
+            topics::check_topics(&c, &mut course_sink);
             Some(c)
         }
         Err(errors) => {

@@ -1,4 +1,5 @@
 use crate::content::Item;
+use crate::diagnostic::{Diagnostic, Severity};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -33,6 +34,22 @@ impl IdLock {
         s.push('\n');
         s
     }
+}
+
+/// Warning `ids_lock_not_canonical` when `text` parses as a lock but is not the byte-exact form `dojo lock` writes.
+/// Returns `None` for canonical text and for text that does not parse (that case is the bad-lock error).
+pub fn canonical_diagnostic(text: &str) -> Option<Diagnostic> {
+    let lock = parse_lock(text).ok()?;
+    if lock.to_text() == text {
+        return None;
+    }
+    Some(Diagnostic {
+        severity: Severity::Warning,
+        code: "ids_lock_not_canonical",
+        file: "ids.lock".to_string(),
+        line: 0,
+        message: "ids.lock is not in canonical form (sorted, unique, trailing newline); run 'dojo lock <course-dir>' to rewrite it".to_string(),
+    })
 }
 
 /// Next lock state: old ids plus current ids; retired is old retired plus ids of retired items. Ids are never dropped.

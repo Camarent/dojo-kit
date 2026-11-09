@@ -1,4 +1,5 @@
 use super::*;
+use super::topics;
 use crate::groups;
 
 pub(super) fn groups_call(name: &str, a: &Value) -> Result<Value, CallError> {
@@ -70,6 +71,7 @@ fn build_queue(a: &Value) -> Result<Value, CallError> {
         let used = used_map(a)?;
         let day = opt_string(a, "day")?.unwrap_or_default();
         let course_id = opt_string(a, "courseId")?.unwrap_or_default();
+        let topics = topics::queue_topics(a)?;
 
         let scoped_members: Option<HashMap<String, Vec<String>>> = match a.get("scopedMembers") {
             Some(Value::Object(obj)) => Some(obj.iter().map(|(k, v)| strings(v, "scopedMembers").map(|l| (k.clone(), l))).collect::<Result<_, _>>()?),
@@ -94,6 +96,15 @@ fn build_queue(a: &Value) -> Result<Value, CallError> {
             },
             scope.as_ref(),
         );
+        let q = match &topics {
+            Some(t) => {
+                let empty_records = Map::new();
+                let empty_topics = HashMap::new();
+                let topic_of = item_entities.as_ref().unwrap_or(&empty_topics);
+                groups::topic_once(q, topic_of, &t.aspects, topics::records_ref(a, &empty_records)?, t.cap)
+            }
+            None => q,
+        };
         if scope.is_some() {
             Ok(json!({ "due": q.due, "fresh": q.fresh, "drills": drills }))
         } else {

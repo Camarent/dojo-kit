@@ -149,6 +149,15 @@ fn validate_with_lock_detects_removed_id() {
 }
 
 #[test]
+fn unsorted_lock_warns_and_strict_fails() {
+    let out = dojo().arg("validate").arg(fixture("unsortedlock")).output().unwrap();
+    assert_eq!(code(&out), Some(0));
+    assert!(stdout(&out).contains("warning[ids_lock_not_canonical] ids.lock: "), "{}", stdout(&out));
+    let strict = dojo().arg("validate").arg(fixture("unsortedlock")).arg("--strict").output().unwrap();
+    assert_eq!(code(&strict), Some(1));
+}
+
+#[test]
 fn brief_lists_validator_codes() {
     let out = dojo().args(["schema", "--brief"]).output().unwrap();
     let text = stdout(&out);

@@ -5,12 +5,15 @@ mod item_kind;
 mod media;
 mod parse;
 mod speech;
+mod srs_config;
+mod topics;
 
 pub use course::{
     Bar, BreakdownConfig, Course, CourseCheck, DetailConfig, DetailField, ExamConfig, Group, GroupNewOrder,
     PassBasis, PassMode, PassRule, PlacementConfig, Plugins, RubyConfig, ScoringPart, SrsConfig,
     SrsScope, Section, TagLabel, TagLabelDetail, TimingGroup, Unit,
 };
+pub use topics::{AspectRule, TopicsConfig};
 pub use input_mode::InputMode;
 pub use item::{
     CardItem, ChoiceItem, ClozeItem, ClozePart, GapItem, Item, LockedPart, MatchItem, MultiItem,

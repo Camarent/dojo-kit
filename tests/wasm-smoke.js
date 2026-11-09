@@ -87,18 +87,24 @@ function checkMisc(dojo, failures) {
   if (dojo.call('sanitize', big).pad.length !== 200000) failures.push('large UTF-8 document did not round-trip');
 }
 
+function checkTopics(dojo, failures) {
+  const course = { topics: { aspects: [{ id: 'meaning', tags: ['vocab'] }] } };
+  const aspects = dojo.call('itemAspects', { course, items: [{ id: 'a', unit: 'u', tags: ['vocab'] }] });
+  if (JSON.stringify(aspects) !== '{"a":"meaning"}') failures.push(`itemAspects: got ${JSON.stringify(aspects)}`);
+  const levels = dojo.call('topicLevels', { items: [{ id: 'a', entity: 'T' }], aspects: { a: 'meaning' }, records: { a: { s: 2 } } });
+  if (JSON.stringify(levels) !== '{"T":{"aspects":{"meaning":2},"level":2}}') failures.push(`topicLevels: got ${JSON.stringify(levels)}`);
+}
+
 async function main() {
   const failures = [];
   if (bytes.length > MAX_BYTES) failures.push(`wasm is ${bytes.length} bytes, budget ${MAX_BYTES}`);
-
-  // Check WASM size is under 360 KiB
-  if (bytes.length >= 368640) failures.push(`wasm is ${bytes.length} bytes, must be under 368640`);
 
   scanNameSection(bytes, failures);
   const dojo = await load(bytes);
   const total = runVectors(dojo, failures);
   checkErrors(dojo, failures);
   checkMisc(dojo, failures);
+  checkTopics(dojo, failures);
   console.log(`wasm-smoke: ${total} vectors, ${bytes.length} bytes, ${failures.length} failures`);
   failures.forEach((f) => console.log('  FAIL ' + f));
   process.exit(failures.length ? 1 : 0);

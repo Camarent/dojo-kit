@@ -27,8 +27,9 @@ http.createServer((req, res) => {
   let p;
   try { p = decodeURIComponent(req.url.split('?')[0]); } catch { res.writeHead(400); return res.end(); }
   if (p === '/') p = '/index.html';
-  const file = path.join(base, path.normalize(p));
-  if (file !== base && !file.startsWith(base + path.sep)) { res.writeHead(403); return res.end(); }
+  const file = path.resolve(base, '.' + p);
+  const rel = path.relative(base, file);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) { res.writeHead(403); return res.end(); }
   fs.readFile(file, (err, buf) => {
     if (err) { res.writeHead(404); return res.end('not found'); }
     if (p === '/index.html') buf = Buffer.concat([Buffer.from(head + (mock ? MOCK : '') + '</head><body>'), buf, Buffer.from('</body></html>')]);

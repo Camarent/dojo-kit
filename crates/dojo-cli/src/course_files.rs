@@ -10,6 +10,8 @@ pub(crate) struct CourseFiles {
     pub(crate) course_text: String,
     pub(crate) files: Vec<SourceFile>,
     pub(crate) lock: Option<IdLock>,
+    /// Raw `ids.lock` bytes as read; the canonical-form check compares them with the parsed lock.
+    pub(crate) lock_text: Option<String>,
     pub(crate) stimuli: Option<SourceFile>,
     pub(crate) intros: Option<SourceFile>,
 }
@@ -68,12 +70,11 @@ pub(crate) fn load(dir: &Path) -> Result<CourseFiles, String> {
     // Check that ids.lock is not a symlink
     check_symlink(&lock_path, "ids.lock")?;
 
-    let lock = if lock_path.is_file() {
-        let text = read(&lock_path)?;
-        Some(lock::parse_lock(&text).map_err(|e| format!("bad {}: {e}", lock_path.display()))?)
-    } else {
-        None
-    };
+    let lock_text = if lock_path.is_file() { Some(read(&lock_path)?) } else { None };
+    let lock = lock_text
+        .as_deref()
+        .map(|text| lock::parse_lock(text).map_err(|e| format!("bad {}: {e}", lock_path.display())))
+        .transpose()?;
 
     let stimuli_path = dir.join("stimuli.jsonl");
 
@@ -94,7 +95,7 @@ pub(crate) fn load(dir: &Path) -> Result<CourseFiles, String> {
     } else {
         None
     };
-    Ok(CourseFiles { course_text, files, lock, stimuli, intros })
+    Ok(CourseFiles { course_text, files, lock, lock_text, stimuli, intros })
 }
 
 /// The bundle's `i18n` list; empty when `bundle.json` is missing or unreadable.

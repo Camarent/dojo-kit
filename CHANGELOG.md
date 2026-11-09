@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-11-09
+
+- feat(review): one question per topic in review, canonical ids.lock guard
+
 ## [0.3.4] - 2026-11-08
 
 - chore(n5-feedback-2): n5-feedback-2/phases/03-finish

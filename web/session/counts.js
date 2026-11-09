@@ -62,22 +62,24 @@
     active.forEach(function (it) { tallyItem(ctx, st, it); });
     var t = st.t;
     var bq = ctx.fn.builtQueue();
+    // Topics: due = due topics over the uncapped queue (the cap limits one session, not the home number).
+    var dueQ = ctx.course.topics ? ctx.fn.builtQueue(true) : bq;
     var newToday = bq.fresh.length;
     var totals = { total: active.length, fresh: t.fresh, learning: t.learning, learned: t.learned };
     // Due = the due items the session will show (same builtQueue), not every due item of every unit.
-    var out = { total: ctx.items.length, active: active.length, due: bq.due.length, fresh: t.fresh, learning: t.learning, learned: t.learned, newToday: newToday, queue: bq.due.length + bq.fresh.length, byUnit: st.byUnit, totals: totals };
+    var out = { total: ctx.items.length, active: active.length, due: dueQ.due.length, fresh: t.fresh, learning: t.learning, learned: t.learned, newToday: newToday, queue: bq.due.length + bq.fresh.length, byUnit: st.byUnit, totals: totals };
     if (ctx.groupList.length || (ctx.course.bars && ctx.course.bars.length)) {
       var gc = groupCounts(ctx);
       out.groups = gc.groups;
       out.bars = gc.bars;
-      if (ctx.groupList.length) out.summary = summarize(ctx, gc.groups, st.byUnit, bq);
+      if (ctx.groupList.length) out.summary = summarize(ctx, gc.groups, bq, dueQ);
     }
     return out;
   }
 
   // Home summary of a course with groups, consistent with the group cards: due = group due (entities) + due items of
   // ungrouped units; newToday = group newToday (entities) + fresh items of ungrouped units in today's queue.
-  function summarize(ctx, groups, byUnit, bq) {
+  function summarize(ctx, groups, bq, dueQ) {
     var due = 0;
     var newToday = 0;
     var parts = [];
@@ -88,7 +90,10 @@
     Object.keys(groups).forEach(function (id) { due += groups[id].due; newToday += groups[id].newToday; });
     var unitOf = {};
     ctx.items.forEach(function (it) { unitOf[it.id] = it.unit; });
-    Object.keys(byUnit).forEach(function (u) { if (!(u in ctx.unitGroup)) due += byUnit[u].due; });
+    // Topics: due = due topics of the uncapped queue (dueQ), group cards keep entity counts.
+    // Ungrouped due = due items the queue will show (examOnly items drop out while shared items exist).
+    if (ctx.course.topics) due = dueQ.due.length;
+    else dueQ.due.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) due++; });
     var other = 0;
     bq.fresh.forEach(function (id) { if (!(unitOf[id] in ctx.unitGroup)) { newToday++; other++; } });
     if (other > 0) parts.push({ id: 'other', title: null, newToday: other });
@@ -121,12 +126,29 @@
     return ctx.dojo.call('entityStates', eargs);
   }
 
+  // Per-topic aspect levels: {levels: WASM `topicLevels` {entity: {aspects, level}}, aspects: {entity: [aspect ids of active items]}}; null without course.topics.
+  function topicLevels(ctx) {
+    if (!ctx.course.topics) return null;
+    var active = ctx.items.filter(function (it) { return !isRetired(it); });
+    var aspects = ctx.dojo.call('itemAspects', { course: ctx.course, items: active.map(function (it) { return { id: it.id, unit: it.unit, tags: it.tags || [] }; }) });
+    var byEntity = {};
+    active.forEach(function (it) {
+      var e = ctx.itemEntities[it.id];
+      (byEntity[e] = byEntity[e] || []).push(aspects[it.id]);
+    });
+    Object.keys(byEntity).forEach(function (e) { byEntity[e] = byEntity[e].filter(function (a, i, all) { return all.indexOf(a) === i; }).sort(); });
+    var meta = active.map(function (it) { return { id: it.id, entity: ctx.itemEntities[it.id] }; });
+    var levels = ctx.dojo.call('topicLevels', { items: meta, aspects: aspects, records: ctx.fn.records() });
+    return { levels: levels, aspects: byEntity };
+  }
+
   function create(ctx) {
     return {
       counts: function () { return counts(ctx); },
-      summarize: function (groups, byUnit, bq) { return summarize(ctx, groups, byUnit, bq); },
+      summarize: function (groups, bq, dueQ) { return summarize(ctx, groups, bq, dueQ || bq); },
       groupCounts: function () { return groupCounts(ctx); },
-      entityStates: function () { return entityStates(ctx); }
+      entityStates: function () { return entityStates(ctx); },
+      topicLevels: function () { return topicLevels(ctx); }
     };
   }
 

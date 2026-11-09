@@ -3,6 +3,7 @@ mod exam;
 mod groups;
 mod progress;
 mod srs;
+mod topics;
 
 use serde_json::{Map, Value, json};
 use std::collections::{HashMap, HashSet};
@@ -158,6 +159,7 @@ fn dispatch(name: &str, a: &Value) -> Result<Value, CallError> {
         "emptyProgress" | "sanitize" | "merge" | "migrateProgress" | "dayKey" | "streak" => progress::progress_call(name, a),
         "applyAnswer" | "applyPractice" | "applyRelearn" | "applyPlacement" | "entityView" | "applyEntity" | "isDue" | "isNew" | "weakest" | "ladderForUnit" | "dropForUnit" | "unitConfig" | "timerNext" | "timerLimit" | "applyExtras" | "weightedQueue" => srs::srs_call(name, a),
         "buildQueue" | "groupCounts" | "entityStates" => groups::groups_call(name, a),
+        "itemAspects" | "topicLevels" => topics::topics_call(name, a),
         "normalize" | "checkGap" | "gapVerdict" | "checkChoice" | "checkMulti" | "checkMatch" | "checkOrder" | "checkCloze" | "checkNumeric" => check::check_call(name, a),
         "splitmix64" | "sample" | "score" => exam::exam_call(name, a),
         other => Err(CallError { code: "unknown_function", message: format!("unknown function `{other}`") }),

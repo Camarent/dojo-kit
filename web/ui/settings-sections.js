@@ -1,64 +1,18 @@
 /*
- * ui/settings-sections.js — SettingsScreen section views, renderPluginSettings
- * Globals expected: preact, htm, DojoExt, DojoI18n, DojoCommon.
- * create() returns the section view functions used by ui/settings.js and renderPluginSettings.
+ * ui/settings-sections.js — SettingsScreen section views
+ * Globals expected: preact, htm, DojoCommon.
+ * create() returns the section view functions used by ui/settings.js.
  */
 (function (root) {
   'use strict';
 
   var h = preact.h;
   var html = htm.bind(h);
-  var DojoExt = root.DojoExt || {};
-  var DojoI18n = root.DojoI18n || (typeof require !== 'undefined' ? require('./i18n.js') : null) || {};
   var DojoCommon = root.DojoCommon || (typeof require !== 'undefined' ? require('./common.js') : null) || {};
   var renderText = DojoCommon.renderText;
   var Stepper = DojoCommon.Stepper;
 
   var PACE_LABEL_KEYS = { '0.5': 'muchDenser', '0.75': 'denser', '1': 'asInCourse', '1.5': 'longer', '2': 'muchLonger', '3': 'x3' };
-
-  function resolveLabel(label, lang) {
-    if (typeof label === 'string') return label;
-    if (label && typeof label === 'object') {
-      if (typeof label[lang] === 'string') return label[lang];
-      if (typeof label[DojoI18n.primaryTag(lang)] === 'string') return label[DojoI18n.primaryTag(lang)];
-      if (typeof label.en === 'string') return label.en;
-    }
-    return '';
-  }
-
-  function renderPluginSettings(p, self) {
-    var registeredSettings = DojoExt.getRegisteredSettings ? DojoExt.getRegisteredSettings() : [];
-    if (registeredSettings.length === 0) return null;
-
-    var t = p.t;
-    var doc = p.store.doc;
-    var lang = p.lang || (p.course && p.course.uiLanguage) || 'en';
-
-    return html`<section class="group" data-testid="plugin-settings">
-      <h2>${t('settings.plugins')}</h2>
-      ${registeredSettings.map(function (setting) {
-        var currentValue = doc.settings && doc.settings['plugin:' + setting.key];
-        var effectiveValue = setting.default;
-        setting.options.forEach(function (o) { if (o.value === currentValue) effectiveValue = currentValue; });
-        var selId = 'plugin-setting-' + setting.key;
-        var label = resolveLabel(setting.label, lang);
-        return html`<div class="setting-row" key=${setting.key} data-testid="plugin-setting-${setting.key}">
-          <label for=${selId}>${label}</label>
-          <select class="field" id=${selId} data-testid="select-${setting.key}" value=${effectiveValue}
-            onChange=${function (e) {
-              var raw = e.target.value;
-              var match = setting.options.filter(function (o) { return String(o.value) === raw; })[0];
-              if (match) self.setSetting('plugin:' + setting.key, match.value);
-            }}>
-            ${setting.options.map(function (opt) {
-              var optLabel = resolveLabel(opt.label || opt.value, lang);
-              return html`<option key=${opt.value} value=${opt.value}>${optLabel}</option>`;
-            })}
-          </select>
-        </div>`;
-      })}
-    </section>`;
-  }
 
   function sectionNewPerDay(p, t, self) {
     var perDay = p.store.doc.settings && typeof p.store.doc.settings.newPerDay === 'number' ? p.store.doc.settings.newPerDay : p.engine.globalNewPerDay();
@@ -317,9 +271,13 @@
         </div>` : null;
   }
 
+  var topicsMod = root.DojoSettingsTopics || (typeof require !== 'undefined' ? require('./settings-topics.js') : null);
+  var renderTopicsSettings = topicsMod ? topicsMod.create().renderTopicsSettings : null;
+  function sectionTopics(p, self) { return renderTopicsSettings ? renderTopicsSettings(p, self) : null; }
+
   function create() {
     return {
-      renderPluginSettings: renderPluginSettings, sectionNewPerDay: sectionNewPerDay, sectionTheme: sectionTheme,
+      sectionNewPerDay: sectionNewPerDay, sectionTheme: sectionTheme, sectionTopics: sectionTopics,
       sectionExamDate: sectionExamDate, sectionUnits: sectionUnits, sectionGroups: sectionGroups,
       sectionPlacement: sectionPlacement, sectionExport: sectionExport, sectionImport: sectionImport,
       sectionReset: sectionReset, sectionAbout: sectionAbout, unitDialogView: unitDialogView, groupDialogView: groupDialogView
