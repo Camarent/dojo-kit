@@ -5,8 +5,8 @@ license.workspace = true
 version.workspace = true
 
 [dependencies]
-dojo-core = { version = "0.3.7", path = "../dojo-core" }
-dojo-modules = { version = "0.3.7", path = "../../modules/registry" }
+dojo-core = { version = "0.3.8", path = "../dojo-core" }
+dojo-modules = { version = "0.3.8", path = "../../modules/registry" }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.154", features = ["float_roundtrip", "preserve_order"] }
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.8] - 2026-11-09
+
+- fix(n5): remove furigana answer leaks in reading questions
+
 ## [0.3.7] - 2026-11-09
 
 - fix(web): favicon, footer tap target, Далее without answer counts as don't know
