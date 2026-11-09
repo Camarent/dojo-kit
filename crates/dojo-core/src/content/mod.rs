@@ -5,6 +5,7 @@ mod item_kind;
 mod media;
 mod parse;
 mod speech;
+mod srs_config;
 
 pub use course::{
     Bar, BreakdownConfig, Course, CourseCheck, DetailConfig, DetailField, ExamConfig, Group, GroupNewOrder,
