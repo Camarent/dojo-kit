@@ -208,6 +208,7 @@ pub(crate) fn run_validate(args: &[String]) -> Result<u8, String> {
     let course = load(Path::new(dir))?;
     let web = web.or_else(|| find_web_dir().ok());
     let mut diags = validate_course(Path::new(dir), &course, web.as_deref());
+    diags.extend(course.lock_text.as_deref().and_then(dojo_core::lock::canonical_diagnostic));
     if !no_checks {
         diags.extend(run_checks(Path::new(dir), &course.course_text));
     }
