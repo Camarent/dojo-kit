@@ -262,7 +262,7 @@ html.dojo-no-scroll { overflow: hidden !important; }
 .extra-new-buttons { margin-top: var(--space-2); }
 .extra-new-buttons .btn { flex: 1; min-width: 70px; }
 .group-toggles { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
-.group-toggles .chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); }
+.group-toggles .chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); min-height: var(--tap); min-width: var(--tap); }
 .group-toggles input[type="checkbox"] { margin: 0; }
 
 /* Bars */
