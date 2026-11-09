@@ -87,7 +87,6 @@ test('(c) mutation check - verify hide option is used', async () => {
   // Mutation: make renderPrompt ignore the item parameter
   const mutation = (content) => {
     return content
-      .replace('function renderPrompt(str, item) {', 'function renderPrompt(str, item) {')
       .replace('DojoExt.text(str, { annotate: true, hide: answerReadings(item) })', 'DojoExt.text(str, { annotate: true })');
   };
   
