@@ -47,6 +47,7 @@
     "ui/detail.js",
     "ui/topic-levels.js",
     "ui/catalog-audio.js",
+    "ui/catalog-detail.js",
     "ui/catalog.js",
     "ui/group-card.js",
     "ui/home.js",
