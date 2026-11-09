@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-11-09
+
+- fix(web): 44px tap target for home group toggles
+
 ## [0.3.5] - 2026-11-09
 
 - feat(review): one question per topic in review, canonical ids.lock guard
