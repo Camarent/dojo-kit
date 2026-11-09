@@ -60,13 +60,15 @@
     var exam = sc.isExam();
     var examMode = sc.isExamMode();
     var last = s.cur.position >= s.cur.total;
+    // Next with no answer on a quiz card counts as "don't know" (wrong answer), not as a skip.
+    var wrongNext = !exam && !s.result && !s.retry && !!p.session.canNextWrong && p.session.canNextWrong();
     return html`<div class="row actions-row">
           ${sc.renderDontKnow(p, s)}
           ${examMode ? html`<button type="button" class="btn" data-testid="btn-finish" onClick=${function () { sc.setState({ confirm: 'finish' }); }}>${t('session.finish')}</button>` : null}
-          <button type="button" class="btn primary big" disabled=${!exam && !s.result} data-testid="btn-next" data-arrow-own
+          <button type="button" class="btn primary big" disabled=${!exam && !s.result && !wrongNext} data-testid="btn-next" data-arrow-own
             ref=${function (el) { sc.nextBtn = el; }}
             title=${t('session.next.withArrow')} aria-label=${t('session.next.withArrow')}
-            onClick=${function () { if (examMode && last) sc.setState({ confirm: 'finish' }); else sc.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>
+            onClick=${function () { if (wrongNext) sc.dontKnowAnswer(true); else if (examMode && last) sc.setState({ confirm: 'finish' }); else sc.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>
         </div>`;
   }
 

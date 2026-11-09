@@ -124,10 +124,11 @@
     return rc.sx.fn.applyVerdict(item, r.verdict, { rec: r.rec, prev: prev, relearn: relearn, isNewRecord: isNewRecord });
   }
 
-  function dontKnow(rc) {
+  // viaNext: the Next button on a quiz card with no answer; it counts as "don't know" even when the course flag is off.
+  function dontKnow(rc, viaNext) {
     var guard = answerGuard(rc);
     if (guard) return guard;
-    if (!rc.session.canDontKnow()) return { error: 'no_dont_know' };
+    if (!canDontKnow(rc, viaNext)) return { error: 'no_dont_know' };
     var item = rc.ctx.byId[currentId(rc)];
     var relearn = rc.session.index >= rc.session.total;
     var prev = rc.view.prevOf(item);
@@ -141,9 +142,9 @@
     return rc.sx.fn.applyVerdict(item, { correct: false, given: '-', dontKnow: true }, { rec: rec, prev: prev, relearn: relearn, isNewRecord: isNewRecord });
   }
 
-  function canDontKnow(rc) {
+  function canDontKnow(rc, viaNext) {
     var sx = rc.sx;
-    if (rc.ctx.course.dontKnow !== true) return false;
+    if (!viaNext && rc.ctx.course.dontKnow !== true) return false;
     if (sx.mode === 'placement' && (rc.session.placementMode || rc.ctx.fn.placementMode()) === 'self') return false;
     var item = rc.ctx.byId[currentId(rc)];
     if (!item || util.K.SELF_RATED.indexOf(item.type) >= 0) return false;
@@ -160,8 +161,9 @@
     };
     session.reveal = function () { rc.sx.revealed = true; };
     session.answer = function (input) { return answer(rc, input); };
-    session.dontKnow = function () { return dontKnow(rc); };
-    session.canDontKnow = function () { return canDontKnow(rc); };
+    session.dontKnow = function (viaNext) { return dontKnow(rc, viaNext === true); };
+    session.canDontKnow = function () { return canDontKnow(rc, false); };
+    session.canNextWrong = function () { return canDontKnow(rc, true); };
     session.canOverride = rc.sx.fn.canOverride;
     session.overrideLast = rc.sx.fn.overrideLast;
     session.retryCount = function () { return Math.max(0, rc.sx.queue.length - Math.max(session.index, session.total)); };

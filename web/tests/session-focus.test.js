@@ -129,13 +129,13 @@ test('app.css has input focus-visible ring and no break-all on stimulus text', (
 test('no focus ring after pointer click on next button', async () => {
   const m = await mount([GAP]);
   await start(m);
-  click(m, 'btn-dont-know');
-  await m.flush();
   q(m.rootEl, 'btn-next');
   // Simulate pointer interaction
   m.win.fire('pointerdown', { type: 'pointerdown' });
   await m.flush();
   // Click the next button
+  click(m, 'btn-next');
+  await m.flush();
   click(m, 'btn-next');
   await m.flush();
   // After pointer interaction, the button should not have data-nofocusring
@@ -152,7 +152,7 @@ test('pointer interaction clears keyboard flag', async () => {
   m.win.fire('pointerdown', { type: 'pointerdown' });
   await m.flush();
   // Now kbd should be false
-  click(m, 'btn-dont-know');
+  click(m, 'btn-next');
   await m.flush();
   q(m.rootEl, 'btn-next');
   click(m, 'btn-next');
