@@ -41,6 +41,20 @@
     return dIntro && DojoExt.intro ? DojoExt.intro(dIntro, d, self.hookCtx()) : null;
   }
 
+  // Intro section when the item has an intro; otherwise the declarative detail.
+  function renderIntroPart(self, d, dIntro, dIntroOut, dDecl) {
+    if (!dIntro) return dDecl;
+    return html`<section class="intro" data-testid="detail-intro">${renderIntroBody({ intro: dIntro, item: d, ctx: self.hookCtx(), decl: dDecl, all: false, pre: dIntroOut })}</section>`;
+  }
+
+  // Topic levels and record stats, in that order.
+  function renderStatsPart(p, t, d, rec) {
+    return [
+      DojoTopicLevels.renderTopicLevels(p.course, d.entity || d.id, p.engine.topicLevels(), t),
+      DojoDetail.renderRecordStats(rec, rec ? p.now() : 0, t),
+    ];
+  }
+
   function renderDetailBody(self, p, t, d) {
     var rec = p.engine.record(d);
     var dIntro = self.introOf(d);
@@ -48,14 +62,12 @@
     var detailHookOut = DojoExt.detail(d, self.hookCtx({ introRendered: !!dIntroOut }));
     var dDecl = !detailHookOut ? renderDeclarativeDetail(p.course, self.unitById[d.unit] || null, d, p.t) : null;
     return html`<article class="qcard">
-          ${dIntro ? html`<section class="intro" data-testid="detail-intro">${renderIntroBody({ intro: dIntro, item: d, ctx: self.hookCtx(), decl: dDecl, all: false, pre: dIntroOut })}</section>` : null}
-          ${dIntro ? null : dDecl}
+          ${renderIntroPart(self, d, dIntro, dIntroOut, dDecl)}
           ${detailPlay(self, p, d)}
           <p data-testid="detail-answers"><b>${t('session.expected')}</b> <span class="pre">${renderText(p.engine.expected(d))}</span></p>
           ${d.explanation ? html`<p class="pre" data-testid="detail-explanation">${renderText(d.explanation)}</p>` : null}
           <p class="muted" data-testid="detail-stage">${t('catalog.stage')}: ${t('catalog.stage.' + p.engine.stage(d))}</p>
-          ${DojoTopicLevels.renderTopicLevels(p.course, d.entity || d.id, p.engine.topicLevels(), t)}
-          ${DojoDetail.renderRecordStats(rec, rec ? p.now() : 0, t)}
+          ${renderStatsPart(p, t, d, rec)}
           ${detailHookOut ? html`<div data-testid="detail-hook">${detailHookOut}</div>` : null}
         </article>`;
   }
