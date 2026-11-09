@@ -75,6 +75,24 @@ Before `./dojo build`:
 - Changing an item's type or correct answer = retire it and add a new item (progress belongs to the id). Wording and typo fixes keep the id.
 - `./dojo lock workspace/<course-id>` records ids in `ids.lock` (refuses on errors); `./dojo build` updates it too.
 - Validator guards: `id_removed` (locked NON-retired id missing), `retired_id_reused`, `item_type_changed`, `duplicate_id`.
+- `ids.lock` must stay canonical (sorted, unique, trailing newline, as `./dojo lock` writes it). Otherwise `ids_lock_not_canonical` (warning) fires; `validate --strict` fails on it. Fix: run `./dojo lock workspace/<course-id>`.
+
+## Topics
+Topics group items that teach one thing; each review session asks one item per topic, the one of its weakest aspect. Config in `course.json`:
+```json
+"topics": {
+  "units": ["verbs"],
+  "aspects": [
+    {"id": "meaning", "tags": ["meaning"]},
+    {"id": "reading", "units": ["reading"]}
+  ],
+  "sessionCap": 20
+}
+```
+- `units`: unit ids whose items are grouped. Each unit must use item scope (no `srs.scope: "entity"`); unknown ids and entity-scoped units fail (`topics_unit_unknown`, `topics_unit_scoped`).
+- Topic of an item: its `entity` field, or its own id when it has none. Put the items of one thing under one `entity`.
+- `aspects`: first matching rule wins. An item matches by one of its `tags` or by its `units`; no match = aspect `default`. Each rule needs `tags` or `units`; ids are unique (`topics_aspect_empty`, `topics_aspect_duplicate`).
+- `sessionCap`: topics asked per session, 1 to 500; absent = no cap (`topics_cap_range`). The learner can override it in settings (`topics:sessionCap`, 0 = unlimited).
 
 ## Units and per-unit settings
 `course.json` `units`: `[{id, title, ...}]` (id `^[a-z0-9][a-z0-9_-]{0,47}$`; aim for 10-40 items per unit; drop empty units). Unit-level optional fields:
