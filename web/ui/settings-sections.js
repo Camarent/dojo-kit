@@ -317,9 +317,13 @@
         </div>` : null;
   }
 
+  var topicsMod = root.DojoSettingsTopics || (typeof require !== 'undefined' ? require('./settings-topics.js') : null);
+  var renderTopicsSettings = topicsMod ? topicsMod.create().renderTopicsSettings : null;
+  function sectionTopics(p, self) { return renderTopicsSettings ? renderTopicsSettings(p, self) : null; }
+
   function create() {
     return {
-      renderPluginSettings: renderPluginSettings, sectionNewPerDay: sectionNewPerDay, sectionTheme: sectionTheme,
+      renderPluginSettings: renderPluginSettings, sectionNewPerDay: sectionNewPerDay, sectionTheme: sectionTheme, sectionTopics: sectionTopics,
       sectionExamDate: sectionExamDate, sectionUnits: sectionUnits, sectionGroups: sectionGroups,
       sectionPlacement: sectionPlacement, sectionExport: sectionExport, sectionImport: sectionImport,
       sectionReset: sectionReset, sectionAbout: sectionAbout, unitDialogView: unitDialogView, groupDialogView: groupDialogView

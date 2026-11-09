@@ -149,6 +149,7 @@
         ${sec.sectionGroups(p, t, self)}
         ${sec.sectionPlacement(p, t)}
         ${renderTimerSettings(p, self)}
+        ${sec.sectionTopics(p, self)}
         ${sec.sectionExport(s, t, self)}
         ${sec.sectionImport(s, t, self)}
         ${sec.sectionReset(s, t, self)}

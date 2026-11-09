@@ -65,6 +65,7 @@
     "ui/placement.js",
     "ui/settings-speech.js",
     "ui/settings-timer.js",
+    "ui/settings-topics.js",
     "ui/settings-sections.js",
     "ui/settings-dialogs.js",
     "ui/settings.js",
