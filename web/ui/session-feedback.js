@@ -62,9 +62,9 @@
     this.setState({ result: r, picked: picked, error: null, guard: null, answered: this.state.answered + 1 });
   }
 
-  function dontKnowAnswer() {
+  function dontKnowAnswer(viaNext) {
     if (this.state.result || this.answeredOn === this.state.cur) return;
-    var r = this.props.session.dontKnow();
+    var r = this.props.session.dontKnow(viaNext === true);
     if (r.error) { this.setState({ error: r.error }); return; }
     this.answeredOn = this.state.cur;
     this.setState({ result: r, error: null, guard: null, answered: this.state.answered + 1 });

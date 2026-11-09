@@ -5322,7 +5322,7 @@
                   "class": "btn primary big",
                   "title": "Next (→)",
                   "aria-label": "Next (→)",
-                  "disabled": true,
+                  "disabled": false,
                   "type": "button",
                   "children": [
                     "Next"
@@ -5536,7 +5536,7 @@
                   "class": "btn primary big",
                   "title": "Next (→)",
                   "aria-label": "Next (→)",
-                  "disabled": true,
+                  "disabled": false,
                   "type": "button",
                   "children": [
                     "Next"

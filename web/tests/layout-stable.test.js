@@ -23,9 +23,9 @@ test('retry badge slot is rendered with and without retries; empty hides it, wid
   assert.match(css, /\.badge\.retry\.empty \{[^}]*visibility: hidden/);
 });
 
-test('btn-next is big and disabled before the answer', async () => {
+test('btn-next is big and enabled before the answer (no answer = wrong answer)', async () => {
   const scr = await start();
   const next = H.find(scr.view(), 'btn-next');
   assert.match(next.props.class, /\bprimary\b.*\bbig\b/);
-  assert.ok(next.props.disabled);
+  assert.ok(!next.props.disabled);
 });

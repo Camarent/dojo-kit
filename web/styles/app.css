@@ -17,7 +17,7 @@ button, input, textarea { font: inherit; color: inherit; }
 input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
 .muted { color: var(--fg-muted); font-size: var(--fs-sm); }
 .dojo-credit { text-align: center; padding: var(--space-3); color: var(--fg-muted); font-size: var(--fs-sm); }
-.dojo-credit a { color: inherit; }
+.dojo-credit a { color: inherit; display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
 .good { color: var(--good); }
 .bad { color: var(--bad); }
 .mono { font-family: var(--font-mono); font-size: var(--fs-sm); }

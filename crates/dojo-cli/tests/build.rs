@@ -144,7 +144,8 @@ fn favicon_link_is_inline() -> Res {
     assert_eq!(o.status.code(), Some(0), "{}", String::from_utf8_lossy(&o.stderr));
     let html = std::fs::read_to_string(out.join("demo/index.html"))?;
     assert!(html.contains("rel=\"icon\""), "missing rel=\"icon\" in index.html");
-    assert!(html.contains("href=\"data:,\""), "missing href=\"data:,\" in index.html");
+    assert!(html.contains("href=\"data:image/svg+xml,"), "missing inline svg favicon href in index.html");
+    assert!(!html.contains("href=\"data:,\""), "empty data:, favicon still in index.html");
     let link_pos = html.find("<link").ok_or("no <link> in index.html")?;
     let style_pos = html.find("<style>").ok_or("no <style> in index.html")?;
     assert!(link_pos < style_pos, "<link> must appear before <style>");
