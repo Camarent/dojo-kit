@@ -16,6 +16,9 @@ pub const DEFAULT_ASPECT: &str = "default";
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AspectRule {
     pub id: String,
+    /// Display title; the UI reads it from the course, the rule itself ignores it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tags: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

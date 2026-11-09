@@ -121,12 +121,29 @@
     return ctx.dojo.call('entityStates', eargs);
   }
 
+  // Per-topic aspect levels: {levels: WASM `topicLevels` {entity: {aspects, level}}, aspects: {entity: [aspect ids of active items]}}; null without course.topics.
+  function topicLevels(ctx) {
+    if (!ctx.course.topics) return null;
+    var active = ctx.items.filter(function (it) { return !isRetired(it); });
+    var aspects = ctx.dojo.call('itemAspects', { course: ctx.course, items: active.map(function (it) { return { id: it.id, unit: it.unit, tags: it.tags || [] }; }) });
+    var byEntity = {};
+    active.forEach(function (it) {
+      var e = ctx.itemEntities[it.id];
+      (byEntity[e] = byEntity[e] || []).push(aspects[it.id]);
+    });
+    Object.keys(byEntity).forEach(function (e) { byEntity[e] = byEntity[e].filter(function (a, i, all) { return all.indexOf(a) === i; }).sort(); });
+    var meta = active.map(function (it) { return { id: it.id, entity: ctx.itemEntities[it.id] }; });
+    var levels = ctx.dojo.call('topicLevels', { items: meta, aspects: aspects, records: ctx.fn.records() });
+    return { levels: levels, aspects: byEntity };
+  }
+
   function create(ctx) {
     return {
       counts: function () { return counts(ctx); },
       summarize: function (groups, byUnit, bq) { return summarize(ctx, groups, byUnit, bq); },
       groupCounts: function () { return groupCounts(ctx); },
-      entityStates: function () { return entityStates(ctx); }
+      entityStates: function () { return entityStates(ctx); },
+      topicLevels: function () { return topicLevels(ctx); }
     };
   }
 

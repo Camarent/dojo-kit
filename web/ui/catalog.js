@@ -17,6 +17,7 @@
   }
   var DojoCommon = loadDep('DojoCommon', './common.js') || {};
   var DojoDetail = loadDep('DojoDetail', './detail.js') || {};
+  var DojoTopicLevels = loadDep('DojoTopicLevels', './topic-levels.js') || {};
   var CatalogAudio = loadDep('DojoCatalogAudio', './catalog-audio.js');
   var DojoSession = loadDep('DojoSession', './session.js') || {};
 
@@ -277,6 +278,7 @@
             <p data-testid="detail-answers"><b>${t('session.expected')}</b> <span class="pre">${renderText(p.engine.expected(d))}</span></p>
             ${d.explanation ? html`<p class="pre" data-testid="detail-explanation">${renderText(d.explanation)}</p>` : null}
             <p class="muted" data-testid="detail-stage">${t('catalog.stage')}: ${t('catalog.stage.' + p.engine.stage(d))}</p>
+            ${DojoTopicLevels.renderTopicLevels(p.course, d.entity || d.id, p.engine.topicLevels(), t)}
             ${DojoDetail.renderRecordStats(rec, rec ? p.now() : 0, t)}
             ${detailHookOut ? html`<div data-testid="detail-hook">${detailHookOut}</div>` : null}
           </article>`;

@@ -129,8 +129,8 @@ fn records_are_not_changed() {
 
 fn rules() -> Vec<AspectRule> {
     vec![
-        AspectRule { id: "meaning".into(), tags: vec!["meaning".into()], units: vec![] },
-        AspectRule { id: "reading".into(), tags: vec!["reading".into()], units: vec!["u2".into()] },
+        AspectRule { id: "meaning".into(), title: None, tags: vec!["meaning".into()], units: vec![] },
+        AspectRule { id: "reading".into(), title: None, tags: vec!["reading".into()], units: vec!["u2".into()] },
     ]
 }
 

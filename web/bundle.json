@@ -45,6 +45,7 @@
     "ui/answer-block.js",
     "ui/common.js",
     "ui/detail.js",
+    "ui/topic-levels.js",
     "ui/catalog-audio.js",
     "ui/catalog.js",
     "ui/group-card.js",

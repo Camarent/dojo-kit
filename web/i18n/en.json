@@ -239,6 +239,8 @@
   "results.total_points": "Total: {n} points",
   "results.pass_points": "Pass mark: {n} points",
   "catalog.stage": "Stage",
+  "catalog.topicLevels": "Levels",
+  "catalog.topicLevel": "Combined level",
   "catalog.step": "Stage {s}",
   "catalog.due": "Review",
   "catalog.dueNow": "now",

@@ -236,7 +236,7 @@
   }
 
   function publicApi(fn, flags) {
-    var names = ['counts', 'entityStates', 'start', 'exams', 'placement', 'moreNew', 'stage', 'record', 'examDraft', 'discardDraft',
+    var names = ['counts', 'entityStates', 'topicLevels', 'start', 'exams', 'placement', 'moreNew', 'stage', 'record', 'examDraft', 'discardDraft',
       'unitSettings', 'unitConfig', 'globalNewPerDay', 'setUnitSetting', 'groupSettings', 'setGroupSetting', 'weakList'];
     var out = { expected: expectedFor, unitLadder: fn.ladderForUnit, flagClip: flags.setFlag, isClipFlagged: flags.isFlagged, flaggedClips: flags.flagged };
     names.forEach(function (n) { out[n] = fn[n]; });

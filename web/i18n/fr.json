@@ -239,6 +239,8 @@
   "results.total_points": "Total : {n} points",
   "results.pass_points": "Note de passage : {n} points",
   "catalog.stage": "Étape",
+  "catalog.topicLevels": "Niveaux",
+  "catalog.topicLevel": "Niveau global",
   "catalog.step": "Étape {s}",
   "catalog.due": "Révision",
   "catalog.dueNow": "maintenant",
