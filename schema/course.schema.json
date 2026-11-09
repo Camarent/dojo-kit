@@ -279,6 +279,17 @@
       "items": {
         "type": "string"
       }
+    },
+    "topics": {
+      "description": "Topics config: groups items of the listed units into topics and asks one item per topic per session.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TopicsConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,
@@ -1200,6 +1211,81 @@
       "additionalProperties": false,
       "required": [
         "manifest"
+      ]
+    },
+    "TopicsConfig": {
+      "description": "Topics config: items of the listed units that share an entity form one topic; each session asks one item per topic.",
+      "type": "object",
+      "properties": {
+        "units": {
+          "description": "Unit ids whose items are grouped into topics.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "aspects": {
+          "description": "Aspect rules; an item gets the id of the first rule that matches it, or `\"default\"`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AspectRule"
+          }
+        },
+        "sessionCap": {
+          "description": "Maximum number of topics asked per session (1..=500); absent = no cap.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "units",
+        "aspects"
+      ]
+    },
+    "AspectRule": {
+      "description": "One aspect of a topic: items match when they carry one of `tags` or belong to one of `units`.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Aspect id, unique within the config.",
+          "type": "string"
+        },
+        "title": {
+          "description": "Display title for the aspect.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tags": {
+          "description": "Item tags that place an item in this aspect; at least one of `tags` or `units` must be non-empty.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "units": {
+          "description": "Unit ids whose items place an item in this aspect.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id"
       ]
     }
   }

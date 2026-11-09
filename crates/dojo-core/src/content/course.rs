@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 pub use super::srs_config::{SrsConfig, SrsScope};
-use super::{AudioConfig, ItemType, NewOrder, SpeechConfig, TimerConfig};
+use super::{AudioConfig, ItemType, NewOrder, SpeechConfig, TimerConfig, TopicsConfig};
 
 /// One exam section: how many items to draw and from where. `None` filters match everything.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -314,6 +314,9 @@ pub struct Course {
     /// Optional module ids this course enables; absent or empty = no optional modules.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub modules: Vec<String>,
+    /// Topics config: groups items of the listed units into topics and asks one item per topic per session.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topics: Option<TopicsConfig>,
 }
 
 /// Kanji/Han breakdown configuration for kanjiIndex/kanjiBreakdown.
