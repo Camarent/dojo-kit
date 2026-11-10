@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(topics): opt-in poolAspects, one item per topic x pooled aspect
+- fix(session): apply topic x aspect pool rule to practice queue
+- fix(session): onlyTags filters practice and daily queues after selection
+- fix(session): Next checks a typed answer; empty input keeps don't-know
+- fix(web): check button gets a gap to the answer input
+- fix(validate): hint_leaks_answer covers order items
+
 ## [0.3.8] - 2026-11-09
 
 - fix(n5): remove furigana answer leaks in reading questions
