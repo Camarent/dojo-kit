@@ -123,8 +123,9 @@
       });
       rows.sort(function (a, b) { return a.due - b.due || a.last - b.last || a.i - b.i; });
       var shared = h.preferShared(rows.map(function (r) { return r.id; }));
-      if (ctx.fn.mixPractice) return ctx.fn.mixPractice(shared, opts.limit || LIMIT);
-      return shared.slice(0, opts.limit || LIMIT);
+      var picked = ctx.fn.mixPractice ? ctx.fn.mixPractice(shared, opts.limit || LIMIT) : shared.slice(0, opts.limit || LIMIT);
+      // Filter after the pick: excluding candidates first would let other items fill the limit.
+      return ctx.fn.onlyTagsKeep(picked);
     };
   }
 
@@ -148,6 +149,7 @@
     var recs = ctx.fn.records();
     var seenEntity = {};
     ctx.fn.activeItems().forEach(function (it) {
+      if (ctx.fn.onlyTagsExcluded(it)) return;
       var se = ctx.scopedEntityOf[it.id];
       if (se !== undefined) {
         var r = recs[it.id];
