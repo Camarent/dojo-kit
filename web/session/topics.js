@@ -33,6 +33,20 @@
       if (!ctx.course.topics) return null;
       return { aspects: aspectsOfCourse(), pools: ctx.course.topics.poolAspects || [], cap: uncapped ? null : h.topicsSessionCap() };
     };
+    // Keeps the first id of each topic x aspect pool (pool aspects only); ids unchanged without poolAspects.
+    h.poolFilter = function (ids) {
+      var pools = ctx.course.topics && ctx.course.topics.poolAspects;
+      if (!pools || pools.length === 0) return ids;
+      var asp = aspectsOfCourse();
+      var seen = {};
+      return ids.filter(function (id) {
+        if (pools.indexOf(asp[id]) < 0) return true;
+        var key = ctx.itemEntities[id] + '|' + asp[id];
+        if (seen[key]) return false;
+        seen[key] = true;
+        return true;
+      });
+    };
     // Shared ids, plus examOnly ids whose topic (entity) also has a shared id; with topics only.
     h.sharedWithLinked = function (ids, examOnlyUnits, unitOf) {
       var shared = ids.filter(function (id) { return !examOnlyUnits[unitOf[id]]; });
