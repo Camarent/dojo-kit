@@ -185,8 +185,26 @@
       return groupStore.write(groupId, patch);
     }
 
+    // True when the item's group has onlyTags on and the item carries none of the group's extraTags.
+    function onlyTagsExcluded(item) {
+      var gid = ctx.unitGroup[item.unit];
+      var g = gid !== undefined ? ctx.groupById[gid] : null;
+      var tags = g && g.extraTags || [];
+      if (!tags.length || groupSettings(gid).onlyTags !== true) return false;
+      return !(item.tags || []).some(function (t) { return tags.indexOf(t) >= 0; });
+    }
+
+    // Keeps the ids whose item is not onlyTags-excluded; unknown ids are kept.
+    function onlyTagsKeep(ids) {
+      return ids.filter(function (id) {
+        var it = ctx.byId[id];
+        return !it || !onlyTagsExcluded(it);
+      });
+    }
+
     return {
-      groupFieldKey: groupFieldKey, groupSettings: groupSettings, setGroupSetting: setGroupSetting
+      groupFieldKey: groupFieldKey, groupSettings: groupSettings, setGroupSetting: setGroupSetting,
+      onlyTagsExcluded: onlyTagsExcluded, onlyTagsKeep: onlyTagsKeep
     };
   }
 

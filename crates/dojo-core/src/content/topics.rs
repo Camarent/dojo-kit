@@ -12,6 +12,9 @@ pub struct TopicsConfig {
     /// Maximum number of topics asked per session (1..=500); absent = no cap.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub session_cap: Option<u32>,
+    /// Aspect ids that keep one item per topic each, on top of the weakest-aspect item; absent or empty = none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pool_aspects: Option<Vec<String>>,
 }
 
 /// One aspect of a topic: items match when they carry one of `tags` or belong to one of `units`.

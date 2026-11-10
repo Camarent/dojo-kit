@@ -253,6 +253,11 @@
     return extraTwoPass(ctx, args, order, { xg: xg, base: base, extra: extra, tags: tags, tagFilter: tagFilter, extraRandom: extraRandom });
   }
 
+  // Drops onlyTags-excluded ids from a built queue after selection, so caps and refills see the full order.
+  function withoutOnlyTags(ctx, q) {
+    return Object.assign({}, q, { due: ctx.fn.onlyTagsKeep(q.due), fresh: ctx.fn.onlyTagsKeep(q.fresh) });
+  }
+
   function queueHelpers(ctx, h) {
     h.rawBuiltQueue = function (sharedOnly, uncapped) {
       var order = ctx.fn.activeItems().map(function (it) { return it.id; });
@@ -263,9 +268,9 @@
       var sa = h.scopedArgs();
       if (sa) args.scopedMembers = sa.scopedMembers;
       var ga = h.groupQueueArgs();
-      if (!ga) return ctx.dojo.call('buildQueue', args);
+      if (!ga) return withoutOnlyTags(ctx, ctx.dojo.call('buildQueue', args));
       Object.keys(ga).forEach(function (k) { args[k] = ga[k]; });
-      return queueWithExtraNew(ctx, h, args, order);
+      return withoutOnlyTags(ctx, queueWithExtraNew(ctx, h, args, order));
     };
     // Queue without examOnly items unless that would leave the whole queue empty. uncapped: see topicArgs.
     h.builtQueue = function (uncapped) {

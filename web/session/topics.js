@@ -1,5 +1,5 @@
 /* session/topics.js — topic review for the study session engine: one item per topic in the daily queue (contract: topic rule).
- * Exports DojoSessionTopics: topicHelpers(ctx, h) adds h.topicArgs(uncapped) -> null | {aspects, cap}, h.topicsSessionCap() -> n | null,
+ * Exports DojoSessionTopics: topicHelpers(ctx, h) adds h.topicArgs(uncapped) -> null | {aspects, pools, cap}, h.topicsSessionCap() -> n | null,
  *   h.sharedWithLinked(ids, examOnlyUnits, unitOf) -> ids.
  */
 (function (root) {
@@ -28,9 +28,24 @@
       return capOf((ctx.course.topics || {}).sessionCap);
     };
     // uncapped: cap null, the home count (one item per topic over the whole queue, not one session).
+    // pools: course topics.poolAspects (aspect ids that keep one item per topic each); [] when absent.
     h.topicArgs = function (uncapped) {
       if (!ctx.course.topics) return null;
-      return { aspects: aspectsOfCourse(), cap: uncapped ? null : h.topicsSessionCap() };
+      return { aspects: aspectsOfCourse(), pools: ctx.course.topics.poolAspects || [], cap: uncapped ? null : h.topicsSessionCap() };
+    };
+    // Keeps the first id of each topic x aspect pool (pool aspects only); ids unchanged without poolAspects.
+    h.poolFilter = function (ids) {
+      var pools = ctx.course.topics && ctx.course.topics.poolAspects;
+      if (!pools || pools.length === 0) return ids;
+      var asp = aspectsOfCourse();
+      var seen = {};
+      return ids.filter(function (id) {
+        if (pools.indexOf(asp[id]) < 0) return true;
+        var key = ctx.itemEntities[id] + '|' + asp[id];
+        if (seen[key]) return false;
+        seen[key] = true;
+        return true;
+      });
     };
     // Shared ids, plus examOnly ids whose topic (entity) also has a shared id; with topics only.
     h.sharedWithLinked = function (ids, examOnlyUnits, unitOf) {

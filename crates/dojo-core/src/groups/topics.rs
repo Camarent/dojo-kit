@@ -76,12 +76,23 @@ fn level_of(levels: &Levels, topic: &str, aspect: &str) -> i64 {
     levels.get(topic).and_then(|aspects| aspects.get(aspect)).copied().unwrap_or(-1)
 }
 
-/// Ids of the queue that win their topic (plus every fresh id of an intro topic), as a set.
-fn winners(queue: &Queue, topic_of: &HashMap<String, String>, aspect_of_item: &HashMap<String, String>, records: &Map<String, Value>, cap: Option<usize>) -> HashSet<String> {
+/// Ids of the queue that win their slot (plus every fresh id of an intro topic), as a set.
+///
+/// A slot is a topic (its non-pooled aspects share one slot) or a (topic, pooled aspect) pair.
+/// The cap counts topics only.
+fn winners(
+    queue: &Queue,
+    topic_of: &HashMap<String, String>,
+    aspect_of_item: &HashMap<String, String>,
+    records: &Map<String, Value>,
+    pools: &HashSet<String>,
+    cap: Option<usize>,
+) -> HashSet<String> {
     let levels = recorded_levels(topic_of, aspect_of_item, records);
     let cands: Vec<(&str, bool)> = queue.due.iter().map(|id| (id.as_str(), true)).chain(queue.fresh.iter().map(|id| (id.as_str(), false))).collect();
     let mut keep: HashSet<String> = HashSet::new();
-    let mut best: HashMap<&str, (Rank, &str)> = HashMap::new();
+    // topic -> slot (None = non-pooled aspects, Some(aspect) = pooled aspect) -> best candidate
+    let mut best: HashMap<&str, HashMap<Option<&str>, (Rank, &str)>> = HashMap::new();
     let mut order: Vec<&str> = Vec::new();
     for (pos, &(id, is_due)) in cands.iter().enumerate() {
         let topic = topic_name(id, topic_of);
@@ -91,19 +102,22 @@ fn winners(queue: &Queue, topic_of: &HashMap<String, String>, aspect_of_item: &H
             }
             continue;
         }
-        let level = level_of(&levels, topic, aspect_name(id, aspect_of_item));
+        let aspect = aspect_name(id, aspect_of_item);
+        let slot_key = pools.contains(aspect).then_some(aspect);
+        let level = level_of(&levels, topic, aspect);
         let rank = rank_of(records.get(id), is_due, level, pos);
-        let slot = best.entry(topic).or_insert_with(|| {
+        let slots = best.entry(topic).or_insert_with(|| {
             order.push(topic);
-            (rank, id)
+            HashMap::new()
         });
+        let slot = slots.entry(slot_key).or_insert((rank, id));
         if rank < slot.0 {
             *slot = (rank, id);
         }
     }
     for topic in order.iter().take(cap.unwrap_or(usize::MAX)) {
-        if let Some((_, id)) = best.get(topic) {
-            keep.insert(id.to_string());
+        if let Some(slots) = best.get(topic) {
+            keep.extend(slots.values().map(|(_, id)| id.to_string()));
         }
     }
     keep
@@ -121,19 +135,22 @@ fn keep_in_order(ids: Vec<String>, keep: &HashSet<String>) -> Vec<String> {
 }
 
 /// One review session: each started topic keeps one due-or-fresh item, the one of its weakest aspect.
+/// Each aspect in `pools` keeps one more item per started topic (its own best item of that aspect).
 ///
 /// Intro topics (no member has a record) keep all their fresh items. Topics are taken in due order
 /// (first appearance in `due`, then `fresh`) and only the first `cap` non-intro topics stay.
 /// Output: kept `due` ids in input order, then kept `fresh` ids in input order. `records` is not changed.
 /// A missing `topic_of` entry makes the item its own topic; a missing `aspect_of_item` entry is `DEFAULT_ASPECT`.
+/// An empty `pools` gives the single weakest-aspect item per topic.
 pub fn topic_once(
     queue: Queue,
     topic_of: &HashMap<String, String>,
     aspect_of_item: &HashMap<String, String>,
     records: &Map<String, Value>,
+    pools: &HashSet<String>,
     cap: Option<usize>,
 ) -> Queue {
-    let keep = winners(&queue, topic_of, aspect_of_item, records, cap);
+    let keep = winners(&queue, topic_of, aspect_of_item, records, pools, cap);
     let Queue { due, fresh } = queue;
     Queue { due: keep_in_order(due, &keep), fresh: keep_in_order(fresh, &keep) }
 }

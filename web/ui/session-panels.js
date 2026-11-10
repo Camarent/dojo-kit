@@ -16,6 +16,14 @@
 
   var DojoCommon = dep('DojoCommon', './common.js', {});
   var DojoDetail = dep('DojoDetail', './detail.js', {});
+  var DojoTypes = dep('DojoTypes', '../types/registry.js', null);
+
+  // Typed answer that Next submits: the registered type's submitOf, only when its canSubmit holds; else null.
+  function typedAnswerOf(s) {
+    var def = DojoTypes && s.cur && DojoTypes.get(s.cur.item.type);
+    if (!def || !def.submitOf || !def.canSubmit(s.qstate || {})) return null;
+    return def.submitOf(s.qstate);
+  }
 
   function renderTopbar(sc, p, s) {
     var t = p.t;
@@ -55,12 +63,19 @@
         </div>`;
   }
 
+  // Next on an unanswered quiz card: check the typed answer through the Check path, else count as don't know.
+  function nextWrong(sc, s) {
+    var typed = typedAnswerOf(s);
+    if (typed) sc.answer(typed.input, typed.picked);
+    else sc.dontKnowAnswer(true);
+  }
+
   function renderActions(sc, p, s) {
     var t = p.t;
     var exam = sc.isExam();
     var examMode = sc.isExamMode();
     var last = s.cur.position >= s.cur.total;
-    // Next with no answer on a quiz card counts as "don't know" (wrong answer), not as a skip.
+    // Next on a quiz card with no answer: a typed answer is checked; empty input counts as "don't know" (wrong answer), not as a skip.
     var wrongNext = !exam && !s.result && !s.retry && !!p.session.canNextWrong && p.session.canNextWrong();
     return html`<div class="row actions-row">
           ${sc.renderDontKnow(p, s)}
@@ -68,7 +83,7 @@
           <button type="button" class="btn primary big" disabled=${!exam && !s.result && !wrongNext} data-testid="btn-next" data-arrow-own
             ref=${function (el) { sc.nextBtn = el; }}
             title=${t('session.next.withArrow')} aria-label=${t('session.next.withArrow')}
-            onClick=${function () { if (wrongNext) sc.dontKnowAnswer(true); else if (examMode && last) sc.setState({ confirm: 'finish' }); else sc.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>
+            onClick=${function () { if (wrongNext) nextWrong(sc, s); else if (examMode && last) sc.setState({ confirm: 'finish' }); else sc.next(); }}>${examMode && last ? t('session.finish') : t('session.next')}</button>
         </div>`;
   }
 

@@ -1,6 +1,6 @@
 use super::audio::{ManifestState, check_manifest, check_mode_by_type, check_pack_files, check_stimuli_audio, check_timer_config, load_manifest};
 use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm, item_body};
-use super::quality::{check_ambiguous_answer, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
+use super::quality::{check_ambiguous_answer, check_hint_leak, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
 use super::dupes::{check_dup_word, check_same_prompt_diff_answers};
 use super::speech::validate_speak;
 use super::{COURSE_FILE, Diagnostic, ItemChecker, LOCK_FILE, Severity, Sink, SourceFile, ValidatorModule, exam, is_valid_id};
@@ -174,6 +174,7 @@ fn check_active_item<'a>(item: &'a Item, name: &'a str, line: usize, ctx: &ItemC
         }
     }
     check_leak(item, name, line, sink, course_norm, &ctx.stimuli.hide_text);
+    check_hint_leak(item, sink, name, line, course_norm);
 }
 
 fn item_has_foreign_script(item: &Item, scripts: &HashSet<String>) -> bool {

@@ -10,9 +10,10 @@ pub(super) fn topics_call(name: &str, a: &Value) -> Result<Value, CallError> {
     }
 }
 
-/// Parsed `topics` argument of `buildQueue`: `{aspects: {id: aspect}, cap: n | null}`.
+/// Parsed `topics` argument of `buildQueue`: `{aspects: {id: aspect}, pools: [aspect], cap: n | null}`.
 pub(super) struct QueueTopics {
     pub aspects: HashMap<String, String>,
+    pub pools: HashSet<String>,
     pub cap: Option<usize>,
 }
 
@@ -24,6 +25,10 @@ pub(super) fn queue_topics(a: &Value) -> Result<Option<QueueTopics>, CallError> 
         Some(_) => return Err(bad("`topics` must be an object")),
     };
     let aspects = aspect_map(obj.get("aspects").ok_or_else(|| bad("`topics.aspects` is required"))?, "topics.aspects")?;
+    let pools: HashSet<String> = match obj.get("pools") {
+        None | Some(Value::Null) => HashSet::new(),
+        Some(v) => strings(v, "topics.pools")?.into_iter().collect(),
+    };
     let cap = match obj.get("cap") {
         None | Some(Value::Null) => None,
         Some(v) => {
@@ -31,7 +36,7 @@ pub(super) fn queue_topics(a: &Value) -> Result<Option<QueueTopics>, CallError> 
             Some(n.ok_or_else(|| bad("`topics.cap` must be an integer >= 0 or null"))?)
         }
     };
-    Ok(Some(QueueTopics { aspects, cap }))
+    Ok(Some(QueueTopics { aspects, pools, cap }))
 }
 
 /// `records` of a call: absent or null gives `empty`; any other non-object is an error.
