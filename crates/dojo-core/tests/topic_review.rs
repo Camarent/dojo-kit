@@ -2,7 +2,7 @@
 use dojo_core::groups::{aspect_of, topic_levels, topic_once, AspectRule, TopicLevel};
 use dojo_core::srs::Queue;
 use serde_json::{json, Map, Value};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 fn q(due: &[&str], fresh: &[&str]) -> Queue {
     Queue { due: due.iter().map(|s| s.to_string()).collect(), fresh: fresh.iter().map(|s| s.to_string()).collect() }
@@ -18,7 +18,12 @@ fn map(pairs: &[(&str, &str)]) -> HashMap<String, String> {
 }
 
 fn once(queue: Queue, topic_of: &HashMap<String, String>, aspects: &HashMap<String, String>, records: &Map<String, Value>, cap: Option<usize>) -> Queue {
-    topic_once(queue, topic_of, aspects, records, cap)
+    topic_once(queue, topic_of, aspects, records, &HashSet::new(), cap)
+}
+
+fn once_pooled(queue: Queue, topic_of: &HashMap<String, String>, aspects: &HashMap<String, String>, records: &Map<String, Value>, pools: &[&str]) -> Queue {
+    let pools: HashSet<String> = pools.iter().map(|s| s.to_string()).collect();
+    topic_once(queue, topic_of, aspects, records, &pools, None)
 }
 
 #[test]
@@ -125,6 +130,32 @@ fn records_are_not_changed() {
     let before = records.clone();
     let _ = once(q(&["a", "b"], &["f"]), &topic, &aspects, &records, Some(1));
     assert_eq!(records, before);
+}
+
+#[test]
+fn pooled_aspects_keep_one_item_each_per_topic() {
+    let topic = map(&[("a", "T"), ("b", "T"), ("c", "T"), ("d", "T"), ("e", "T"), ("f", "T")]);
+    let aspects = map(&[("a", "meaning"), ("b", "meaning"), ("c", "meaning"), ("d", "reading"), ("e", "reading"), ("f", "reading")]);
+    let records = recs(&[("a", 3, 10), ("b", 1, 10), ("c", 2, 10), ("d", 5, 10), ("e", 4, 10), ("f", 6, 10)]);
+    let out = once_pooled(q(&["a", "b", "c", "d", "e", "f"], &[]), &topic, &aspects, &records, &["meaning", "reading"]);
+    assert_eq!(out, q(&["b", "e"], &[]));
+}
+
+#[test]
+fn topics_without_pools_keep_one_item_even_with_many_aspects() {
+    let topic = map(&[("a", "T"), ("d", "T")]);
+    let aspects = map(&[("a", "meaning"), ("d", "reading")]);
+    let records = recs(&[("a", 3, 10), ("d", 5, 10)]);
+    assert_eq!(once(q(&["a", "d"], &[]), &topic, &aspects, &records, None), q(&["a"], &[]));
+    assert_eq!(once_pooled(q(&["a", "d"], &[]), &topic, &aspects, &records, &[]), q(&["a"], &[]));
+}
+
+#[test]
+fn pooled_aspect_and_unpooled_aspect_each_keep_their_best() {
+    let topic = map(&[("a", "T"), ("b", "T"), ("c", "T")]);
+    let aspects = map(&[("a", "meaning"), ("b", "reading"), ("c", "writing")]);
+    let records = recs(&[("a", 2, 10), ("b", 1, 10), ("c", 4, 10)]);
+    assert_eq!(once_pooled(q(&["a", "b", "c"], &[]), &topic, &aspects, &records, &["meaning"]), q(&["a", "b"], &[]));
 }
 
 fn rules() -> Vec<AspectRule> {

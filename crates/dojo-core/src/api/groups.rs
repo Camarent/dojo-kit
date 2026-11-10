@@ -101,7 +101,7 @@ fn build_queue(a: &Value) -> Result<Value, CallError> {
                 let empty_records = Map::new();
                 let empty_topics = HashMap::new();
                 let topic_of = item_entities.as_ref().unwrap_or(&empty_topics);
-                groups::topic_once(q, topic_of, &t.aspects, topics::records_ref(a, &empty_records)?, t.cap)
+                groups::topic_once(q, topic_of, &t.aspects, topics::records_ref(a, &empty_records)?, &t.pools, t.cap)
             }
             None => q,
         };

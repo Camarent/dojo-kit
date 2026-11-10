@@ -34,6 +34,12 @@ pub(super) fn check_topics(course: &Course, sink: &mut Sink) {
         }
     }
 
+    for pool in topics.pool_aspects.iter().flatten() {
+        if !topics.aspects.iter().any(|rule| &rule.id == pool) {
+            sink.error("topics_pool_unknown", COURSE_FILE, 0, format!("topics poolAspects '{pool}' is not a listed aspect id"));
+        }
+    }
+
     if let Some(cap) = topics.session_cap
         && (cap == 0 || cap > MAX_SESSION_CAP)
     {

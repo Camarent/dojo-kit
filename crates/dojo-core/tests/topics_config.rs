@@ -72,6 +72,19 @@ fn topics_cap_bounds_are_valid() {
 }
 
 #[test]
+fn topics_pool_unknown_decoy() {
+    let topics = r#"{"units":["u"],"aspects":[{"id":"meaning","tags":["t"]}],"poolAspects":["meaning","nope"]}"#;
+    assert_only_topic_code(&course_with(topics), "topics_pool_unknown");
+}
+
+#[test]
+fn topics_pool_known_aspects_are_valid() {
+    let topics = r#"{"units":["u"],"aspects":[{"id":"meaning","tags":["t"]},{"id":"reading","units":["u"]}],"poolAspects":["reading"]}"#;
+    let d = run(&course_with(topics), &[CHOICE]);
+    assert_eq!(topic_codes(&d), Vec::<&str>::new(), "{d:?}");
+}
+
+#[test]
 fn unknown_topics_field_is_parse_error() {
     let d = run(&course_with(r#"{"units":["u"],"aspects":[],"bogus":1}"#), &[CHOICE]);
     assert!(d.iter().any(|d| d.code == "parse_error"), "{d:?}");
@@ -80,7 +93,7 @@ fn unknown_topics_field_is_parse_error() {
 #[test]
 fn topics_codes_are_registered() {
     let registered: Vec<&str> = dojo_core::validate::CODES.iter().map(|c| c.0).collect();
-    for code in ["topics_unit_unknown", "topics_unit_scoped", "topics_aspect_duplicate", "topics_aspect_empty", "topics_cap_range"] {
+    for code in ["topics_unit_unknown", "topics_unit_scoped", "topics_aspect_duplicate", "topics_aspect_empty", "topics_cap_range", "topics_pool_unknown"] {
         assert!(registered.contains(&code), "{code} not in CODES");
     }
 }

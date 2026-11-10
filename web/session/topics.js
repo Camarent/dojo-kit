@@ -1,5 +1,5 @@
 /* session/topics.js — topic review for the study session engine: one item per topic in the daily queue (contract: topic rule).
- * Exports DojoSessionTopics: topicHelpers(ctx, h) adds h.topicArgs(uncapped) -> null | {aspects, cap}, h.topicsSessionCap() -> n | null,
+ * Exports DojoSessionTopics: topicHelpers(ctx, h) adds h.topicArgs(uncapped) -> null | {aspects, pools, cap}, h.topicsSessionCap() -> n | null,
  *   h.sharedWithLinked(ids, examOnlyUnits, unitOf) -> ids.
  */
 (function (root) {
@@ -28,9 +28,10 @@
       return capOf((ctx.course.topics || {}).sessionCap);
     };
     // uncapped: cap null, the home count (one item per topic over the whole queue, not one session).
+    // pools: course topics.poolAspects (aspect ids that keep one item per topic each); [] when absent.
     h.topicArgs = function (uncapped) {
       if (!ctx.course.topics) return null;
-      return { aspects: aspectsOfCourse(), cap: uncapped ? null : h.topicsSessionCap() };
+      return { aspects: aspectsOfCourse(), pools: ctx.course.topics.poolAspects || [], cap: uncapped ? null : h.topicsSessionCap() };
     };
     // Shared ids, plus examOnly ids whose topic (entity) also has a shared id; with topics only.
     h.sharedWithLinked = function (ids, examOnlyUnits, unitOf) {

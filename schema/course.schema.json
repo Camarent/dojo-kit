@@ -1239,6 +1239,16 @@
           ],
           "format": "uint32",
           "minimum": 0
+        },
+        "poolAspects": {
+          "description": "Aspect ids that keep one item per topic each, on top of the weakest-aspect item; absent or empty = none.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false,

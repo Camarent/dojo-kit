@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 120] = [
+pub const CODES: [(&str, Severity, &str); 121] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -122,6 +122,7 @@ pub const CODES: [(&str, Severity, &str); 120] = [
     ("topics_aspect_duplicate", Severity::Error, "two topics.aspects rules share the same id"),
     ("topics_aspect_empty", Severity::Error, "topics.aspects rule has neither tags nor units"),
     ("topics_cap_range", Severity::Error, "topics.sessionCap must be from 1 to 500"),
+    ("topics_pool_unknown", Severity::Error, "topics.poolAspects lists an id that is not a topics.aspects id"),
 ];
 
 /// [`CODES`] followed by the codes of each module, in module order.
