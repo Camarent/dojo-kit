@@ -5,7 +5,7 @@ use std::collections::{BTreeMap, HashSet};
 
 const MAX_TOPIC_CHARS: usize = 80;
 
-fn contains_leak(norm_prompt: &str, norm_answer: &str) -> bool {
+pub(super) fn contains_leak(norm_prompt: &str, norm_answer: &str) -> bool {
     norm_answer.chars().count() >= MIN_LEAK_CHARS && norm_prompt.contains(norm_answer)
 }
 

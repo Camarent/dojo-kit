@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 121] = [
+pub const CODES: [(&str, Severity, &str); 122] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -80,6 +80,7 @@ pub const CODES: [(&str, Severity, &str); 121] = [
     ("dup_word", Severity::Warning, "two live (not retired, not superseded) non-stimulus gap/cloze/numeric items in the same unit and type have equal prompts (ignoring case, ruby markup, parenthesised hints, punctuation) and one normalized answer set contained in the other"),
     ("ambiguous_answer", Severity::Warning, "gap with several answers (some non-ASCII, some alphabetic; number formats are skipped) and no disambiguation hint in the prompt, choice/multi option with '/' outside brackets, or duplicate options"),
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
+    ("hint_leaks_answer", Severity::Warning, "parenthesised hint in a gap/cloze/choice/order prompt contains the item's correct answer or an order step (after normalization)"),
     ("order_alt_invalid", Severity::Error, "order altOrders entry is not a permutation of the step indices, equals the identity order, or repeats another entry"),
     ("order_split_word", Severity::Warning, "order step in a Japanese course is a bare ending or case particle, not a whole chunk"),
     ("unknown_unit_in_group", Severity::Error, "group references a unit id that does not exist"),

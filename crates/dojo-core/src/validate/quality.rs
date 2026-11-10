@@ -1,6 +1,7 @@
 use super::{Sink, ValidatorModule};
 use crate::check::{Normalize, normalize};
-use crate::content::{Item, ItemType};
+use super::items::{contains_leak, fold_norm};
+use crate::content::{ClozePart, Item, ItemType};
 use std::collections::HashSet;
 
 /// Whitelisted Unicode script ranges (Latin, Cyrillic, Hiragana, Katakana, CJK)
@@ -205,5 +206,50 @@ pub(super) fn check_order_blanks_mismatch(item: &Item, sink: &mut Sink, file: &s
         }
         // If steps has more entries than blanks and there is no fixed field, warn
         // Since we don't have a fixed field yet, we'll just use the simple check above
+    }
+}
+
+/// Parenthesised hints of a prompt: the text inside `（…）` or `(…)`, not nested.
+/// A ruby `{base|reading}` has no brackets, so it is never a hint.
+pub(super) fn paren_hints(prompt: &str) -> Vec<&str> {
+    let mut hints = Vec::new();
+    let mut open: Option<usize> = None;
+    for (i, c) in prompt.char_indices() {
+        match c {
+            '（' | '(' => open = Some(i + c.len_utf8()),
+            '）' | ')' => {
+                if let Some(start) = open.take() {
+                    hints.push(&prompt[start..i]);
+                }
+            }
+            _ => {}
+        }
+    }
+    hints
+}
+
+/// Check that no parenthesised hint of a gap, cloze or choice prompt contains the item's correct answer.
+pub(super) fn check_hint_leak(item: &Item, sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
+    let (prompt, item_norm, answers): (&str, Option<&Normalize>, Vec<String>) = match item {
+        Item::Gap(g) => (&g.prompt, g.normalize.as_ref(), g.answers.clone()),
+        Item::Cloze(c) => {
+            let accepted = c.parts.iter().flat_map(|p| match p {
+                ClozePart::Blank(a) => a.clone(),
+                ClozePart::Text(_) | ClozePart::Locked(_) => Vec::new(),
+            });
+            (&c.prompt, c.normalize.as_ref(), accepted.collect())
+        }
+        Item::Choice(c) => (&c.prompt, None, c.options.get(c.answer).cloned().into_iter().collect()),
+        Item::Order(o) => (&o.prompt, None, o.steps.clone()),
+        _ => return,
+    };
+    let opts = fold_norm(item_norm, course_norm).cloned().or_else(|| item_norm.cloned()).unwrap_or_default();
+    let answers: Vec<String> = answers.iter().map(|a| normalize(a, &opts)).collect();
+    for hint in paren_hints(prompt) {
+        let hint_norm = normalize(hint, &opts);
+        if let Some(answer) = answers.iter().find(|a| contains_leak(&hint_norm, a)) {
+            sink.warning("hint_leaks_answer", file, line, format!("item '{}' hint '({hint})' contains its answer '{answer}'", item.id()));
+            return;
+        }
     }
 }
