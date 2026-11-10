@@ -2,6 +2,7 @@
  * types/registry.js — question-type registry. Defines DojoTypes = { register(name, def), get(name), names() }.
  * def = { Question(props), canSubmit(state), initialState(view) } plus optional
  *   onKey(e, props) -> { input, picked } | null   keyboard shortcut while unanswered
+ *   submitOf(state) -> { input, picked }          typed answer as submitted (used by Next when canSubmit(state))
  *   verdict(result, t) -> string                  feedback headline (default: correct/wrong)
  *   hideExpected: true                            do not show the "expected" line on a wrong result
  *   selfRated: true                               self-rated type (no typed answer); no "I don't know" button

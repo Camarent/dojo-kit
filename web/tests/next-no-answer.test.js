@@ -69,6 +69,17 @@ test('quiz card, course.dontKnow absent: Next enabled and click without answer i
   assert.strictEqual(s.retryCount(), before + 1, 'item re-queued');
 });
 
+test('quiz card, whitespace-only typed text: Next still counts as don\'t know, not a typed answer', async () => {
+  const x = await setup({});
+  const s = x.engine.start('practice', { types: ['gap'] });
+  const sc = screen(x, s);
+  sc.setState({ qstate: { text: '   ' } });
+  walk(view(sc), 'btn-next').props.onClick();
+  assert.strictEqual(sc.state.result.correct, false);
+  assert.strictEqual(sc.state.result.given, '-');
+  assert.strictEqual(sc.state.error, null);
+});
+
 test('reading card (type card) is self-rated: Next stays disabled before an answer', async () => {
   const x = await setup({ dontKnow: true });
   const sc = screen(x, x.engine.start('practice', { types: ['card'] }));

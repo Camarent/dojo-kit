@@ -165,6 +165,7 @@
   root.DojoTypes.register('cloze', {
     Question: Question,
     canSubmit: canSubmit,
+    submitOf: function (state) { return { input: { inputs: state.inputs }, picked: state.inputs }; },
     answerTexts: function (item) {
       return (item.parts || []).filter(function (p) { return Array.isArray(p); }).map(function (p) { return p[0]; });
     },

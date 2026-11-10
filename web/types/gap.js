@@ -10,6 +10,7 @@
   }
 
   function canSubmit(state) { return state.text.trim() !== ''; }
+  function submitOf(state) { return { input: { text: state.text }, picked: state.text }; }
 
   function Question(p) {
     var t = p.t;
@@ -43,6 +44,7 @@
   root.DojoTypes.register('gap', {
     Question: Question,
     canSubmit: canSubmit,
+    submitOf: submitOf,
     answerTexts: function (item) { return item.answers || []; },
     initialState: function () { return { text: '' }; },
     Extra: Extra
