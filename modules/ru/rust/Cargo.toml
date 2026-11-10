@@ -5,4 +5,4 @@ license.workspace = true
 version.workspace = true
 
 [dependencies]
-dojo-core = { version = "0.3.8", path = "../../../crates/dojo-core" }
+dojo-core = { version = "0.3.9", path = "../../../crates/dojo-core" }

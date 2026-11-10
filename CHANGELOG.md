@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix(web): check button gets a gap to the answer input
 - fix(validate): hint_leaks_answer covers order items
 
+## [0.3.9] - 2026-11-10
+
+- chore(n5-feedback-3): n5-feedback-3/phases/03-finish
+
 ## [0.3.8] - 2026-11-09
 
 - fix(n5): remove furigana answer leaks in reading questions
