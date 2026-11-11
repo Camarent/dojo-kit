@@ -59,7 +59,8 @@ pub fn drop_for_unit_json(course: &Value, unit_id: &str, item_type: Option<&str>
 }
 
 /// Course-level resolved settings of one unit (no user overrides), the single source for the UI.
-/// Returns `{newPerDay, ladder, dropOnWrong, newOrder, dropByType, scope, drill}`:
+/// Returns `{newPerDay, ladder, dropOnWrong, jumpTo, wrongFloor, newOrder, dropByType, scope, drill}`:
+/// - `jumpTo` / `wrongFloor`: integer or null (unit.srs > course.srs > null; `srsByType` not read);
 /// - `scope`: `"item"` or `"entity"` (unit.srs > course.srs > "item"); `drill`: 1..=5 (same order, default 1);
 /// - `newPerDay`: `unit.newPerDay`, or null when the course sets no cap for the unit;
 /// - `ladder`: `ladder_for_unit_json` without an item type (unit.srs > course.srs > default);
@@ -99,6 +100,8 @@ pub fn unit_config(course: &Value, unit_id: &str) -> Value {
     out.insert("newPerDay".into(), new_per_day.map_or(Value::Null, Value::from));
     out.insert("ladder".into(), Value::from(ladder_for_unit_json(course, unit_id, None)));
     out.insert("dropOnWrong".into(), Value::from(drop_for_unit_json(course, unit_id, None)));
+    out.insert("jumpTo".into(), pick("jumpTo").and_then(Value::as_i64).map_or(Value::Null, Value::from));
+    out.insert("wrongFloor".into(), pick("wrongFloor").and_then(Value::as_i64).map_or(Value::Null, Value::from));
     out.insert("newOrder".into(), Value::from(new_order));
     out.insert("dropByType".into(), Value::Object(drop_by_type));
     if pick("mode").and_then(Value::as_str) == Some("errorWeighted") {
@@ -120,6 +123,20 @@ mod unit_config_tests {
         assert_eq!(c["newOrder"], "file");
         assert_eq!(c["ladder"], Value::from(DEFAULT_LADDER.to_vec()));
         assert_eq!(c["dropByType"], json!({}));
+        assert!(c["jumpTo"].is_null());
+        assert!(c["wrongFloor"].is_null());
+    }
+
+    #[test]
+    fn jump_and_floor_prefer_unit_over_course() {
+        let course = json!({
+            "units": [{"id": "u1"}, {"id": "u2", "srs": {"jumpTo": 3, "wrongFloor": 2}}],
+            "srs": {"jumpTo": 5, "wrongFloor": 4}
+        });
+        let c1 = unit_config(&course, "u1");
+        assert_eq!((c1["jumpTo"].as_i64(), c1["wrongFloor"].as_i64()), (Some(5), Some(4)));
+        let c2 = unit_config(&course, "u2");
+        assert_eq!((c2["jumpTo"].as_i64(), c2["wrongFloor"].as_i64()), (Some(3), Some(2)));
     }
 
     #[test]

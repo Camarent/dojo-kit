@@ -1,13 +1,15 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 122] = [
+pub const CODES: [(&str, Severity, &str); 124] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
     ("bad_drop", Severity::Error, "srs.dropOnWrong must be an integer from 0 to 10"),
-    ("scope_by_type", Severity::Error, "srsByType cannot set scope or drill (an entity spans item types)"),
+    ("scope_by_type", Severity::Error, "srsByType cannot set scope, drill, jumpTo or wrongFloor (an entity spans item types)"),
     ("bad_drill", Severity::Error, "srs.drill must be an integer from 1 to 5"),
+    ("bad_jump", Severity::Error, "srs.jumpTo must be an integer from 2 to the top stage of the ladder"),
+    ("bad_floor", Severity::Error, "srs.wrongFloor must be an integer from 1 to the top stage of the ladder"),
     ("mixed_entity_scope", Severity::Warning, "entity spans units with different srs.scope; it stays per-item"),
     ("bad_ladder", Severity::Error, "ladder needs >= 2 entries, first 0, non-negative, non-decreasing"),
     ("bad_placement", Severity::Error, "placement.perUnit < 1"),

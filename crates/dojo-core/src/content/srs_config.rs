@@ -21,6 +21,12 @@ pub struct SrsConfig {
     /// Not allowed in `srsByType` (mode_by_type).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mode: Option<super::media::SrsMode>,
+    /// Stage a correct answer jumps to (2..=top stage of the resolved ladder). Not allowed in `srsByType`.
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "jumpTo")]
+    pub jump_to: Option<i64>,
+    /// Lowest stage a wrong answer can drop to (1..=top stage of the resolved ladder). Not allowed in `srsByType`.
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "wrongFloor")]
+    pub wrong_floor: Option<i64>,
 }
 
 /// Scheduling scope of a unit.

@@ -431,6 +431,22 @@
               "type": "null"
             }
           ]
+        },
+        "jumpTo": {
+          "description": "Stage a correct answer jumps to (2..=top stage of the resolved ladder). Not allowed in `srsByType`.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "wrongFloor": {
+          "description": "Lowest stage a wrong answer can drop to (1..=top stage of the resolved ladder). Not allowed in `srsByType`.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
         }
       },
       "additionalProperties": false
