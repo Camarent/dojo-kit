@@ -5,13 +5,26 @@ fn num(a: &Value, key: &str) -> Option<f64> {
     a.get(key).and_then(Value::as_f64)
 }
 
+/// Optional non-negative integer; absent or null is `None`.
+fn opt_stage(a: &Value, key: &str) -> Result<Option<i64>, CallError> {
+    match a.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(v) => v.as_i64().filter(|n| *n >= 0).map(Some).ok_or_else(|| bad(format!("`{key}` must be a non-negative integer"))),
+    }
+}
+
+/// Ladder rules for one grade: the drop plus the optional `jumpTo` and `wrongFloor`.
+fn answer_rules(a: &Value, drop: i64) -> Result<srs::AnswerRules, CallError> {
+    Ok(srs::AnswerRules { drop, jump_to: opt_stage(a, "jumpTo")?, wrong_floor: opt_stage(a, "wrongFloor")? })
+}
+
 pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
     if !a.is_object() && matches!(name, "timerNext" | "timerLimit" | "applyExtras" | "weightedQueue") {
         return Err(bad("arguments must be an object"));
     }
     match name {
-        "applyAnswer" => Ok(srs::apply_answer_drop(rec(a), flag(a, "correct"), int(a, "now")?, &ladder(a)?, drop(a)?)),
-        "applyPractice" => Ok(srs::apply_practice_drop(rec(a), flag(a, "correct"), int(a, "now")?, &ladder(a)?, drop(a)?)),
+        "applyAnswer" => Ok(srs::apply_answer_rules(rec(a), flag(a, "correct"), int(a, "now")?, &ladder(a)?, answer_rules(a, drop(a)?)?)),
+        "applyPractice" => Ok(srs::apply_practice_rules(rec(a), flag(a, "correct"), int(a, "now")?, &ladder(a)?, answer_rules(a, drop(a)?)?)),
         "applyRelearn" => Ok(srs::apply_relearn(rec(a), int(a, "now")?, &ladder(a)?).unwrap_or(Value::Null)),
         "applyPlacement" => Ok(srs::apply_placement(rec(a), flag(a, "known"), int(a, "now")?, &ladder(a)?, seed(a)?)),
         "entityView" => {
@@ -38,7 +51,7 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
                 None | Some(Value::Null) => drop(a)?,
                 Some(d) => d.as_i64().filter(|n| *n >= 0).ok_or_else(|| bad("`dropOnWrong` must be a non-negative integer"))?,
             };
-            Ok(Value::Object(srs::apply_entity(&ids, records, mode, correct, int(a, "now")?, &ladder(a)?, srs::AnswerRules::with_drop(drop))))
+            Ok(Value::Object(srs::apply_entity(&ids, records, mode, correct, int(a, "now")?, &ladder(a)?, answer_rules(a, drop)?)))
         }
         "isDue" => Ok(Value::Bool(srs::is_due(rec(a), int(a, "now")?))),
         "isNew" => Ok(Value::Bool(srs::is_new(rec(a)))),

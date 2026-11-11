@@ -118,3 +118,68 @@ fn build_queue_bad_topics_shape_is_error() {
     let out = call("buildQueue", due_args(json!({ "aspects": {}, "cap": -1 })));
     assert_eq!(out["ok"], json!(false));
 }
+
+/// Stage n of `small_ladder` is due `10 * n` after `NOW`.
+const NOW: i64 = 1000;
+
+fn small_ladder() -> Value {
+    json!([0, 10, 20, 30, 40, 50, 60])
+}
+
+/// `base` with the keys of `extra` added.
+fn with(base: Value, extra: Value) -> Value {
+    let mut out = base;
+    for (k, v) in extra.as_object().unwrap() {
+        out[k] = v.clone();
+    }
+    out
+}
+
+#[test]
+fn apply_answer_jump_to_moves_due_item_from_stage_one() {
+    let base = json!({"correct": true, "now": NOW, "ladder": small_ladder(), "rec": {"s": 1, "due": 900, "ok": 1, "bad": 0}});
+    assert_eq!(ok_value("applyAnswer", base.clone())["s"], 2, "no jumpTo: +1 stage");
+    let jumped = ok_value("applyAnswer", with(base, json!({"jumpTo": 4})));
+    assert_eq!(jumped["s"], 4);
+    assert_eq!(jumped["due"], NOW + 40);
+}
+
+#[test]
+fn apply_answer_wrong_floor_keeps_learned_item_above_floor() {
+    let base = json!({"correct": false, "now": NOW, "ladder": small_ladder(), "drop": 4, "rec": {"s": 5, "due": 900, "ok": 3, "bad": 0}});
+    assert_eq!(ok_value("applyAnswer", base.clone())["s"], 1, "no wrongFloor: drop to 1");
+    assert_eq!(ok_value("applyAnswer", with(base, json!({"wrongFloor": 3})))["s"], 3);
+}
+
+#[test]
+fn apply_practice_uses_jump_and_floor_on_graded_branch() {
+    // a due record takes the graded branch, so jumpTo applies
+    let due = json!({"correct": true, "now": NOW, "ladder": small_ladder(), "rec": {"s": 1, "due": 900, "ok": 1, "bad": 0}, "jumpTo": 3});
+    assert_eq!(ok_value("applyPractice", due)["s"], 3);
+    let learned = json!({"correct": false, "now": NOW, "ladder": small_ladder(), "drop": 4, "wrongFloor": 3, "rec": {"s": 5, "due": 900, "ok": 3, "bad": 0}});
+    assert_eq!(ok_value("applyPractice", learned)["s"], 3);
+}
+
+#[test]
+fn apply_entity_takes_jump_to_and_wrong_floor() {
+    let jumped = json!({"members": [{"id": "a"}], "records": {"a": {"s": 1, "due": 900, "ok": 1, "bad": 0}}, "mode": "answer", "correct": true, "now": NOW, "ladder": small_ladder(), "jumpTo": 4});
+    assert_eq!(ok_value("applyEntity", jumped)["a"]["s"], 4);
+    let floored = json!({"members": [{"id": "a"}], "records": {"a": {"s": 5, "due": 900, "ok": 3, "bad": 0}}, "mode": "answer", "correct": false, "now": NOW, "ladder": small_ladder(), "dropOnWrong": 4, "wrongFloor": 3});
+    assert_eq!(ok_value("applyEntity", floored)["a"]["s"], 3);
+}
+
+#[test]
+fn negative_jump_or_floor_is_bad_args() {
+    for key in ["jumpTo", "wrongFloor"] {
+        let out = call("applyAnswer", with(json!({"correct": true, "now": NOW, "rec": {"s": 1, "due": 900}}), json!({ key: -1 })));
+        assert_eq!(out["ok"], json!(false), "{key}: {out}");
+        assert_eq!(out["error"]["code"], json!("bad_args"), "{key}: {out}");
+    }
+}
+
+#[test]
+fn absent_or_null_jump_and_floor_match_old_result() {
+    let base = json!({"correct": false, "now": NOW, "ladder": small_ladder(), "drop": 2, "rec": {"s": 3, "due": 900, "ok": 2, "bad": 1}});
+    let old = ok_value("applyAnswer", base.clone());
+    assert_eq!(ok_value("applyAnswer", with(base, json!({"jumpTo": null, "wrongFloor": null}))), old);
+}
