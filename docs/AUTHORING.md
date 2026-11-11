@@ -97,7 +97,7 @@ Topics group items that teach one thing; each review session asks one item per t
 ## Units and per-unit settings
 `course.json` `units`: `[{id, title, ...}]` (id `^[a-z0-9][a-z0-9_-]{0,47}$`; aim for 10-40 items per unit; drop empty units). Unit-level optional fields:
 - `newPerDay` (integer >= 0) - cap on new items per day for that unit.
-- `srs` - `{ladder, dropOnWrong}` for that unit.
+- `srs` - `{ladder, dropOnWrong, jumpTo, wrongFloor}` for that unit (all optional).
 - `placement` (bool) - `false` excludes the unit from the placement test (needs course-level `placement`, else `placement_unused`).
 - `newOrder` - `"file"` or `"random"`: order in which new items appear.
 - `examOnly` (bool, default false): exam sections draw this unit's items first, fill up from shared units; training prefers shared items and uses these only if the queue would be empty (`crates/dojo-core/src/exam/`); see "Exams".
@@ -105,6 +105,9 @@ Topics group items that teach one thing; each review session asks one item per t
 Course-level counterparts and extras: `srs`, `srsByType` (per item type), `newOrder`, `learnedStage`, `types` (restrict item types), `introNew`, `dontKnow`, `allowOverride`, `normalize`, `speech`, `scripts`, `captions`, `ruby` (see "Question captions and ruby skip set").
 - `srs.ladder`: intervals in milliseconds by stage; at least 2 entries, first 0, non-negative, non-decreasing. Default `[0, 14400000, 86400000, 259200000, 604800000, 1209600000, 2592000000]`. Leave it alone unless the user asks (e.g. an exam date soon).
 - `srs.dropOnWrong`: stages lost on a wrong answer, integer 0-10, default 1.
+- `srs.jumpTo`: integer 2..=top stage of the ladder. A correct answer on an item at stage 1 that is due goes to this stage instead of stage 2. Absent: +1 stage.
+- `srs.wrongFloor`: integer 1..=top stage of the ladder. A wrong answer on an item that was ever learned cannot drop below this stage. Absent: stage 1.
+- `jumpTo` and `wrongFloor` are not allowed in `srsByType` (`scope_by_type`); set them on the course `srs` or a unit `srs`. Out of range: `bad_jump` / `bad_floor`.
 - `learnedStage` (integer >= 1): stage at which an item counts as learned; default 4 in the web app (`web/session.js`), capped by the length of the unit's ladder.
 
 ## Placement test

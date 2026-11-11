@@ -2,7 +2,7 @@
 use dojo_core::api;
 use dojo_core::groups::{build_queue_scoped, group_counts_scoped, GroupQueueInput, ItemMeta, Scope};
 use dojo_core::progress::merge;
-use dojo_core::srs::{apply_answer_drop, apply_entity, entity_view, pick_drill, EntityMode, DEFAULT_LADDER};
+use dojo_core::srs::{apply_answer_drop, apply_entity, entity_view, pick_drill, AnswerRules, EntityMode, DEFAULT_LADDER};
 use serde_json::{json, Map, Value};
 use std::collections::{HashMap, HashSet};
 
@@ -25,7 +25,7 @@ fn obj(v: Value) -> Map<String, Value> {
 }
 
 fn grade(members: &[&str], records: &Map<String, Value>, mode: EntityMode, correct: bool, drop: i64) -> Map<String, Value> {
-    apply_entity(members, records, mode, correct, NOW, &DEFAULT_LADDER, drop)
+    apply_entity(members, records, mode, correct, NOW, &DEFAULT_LADDER, AnswerRules::with_drop(drop))
 }
 
 #[test]

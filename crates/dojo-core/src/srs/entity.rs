@@ -43,12 +43,12 @@ pub fn apply_entity(
     correct: bool,
     now: i64,
     ladder: &[i64],
-    drop: i64,
+    rules: AnswerRules,
 ) -> Map<String, Value> {
     let view = entity_view(members, records);
     let next = match mode {
-        EntityMode::Answer => apply_answer_drop(view.as_ref(), correct, now, ladder, drop),
-        EntityMode::Practice => apply_practice_drop(view.as_ref(), correct, now, ladder, drop),
+        EntityMode::Answer => apply_answer_rules(view.as_ref(), correct, now, ladder, rules),
+        EntityMode::Practice => apply_practice_rules(view.as_ref(), correct, now, ladder, rules),
         EntityMode::Relearn => match view.as_ref() {
             Some(v) if int_field(Some(v), "s") == 0 => apply_relearn(Some(v), now, ladder).unwrap_or(Value::Null),
             _ => return Map::new(),

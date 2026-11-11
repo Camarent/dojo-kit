@@ -26,17 +26,22 @@
 
   /**
    * Applies one graded answer and returns a NEW record.
-   * Correct: stage + 1. Wrong: stage - 2, minimum 1 if the item was ever learned, else 0.
+   * Correct: stage + 1, or rules.jumpTo when the item is due at stage 1. Wrong: stage - rules.drop (default 2),
+   * minimum rules.wrongFloor (default 1) if the item was ever learned, else 0.
+   * rules is optional: absent keeps the default behaviour for every rule.
    * due = now + interval(new stage).
    */
-  function applyAnswer(rec, correct, now) {
+  function applyAnswer(rec, correct, now, rules) {
+    var r = rules || {};
+    var drop = r.drop === undefined ? 2 : r.drop;
+    var floor = r.wrongFloor === undefined ? 1 : r.wrongFloor;
     var s = rec ? rec.s | 0 : 0;
     var ns;
     if (correct) {
-      ns = clampStage(s + 1);
+      ns = clampStage(s === 1 && r.jumpTo !== undefined && isDue(rec, now) ? r.jumpTo : s + 1);
     } else {
-      ns = s - 2;
-      ns = Math.max(ns, everLearned(rec) ? 1 : 0);
+      ns = s - drop;
+      ns = Math.max(ns, everLearned(rec) ? floor : 0);
       ns = clampStage(ns);
     }
     var out = {};

@@ -140,11 +140,17 @@ fn check_srs(course: &Course, sink: &mut Sink) {
             if let Some(problem) = cfg.ladder.as_ref().and_then(|l| ladder_problem(l)) {
                 sink.error("bad_ladder", COURSE_FILE, 0, format!("srsByType.{key}.ladder {problem}"));
             }
-            if cfg.scope.is_some() || cfg.drill.is_some() {
-                sink.error("scope_by_type", COURSE_FILE, 0, format!("srsByType.{key} cannot set scope or drill"));
+            if cfg.scope.is_some() || cfg.drill.is_some() || cfg.jump_to.is_some() || cfg.wrong_floor.is_some() {
+                sink.error(
+                    "scope_by_type",
+                    COURSE_FILE,
+                    0,
+                    format!("srsByType.{key} cannot set scope, drill, jumpTo or wrongFloor"),
+                );
             }
         }
     }
+    check_jump_and_floor(course, sink);
 
     let drops = course
         .srs
@@ -158,6 +164,35 @@ fn check_srs(course: &Course, sink: &mut Sink) {
         }
         if cfg.drill.is_some_and(|d| !(1..=5).contains(&d)) {
             sink.error("bad_drill", COURSE_FILE, 0, format!("{place}.drill must be an integer from 1 to 5"));
+        }
+    }
+}
+
+/// Checks `jumpTo` / `wrongFloor` per unit, against the ladder that unit schedules with
+/// (unit ladder > course ladder > default). A value set on the course applies to every unit that does not set its own.
+fn check_jump_and_floor(course: &Course, sink: &mut Sink) {
+    let course_srs = course.srs.as_ref();
+    for unit in &course.units {
+        let unit_srs = unit.srs.as_ref();
+        let jump = unit_srs.and_then(|s| s.jump_to).or(course_srs.and_then(|s| s.jump_to));
+        let floor = unit_srs.and_then(|s| s.wrong_floor).or(course_srs.and_then(|s| s.wrong_floor));
+        if jump.is_none() && floor.is_none() {
+            continue;
+        }
+        let ladder = unit_srs
+            .and_then(|s| s.ladder.as_deref())
+            .or(course_srs.and_then(|s| s.ladder.as_deref()))
+            .unwrap_or(&crate::srs::DEFAULT_LADDER[..]);
+        let top = i64::try_from(ladder.len()).unwrap_or(i64::MAX) - 1;
+        if let Some(j) = jump
+            && !(2..=top).contains(&j)
+        {
+            sink.error("bad_jump", COURSE_FILE, 0, format!("unit '{}' jumpTo must be an integer from 2 to {top}", unit.id));
+        }
+        if let Some(f) = floor
+            && !(1..=top).contains(&f)
+        {
+            sink.error("bad_floor", COURSE_FILE, 0, format!("unit '{}' wrongFloor must be an integer from 1 to {top}", unit.id));
         }
     }
 }

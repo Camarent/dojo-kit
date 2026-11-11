@@ -5,6 +5,23 @@ const { Fl, pickDrillJs, vec } = require('../utils.js');
 const { ref } = require('../ref.js');
 const { unitQueueOracle } = require('../oracles/srs.js');
 
+// applyAnswer with the optional rules (drop, jumpTo, wrongFloor); appended to the applyAnswer group.
+function srsApplyAnswerRulesPart1(kit) {
+  const rec = (s, ok) => ({ s: s, due: T0 - INTERVALS[s], ok: ok, bad: 0, last: T0 - INTERVALS[s] });
+  const add = (name, input, base, correct) => kit.applyAnswerCases.push(vec(name, { rec: base, correct: correct, now: T0, ...input },
+    ref('applyAnswer', base, correct, T0, input), 'reference'));
+
+  add('rules_jump_to_due_stage_1_correct', { jumpTo: 4 }, rec(1, 1), true);
+  add('rules_jump_to_not_due_stage_1_correct', { jumpTo: 4 }, { s: 1, due: T0 + INTERVALS[1], ok: 1, bad: 0, last: T0 }, true);
+  add('rules_jump_to_stage_2_correct_plus_one', { jumpTo: 4 }, rec(2, 1), true);
+  add('rules_jump_to_null_rec_correct', { jumpTo: 4 }, null, true);
+  add('rules_drop_3_stage_5_wrong', { drop: 3 }, rec(5, 1), false);
+  add('rules_wrong_floor_3_stage_3_wrong_stays', { wrongFloor: 3 }, rec(3, 1), false);
+  add('rules_wrong_floor_3_stage_5_wrong_drop_default', { wrongFloor: 3 }, rec(5, 1), false);
+  add('rules_wrong_floor_3_never_learned_0', { wrongFloor: 3 }, { s: 0, due: T0, ok: 0, bad: 0, last: T0 }, false);
+  add('rules_jump_and_floor_together_wrong', { jumpTo: 4, wrongFloor: 2 }, rec(1, 1), false);
+}
+
 function srsBuildQueuePart1(kit) {
   kit.groups.push({ fn: 'weakest', cases: kit.weakestCases });
 
@@ -244,4 +261,4 @@ function srsLadderPart2(kit) {
   kit.groups.push({ fn: 'applyEntity', cases: kit.entCases });
 }
 
-module.exports = { srsBuildQueuePart1, srsApplyPlacementPart1, srsApplyPlacementPart2, srsApplyPlacementPart3, srsLadderPart1, srsLadderPart2 };
+module.exports = { srsApplyAnswerRulesPart1, srsBuildQueuePart1,srsApplyPlacementPart1, srsApplyPlacementPart2, srsApplyPlacementPart3, srsLadderPart1, srsLadderPart2 };

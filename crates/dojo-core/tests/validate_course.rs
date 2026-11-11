@@ -67,6 +67,29 @@ fn bad_ladders() {
 }
 
 #[test]
+fn bad_jump_and_floor() {
+    for jump in ["1", "7", "-1"] {
+        fires(&with_course(&format!(r#""srs":{{"jumpTo":{jump}}}"#)), &[CHOICE], "bad_jump");
+        let unit = format!(r#"{{"id":"c","title":"C","uiLanguage":"en","units":[{{"id":"u","title":"U","srs":{{"jumpTo":{jump}}}}}]}}"#);
+        fires(&unit, &[CHOICE], "bad_jump");
+    }
+    for floor in ["0", "7", "-1"] {
+        fires(&with_course(&format!(r#""srs":{{"wrongFloor":{floor}}}"#)), &[CHOICE], "bad_floor");
+        let unit = format!(r#"{{"id":"c","title":"C","uiLanguage":"en","units":[{{"id":"u","title":"U","srs":{{"wrongFloor":{floor}}}}}]}}"#);
+        fires(&unit, &[CHOICE], "bad_floor");
+    }
+    // the top stage comes from the ladder the unit schedules with (here 0..=2)
+    fires(&with_course(r#""srs":{"ladder":[0,5,10],"jumpTo":3}"#), &[CHOICE], "bad_jump");
+    fires(&with_course(r#""srs":{"ladder":[0,5,10],"wrongFloor":3}"#), &[CHOICE], "bad_floor");
+    let ok = with_course(r#""srs":{"ladder":[0,5,10],"jumpTo":2,"wrongFloor":2}"#);
+    assert_eq!(run(&ok, &[CHOICE]), vec![]);
+    let ok = with_course(r#""srs":{"jumpTo":6,"wrongFloor":1}"#);
+    assert_eq!(run(&ok, &[CHOICE]), vec![]);
+    fires(&with_course(r#""srsByType":{"gap":{"jumpTo":2}}"#), &[CHOICE], "scope_by_type");
+    fires(&with_course(r#""srsByType":{"gap":{"wrongFloor":1}}"#), &[CHOICE], "scope_by_type");
+}
+
+#[test]
 fn bad_drop() {
     for drop in ["-1", "11", "100"] {
         fires(&with_course(&format!(r#""srs":{{"dropOnWrong":{drop}}}"#)), &[CHOICE], "bad_drop");
