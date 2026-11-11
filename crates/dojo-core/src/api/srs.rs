@@ -38,7 +38,7 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
                 None | Some(Value::Null) => drop(a)?,
                 Some(d) => d.as_i64().filter(|n| *n >= 0).ok_or_else(|| bad("`dropOnWrong` must be a non-negative integer"))?,
             };
-            Ok(Value::Object(srs::apply_entity(&ids, records, mode, correct, int(a, "now")?, &ladder(a)?, drop)))
+            Ok(Value::Object(srs::apply_entity(&ids, records, mode, correct, int(a, "now")?, &ladder(a)?, srs::AnswerRules::with_drop(drop))))
         }
         "isDue" => Ok(Value::Bool(srs::is_due(rec(a), int(a, "now")?))),
         "isNew" => Ok(Value::Bool(srs::is_new(rec(a)))),

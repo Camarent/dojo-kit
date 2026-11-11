@@ -47,13 +47,40 @@ pub fn apply_answer(rec: Option<&Value>, correct: bool, now: i64, ladder: &[i64]
     apply_answer_drop(rec, correct, now, ladder, LEGACY_VECTOR_DROP)
 }
 
+/// Optional ladder rules for one grade. `None` keeps the default behaviour for that rule.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AnswerRules {
+    /// Stages lost on a wrong answer.
+    pub drop: i64,
+    /// Stage a correct answer jumps to when the record is due and at stage 1 (`None`: +1 stage).
+    pub jump_to: Option<i64>,
+    /// Lowest stage a wrong answer can reach once the item was ever learned (`None`: 1).
+    pub wrong_floor: Option<i64>,
+}
+
+impl AnswerRules {
+    /// Rules with only a drop; both optional rules off.
+    pub fn with_drop(drop: i64) -> Self {
+        Self { drop, jump_to: None, wrong_floor: None }
+    }
+}
+
 /// Like `apply_answer`, but a wrong answer drops `drop` stages.
 pub fn apply_answer_drop(rec: Option<&Value>, correct: bool, now: i64, ladder: &[i64], drop: i64) -> Value {
+    apply_answer_rules(rec, correct, now, ladder, AnswerRules::with_drop(drop))
+}
+
+/// Like `apply_answer_drop`, plus the `jump_to` and `wrong_floor` rules from `rules`.
+pub fn apply_answer_rules(rec: Option<&Value>, correct: bool, now: i64, ladder: &[i64], rules: AnswerRules) -> Value {
     let stage = int_field(rec, "s");
     let next = if correct {
-        stage.saturating_add(1)
+        match rules.jump_to {
+            Some(jump) if stage == 1 && is_due(rec, now) => jump,
+            _ => stage.saturating_add(1),
+        }
     } else {
-        stage.saturating_sub(drop).max(i64::from(ever_learned(rec)))
+        let floor = if ever_learned(rec) { rules.wrong_floor.unwrap_or(1) } else { 0 };
+        stage.saturating_sub(rules.drop).max(floor)
     }
     .clamp(0, max_stage(ladder));
 
@@ -73,12 +100,17 @@ pub fn apply_practice(rec: Option<&Value>, correct: bool, now: i64, ladder: &[i6
 
 /// Like `apply_practice`, but a wrong answer drops `drop` stages.
 pub fn apply_practice_drop(rec: Option<&Value>, correct: bool, now: i64, ladder: &[i64], drop: i64) -> Value {
+    apply_practice_rules(rec, correct, now, ladder, AnswerRules::with_drop(drop))
+}
+
+/// Like `apply_practice_drop`, with the rules of `apply_answer_rules` on the graded branch.
+pub fn apply_practice_rules(rec: Option<&Value>, correct: bool, now: i64, ladder: &[i64], rules: AnswerRules) -> Value {
     let not_due = rec
         .and_then(|r| r.get("due"))
         .and_then(num_i64)
         .is_some_and(|due| due > now);
     if !correct || !not_due {
-        return apply_answer_drop(rec, correct, now, ladder, drop);
+        return apply_answer_rules(rec, correct, now, ladder, rules);
     }
     let mut out = record_fields(rec);
     out.insert("ok".into(), Value::from(int_field(rec, "ok").saturating_add(1)));
