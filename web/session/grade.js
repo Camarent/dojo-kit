@@ -125,9 +125,10 @@
     var ctx = g.ctx;
     var sx = g.sx;
     var unit = ctx.scopedUnit[e];
+    var cfg = ctx.fn.unitConfig(unit);
     var args = {
       members: ctx.fn.scopedMemberList(e), records: ctx.fn.scopedRecords(e), now: ctx.now(), correct: correct,
-      ladder: ctx.fn.ladderForUnit(unit)
+      ladder: ctx.fn.ladderForUnit(unit), jumpTo: cfg.jumpTo, wrongFloor: cfg.wrongFloor
     };
     if (sx.mode === 'placement') {
       args.mode = 'placement';
@@ -159,6 +160,9 @@
     }
     base.correct = correct;
     base.drop = ctx.fn.dropForItem(item);
+    var cfg = ctx.fn.unitConfig(item.unit);
+    base.jumpTo = cfg.jumpTo;
+    base.wrongFloor = cfg.wrongFloor;
     return ctx.dojo.call(sx.mode === 'daily' ? 'applyAnswer' : 'applyPractice', base);
   }
 
