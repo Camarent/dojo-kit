@@ -278,6 +278,208 @@
           "source": "reference"
         },
         {
+          "name": "rules_jump_to_due_stage_1_correct",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759985600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "correct": true,
+            "now": 1760000000000,
+            "jumpTo": 4
+          },
+          "expect": {
+            "s": 4,
+            "due": 1760604800000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_jump_to_not_due_stage_1_correct",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1760014400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "correct": true,
+            "now": 1760000000000,
+            "jumpTo": 4
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_jump_to_stage_2_correct_plus_one",
+          "input": {
+            "rec": {
+              "s": 2,
+              "due": 1759913600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759913600000
+            },
+            "correct": true,
+            "now": 1760000000000,
+            "jumpTo": 4
+          },
+          "expect": {
+            "s": 3,
+            "due": 1760259200000,
+            "ok": 2,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_jump_to_null_rec_correct",
+          "input": {
+            "rec": null,
+            "correct": true,
+            "now": 1760000000000,
+            "jumpTo": 4
+          },
+          "expect": {
+            "s": 1,
+            "due": 1760014400000,
+            "ok": 1,
+            "bad": 0,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_drop_3_stage_5_wrong",
+          "input": {
+            "rec": {
+              "s": 5,
+              "due": 1758790400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1758790400000
+            },
+            "correct": false,
+            "now": 1760000000000,
+            "drop": 3
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_wrong_floor_3_stage_3_wrong_stays",
+          "input": {
+            "rec": {
+              "s": 3,
+              "due": 1759740800000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759740800000
+            },
+            "correct": false,
+            "now": 1760000000000,
+            "wrongFloor": 3
+          },
+          "expect": {
+            "s": 3,
+            "due": 1760259200000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_wrong_floor_3_stage_5_wrong_drop_default",
+          "input": {
+            "rec": {
+              "s": 5,
+              "due": 1758790400000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1758790400000
+            },
+            "correct": false,
+            "now": 1760000000000,
+            "wrongFloor": 3
+          },
+          "expect": {
+            "s": 3,
+            "due": 1760259200000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_wrong_floor_3_never_learned_0",
+          "input": {
+            "rec": {
+              "s": 0,
+              "due": 1760000000000,
+              "ok": 0,
+              "bad": 0,
+              "last": 1760000000000
+            },
+            "correct": false,
+            "now": 1760000000000,
+            "wrongFloor": 3
+          },
+          "expect": {
+            "s": 0,
+            "due": 1760000000000,
+            "ok": 0,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
+          "name": "rules_jump_and_floor_together_wrong",
+          "input": {
+            "rec": {
+              "s": 1,
+              "due": 1759985600000,
+              "ok": 1,
+              "bad": 0,
+              "last": 1759985600000
+            },
+            "correct": false,
+            "now": 1760000000000,
+            "jumpTo": 4,
+            "wrongFloor": 2
+          },
+          "expect": {
+            "s": 2,
+            "due": 1760086400000,
+            "ok": 1,
+            "bad": 1,
+            "last": 1760000000000
+          },
+          "source": "reference"
+        },
+        {
           "name": "rec_with_extra_field_preserved",
           "input": {
             "rec": {

@@ -14,6 +14,19 @@ fn ladder(c: &Value) -> Result<Vec<i64>, &'static str> {
     }
 }
 
+/// True when an `applyAnswer` input carries any of the optional rules; absent keys keep the old rule.
+fn has_rules(i: &Value) -> bool {
+    ["drop", "jumpTo", "wrongFloor"].iter().any(|k| i.get(*k).is_some())
+}
+
+fn answer_rules(i: &Value) -> AnswerRules {
+    AnswerRules {
+        drop: i.get("drop").and_then(Value::as_i64).unwrap_or(LEGACY_VECTOR_DROP),
+        jump_to: i.get("jumpTo").and_then(Value::as_i64),
+        wrong_floor: i.get("wrongFloor").and_then(Value::as_i64),
+    }
+}
+
 fn strings(v: &Value) -> Result<Vec<String>, &'static str> {
     v.as_array().ok_or("expected an array")?.iter().map(|x| x.as_str().map(String::from).ok_or("expected a string")).collect()
 }
@@ -26,6 +39,7 @@ fn srs_vectors() -> Result<(), Box<dyn std::error::Error>> {
             let i = &c["input"];
             let (now, correct) = (i["now"].as_i64().unwrap_or(0), i["correct"].as_bool().unwrap_or(false));
             let got: Value = match f.as_str() {
+                "applyAnswer" if has_rules(i) => apply_answer_rules(rec(&c), correct, now, &ladder(&c)?, answer_rules(i)),
                 "applyAnswer" => apply_answer(rec(&c), correct, now, &ladder(&c)?),
                 "applyPractice" => apply_practice(rec(&c), correct, now, &ladder(&c)?),
                 "applyRelearn" => apply_relearn(rec(&c), now, &ladder(&c)?).unwrap_or(Value::Null),
