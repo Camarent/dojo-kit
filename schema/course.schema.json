@@ -467,6 +467,17 @@
             "null"
           ],
           "format": "int64"
+        },
+        "migrate": {
+          "description": "One-time progress migration (course-level `srs` only): see `migrate_doc`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SrsMigrate"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -486,6 +497,32 @@
       "enum": [
         "ladder",
         "errorWeighted"
+      ]
+    },
+    "SrsMigrate": {
+      "description": "`srs.migrate`: runs once per save (marker `migrated[id]`). `ladderFrom` maps a unit id to its old ladder (ms);\n`unify` gives every recorded member of a unit key the best stage and latest due.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "ladderFrom": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "unify": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id"
       ]
     },
     "NewOrder": {

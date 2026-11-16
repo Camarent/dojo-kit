@@ -113,6 +113,20 @@ pub(super) fn merge_intros(docs: [&Map<String, Value>; 2], reset_at: f64) -> Val
     Value::Object(out)
 }
 
+/// Migration markers: union by id, smallest timestamp wins.
+pub(super) fn merge_migrated(docs: [&Map<String, Value>; 2]) -> Value {
+    let mut out: Map<String, Value> = Map::new();
+    for doc in docs {
+        let Some(marks) = doc.get("migrated").and_then(Value::as_object) else { continue };
+        for (k, t) in marks.iter().filter(|(_, t)| t.is_number()) {
+            if out.get(k).is_none_or(|cur| coerce_f64(t) < coerce_f64(cur)) {
+                out.insert(k.clone(), t.clone());
+            }
+        }
+    }
+    Value::Object(out)
+}
+
 pub(super) fn merge_exams(docs: [&Map<String, Value>; 2], reset_at: f64) -> Value {
     let mut out = Map::new();
     for doc in docs.iter().filter(|d| field_f64(d, "resetAt") == reset_at) {
@@ -221,6 +235,9 @@ pub fn merge(a: &Value, b: &Value) -> Result<Value, super::MergeError> {
     }
     if docs.iter().any(|d| d.contains_key("intros")) {
         out.insert("intros".into(), merge_intros(docs, reset_at));
+    }
+    if docs.iter().any(|d| d.get("migrated").is_some_and(Value::is_object)) {
+        out.insert("migrated".into(), merge_migrated(docs));
     }
     if let Some(settings) = merge_settings_docs(ao, bo) {
         out.insert("settings".into(), settings);

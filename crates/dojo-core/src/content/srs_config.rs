@@ -32,6 +32,21 @@ pub struct SrsConfig {
     /// Lowest stage a wrong answer can drop to (1..=top stage of the resolved ladder). Not allowed in `srsByType`.
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "wrongFloor")]
     pub wrong_floor: Option<i64>,
+    /// One-time progress migration (course-level `srs` only): see `migrate_doc`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub migrate: Option<SrsMigrate>,
+}
+
+/// `srs.migrate`: runs once per save (marker `migrated[id]`). `ladderFrom` maps a unit id to its old ladder (ms);
+/// `unify` gives every recorded member of a unit key the best stage and latest due.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SrsMigrate {
+    pub id: String,
+    #[serde(default, rename = "ladderFrom", skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub ladder_from: std::collections::BTreeMap<String, Vec<i64>>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub unify: bool,
 }
 
 /// Scheduling scope of a unit. `Unit` schedules one unit key (`<entity>|<aspect>`) as a whole.

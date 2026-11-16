@@ -156,7 +156,7 @@ fn scoped_set(a: &Value) -> Result<Option<HashSet<String>>, CallError> {
 
 fn dispatch(name: &str, a: &Value) -> Result<Value, CallError> {
     match name {
-        "emptyProgress" | "sanitize" | "merge" | "migrateProgress" | "dayKey" | "streak" => progress::progress_call(name, a),
+        "emptyProgress" | "sanitize" | "merge" | "migrateProgress" | "migrateDoc" | "unmigrate" | "dayKey" | "streak" => progress::progress_call(name, a),
         "applyAnswer" | "applyPractice" | "applyRelearn" | "applyPlacement" | "entityView" | "applyEntity" | "isDue" | "isNew" | "weakest" | "ladderForUnit" | "dropForUnit" | "unitConfig" | "timerNext" | "timerLimit" | "applyExtras" | "weightedQueue" => srs::srs_call(name, a),
         "buildQueue" | "groupCounts" | "entityStates" => groups::groups_call(name, a),
         "itemAspects" | "topicLevels" => topics::topics_call(name, a),
