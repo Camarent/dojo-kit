@@ -84,6 +84,71 @@ pub fn apply_extras(rec: Option<&Value>, o: &Outcome) -> Value {
     Value::Object(out)
 }
 
+/// One graded answer to a unit pool, input of `apply_question_extras`.
+pub struct Question<'a> {
+    pub id: &'a str,
+    pub correct: bool,
+    pub now: i64,
+    /// Questions in the unit pool (the members).
+    pub pool: usize,
+    pub known_distinct: i64,
+}
+
+/// Per-question counters and the unit weak flag, on `members` (the output of `apply_entity`).
+/// `qok`/`qbad`/`qlast` (ms) change on the answered member only. A wrong answer sets `wk` = 1 on every member
+/// and `wkseen` = `[wrong id]`. Right answers add distinct ids to `wkseen`; `wk` clears (keys removed) once
+/// `known_distinct` other ids were answered right, or on any right answer when the pool has one question.
+pub fn apply_question_extras(members: &mut Map<String, Value>, q: &Question) {
+    let Some(first) = members.get(q.id).cloned() else { return };
+    let count = |key: &str| super::int_field(Some(&first), key);
+    let mut seen: Vec<String> = first
+        .get("wkseen")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(String::from)
+        .collect();
+    let known = q.known_distinct.max(1) as usize;
+    let weak_change: Option<Option<Vec<String>>> = if !q.correct {
+        Some(Some(vec![q.id.to_string()]))
+    } else if count("wk") == 1 {
+        if !seen.iter().any(|s| s == q.id) {
+            seen.push(q.id.to_string());
+        }
+        let distinct_after = seen.len().saturating_sub(1);
+        if q.pool <= 1 || distinct_after >= known {
+            Some(None)
+        } else {
+            seen.truncate(known + 1);
+            Some(Some(seen))
+        }
+    } else {
+        None
+    };
+    match weak_change {
+        Some(Some(ids)) => {
+            let list: Vec<Value> = ids.into_iter().map(Value::from).collect();
+            for rec in members.values_mut().filter_map(Value::as_object_mut) {
+                rec.insert("wk".into(), Value::from(1));
+                rec.insert("wkseen".into(), Value::Array(list.clone()));
+            }
+        }
+        Some(None) => {
+            for rec in members.values_mut().filter_map(Value::as_object_mut) {
+                rec.remove("wk");
+                rec.remove("wkseen");
+            }
+        }
+        None => {}
+    }
+    let key = if q.correct { "qok" } else { "qbad" };
+    if let Some(own) = members.get_mut(q.id).and_then(Value::as_object_mut) {
+        own.insert(key.into(), Value::from((count(key) + 1).min(MAX_INT as i64)));
+        own.insert("qlast".into(), Value::from(q.now));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

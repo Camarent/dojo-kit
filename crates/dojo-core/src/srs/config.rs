@@ -58,8 +58,12 @@ pub fn drop_for_unit_json(course: &Value, unit_id: &str, item_type: Option<&str>
     json_drop(by_type).or_else(|| json_drop(course.get("srs"))).unwrap_or(COURSE_DEFAULT_DROP)
 }
 
+/// Distinct other questions a unit needs to answer right after a wrong one before the weak flag clears (`srs.knownDistinct`).
+pub const KNOWN_DISTINCT_DEFAULT: i64 = 2;
+
 /// Course-level resolved settings of one unit (no user overrides), the single source for the UI.
-/// Returns `{newPerDay, ladder, dropOnWrong, jumpTo, wrongFloor, newOrder, dropByType, scope, drill}`:
+/// Returns `{newPerDay, ladder, dropOnWrong, jumpTo, wrongFloor, newOrder, dropByType, scope, drill, knownDistinct}`:
+/// - `knownDistinct`: integer >= 1 (unit.srs > course.srs > `KNOWN_DISTINCT_DEFAULT`);
 /// - `jumpTo` / `wrongFloor`: integer or null (unit.srs > course.srs > null; `srsByType` not read);
 /// - `scope`: `"item"`, `"entity"` or `"unit"` (unit.srs > course.srs > "item"); `drill`: 1..=5 (same order, default 1);
 /// - `newPerDay`: `unit.newPerDay`, or null when the course sets no cap for the unit;
@@ -101,6 +105,8 @@ pub fn unit_config(course: &Value, unit_id: &str) -> Value {
     let mut out = Map::new();
     out.insert("scope".into(), Value::from(scope));
     out.insert("drill".into(), Value::from(drill));
+    let known = pick("knownDistinct").and_then(Value::as_i64).filter(|n| *n >= 1).unwrap_or(KNOWN_DISTINCT_DEFAULT);
+    out.insert("knownDistinct".into(), Value::from(known));
     out.insert("newPerDay".into(), new_per_day.map_or(Value::Null, Value::from));
     out.insert("ladder".into(), Value::from(ladder_for_unit_json(course, unit_id, None)));
     out.insert("dropOnWrong".into(), Value::from(drop_for_unit_json(course, unit_id, None)));

@@ -70,7 +70,20 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
                 None | Some(Value::Null) => drop(a)?,
                 Some(d) => d.as_i64().filter(|n| *n >= 0).ok_or_else(|| bad("`dropOnWrong` must be a non-negative integer"))?,
             };
-            Ok(Value::Object(srs::apply_entity(&ids, records, mode, correct, int(a, "now")?, &ladder(a)?, answer_rules(a, drop)?)))
+            let answered = match a.get("answered") {
+                None | Some(Value::Null) => None,
+                Some(v) => Some(v.as_str().filter(|id| ids.contains(id)).ok_or_else(|| bad("`answered` must be a member id"))?),
+            };
+            let now = int(a, "now")?;
+            let mut next = srs::apply_entity(&ids, records, mode, correct, now, &ladder(a)?, answer_rules(a, drop)?);
+            if let (srs::EntityMode::Answer, Some(id)) = (mode, answered) {
+                let known_distinct = match a.get("knownDistinct") {
+                    None | Some(Value::Null) => srs::KNOWN_DISTINCT_DEFAULT,
+                    Some(v) => v.as_i64().filter(|n| *n >= 1).ok_or_else(|| bad("`knownDistinct` must be an integer >= 1"))?,
+                };
+                srs::apply_question_extras(&mut next, &srs::Question { id, correct, now, pool: ids.len(), known_distinct });
+            }
+            Ok(Value::Object(next))
         }
         "unitKey" => {
             let rules = super::topics::course_rules(field(a, "course")?)?.unwrap_or_default();

@@ -19,6 +19,9 @@ pub struct SrsConfig {
     /// Items asked per entity slot when `scope` is `"entity"` (1..=5, default 1).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub drill: Option<u32>,
+    /// `"unit"` scope: other questions answered right after a wrong one before the weak flag clears (integer >= 1, default 2; 1 when the unit pool has one question).
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "knownDistinct")]
+    pub known_distinct: Option<u32>,
     /// Scheduling mode: `"ladder"` (default) or `"errorWeighted"`.
     /// Not allowed in `srsByType` (mode_by_type).
     #[serde(default, skip_serializing_if = "Option::is_none")]

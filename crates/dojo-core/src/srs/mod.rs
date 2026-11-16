@@ -14,7 +14,7 @@ use config::{interval, max_stage};
 pub use entity::*;
 pub use queue::*;
 pub use timer::{timer_limit, timer_next, TimerIn};
-pub use extras::{apply_extras, Outcome};
+pub use extras::{apply_extras, apply_question_extras, Outcome, Question};
 pub use weighted::{draw_index, unit_random, weight, weighted_queue, WeightedIn};
 
 pub const HOUR: i64 = 3_600_000;
