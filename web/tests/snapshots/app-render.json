@@ -1640,6 +1640,453 @@
         {
           "type": "section",
           "props": {
+            "data-testid": "session-settings",
+            "class": "group",
+            "children": [
+              {
+                "type": "h2",
+                "props": {
+                  "children": [
+                    "Session"
+                  ]
+                }
+              },
+              {
+                "type": "p",
+                "props": {
+                  "class": "muted",
+                  "children": [
+                    "How a daily session is sized and mixed. Auto sizes it from the study minutes; manual uses the question count."
+                  ]
+                }
+              },
+              {
+                "type": "label",
+                "props": {
+                  "for": "session-mode",
+                  "children": [
+                    "Session size"
+                  ]
+                }
+              },
+              {
+                "type": "select",
+                "props": {
+                  "data-testid": "session-mode",
+                  "class": "field",
+                  "id": "session-mode",
+                  "value": "auto",
+                  "children": [
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "auto",
+                        "selected": true,
+                        "children": [
+                          "Auto (from study minutes)"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "manual",
+                        "selected": false,
+                        "children": [
+                          "Manual (question count)"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              [
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-sessionCap",
+                    "class": "stepper",
+                    "aria-label": "Questions per session (0 = no limit)",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionCap-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": true,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-sessionCap-value",
+                          "class": "stepper-value",
+                          "children": [
+                            0
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionCap-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-dailyMinutes",
+                    "class": "stepper",
+                    "aria-label": "Study minutes per day",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-value",
+                          "class": "stepper-value",
+                          "children": [
+                            30
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-sessionMax",
+                    "class": "stepper",
+                    "aria-label": "Largest auto session (questions)",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-sessionMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            60
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-reviewDays",
+                    "class": "stepper",
+                    "aria-label": "Days before the exam with no new units",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-reviewDays-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-reviewDays-value",
+                          "class": "stepper-value",
+                          "children": [
+                            3
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-reviewDays-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-perUnitMax",
+                    "class": "stepper",
+                    "aria-label": "Questions per unit per session",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-perUnitMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-perUnitMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-perUnitMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-repeatMax",
+                    "class": "stepper",
+                    "aria-label": "Repeats of one question per session",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-repeatMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-repeatMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-repeatMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-knownDistinct",
+                    "class": "stepper",
+                    "aria-label": "Other right answers before a question leaves the queue",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-knownDistinct-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": true,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-knownDistinct-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-knownDistinct-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              {
+                "type": "label",
+                "props": {
+                  "for": "session-mix",
+                  "children": [
+                    "Start the session with"
+                  ]
+                }
+              },
+              {
+                "type": "select",
+                "props": {
+                  "data-testid": "session-mix",
+                  "class": "field",
+                  "id": "session-mix",
+                  "value": "weak",
+                  "children": [
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "weak",
+                        "selected": true,
+                        "children": [
+                          "Weak questions"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "new",
+                        "selected": false,
+                        "children": [
+                          "New questions"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "due",
+                        "selected": false,
+                        "children": [
+                          "Due questions"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "section",
+          "props": {
             "data-testid": "unit-settings",
             "class": "group",
             "children": [
@@ -2611,6 +3058,453 @@
                   "id": "exam-date",
                   "value": "",
                   "type": "date"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "section",
+          "props": {
+            "data-testid": "session-settings",
+            "class": "group",
+            "children": [
+              {
+                "type": "h2",
+                "props": {
+                  "children": [
+                    "Session"
+                  ]
+                }
+              },
+              {
+                "type": "p",
+                "props": {
+                  "class": "muted",
+                  "children": [
+                    "How a daily session is sized and mixed. Auto sizes it from the study minutes; manual uses the question count."
+                  ]
+                }
+              },
+              {
+                "type": "label",
+                "props": {
+                  "for": "session-mode",
+                  "children": [
+                    "Session size"
+                  ]
+                }
+              },
+              {
+                "type": "select",
+                "props": {
+                  "data-testid": "session-mode",
+                  "class": "field",
+                  "id": "session-mode",
+                  "value": "auto",
+                  "children": [
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "auto",
+                        "selected": true,
+                        "children": [
+                          "Auto (from study minutes)"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "manual",
+                        "selected": false,
+                        "children": [
+                          "Manual (question count)"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              [
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-sessionCap",
+                    "class": "stepper",
+                    "aria-label": "Questions per session (0 = no limit)",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionCap-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": true,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-sessionCap-value",
+                          "class": "stepper-value",
+                          "children": [
+                            0
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionCap-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-dailyMinutes",
+                    "class": "stepper",
+                    "aria-label": "Study minutes per day",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-value",
+                          "class": "stepper-value",
+                          "children": [
+                            30
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-sessionMax",
+                    "class": "stepper",
+                    "aria-label": "Largest auto session (questions)",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-sessionMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            60
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-reviewDays",
+                    "class": "stepper",
+                    "aria-label": "Days before the exam with no new units",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-reviewDays-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-reviewDays-value",
+                          "class": "stepper-value",
+                          "children": [
+                            3
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-reviewDays-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-perUnitMax",
+                    "class": "stepper",
+                    "aria-label": "Questions per unit per session",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-perUnitMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-perUnitMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-perUnitMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-repeatMax",
+                    "class": "stepper",
+                    "aria-label": "Repeats of one question per session",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-repeatMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-repeatMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-repeatMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-knownDistinct",
+                    "class": "stepper",
+                    "aria-label": "Other right answers before a question leaves the queue",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-knownDistinct-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": true,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-knownDistinct-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-knownDistinct-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              {
+                "type": "label",
+                "props": {
+                  "for": "session-mix",
+                  "children": [
+                    "Start the session with"
+                  ]
+                }
+              },
+              {
+                "type": "select",
+                "props": {
+                  "data-testid": "session-mix",
+                  "class": "field",
+                  "id": "session-mix",
+                  "value": "weak",
+                  "children": [
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "weak",
+                        "selected": true,
+                        "children": [
+                          "Weak questions"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "new",
+                        "selected": false,
+                        "children": [
+                          "New questions"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "due",
+                        "selected": false,
+                        "children": [
+                          "Due questions"
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -3967,6 +4861,453 @@
                   "id": "exam-date",
                   "value": "",
                   "type": "date"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "section",
+          "props": {
+            "data-testid": "session-settings",
+            "class": "group",
+            "children": [
+              {
+                "type": "h2",
+                "props": {
+                  "children": [
+                    "Session"
+                  ]
+                }
+              },
+              {
+                "type": "p",
+                "props": {
+                  "class": "muted",
+                  "children": [
+                    "How a daily session is sized and mixed. Auto sizes it from the study minutes; manual uses the question count."
+                  ]
+                }
+              },
+              {
+                "type": "label",
+                "props": {
+                  "for": "session-mode",
+                  "children": [
+                    "Session size"
+                  ]
+                }
+              },
+              {
+                "type": "select",
+                "props": {
+                  "data-testid": "session-mode",
+                  "class": "field",
+                  "id": "session-mode",
+                  "value": "auto",
+                  "children": [
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "auto",
+                        "selected": true,
+                        "children": [
+                          "Auto (from study minutes)"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "manual",
+                        "selected": false,
+                        "children": [
+                          "Manual (question count)"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              [
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-sessionCap",
+                    "class": "stepper",
+                    "aria-label": "Questions per session (0 = no limit)",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionCap-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": true,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-sessionCap-value",
+                          "class": "stepper-value",
+                          "children": [
+                            0
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionCap-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-dailyMinutes",
+                    "class": "stepper",
+                    "aria-label": "Study minutes per day",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-value",
+                          "class": "stepper-value",
+                          "children": [
+                            30
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-dailyMinutes-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-sessionMax",
+                    "class": "stepper",
+                    "aria-label": "Largest auto session (questions)",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-sessionMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            60
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-sessionMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-reviewDays",
+                    "class": "stepper",
+                    "aria-label": "Days before the exam with no new units",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-reviewDays-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-reviewDays-value",
+                          "class": "stepper-value",
+                          "children": [
+                            3
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-reviewDays-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-perUnitMax",
+                    "class": "stepper",
+                    "aria-label": "Questions per unit per session",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-perUnitMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-perUnitMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-perUnitMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-repeatMax",
+                    "class": "stepper",
+                    "aria-label": "Repeats of one question per session",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-repeatMax-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-repeatMax-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-repeatMax-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "div",
+                  "props": {
+                    "data-testid": "session-knownDistinct",
+                    "class": "stepper",
+                    "aria-label": "Other right answers before a question leaves the queue",
+                    "role": "group",
+                    "children": [
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-knownDistinct-dec",
+                          "class": "btn icon",
+                          "aria-label": "Decrease",
+                          "disabled": true,
+                          "type": "button",
+                          "children": [
+                            "−"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "output",
+                        "props": {
+                          "data-testid": "session-knownDistinct-value",
+                          "class": "stepper-value",
+                          "children": [
+                            1
+                          ]
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "data-testid": "session-knownDistinct-inc",
+                          "class": "btn icon",
+                          "aria-label": "Increase",
+                          "disabled": false,
+                          "type": "button",
+                          "children": [
+                            "+"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              {
+                "type": "label",
+                "props": {
+                  "for": "session-mix",
+                  "children": [
+                    "Start the session with"
+                  ]
+                }
+              },
+              {
+                "type": "select",
+                "props": {
+                  "data-testid": "session-mix",
+                  "class": "field",
+                  "id": "session-mix",
+                  "value": "weak",
+                  "children": [
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "weak",
+                        "selected": true,
+                        "children": [
+                          "Weak questions"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "new",
+                        "selected": false,
+                        "children": [
+                          "New questions"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "option",
+                      "props": {
+                        "value": "due",
+                        "selected": false,
+                        "children": [
+                          "Due questions"
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             ]

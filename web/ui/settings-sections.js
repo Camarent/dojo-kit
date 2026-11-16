@@ -50,6 +50,56 @@
         </section>`;
   }
 
+  // Shown when neither the save nor the course block sets a value; mirrors the core defaults (crates/dojo-core/src/session/config.rs).
+  var SESSION_CORE_DEFAULTS = { sessionMode: 'auto', sessionCap: 0, dailyMinutes: 30, sessionMax: 60, reviewDays: 3, perUnitMax: 1, repeatMax: 1, knownDistinct: 1, sessionMix: ['weak', 'new', 'due'] };
+  var SESSION_STEPPERS = [
+    { name: 'sessionCap', min: 0, max: 500, label: 'settings.session.cap' },
+    { name: 'dailyMinutes', min: 0, max: 600, label: 'settings.session.dailyMinutes' },
+    { name: 'sessionMax', min: 0, max: 500, label: 'settings.session.sessionMax' },
+    { name: 'reviewDays', min: 0, max: 365, label: 'settings.session.reviewDays' },
+    { name: 'perUnitMax', min: 0, max: 20, label: 'settings.session.perUnitMax' },
+    { name: 'repeatMax', min: 0, max: 20, label: 'settings.session.repeatMax' },
+    { name: 'knownDistinct', min: 1, max: 20, label: 'settings.session.knownDistinct' },
+  ];
+
+  function sectionSession(p, t, self) {
+    var saved = p.engine && p.engine.sessionOverrides ? p.engine.sessionOverrides() : {};
+    var course = p.course.session || {};
+    function current(name) {
+      var key = 'session:' + name;
+      if (Object.prototype.hasOwnProperty.call(saved, key)) return saved[key];
+      return Object.prototype.hasOwnProperty.call(course, name) ? course[name] : SESSION_CORE_DEFAULTS[name];
+    }
+    var mode = current('sessionMode');
+    var mix = current('sessionMix');
+    // The mix select picks the kind that comes first; the other two keep the default order.
+    function setMixFirst(kind) {
+      self.setSetting('session:sessionMix', [kind].concat(SESSION_CORE_DEFAULTS.sessionMix.filter(function (k) { return k !== kind; })));
+    }
+    return html`<section class="group" data-testid="session-settings">
+          <h2>${t('settings.session')}</h2>
+          <p class="muted">${t('settings.session.hint')}</p>
+          <label for="session-mode">${t('settings.session.mode')}</label>
+          <select id="session-mode" class="field" data-testid="session-mode" value=${mode}
+            onChange=${function (e) { self.setSetting('session:sessionMode', e.target.value); }}>
+            <option value="auto" selected=${mode === 'auto'}>${t('settings.session.mode.auto')}</option>
+            <option value="manual" selected=${mode === 'manual'}>${t('settings.session.mode.manual')}</option>
+          </select>
+          ${SESSION_STEPPERS.map(function (s) {
+            return html`<${Stepper} key=${s.name} testid=${'session-' + s.name} label=${t(s.label)} value=${current(s.name)}
+              min=${s.min} max=${s.max} step=${1} decLabel=${t('stepper.dec')} incLabel=${t('stepper.inc')}
+              onChange=${function (v) { self.setSetting('session:' + s.name, v); }} />`;
+          })}
+          <label for="session-mix">${t('settings.session.mix')}</label>
+          <select id="session-mix" class="field" data-testid="session-mix" value=${mix[0]}
+            onChange=${function (e) { setMixFirst(e.target.value); }}>
+            <option value="weak" selected=${mix[0] === 'weak'}>${t('settings.session.mix.weak')}</option>
+            <option value="new" selected=${mix[0] === 'new'}>${t('settings.session.mix.new')}</option>
+            <option value="due" selected=${mix[0] === 'due'}>${t('settings.session.mix.due')}</option>
+          </select>
+        </section>`;
+  }
+
   // One row of a units/groups override list. o: {t, self, kind ('unit'|'group'), item, summary, hasOverride, open (self method name)}.
   function settingsRow(o) {
     var t = o.t;
@@ -278,7 +328,7 @@
   function create() {
     return {
       sectionNewPerDay: sectionNewPerDay, sectionTheme: sectionTheme, sectionTopics: sectionTopics,
-      sectionExamDate: sectionExamDate, sectionUnits: sectionUnits, sectionGroups: sectionGroups,
+      sectionExamDate: sectionExamDate, sectionSession: sectionSession, sectionUnits: sectionUnits, sectionGroups: sectionGroups,
       sectionPlacement: sectionPlacement, sectionExport: sectionExport, sectionImport: sectionImport,
       sectionReset: sectionReset, sectionAbout: sectionAbout, unitDialogView: unitDialogView, groupDialogView: groupDialogView
     };

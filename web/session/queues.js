@@ -269,11 +269,12 @@
       return unitSession;
     };
     // buildSession {queue, plan}: course session block, session:* settings overrides, answer times of the stats.
+    // Valid stored session:* values only; what the settings screen shows as the saved choice.
+    h.sessionOverrides = function () { return sessionOverrides(ctx.store.doc.settings); };
     h.sessionPlan = function () {
       var doc = ctx.store.doc;
       var stats = doc.stats || {};
-      var overrides = {};
-      Object.keys(doc.settings || {}).forEach(function (k) { if (k.indexOf(SESSION_PREFIX) === 0) overrides[k] = doc.settings[k]; });
+      var overrides = sessionOverrides(doc.settings);
       var meta = ctx.items.map(function (it) {
         return { id: it.id, unit: it.unit, entity: ctx.itemEntities[it.id], tags: it.tags || [], retired: isRetired(it) };
       });
@@ -331,6 +332,31 @@
     };
   }
 
+  // Stored session:* values core would reject (wrong type or range) are dropped, so buildSession uses the default.
+  var SESSION_KINDS = ['weak', 'new', 'due'];
+  function isWhole(v) { return Number.isInteger(v) && v >= 0; }
+  var SESSION_RULES = {
+    sessionMode: function (v) { return v === 'auto' || v === 'manual'; },
+    sessionMix: function (v) { return Array.isArray(v) && v.length > 0 && v.every(function (k) { return SESSION_KINDS.indexOf(k) >= 0; }); },
+    knownDistinct: function (v) { return Number.isInteger(v) && v >= 1; },
+    sessionCap: isWhole,
+    dailyMinutes: isWhole,
+    sessionMax: isWhole,
+    reviewDays: isWhole,
+    perUnitMax: isWhole,
+    repeatMax: isWhole,
+  };
+  function sessionOverrides(settings) {
+    var out = {};
+    Object.keys(settings || {}).forEach(function (k) {
+      if (k.indexOf(SESSION_PREFIX) !== 0) return;
+      var name = k.slice(SESSION_PREFIX.length);
+      if (!Object.prototype.hasOwnProperty.call(SESSION_RULES, name)) return;
+      if (SESSION_RULES[name](settings[k])) out[k] = settings[k];
+    });
+    return out;
+  }
+
   function create(ctx) {
     var h = {};
     scopeHelpers(ctx, h);
@@ -345,7 +371,7 @@
     return h;
   }
 
-  var api = { create: create };
+  var api = { create: create, sessionOverrides: sessionOverrides };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DojoSessionQueues = api;
 })(typeof self !== 'undefined' ? self : this);

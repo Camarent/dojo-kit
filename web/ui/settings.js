@@ -147,6 +147,7 @@
         ${sec.sectionNewPerDay(p, t, self)}
         ${sec.sectionTheme(p, t, self)}
         ${sec.sectionExamDate(p, t, self)}
+        ${sec.sectionSession(p, t, self)}
         ${sec.sectionUnits(p, t, self)}
         ${sec.sectionGroups(p, t, self)}
         ${sec.sectionPlacement(p, t)}
