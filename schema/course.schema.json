@@ -930,6 +930,13 @@
             "boolean",
             "null"
           ]
+        },
+        "checkAnswers": {
+          "description": "Opt-in (default false): error `ruby_missing` on answer texts (gap `answers` and `retry`, cloze blank alternatives) and on choice/multi options.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false

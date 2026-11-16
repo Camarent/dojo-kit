@@ -231,6 +231,9 @@ pub struct RubyConfig {
     /// Opt-in (default false): warn `ruby_on_skip_kanji` / `ruby_missing` on question prompt and options against the skip set.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub check_questions: Option<bool>,
+    /// Opt-in (default false): error `ruby_missing` on answer texts (gap `answers` and `retry`, cloze blank alternatives) and on choice/multi options.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub check_answers: Option<bool>,
 }
 
 /// Contents of `course.json`.
