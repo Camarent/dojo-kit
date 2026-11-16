@@ -11,6 +11,7 @@ pub mod lock;
 pub mod progress;
 pub mod rng;
 pub mod schema;
+pub mod session;
 pub mod slug;
 pub mod srs;
 pub mod stats;

@@ -290,6 +290,17 @@
           "type": "null"
         }
       ]
+    },
+    "session": {
+      "description": "Session builder settings; absent = every default of `session::SessionConfig`.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SessionSettings"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,
@@ -1329,6 +1340,113 @@
       "additionalProperties": false,
       "required": [
         "id"
+      ]
+    },
+    "SessionSettings": {
+      "description": "`course.json` `session:{...}` block; every key optional, defaults live in `session::SessionConfig`.",
+      "type": "object",
+      "properties": {
+        "sessionMix": {
+          "description": "Question kinds in session order: `weak`, `new`, `due`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "perUnitMax": {
+          "description": "Maximum questions per unit in one session.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "repeatMax": {
+          "description": "Maximum repeats of one question in one session.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "sessionMode": {
+          "description": "`auto` sizes the session from `dailyMinutes`; `manual` uses `sessionCap`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SessionMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sessionCap": {
+          "description": "Manual session size; 0 = unlimited.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "dailyMinutes": {
+          "description": "Study minutes per day used by `auto` sizing.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "sessionMax": {
+          "description": "Upper bound of an `auto` session size.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "secPerAnswer": {
+          "description": "Seconds per answer used when no answer timing is recorded yet.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "reviewDays": {
+          "description": "Days before the exam kept free of new units for review.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "knownDistinct": {
+          "description": "Other distinct questions that must be answered right before a question leaves the queue.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SessionMode": {
+      "description": "How the session size is chosen: `auto` from the time budget, `manual` from `sessionCap`.",
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual"
       ]
     }
   }
