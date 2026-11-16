@@ -10,6 +10,7 @@ pub(super) fn session_call(name: &str, a: &Value) -> Result<Value, CallError> {
         "buildSession" => build_session(a),
         "sessionRequeue" => requeue(a),
         "sessionFinish" => finish(a),
+        "pushAnswerMs" => push_answer_ms(a),
         other => Err(CallError { code: "unknown_function", message: format!("unknown function `{other}`") }),
     }
 }
@@ -141,4 +142,20 @@ fn finish(a: &Value) -> Result<Value, CallError> {
         "answered": sum.answered, "right": sum.right, "weakLeft": sum.weak_left,
         "nextDue": sum.next_due, "denominator": denominator,
     }))
+}
+
+/// `pushAnswerMs {durations?, ms}` -> the durations with `ms` appended, trimmed to the newest `ANSWER_MS_KEEP`.
+fn push_answer_ms(a: &Value) -> Result<Value, CallError> {
+    let mut durations: Vec<u64> = match a.get("durations") {
+        None | Some(Value::Null) => Vec::new(),
+        Some(v) => v
+            .as_array()
+            .ok_or_else(|| bad("`durations` must be an array of integers >= 0"))?
+            .iter()
+            .map(|x| x.as_u64().ok_or_else(|| bad("`durations` must be an array of integers >= 0")))
+            .collect::<Result<_, _>>()?,
+    };
+    let ms = field(a, "ms")?.as_u64().ok_or_else(|| bad("`ms` must be an integer >= 0"))?;
+    crate::stats::push_answer_ms(&mut durations, ms);
+    Ok(json!(durations))
 }

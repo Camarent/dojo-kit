@@ -61,7 +61,7 @@
   function scopedPrev(ctx, e) {
     var snap = {};
     var recs = ctx.fn.records();
-    ctx.entityMembers[e].forEach(function (id) { snap[id] = recs[id]; });
+    (ctx.entityMembers[e] || ctx.scopedMembers[e]).forEach(function (id) { snap[id] = recs[id]; });
     return snap;
   }
 

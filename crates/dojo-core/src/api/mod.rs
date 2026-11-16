@@ -158,12 +158,12 @@ fn scoped_set(a: &Value) -> Result<Option<HashSet<String>>, CallError> {
 fn dispatch(name: &str, a: &Value) -> Result<Value, CallError> {
     match name {
         "emptyProgress" | "sanitize" | "merge" | "migrateProgress" | "migrateDoc" | "unmigrate" | "dayKey" | "streak" => progress::progress_call(name, a),
-        "applyAnswer" | "applyPractice" | "applyRelearn" | "applyPlacement" | "entityView" | "applyEntity" | "isDue" | "isNew" | "weakest" | "ladderForUnit" | "dropForUnit" | "unitConfig" | "timerNext" | "timerLimit" | "applyExtras" | "weightedQueue" => srs::srs_call(name, a),
+        "applyAnswer" | "applyPractice" | "applyRelearn" | "applyPlacement" | "entityView" | "applyEntity" | "unitKey" | "unitMembers" | "isDue" | "isNew" | "weakest" | "ladderForUnit" | "dropForUnit" | "unitConfig" | "timerNext" | "timerLimit" | "applyExtras" | "weightedQueue" => srs::srs_call(name, a),
         "buildQueue" | "groupCounts" | "entityStates" => groups::groups_call(name, a),
         "itemAspects" | "topicLevels" => topics::topics_call(name, a),
         "normalize" | "checkGap" | "gapVerdict" | "checkChoice" | "checkMulti" | "checkMatch" | "checkOrder" | "checkCloze" | "checkNumeric" => check::check_call(name, a),
         "splitmix64" | "sample" | "score" => exam::exam_call(name, a),
-        "buildSession" | "sessionRequeue" | "sessionFinish" => session::session_call(name, a),
+        "buildSession" | "sessionRequeue" | "sessionFinish" | "pushAnswerMs" => session::session_call(name, a),
         other => Err(CallError { code: "unknown_function", message: format!("unknown function `{other}`") }),
     }
 }

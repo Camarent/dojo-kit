@@ -135,6 +135,8 @@
     DEFAULT_PRACTICE_LIMIT: 20,
     DEFAULT_WEAK_LIMIT: 10,
     DEFAULT_LEARNED_STAGE: 4,
+    // Days to the exam as seen by buildSession; courses carry no exam date, so new units spread over this horizon.
+    SESSION_DAYS_LEFT: 30,
     TYPED: ['gap', 'cloze', 'numeric'],
     SELF_RATED: ['card'],
     DRAFT_EXPIRY_MS: 7 * 24 * 60 * 60 * 1000,

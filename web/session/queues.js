@@ -9,6 +9,7 @@
   var isRetired = util.isRetired;
   var UNIT_NEW_PREFIX = util.K.UNIT_NEW_PREFIX;
   var GROUP_NEW_PREFIX = util.K.GROUP_NEW_PREFIX;
+  var SESSION_PREFIX = 'session:';
   var DEFAULT_NEW_PER_DAY = util.K.DEFAULT_NEW_PER_DAY;
   var weighted = root.DojoSessionWeightedQueue || (typeof require === 'function' ? require('./weighted-queue.js') : null);
   var topicsMod = root.DojoSessionTopics || (typeof require === 'function' ? require('./topics.js') : null);
@@ -19,14 +20,16 @@
     h.scopedArgs = function () {
       return ctx.hasScope ? { scopedMembers: ctx.scopedMembers } : null;
     };
+    // Members of a scoped key: an entity, or a unit key under srs.scope "unit".
+    function membersOf(e) { return ctx.entityMembers[e] || ctx.scopedMembers[e]; }
     h.scopedRecords = function (e) {
       var recs = ctx.fn.records();
       var out = {};
-      ctx.entityMembers[e].forEach(function (id) { if (recs[id] !== undefined) out[id] = recs[id]; });
+      membersOf(e).forEach(function (id) { if (recs[id] !== undefined) out[id] = recs[id]; });
       return out;
     };
     h.scopedMemberList = function (e) {
-      return ctx.entityMembers[e].map(function (id) { return { id: id, retired: isRetired(byId[id]) }; });
+      return membersOf(e).map(function (id) { return { id: id, retired: isRetired(byId[id]) }; });
     };
     h.entityViewOf = function (e) {
       return ctx.dojo.call('entityView', { members: h.scopedMemberList(e), records: h.scopedRecords(e) });
@@ -258,8 +261,43 @@
     return Object.assign({}, q, { due: ctx.fn.onlyTagsKeep(q.due), fresh: ctx.fn.onlyTagsKeep(q.fresh) });
   }
 
+  // Courses with srs.scope "unit" build the daily queue in core (buildSession); other courses keep buildQueue.
+  function sessionHelpers(ctx, h) {
+    var unitSession = null;
+    h.hasUnitSession = function () {
+      if (unitSession === null) unitSession = (ctx.course.units || []).some(function (u) { return ctx.fn.unitConfig(u.id).scope === 'unit'; });
+      return unitSession;
+    };
+    // buildSession {queue, plan}: course session block, session:* settings overrides, answer times of the stats.
+    h.sessionPlan = function () {
+      var doc = ctx.store.doc;
+      var stats = doc.stats || {};
+      var overrides = {};
+      Object.keys(doc.settings || {}).forEach(function (k) { if (k.indexOf(SESSION_PREFIX) === 0) overrides[k] = doc.settings[k]; });
+      var meta = ctx.items.map(function (it) {
+        return { id: it.id, unit: it.unit, entity: ctx.itemEntities[it.id], tags: it.tags || [], retired: isRetired(it) };
+      });
+      return ctx.dojo.call('buildSession', {
+        units: ctx.course, items: meta, records: ctx.fn.records(), settings: ctx.course.session, overrides: overrides,
+        now: ctx.now(), daysLeft: util.K.SESSION_DAYS_LEFT, courseId: ctx.course.id || '',
+        introducedToday: (stats.newByDay || {})[ctx.today()] || 0, answerMs: stats.answerMs
+      });
+    };
+    // {due, fresh} of the built session: an id is fresh when no member of its unit has a record.
+    h.sessionQueue = function () {
+      var out = { due: [], fresh: [] };
+      h.sessionPlan().queue.forEach(function (id) {
+        var se = ctx.scopedEntityOf[id];
+        var rec = se !== undefined ? h.entityViewOf(se) : ctx.fn.records()[id];
+        (ctx.dojo.call('isNew', { rec: rec }) ? out.fresh : out.due).push(id);
+      });
+      return out;
+    };
+  }
+
   function queueHelpers(ctx, h) {
     h.rawBuiltQueue = function (sharedOnly, uncapped) {
+      if (h.hasUnitSession()) return h.sessionQueue();
       var order = ctx.fn.activeItems().map(function (it) { return it.id; });
       if (sharedOnly) order = h.preferShared(order);
       order = shuffleRandomUnits(ctx, h, order);
@@ -299,6 +337,7 @@
     groupCapHelpers(ctx, h);
     allowanceHelpers(ctx, h);
     unitHelpers(ctx, h);
+    sessionHelpers(ctx, h);
     queueHelpers(ctx, h);
     weighted.practiceHelpers(ctx, h);
     weighted.weakHelpers(ctx, h);

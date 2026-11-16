@@ -140,14 +140,32 @@
   }
 
   function scopeWanted(course) {
-    return (course.srs && course.srs.scope === 'entity') || (course.units || []).some(function (u) { return u.srs && u.srs.scope === 'entity'; });
+    function wanted(o) { return o && (o.scope === 'entity' || o.scope === 'unit'); }
+    return wanted(course.srs) || (course.units || []).some(function (u) { return wanted(u.srs); });
+  }
+
+  // srs.scope "unit": members of one unit key (WASM unitKey, `<entity>|<aspect>`) share records like a scoped entity.
+  function fillUnitScope(ctx, st, wholeUnit) {
+    ctx.items.forEach(function (it) {
+      if (isRetired(it) || !wholeUnit[it.unit]) return;
+      var key = ctx.dojo.call('unitKey', { course: ctx.course, item: { id: it.id, entity: st.itemEntities[it.id], tags: it.tags || [], unit: it.unit } });
+      if (!st.scopedMembers[key]) { st.scopedMembers[key] = []; st.scopedUnit[key] = it.unit; }
+      st.scopedMembers[key].push(it.id);
+      st.scopedEntityOf[it.id] = key;
+    });
   }
 
   function fillScope(ctx, st) {
     var unitScoped = {};
-    (ctx.course.units || []).forEach(function (u) { unitScoped[u.id] = ctx.fn.unitConfig(u.id).scope === 'entity'; });
+    var wholeUnit = {};
+    (ctx.course.units || []).forEach(function (u) {
+      var scope = ctx.fn.unitConfig(u.id).scope;
+      unitScoped[u.id] = scope === 'entity';
+      wholeUnit[u.id] = scope === 'unit';
+    });
+    fillUnitScope(ctx, st, wholeUnit);
     Object.keys(st.entityMembers).forEach(function (e) {
-      var act = st.entityMembers[e].filter(function (id) { return !isRetired(ctx.byId[id]); });
+      var act = st.entityMembers[e].filter(function (id) { return !isRetired(ctx.byId[id]) && !wholeUnit[ctx.byId[id].unit]; });
       if (!act.length || !act.every(function (id) { return unitScoped[ctx.byId[id].unit] === true; })) return;
       st.scopedMembers[e] = act;
       st.scopedUnit[e] = ctx.byId[act[0]].unit;

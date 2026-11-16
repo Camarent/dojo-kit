@@ -121,14 +121,15 @@
 
   // Writes for one scoped entity: {memberId: record} (possibly empty). A repeated wrong in the same session goes
   // through relearn so the entity drops once.
-  function scopedWrites(g, e, correct, relearn) {
+  // answeredId is the member the learner answered; core puts qok/qbad/qlast on it.
+  function scopedWrites(g, e, correct, relearn, answeredId) {
     var ctx = g.ctx;
     var sx = g.sx;
     var unit = ctx.scopedUnit[e];
     var cfg = ctx.fn.unitConfig(unit);
     var args = {
       members: ctx.fn.scopedMemberList(e), records: ctx.fn.scopedRecords(e), now: ctx.now(), correct: correct,
-      ladder: ctx.fn.ladderForUnit(unit), jumpTo: cfg.jumpTo, wrongFloor: cfg.wrongFloor
+      ladder: ctx.fn.ladderForUnit(unit), jumpTo: cfg.jumpTo, wrongFloor: cfg.wrongFloor, answered: answeredId
     };
     if (sx.mode === 'placement') {
       args.mode = 'placement';
@@ -169,7 +170,7 @@
   // Records to store for one answer: {id: record} or null.
   function nextRecord(g, item, correct, relearn) {
     var se = g.ctx.scopedEntityOf[item.id];
-    if (se !== undefined) return scopedWrites(g, se, correct, relearn);
+    if (se !== undefined) return scopedWrites(g, se, correct, relearn, item.id);
     var one = nextItemRecord(g, item, correct, relearn);
     if (!one) return null;
     var out = {};
@@ -195,7 +196,15 @@
     if (item.unit) bumpCounter(doc.stats, util.K.UNIT_NEW_PREFIX + item.unit, day);
   }
 
-  function commit(g, item, writes, countsNew) {
+  // Milliseconds since the previous grade of this session (or its start); the clock restarts at every grade.
+  function answerDuration(g) {
+    var now = g.ctx.now();
+    var ms = Math.max(0, now - (g.sx.answerClock !== undefined ? g.sx.answerClock : g.sx.startedAt));
+    g.sx.answerClock = now;
+    return ms;
+  }
+
+  function commit(g, item, writes, countsNew, ms) {
     var ctx = g.ctx;
     var sx = g.sx;
     var day = ctx.today();
@@ -208,6 +217,7 @@
       doc.stats = doc.stats || {};
       doc.stats.days = doc.stats.days || {};
       doc.stats.days[day] = (doc.stats.days[day] || 0) + 1;
+      if (ms !== undefined) doc.stats.answerMs = ctx.dojo.call('pushAnswerMs', { durations: doc.stats.answerMs, ms: ms });
       if (countsNew) countNewItem(ctx, doc, item, day);
     });
     if (sx.mode !== 'placement') ctx.store.noteAnswer();
@@ -242,7 +252,8 @@
     verdict = markTimedOut(ctx, verdict, options);
     var rec = options.relearn || sx.mode === 'placement' ? options.rec : ctx.fn.extrasFor(item, options.rec, verdict);
     var relearn = options.relearn;
-    commit(g, item, rec, sx.mode === 'daily' && !relearn && options.isNewRecord);
+    var ms = sx.mode === 'exam' || sx.mode === 'placement' || relearn ? undefined : answerDuration(g);
+    commit(g, item, rec, sx.mode === 'daily' && !relearn && options.isNewRecord, ms);
     var setWrong = markEntityWrong(ctx, sx, item, verdict);
     var timerSnap = ctx.fn.qtimerSnapshot();
     advanceTimer(g, item, verdict, relearn);
