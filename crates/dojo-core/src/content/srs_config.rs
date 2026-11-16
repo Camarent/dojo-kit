@@ -31,10 +31,11 @@ pub struct SrsConfig {
     pub wrong_floor: Option<i64>,
 }
 
-/// Scheduling scope of a unit.
+/// Scheduling scope of a unit. `Unit` schedules one unit key (`<entity>|<aspect>`) as a whole.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum SrsScope {
     Item,
     Entity,
+    Unit,
 }

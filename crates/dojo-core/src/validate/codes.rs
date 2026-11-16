@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 124] = [
+pub const CODES: [(&str, Severity, &str); 125] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -122,6 +122,7 @@ pub const CODES: [(&str, Severity, &str); 124] = [
     ("module_key_unlisted", Severity::Error, "course.json uses a key or markup that a module provides, but the module is not in the course modules list"),
     ("topics_unit_unknown", Severity::Error, "topics.units lists a unit id that is not in course.units"),
     ("topics_unit_scoped", Severity::Error, "topics.units lists a unit whose srs.scope is entity; topics need item scope"),
+    ("unit_scope_no_topics", Severity::Error, "a unit has srs.scope unit but the course has no topics (unit keys need topics.aspects)"),
     ("topics_aspect_duplicate", Severity::Error, "two topics.aspects rules share the same id"),
     ("topics_aspect_empty", Severity::Error, "topics.aspects rule has neither tags nor units"),
     ("topics_cap_range", Severity::Error, "topics.sessionCap must be from 1 to 500"),

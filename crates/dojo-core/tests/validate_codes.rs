@@ -25,6 +25,13 @@ fn fires_bar_matches_zero() {
 }
 
 #[test]
+fn fires_unit_scope_no_topics() {
+    // srs.scope unit on a unit, course without topics
+    let c = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U","srs":{"scope":"unit"}}]}"#;
+    fires(c, &[], "unit_scope_no_topics");
+}
+
+#[test]
 fn fires_empty_detail_key() {
     // detail field with empty key at course level
     let c = with_course(r#""detail":{"fields":[{"key":""}]}"#);

@@ -1,4 +1,5 @@
 use super::*;
+use crate::groups;
 use crate::srs;
 
 fn num(a: &Value, key: &str) -> Option<f64> {
@@ -16,6 +17,24 @@ fn opt_stage(a: &Value, key: &str) -> Result<Option<i64>, CallError> {
 /// Ladder rules for one grade: the drop plus the optional `jumpTo` and `wrongFloor`.
 fn answer_rules(a: &Value, drop: i64) -> Result<srs::AnswerRules, CallError> {
     Ok(srs::AnswerRules { drop, jump_to: opt_stage(a, "jumpTo")?, wrong_floor: opt_stage(a, "wrongFloor")? })
+}
+
+/// Id, entity (default id), tags and unit of one item object: the parts `groups::unit_key` reads.
+fn unit_parts(item: &Value) -> Result<(String, String, Vec<String>, String), CallError> {
+    let id = item.get("id").and_then(Value::as_str).ok_or_else(|| bad("item `id` must be a string"))?;
+    let entity = match item.get("entity") {
+        None | Some(Value::Null) => id,
+        Some(v) => v.as_str().ok_or_else(|| bad("item `entity` must be a string"))?,
+    };
+    let unit = match item.get("unit") {
+        None | Some(Value::Null) => "",
+        Some(v) => v.as_str().ok_or_else(|| bad("item `unit` must be a string"))?,
+    };
+    let tags = match item.get("tags") {
+        None | Some(Value::Null) => Vec::new(),
+        Some(v) => strings(v, "tags")?,
+    };
+    Ok((id.to_string(), entity.to_string(), tags, unit.to_string()))
 }
 
 pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
@@ -52,6 +71,24 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
                 Some(d) => d.as_i64().filter(|n| *n >= 0).ok_or_else(|| bad("`dropOnWrong` must be a non-negative integer"))?,
             };
             Ok(Value::Object(srs::apply_entity(&ids, records, mode, correct, int(a, "now")?, &ladder(a)?, answer_rules(a, drop)?)))
+        }
+        "unitKey" => {
+            let rules = super::topics::course_rules(field(a, "course")?)?.unwrap_or_default();
+            let (_, entity, tags, unit) = unit_parts(field(a, "item")?)?;
+            Ok(json!(groups::unit_key(&entity, &tags, &unit, &rules)))
+        }
+        "unitMembers" => {
+            let rules = super::topics::course_rules(field(a, "course")?)?.unwrap_or_default();
+            let key = text(a, "unitKey")?;
+            let items = field(a, "items")?.as_array().ok_or_else(|| bad("`items` must be an array"))?;
+            let mut ids = Vec::new();
+            for item in items.iter().filter(|i| !super::topics::is_retired(i)) {
+                let (id, entity, tags, unit) = unit_parts(item)?;
+                if groups::unit_key(&entity, &tags, &unit, &rules) == key {
+                    ids.push(id);
+                }
+            }
+            Ok(json!(ids))
         }
         "isDue" => Ok(Value::Bool(srs::is_due(rec(a), int(a, "now")?))),
         "isNew" => Ok(Value::Bool(srs::is_new(rec(a)))),

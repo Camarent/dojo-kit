@@ -452,11 +452,12 @@
       "additionalProperties": false
     },
     "SrsScope": {
-      "description": "Scheduling scope of a unit.",
+      "description": "Scheduling scope of a unit. `Unit` schedules one unit key (`<entity>|<aspect>`) as a whole.",
       "type": "string",
       "enum": [
         "item",
-        "entity"
+        "entity",
+        "unit"
       ]
     },
     "SrsMode": {

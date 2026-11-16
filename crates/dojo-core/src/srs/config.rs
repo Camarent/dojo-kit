@@ -61,7 +61,7 @@ pub fn drop_for_unit_json(course: &Value, unit_id: &str, item_type: Option<&str>
 /// Course-level resolved settings of one unit (no user overrides), the single source for the UI.
 /// Returns `{newPerDay, ladder, dropOnWrong, jumpTo, wrongFloor, newOrder, dropByType, scope, drill}`:
 /// - `jumpTo` / `wrongFloor`: integer or null (unit.srs > course.srs > null; `srsByType` not read);
-/// - `scope`: `"item"` or `"entity"` (unit.srs > course.srs > "item"); `drill`: 1..=5 (same order, default 1);
+/// - `scope`: `"item"`, `"entity"` or `"unit"` (unit.srs > course.srs > "item"); `drill`: 1..=5 (same order, default 1);
 /// - `newPerDay`: `unit.newPerDay`, or null when the course sets no cap for the unit;
 /// - `ladder`: `ladder_for_unit_json` without an item type (unit.srs > course.srs > default);
 /// - `dropOnWrong`: `drop_for_unit_json` without an item type (unit.srs > course.srs > `COURSE_DEFAULT_DROP`);
@@ -86,7 +86,11 @@ pub fn unit_config(course: &Value, unit_id: &str) -> Value {
         }
     }
     let pick = |key: &str| unit.and_then(|u| u.get("srs")).and_then(|s| s.get(key)).or_else(|| course.get("srs").and_then(|s| s.get(key)));
-    let scope = if pick("scope").and_then(Value::as_str) == Some("entity") { "entity" } else { "item" };
+    let scope = match pick("scope").and_then(Value::as_str) {
+        Some("entity") => "entity",
+        Some("unit") => "unit",
+        _ => "item",
+    };
     let valid = |v: &Value| v.as_i64().filter(|d| (1..=5).contains(d));
     let drill = unit
         .and_then(|u| u.get("srs"))

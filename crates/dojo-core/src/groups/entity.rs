@@ -1,6 +1,11 @@
-use super::{Bar};
+use super::{aspect_of, AspectRule, Bar};
 use serde_json::{Map, Value};
 use std::collections::HashSet;
+
+/// Unit key of an item under `srs.scope: "unit"`: `<entity>|<aspect>`. The aspect is `aspect_of` (the default aspect when `rules` is empty).
+pub fn unit_key(entity: &str, tags: &[String], unit: &str, rules: &[AspectRule]) -> String {
+    format!("{entity}|{}", aspect_of(tags, unit, rules))
+}
 
 /// Extract entity id from an item. Defaults to item id if not set.
 pub fn entity_id(item: &crate::content::Item) -> &str {

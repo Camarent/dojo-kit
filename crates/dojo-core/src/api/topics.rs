@@ -64,7 +64,7 @@ fn item_str<'a>(item: &'a Value, key: &str) -> Result<&'a str, CallError> {
 }
 
 /// Course aspect rules from `course.topics.aspects`; `None` when the course has no topics.
-fn course_rules(course: &Value) -> Result<Option<Vec<groups::AspectRule>>, CallError> {
+pub(super) fn course_rules(course: &Value) -> Result<Option<Vec<groups::AspectRule>>, CallError> {
     let aspects = match course.get("topics").and_then(|t| t.get("aspects")) {
         None | Some(Value::Null) => return Ok(None),
         Some(v) => v.as_array().ok_or_else(|| bad("`course.topics.aspects` must be an array"))?,
@@ -96,7 +96,7 @@ fn item_aspects(a: &Value) -> Result<Value, CallError> {
     Ok(Value::Object(out))
 }
 
-fn is_retired(item: &Value) -> bool {
+pub(super) fn is_retired(item: &Value) -> bool {
     item.get("retired").and_then(Value::as_bool).unwrap_or(false) || item.get("status").and_then(Value::as_str) == Some("retired")
 }
 
