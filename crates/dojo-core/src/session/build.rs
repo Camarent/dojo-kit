@@ -30,6 +30,8 @@ pub struct SessionInput<'a> {
     pub days_left: i64,
     pub introduced_today: usize,
     pub answer_ms: &'a [u64],
+    /// Explicit shuffle seed; `None` derives it from the UTC day key of `now` and `course_id`.
+    pub seed: Option<u64>,
 }
 
 /// Session queue (question ids, asked in this order) and the plan numbers shown before it.
@@ -89,7 +91,8 @@ pub fn build_session(input: &SessionInput) -> Session {
     let flags: Vec<UnitFlags> = units.iter().map(|u| flags_of(u, input)).collect();
     let never = flags.iter().filter(|f| f.new).count();
     let cap_new = new_today(never, days_for_new(input.days_left, input.cfg.review_days), input.introduced_today);
-    let order = mix_order(&flags, &input.cfg.session_mix, fnv1a(&format!("{}|{}", input.course_id, day_key(input.now, 0))));
+    let seed = input.seed.unwrap_or_else(|| fnv1a(&format!("{}|{}", input.course_id, day_key(input.now, 0))));
+    let order = mix_order(&flags, &input.cfg.session_mix, seed);
 
     let mut new_taken = 0usize;
     let mut weak = 0usize;

@@ -48,6 +48,7 @@ fn session_at(items: &[ItemMeta], recs: &Map<String, Value>, rules: &[AspectRule
         days_left: DAYS_LEFT,
         introduced_today: 0,
         answer_ms: &[],
+        seed: None,
     })
 }
 

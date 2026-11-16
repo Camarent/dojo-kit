@@ -2,6 +2,7 @@ mod check;
 mod exam;
 mod groups;
 mod progress;
+mod session;
 mod srs;
 mod topics;
 
@@ -162,6 +163,7 @@ fn dispatch(name: &str, a: &Value) -> Result<Value, CallError> {
         "itemAspects" | "topicLevels" => topics::topics_call(name, a),
         "normalize" | "checkGap" | "gapVerdict" | "checkChoice" | "checkMulti" | "checkMatch" | "checkOrder" | "checkCloze" | "checkNumeric" => check::check_call(name, a),
         "splitmix64" | "sample" | "score" => exam::exam_call(name, a),
+        "buildSession" | "sessionRequeue" | "sessionFinish" => session::session_call(name, a),
         other => Err(CallError { code: "unknown_function", message: format!("unknown function `{other}`") }),
     }
 }
