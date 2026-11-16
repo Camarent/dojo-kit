@@ -104,6 +104,7 @@
   "session.known": "Connu",
   "session.correct": "Correct",
   "session.wrong": "Faux",
+  "session.partial": "Partiellement correct",
   "session.caption.choice": "Choisissez la réponse",
   "session.caption.gap": "Tapez la réponse",
   "session.caption.card": "Carte mémoire",

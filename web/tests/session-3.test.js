@@ -153,7 +153,7 @@ test('cloze: correct, per-blank results, bad input, no answers in view', async (
   assert.deepStrictEqual(s.answer({}), { error: 'bad_input' });
   const r = s.answer({ inputs: [' roma ', 'Lyon'] });
   assert.strictEqual(r.correct, false);
-  assert.deepStrictEqual(r.detail, { results: [true, false] });
+  assert.deepStrictEqual(r.detail, { results: [true, false], partial: true });
   assert.strictEqual(r.expected, 'Capital of IT is Rome and FR Paris.');
   const g = await sessionWith('n-cloze', 2);
   assert.strictEqual(g.s.answer({ inputs: ['Roma', 'paris'] }).correct, true);

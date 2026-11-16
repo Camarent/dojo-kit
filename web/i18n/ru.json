@@ -116,6 +116,7 @@
   "session.known": "Знаю",
   "session.correct": "Верно",
   "session.wrong": "Неверно",
+  "session.partial": "Частично верно",
   "session.caption.choice": "Выберите ответ",
   "session.caption.gap": "Введите ответ",
   "session.caption.card": "Карточка",

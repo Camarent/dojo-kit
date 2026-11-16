@@ -98,7 +98,7 @@
     if (!Array.isArray(input.inputs) || input.inputs.length !== blanks.length) return null;
     if (!input.inputs.every(function (x) { return typeof x === 'string'; })) return null;
     var r = ctx.dojo.call('checkCloze', { blanks: blanks, inputs: input.inputs, opts: ctx.fn.normalizeOpts(item) });
-    return { correct: r.correct, given: input.inputs.join(' | '), detail: { results: r.results } };
+    return { correct: r.correct, given: input.inputs.join(' | '), detail: { results: r.results, partial: !!r.partial } };
   }
 
   function gradeNumeric(g, item, input) {

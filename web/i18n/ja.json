@@ -104,6 +104,7 @@
   "session.known": "知っている",
   "session.correct": "正解",
   "session.wrong": "不正解",
+  "session.partial": "一部正解",
   "session.caption.choice": "答えを選んでください",
   "session.caption.gap": "答えを入力してください",
   "session.caption.card": "フラッシュカード",

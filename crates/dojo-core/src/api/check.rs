@@ -44,7 +44,7 @@ pub(super) fn check_call(name: &str, a: &Value) -> Result<Value, CallError> {
                 .map(|b| strings(b, "blanks"))
                 .collect::<Result<Vec<_>, _>>()?;
             let r = check::check_cloze(&blanks, &strings(field(a, "inputs")?, "inputs")?, &normalize_opts(a)?);
-            Ok(json!({ "correct": r.correct, "results": r.results }))
+            Ok(json!({ "correct": r.correct, "partial": r.partial, "results": r.results }))
         }
         "checkNumeric" => {
             let answer = field(a, "answer")?.as_f64().ok_or_else(|| bad("`answer` must be a number"))?;

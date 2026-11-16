@@ -68,7 +68,7 @@ fn check_vectors() -> Result<(), Box<dyn std::error::Error>> {
                         .collect();
                     let inputs: Vec<String> = i["inputs"].as_array().unwrap().iter().map(|s| s.as_str().unwrap().to_string()).collect();
                     let r = check_cloze(&blanks, &inputs, &opts(i)?);
-                    json!({ "correct": r.correct, "results": r.results })
+                    json!({ "correct": r.correct, "partial": r.partial, "results": r.results })
                 }
                 "checkNumeric" => {
                     let answer = i["answer"].as_f64().unwrap();

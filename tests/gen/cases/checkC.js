@@ -5,7 +5,7 @@ function checkCheckNumericPart1(kit) {
   kit.checkClozeCases.push({
     name: 'all_empty_inputs',
     input: { blanks: [['A'], ['B']], inputs: ['', ''] },
-    expect: { correct: false, results: [false, false] },
+    expect: { correct: false, partial: false, results: [false, false] },
     source: 'spec'
   });
 

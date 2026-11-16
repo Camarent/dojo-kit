@@ -300,9 +300,11 @@ pub fn check_order(step_count: usize, sequence: &[usize], alt: &[Vec<usize>]) ->
 }
 
 /// Result of a cloze check; `results` holds one verdict per blank.
+/// `partial` is true when some blanks are right and some wrong (never when `correct`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClozeResult {
     pub correct: bool,
+    pub partial: bool,
     pub results: Vec<bool>,
 }
 
@@ -320,7 +322,8 @@ pub fn check_cloze(blanks: &[Vec<String>], inputs: &[String], opts: &Normalize) 
     }
     
     let correct = !blanks.is_empty() && results.iter().all(|&v| v);
-    ClozeResult { correct, results }
+    let partial = !correct && results.iter().any(|&v| v) && results.iter().any(|&v| !v);
+    ClozeResult { correct, partial, results }
 }
 
 mod fold;

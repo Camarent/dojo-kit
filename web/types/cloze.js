@@ -170,6 +170,11 @@
       return (item.parts || []).filter(function (p) { return Array.isArray(p); }).map(function (p) { return p[0]; });
     },
     initialState: initialState,
-    onKey: onKey
+    onKey: onKey,
+    verdict: function (res, t) {
+      if (!res.correct && !res.timedOut && res.detail && res.detail.partial) return t('session.partial');
+      if (res.correct) return t('session.correct');
+      return res.timedOut ? t('session.timedOut') : t('session.wrong');
+    }
   });
 })(typeof self !== 'undefined' ? self : this);
