@@ -44,10 +44,11 @@ fn bad_unit_settings() {
         r#","srs":{"ladder":[1,2]}"#,
         r#","srs":{"ladder":[0,-1]}"#,
         r#","srs":{"ladder":[0,5,3]}"#,
+        r#","srs":{"ladder":[0,5,5]}"#,
     ] {
         fires(&unit_course(extra), &[CHOICE], "bad_unit_settings");
     }
-    for extra in [r#","newPerDay":0"#, r#","newPerDay":3,"srs":{"ladder":[0,5,5]}"#, r#","srs":{}"#] {
+    for extra in [r#","newPerDay":0"#, r#","newPerDay":3,"srs":{"ladder":[0,5,10]}"#, r#","srs":{}"#] {
         assert_eq!(run(&unit_course(extra), &[CHOICE]), vec![], "{extra}");
     }
     fires(&unit_course(r#","bogus":1"#), &[CHOICE], "parse_error");

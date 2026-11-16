@@ -149,7 +149,7 @@ test('relearn copy answered correctly promotes a stage 0 item via applyRelearn',
   assert.strictEqual(r.correct, true);
   assert.strictEqual(t.doc.items['geo-1'].s, 1);
   assert.strictEqual(t.doc.items['geo-1'].bad, 1);
-  assert.strictEqual(t.doc.items['geo-1'].due, NOW + 4 * 3600000);
+  assert.strictEqual(t.doc.items['geo-1'].due, NOW + 24 * 3600000);
 });
 
 test('daily answers use applyAnswer and count newByDay only for unseen items', async () => {

@@ -4,7 +4,7 @@ const T0 = 1760000000000;
 const H = 3600000;
 const D = 86400000;
 
-const INTERVALS = [0, 4 * H, D, 3 * D, 7 * D, 14 * D, 30 * D];
+const INTERVALS = [0, D, 5 * D, 10 * D, 30 * D];
 
 // u64 constants for splitmix64
 const SPLITMIX64_INC = 0x9e3779b97f4a7c15n;

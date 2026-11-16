@@ -3555,7 +3555,7 @@
                               "data-testid": "ladder-preview",
                               "class": "muted small",
                               "children": [
-                                "Preview of review intervals in days (d), from the first review on: 0d, 1d, 3d, 7d, 14d, 30d"
+                                "Preview of review intervals in days (d), from the first review on: 1d, 5d, 10d, 30d"
                               ]
                             }
                           }

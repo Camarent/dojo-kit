@@ -13,15 +13,19 @@ pub(super) fn check_plugin_path(path: &str, kind: &str, sink: &mut Sink) {
 }
 
 // Contract: `ladder.len() >= 2` is checked before `ladder[0]`; `windows(2)` yields two-element slices.
-pub(super) fn ladder_problem(ladder: &[i64]) -> Option<&'static str> {
+pub(super) fn ladder_problem(ladder: &[serde_json::Number]) -> Option<&'static str> {
     if ladder.len() < 2 {
-        Some("has fewer than 2 entries")
-    } else if ladder.iter().any(|&x| x < 0) {
+        return Some("has fewer than 2 entries");
+    }
+    let Some(steps) = ladder.iter().map(serde_json::Number::as_i64).collect::<Option<Vec<i64>>>() else {
+        return Some("has a non-integer entry");
+    };
+    if steps.iter().any(|&x| x < 0) {
         Some("has a negative entry")
-    } else if ladder.first() != Some(&0) {
+    } else if steps.first() != Some(&0) {
         Some("must start with 0")
-    } else if ladder.windows(2).any(|w| matches!(w, [a, b] if b < a)) {
-        Some("is not non-decreasing")
+    } else if steps.windows(2).any(|w| matches!(w, [a, b] if b <= a)) {
+        Some("is not strictly increasing")
     } else {
         None
     }
@@ -179,11 +183,11 @@ fn check_jump_and_floor(course: &Course, sink: &mut Sink) {
         if jump.is_none() && floor.is_none() {
             continue;
         }
-        let ladder = unit_srs
-            .and_then(|s| s.ladder.as_deref())
-            .or(course_srs.and_then(|s| s.ladder.as_deref()))
-            .unwrap_or(&crate::srs::DEFAULT_LADDER[..]);
-        let top = i64::try_from(ladder.len()).unwrap_or(i64::MAX) - 1;
+        let ladder_len = unit_srs
+            .and_then(|s| s.ladder.as_ref())
+            .or(course_srs.and_then(|s| s.ladder.as_ref()))
+            .map_or(crate::srs::DEFAULT_LADDER.len(), Vec::len);
+        let top = i64::try_from(ladder_len).unwrap_or(i64::MAX) - 1;
         if let Some(j) = jump
             && !(2..=top).contains(&j)
         {

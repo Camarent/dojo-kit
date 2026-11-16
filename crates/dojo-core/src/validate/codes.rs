@@ -11,7 +11,7 @@ pub const CODES: [(&str, Severity, &str); 124] = [
     ("bad_jump", Severity::Error, "srs.jumpTo must be an integer from 2 to the top stage of the ladder"),
     ("bad_floor", Severity::Error, "srs.wrongFloor must be an integer from 1 to the top stage of the ladder"),
     ("mixed_entity_scope", Severity::Warning, "entity spans units with different srs.scope; it stays per-item"),
-    ("bad_ladder", Severity::Error, "ladder needs >= 2 entries, first 0, non-negative, non-decreasing"),
+    ("bad_ladder", Severity::Error, "ladder needs >= 2 integer entries, first 0, non-negative, strictly increasing"),
     ("bad_placement", Severity::Error, "placement.perUnit < 1"),
     ("bad_learned_stage", Severity::Error, "learnedStage must be >= 1"),
     ("bad_pass_mark", Severity::Error, "exam.passMark outside 0..=1"),

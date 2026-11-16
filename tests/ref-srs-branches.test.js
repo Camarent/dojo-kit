@@ -5,7 +5,7 @@ const S = require('../tools/reference/srs.js');
 
 test('applyAnswer: promote, demote with learned floor, new record', () => {
   assert.strictEqual(S.applyAnswer(null, true, 0).s, 1);
-  assert.strictEqual(S.applyAnswer({ s: 6 }, true, 0).s, 6);
+  assert.strictEqual(S.applyAnswer({ s: 6 }, true, 0).s, 4);
   assert.strictEqual(S.applyAnswer({ s: 1, ok: 1 }, false, 0).s, 1);
   assert.strictEqual(S.applyAnswer(null, false, 5).s, 0);
   const r = S.applyAnswer({ s: 3, ok: 2, bad: 1, x: 9 }, false, 10);

@@ -10,8 +10,8 @@
 
   var HOUR = 3600 * 1000;
   var DAY = 24 * HOUR;
-  var INTERVALS = [0, 4 * HOUR, DAY, 3 * DAY, 7 * DAY, 14 * DAY, 30 * DAY];
-  var MAX_STAGE = 6;
+  var INTERVALS = [0, DAY, 5 * DAY, 10 * DAY, 30 * DAY];
+  var MAX_STAGE = 4;
   var MASTERED = 6;
   var PLACEMENT_STAGE = 4;
 

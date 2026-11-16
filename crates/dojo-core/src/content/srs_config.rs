@@ -5,8 +5,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SrsConfig {
+    // Numbers, not i64: a non-integer step must reach the validator as `bad_ladder`, not a parse error.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ladder: Option<Vec<i64>>,
+    #[schemars(with = "Option<Vec<i64>>")]
+    pub ladder: Option<Vec<serde_json::Number>>,
     /// Stages lost on a wrong answer (default 1; 0 keeps the stage).
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "dropOnWrong")]
     pub drop_on_wrong: Option<i64>,
