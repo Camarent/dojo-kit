@@ -15,7 +15,7 @@ fn hint_contains_answer_flagged() {
     // Hint holds a retry reading.
     fires(COURSE, &[r#"{"type":"gap","id":"u-3","unit":"u","prompt":"Capital: ___ (Tokyo)","answers":["Kyoto"],"retry":["Tokyo"]}"#], "hint_contains_answer");
     // Hint is a kana variant of the answer, equal after the item's fold.
-    fires(COURSE, &[r#"{"type":"gap","id":"u-4","unit":"u","prompt":"Tokyo: ___ (トウキョウ)","answers":["とうきょう"],"normalize":{"fold":[["ト","と"],["ウ","う"],["キ","き"],["ョ","ょ"]]}}"#], "hint_contains_answer");
+    fires(COURSE, &[r#"{"type":"gap","id":"u-4","unit":"u","prompt":"Tokyo: ___ (\u30c8\u30a6\u30ad\u30e7\u30a6)","answers":["\u3068\u3046\u304d\u3087\u3046"],"normalize":{"fold":[["\u30c8","\u3068"],["\u30a6","\u3046"],["\u30ad","\u304d"],["\u30e7","\u3087"]]}}"#], "hint_contains_answer");
     // meta.hint_ru holds the answer.
     fires(COURSE, &[r#"{"type":"gap","id":"u-5","unit":"u","prompt":"Capital: ___","answers":["Rome"],"meta":{"hint_ru":"Rome"}}"#], "hint_contains_answer");
 }
