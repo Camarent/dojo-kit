@@ -167,7 +167,7 @@ test('dontKnow works in untimed exam (training) with course.dontKnow=true', asyn
   s.release && s.release();
 });
 
-test('dontKnow requeues the item once', async () => {
+test('dontKnow in a one-question unit is not requeued', async () => {
   const items = [makeItem('i1', 'choice', 'u1')];
   const t = await setup(items);
   const s = t.engine.start('daily');
@@ -175,30 +175,29 @@ test('dontKnow requeues the item once', async () => {
   assert.strictEqual(cur.position, 1);
   assert.strictEqual(cur.total, 1);
   s.dontKnow();
-  assert.strictEqual(s.retryCount(), 1);
-  // After dontKnow, the queue has the original item + requeued copy
-  // current() returns the current item, and total is the queue length
-  const cur2 = s.current();
-  assert.strictEqual(cur2.total, 2); // queue length increased
+  // The unit has no other pool question, so the run keeps its planned length.
+  assert.strictEqual(s.retryCount(), 0);
+  assert.strictEqual(s.denominator(), 1);
 });
 
-test('dontKnow records wrong answer and requeues once, does not double-record', async () => {
-  const items = [makeItem('i1', 'choice', 'u1')];
+test('dontKnow requeues another pool question of the unit once, does not double-record', async () => {
+  const items = [makeItem('i1', 'choice', 'u1'), makeItem('i2', 'choice', 'u1')];
   const t = await setup(items);
   const s = t.engine.start('daily');
   const r1 = s.dontKnow();
   assert.strictEqual(r1.correct, false);
   assert.strictEqual(s.retryCount(), 1);
-  
-  // Move to next (the requeued copy)
+  assert.strictEqual(s.denominator(), 3, 'planned 2 plus one repeat');
+
+  // Move to the second planned question
   s.next();
   assert.ok(s.current());
-  assert.strictEqual(s.current().item.id, 'i1');
-  
-  // Answer the requeued copy with dontKnow again
+  assert.strictEqual(s.current().item.id, 'i2');
+
+  // Answer it with dontKnow: i2 is already a repeat this session (repeatMax 1), so no further repeat is queued
   const r2 = s.dontKnow();
   assert.strictEqual(r2.correct, false);
-  assert.strictEqual(s.retryCount(), 1); // Still 1, because it was already requeued
+  assert.strictEqual(s.retryCount(), 1);
 });
 
 test('dontKnow sets given to - in review', async () => {

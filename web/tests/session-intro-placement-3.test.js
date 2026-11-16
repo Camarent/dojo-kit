@@ -247,7 +247,8 @@ test('introNew UI: the explanation is shown before the first try, not on the ret
   assert.deepStrictEqual(texts(find(ui.view(), 'intro')), ['E2']);
   ui.answer({ text: 'x' });
   ui.next();
-  assert.strictEqual(ui.state.cur.item.id, 'g1');
+  // The repeat of the wrong g1 is the other pool question g2 (picked by core); it shows no intro again.
+  assert.strictEqual(ui.state.cur.item.id, 'g2');
   assert.strictEqual(find(ui.view(), 'intro'), null);
   const plain = sessionScreen(sb, (await setup(null, { n: 2 })).engine.start('daily'));
   assert.strictEqual(find(plain.view(), 'intro'), null);

@@ -137,6 +137,8 @@
     DEFAULT_LEARNED_STAGE: 4,
     // Days to the exam as seen by buildSession; courses carry no exam date, so new units spread over this horizon.
     SESSION_DAYS_LEFT: 30,
+    // Repeats of one question per session when the course sets no session.repeatMax (core default).
+    REPEAT_MAX_DEFAULT: 1,
     TYPED: ['gap', 'cloze', 'numeric'],
     SELF_RATED: ['card'],
     DRAFT_EXPIRY_MS: 7 * 24 * 60 * 60 * 1000,

@@ -5177,7 +5177,7 @@
                   "data-testid": "progress",
                   "class": "count",
                   "children": [
-                    1,
+                    0,
                     " / ",
                     6
                   ]
@@ -5390,7 +5390,7 @@
                   "data-testid": "progress",
                   "class": "count",
                   "children": [
-                    1,
+                    0,
                     " / ",
                     6
                   ]
@@ -5606,7 +5606,7 @@
                   "children": [
                     1,
                     " / ",
-                    6
+                    7
                   ]
                 }
               },
@@ -5617,6 +5617,16 @@
                   "class": "badge retry",
                   "children": [
                     "+1 retry"
+                  ]
+                }
+              },
+              {
+                "type": "span",
+                "props": {
+                  "data-testid": "repeats",
+                  "class": "badge repeats",
+                  "children": [
+                    "error repeats: 1"
                   ]
                 }
               }
@@ -5968,12 +5978,124 @@
                   "data-testid": "session-finish",
                   "class": "stats session-finish",
                   "children": [
-                    { "type": "h2", "props": { "children": ["Run finished"] } },
-                    { "type": "div", "props": { "data-testid": "finish-answered", "class": "stat", "children": [{ "type": "b", "props": { "children": [1] } }, { "type": "span", "props": { "children": ["answered"] } }] } },
-                    { "type": "div", "props": { "data-testid": "finish-right", "class": "stat", "children": [{ "type": "b", "props": { "children": [0] } }, { "type": "span", "props": { "children": ["right"] } }] } },
-                    { "type": "div", "props": { "data-testid": "finish-weak-left", "class": "stat", "children": [{ "type": "b", "props": { "children": [0] } }, { "type": "span", "props": { "children": ["weak units left"] } }] } },
-                    { "type": "div", "props": { "data-testid": "finish-next-due", "class": "stat", "children": [{ "type": "b", "props": { "children": ["nothing recorded"] } }, { "type": "span", "props": { "children": ["next due"] } }] } },
-                    { "type": "p", "props": { "data-testid": "finish-no-round", "class": "notice", "children": ["The run ends here. Start a new session from Home when you want more."] } }
+                    {
+                      "type": "h2",
+                      "props": {
+                        "children": [
+                          "Run finished"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "div",
+                      "props": {
+                        "data-testid": "finish-answered",
+                        "class": "stat",
+                        "children": [
+                          {
+                            "type": "b",
+                            "props": {
+                              "children": [
+                                1
+                              ]
+                            }
+                          },
+                          {
+                            "type": "span",
+                            "props": {
+                              "children": [
+                                "answered"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "div",
+                      "props": {
+                        "data-testid": "finish-right",
+                        "class": "stat",
+                        "children": [
+                          {
+                            "type": "b",
+                            "props": {
+                              "children": [
+                                0
+                              ]
+                            }
+                          },
+                          {
+                            "type": "span",
+                            "props": {
+                              "children": [
+                                "right"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "div",
+                      "props": {
+                        "data-testid": "finish-weak-left",
+                        "class": "stat",
+                        "children": [
+                          {
+                            "type": "b",
+                            "props": {
+                              "children": [
+                                0
+                              ]
+                            }
+                          },
+                          {
+                            "type": "span",
+                            "props": {
+                              "children": [
+                                "weak units left"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "div",
+                      "props": {
+                        "data-testid": "finish-next-due",
+                        "class": "stat",
+                        "children": [
+                          {
+                            "type": "b",
+                            "props": {
+                              "children": [
+                                "nothing recorded"
+                              ]
+                            }
+                          },
+                          {
+                            "type": "span",
+                            "props": {
+                              "children": [
+                                "next due"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "p",
+                      "props": {
+                        "data-testid": "finish-no-round",
+                        "class": "notice",
+                        "children": [
+                          "The run ends here. Start a new session from Home when you want more."
+                        ]
+                      }
+                    }
                   ]
                 }
               },

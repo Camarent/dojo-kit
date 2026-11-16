@@ -34,8 +34,9 @@
           <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax=${cur.total} aria-valuenow=${cur.position}>
             <span style=${{ width: Math.round(100 * (cur.position - (s.result ? 0 : 1)) / cur.total) + '%' }}></span>
           </div>
-          <span class="count" data-testid="progress">${Math.min(cur.position, session.initialTotal)} / ${session.initialTotal}</span>
+          <span class="count" data-testid="progress">${Math.min(session.answered, session.denominator())} / ${session.denominator()}</span>
           <span class=${DojoCommon.cls('badge retry', session.retryCount() === 0 && 'empty')} data-testid="retry-badge">${t('session.retries', { n: session.retryCount() })}</span>
+          ${session.repeats() > 0 ? html`<span class="badge repeats" data-testid="repeats">${t('session.repeats', { n: session.repeats() })}</span>` : null}
           ${session.group && session.group.count > 1 ? html`<span class="count" data-testid="group">${t('session.group', { n: session.group.index + 1, total: session.group.count })}</span>` : null}
           ${s.remaining !== null ? html`<span class=${DojoCommon.cls('timer', s.remaining < 60000 && 'low')} data-testid="timer">${sc.deps.fmtClock(s.remaining)}</span>` : null}
         </div>`;

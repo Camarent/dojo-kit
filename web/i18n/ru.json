@@ -282,6 +282,7 @@
   "session.retries.few": "+{n} повтора",
   "session.retries.many": "+{n} повторов",
   "session.retries.other": "+{n} повтора",
+  "session.repeats": "повторы ошибок: {n}",
   "home.resume.exam": "Продолжить экзамен ({n}/{total}, осталось {ms})",
   "home.resume.start": "Продолжить",
   "home.resume.startover": "Начать заново",

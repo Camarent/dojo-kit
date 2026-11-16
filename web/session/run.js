@@ -167,6 +167,9 @@
     session.canOverride = rc.sx.fn.canOverride;
     session.overrideLast = rc.sx.fn.overrideLast;
     session.retryCount = function () { return Math.max(0, rc.sx.queue.length - Math.max(session.index, session.total)); };
+    // Counter denominator: planned questions plus the repeats queued so far; only repeats change it.
+    session.denominator = function () { return rc.sx.queue.length; };
+    session.repeats = function () { return rc.sx.queue.length - session.initialTotal; };
   }
 
   function nextGroupDue(rc) {
@@ -304,7 +307,7 @@
     return {
       mode: mode, plan: plan, session: session, resume: resume, groups: groups,
       lockHolder: mode === 'exam' && plan.deadline !== undefined ? ctx.fn.acquireWakeLock() : null, queue: plan.ids.slice(),
-      startedAt: resume ? ctx.now() - resume.elapsedMs : ctx.now(), answeredAt: {}, graded: {}, review: [], requeued: {},
+      startedAt: resume ? ctx.now() - resume.elapsedMs : ctx.now(), answeredAt: {}, graded: {}, review: [], repeated: {}, // repeated: repeats queued per question id
       entityWrong: {}, // scoped entities that already dropped once in this session
       skipped: [], // items skipped due to timer expiry
       introduced: {}, // items that showed their intro (introNew)
@@ -324,7 +327,6 @@
     fn.recordGrade = view.recordGrade;
     fn.isNewFor = view.isNewFor;
     fn.prevOf = view.prevOf;
-    fn.requeueKey = view.requeueKey;
     var gradeApi = gradeMod.create(rc.ctx, rc.sx);
     ['gradeInput', 'nextRecord', 'applyVerdict', 'canOverride', 'overrideLast'].forEach(function (k) { fn[k] = gradeApi[k]; });
     var runApi = examRunMod.create(rc.ctx, rc.sx);

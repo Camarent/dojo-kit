@@ -13,8 +13,26 @@
   var renderText = DojoCommon.renderText;
   var cls = DojoCommon.cls;
   var Notice = DojoCommon.Notice;
-  var DojoSessionFinish = root.DojoSessionFinish || (typeof require !== 'undefined' ? require('./session-finish.js') : null) || {};
-  var SessionFinish = DojoSessionFinish.create ? DojoSessionFinish.create().SessionFinish : null;
+  // SessionFinish: the four numbers of a finished practice run (same markup as ui/session-finish.js).
+  // Defined here so a sandbox that loads only results.js renders it.
+  // nextDue is a timestamp in the core clock unit (ms); null when nothing is recorded.
+  function nextDueText(t, nextDue) {
+    if (nextDue === null || nextDue === undefined) return t('finish.none');
+    return new Date(nextDue).toLocaleString();
+  }
+
+  function SessionFinish(p) {
+    var t = p.t;
+    var f = p.finish;
+    return html`<section class="stats session-finish" data-testid="session-finish">
+      <h2>${t('finish.title')}</h2>
+      <div class="stat" data-testid="finish-answered"><b>${f.answered}</b><span>${t('finish.answered')}</span></div>
+      <div class="stat" data-testid="finish-right"><b>${f.right}</b><span>${t('finish.right')}</span></div>
+      <div class="stat" data-testid="finish-weak-left"><b>${f.weakLeft}</b><span>${t('finish.weakLeft')}</span></div>
+      <div class="stat" data-testid="finish-next-due"><b>${nextDueText(t, f.nextDue)}</b><span>${t('finish.nextDue')}</span></div>
+      <p class="notice" data-testid="finish-no-round">${t('finish.noRound')}</p>
+    </section>`;
+  }
 
   function label(t, value) {
     return value === 'known' ? t('session.known') : value === 'again' ? t('session.again') : value === '-' ? t('session.dontKnow') : value;
@@ -214,7 +232,7 @@
     return { Results: Results };
   }
 
-  var api = { create: create };
+  var api = { create: create, SessionFinish: SessionFinish };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.DojoResults = api;
 })(typeof self !== 'undefined' ? self : this);

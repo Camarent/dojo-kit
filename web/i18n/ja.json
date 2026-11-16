@@ -260,6 +260,7 @@
   "catalog.confusedWith": "混同しやすい: {list}",
   "session.retries.one": "+{n} 回の再挑戦",
   "session.retries.other": "+{n} 回の再挑戦",
+  "session.repeats": "ミスの再出題: {n}",
   "home.resume.exam": "試験を再開 ({n}/{total}、残り {ms})",
   "home.resume.start": "再開",
   "home.resume.startover": "最初から",

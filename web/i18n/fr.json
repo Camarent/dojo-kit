@@ -260,6 +260,7 @@
   "catalog.confusedWith": "Confondu avec : {list}",
   "session.retries.one": "+{n} reprise",
   "session.retries.other": "+{n} reprises",
+  "session.repeats": "reprises d'erreurs : {n}",
   "home.resume.exam": "Reprendre l'examen ({n}/{total}, {ms} restantes)",
   "home.resume.start": "Reprendre",
   "home.resume.startover": "Recommencer",

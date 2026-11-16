@@ -266,7 +266,8 @@ test('typed wrong, override and Next fired twice each: one step, no error', asyn
   nx.fire('click'); nx.fire('click');
   await m.flush();
   assert.strictEqual(s.index, 1);
-  assert.strictEqual(counter(m), '2 / 10');
+  // Counter is answered / planned: one answer so far; the override removed its queued repeat, so 10 stays.
+  assert.strictEqual(counter(m), '1 / 10');
 });
 
 test('render error shows a continue button that resumes the session; repeated failure moves past the item', async () => {

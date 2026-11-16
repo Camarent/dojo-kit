@@ -12,6 +12,8 @@ test.after(() => mounted.forEach((f) => f()));
 
 const CLOZE = { id: 'cl1', unit: 'u', type: 'cloze', prompt: 'Fill blanks', parts: ['A', ['x'], 'B', ['y'], 'C', ['z']] };
 const GAP = { id: 'g1', unit: 'u', type: 'gap', prompt: 'Fill gap', answers: ['test'] };
+// Second pool question of the same unit: a wrong answer re-queues it, so two Next clicks still reach an input.
+const GAP2 = { id: 'g2', unit: 'u', type: 'gap', prompt: 'Fill other gap', answers: ['other'] };
 
 // Test 1: arrow navigation between inputs
 test('ArrowDown navigates from first cloze blank to second', async () => {
@@ -127,7 +129,7 @@ test('app.css has input focus-visible ring and no break-all on stimulus text', (
 
 // Test 3: no focus ring after pointer interaction
 test('no focus ring after pointer click on next button', async () => {
-  const m = await mount([GAP]);
+  const m = await mount([GAP, GAP2]);
   await start(m);
   q(m.rootEl, 'btn-next');
   // Simulate pointer interaction
@@ -146,7 +148,7 @@ test('no focus ring after pointer click on next button', async () => {
 });
 
 test('pointer interaction clears keyboard flag', async () => {
-  const m = await mount([GAP]);
+  const m = await mount([GAP, GAP2]);
   await start(m);
   // Simulate pointerdown
   m.win.fire('pointerdown', { type: 'pointerdown' });

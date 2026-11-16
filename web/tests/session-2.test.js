@@ -117,14 +117,17 @@ test('card: back hidden until reveal; rating again counts as wrong', async () =>
   assert.deepStrictEqual(s.answer({ rating: 'maybe' }), { error: 'already_answered' });
 });
 
-test('wrong answer is re-queued once at the end', async () => {
+test('wrong answer is re-queued once at the end, as another question of the unit', async () => {
   const t = await setup();
   const s = t.engine.start('practice', { units: ['math'], types: ['gap'] });
+  const firstId = s.current().item.id;
   s.answer(wrongInput(s.current().item));
   s.next();
   s.answer(correctInput(s.current().item));
   const c = s.next();
-  assert.strictEqual(c.item.id, 'math-4');
+  // The repeat is picked by core from the unit pool: a different question, never the answered one.
+  assert.notStrictEqual(c.item.id, firstId);
+  assert.strictEqual(c.item.unit, 'math');
   assert.strictEqual(s.answer(wrongInput(c.item)).correct, false);
   assert.strictEqual(s.next(), null);
   assert.strictEqual(s.done, true);
@@ -134,7 +137,7 @@ test('wrong answer is re-queued once at the end', async () => {
   assert.strictEqual(sum.total, 2);
 });
 
-test('relearn copy answered correctly promotes a stage 0 item via applyRelearn', async () => {
+test('relearn of a queued repeat promotes only the repeat, the answered stage 0 item stays', async () => {
   const t = await setup();
   const s = t.engine.start('daily');
   const first = s.current().item;
@@ -144,12 +147,13 @@ test('relearn copy answered correctly promotes a stage 0 item via applyRelearn',
   while (s.index < s.total - 1) s.next();
   s.next();
   const copy = s.current();
-  assert.strictEqual(copy.item.id, 'geo-1');
+  // The repeat is another question of the unit, picked by core: not the answered one.
+  assert.notStrictEqual(copy.item.id, 'geo-1');
+  assert.strictEqual(copy.item.unit, 'geo');
   const r = s.answer(correctInput(copy.item));
   assert.strictEqual(r.correct, true);
-  assert.strictEqual(t.doc.items['geo-1'].s, 1);
+  assert.strictEqual(t.doc.items['geo-1'].s, 0, 'answered item is not promoted by the repeat');
   assert.strictEqual(t.doc.items['geo-1'].bad, 1);
-  assert.strictEqual(t.doc.items['geo-1'].due, NOW + 24 * 3600000);
 });
 
 test('daily answers use applyAnswer and count newByDay only for unseen items', async () => {

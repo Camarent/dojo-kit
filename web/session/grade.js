@@ -259,7 +259,7 @@
     advanceTimer(g, item, verdict, relearn);
     sx.answeredAt[sx.session.index] = true;
     sx.session.answered++;
-    var pushed = false;
+    var pushed = null; // id of the repeat queued for this answer
     if (!relearn && sx.mode !== 'placement') pushed = sx.fn.recordGrade(item, verdict);
     sx.lastAnswer = sx.mode === 'placement' ? null : { index: sx.session.index, item: item, prev: options.prev, relearn: relearn, verdict: verdict, pushed: pushed, setWrong: setWrong, timer: relearn ? null : timerSnap };
     recordDraftAnswer(sx, verdict);
@@ -302,9 +302,9 @@
     sx.graded[item.id] = true;
     var row = sx.review[sx.review.length - 1];
     if (row && row.id === item.id) row.correct = true;
-    if (la.pushed && sx.queue[sx.queue.length - 1] === item.id) {
+    if (la.pushed && sx.queue[sx.queue.length - 1] === la.pushed) {
       sx.queue.pop();
-      delete sx.requeued[sx.fn.requeueKey(item)];
+      sx.repeated[la.pushed] -= 1;
     }
   }
 
