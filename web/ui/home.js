@@ -1,6 +1,6 @@
 /*
  * ui/home.js — Home component (GroupCard lives in ui/group-card.js)
- * Globals expected: preact, htm, DojoStorage, DojoSession, DojoTypes, DojoExt, DojoCommon.
+ * Globals expected: preact, htm, DojoStorage, DojoSession, DojoTypes, DojoCommon.
  */
 (function (root) {
   'use strict';
@@ -13,7 +13,6 @@
   }
 
   // Load dependencies
-  var DojoExt = root.DojoExt || {};
   loadDep('DojoSession', './session.js');
   var DojoCommon = loadDep('DojoCommon', './common.js') || {};
   var DojoGroupCard = loadDep('DojoGroupCard', './group-card.js') || {};
@@ -70,6 +69,7 @@
       ${renderStatsSection(t, d, sum.due, sum.newToday)}
       ${statsNoteOrNull(t, c, hasGroups)}
       ${sessionCountOrNull(t, c)}
+      ${planOrNull(t, c)}
       ${renderActionsSection({ p: p, t: t, c: c, hasPlacement: course.placement !== undefined, placementDone: !!d.placementDone, canReview: c.due + c.newToday > 0, weakList: weakListOf(p), hasGroups: hasGroups })}
       ${groupsOrNull(o)}
       ${examsOrNull(o)}
@@ -160,16 +160,34 @@
   }
 
   // Helper: actions section
-  function stimShared() { return (root.DojoStimulus || (typeof require !== 'undefined' ? require('./stimulus.js') : null)).create(); }
-  function weakDupes(list) { return stimShared().dupeSet(list.map(function (w) { return w.prompt; })); }
-  function weakLabel(w, dupes) {
-    return stimShared().itemLabel({ prompt: w.prompt || '', answer: w.answer }, w.stimText, dupes) || '';
+  // Fixed chip label: aspect name, then the written form (meta.kanji) when the item has one. Never the prompt or gloss.
+  function weakLabel(t, w) {
+    var key = 'home.weak.aspect.' + (w.aspect || 'default');
+    var name = t(key);
+    if (name === key) name = t('home.weak.aspect.default');
+    return w.kanji ? name + ' ' + w.kanji : name;
+  }
+
+  // Plan block of the next session: numbers from buildSession plan (session/counts.js), warning when over the daily time.
+  function planOrNull(t, c) {
+    return c.plan ? renderPlanSection(t, c.plan) : null;
+  }
+
+  function renderPlanSection(t, plan) {
+    var cap = plan.capacity === null || plan.capacity === undefined ? t('home.plan.capacity.none') : t('home.plan.capacity', { n: plan.capacity });
+    return html`<section class="plan-block" data-testid="plan-block" aria-labelledby="plan-title">
+        <h3 class="plan-title" id="plan-title">${t('home.plan.title')}</h3>
+        <p class="plan-counts" data-testid="plan-counts">${t('home.plan.counts', { weak: plan.weak, new: plan.new, due: plan.due })}</p>
+        <p class="plan-total" data-testid="plan-total">${t('home.plan.total', { n: plan.total })}</p>
+        <p class="plan-capacity" data-testid="plan-capacity">${cap}</p>
+        <p class="plan-left" data-testid="plan-left">${t('home.plan.left', { days: plan.daysLeft, units: plan.unitsLeft })}</p>
+        ${plan.warnMinutes > 0 ? html`<p class="plan-warn" data-testid="plan-warn">${t('home.plan.warn', { n: plan.warnMinutes })}</p>` : null}
+      </section>`;
   }
 
   function renderActionsSection(o) {
     var p = o.p, t = o.t, c = o.c, weakList = o.weakList;
     var hasWeak = weakList.length > 0;
-    var dupes = weakDupes(weakList);
     var hasPlacement = o.hasPlacement, placementDone = o.placementDone, canReview = o.canReview, hasGroups = o.hasGroups;
     var placementOpen = hasPlacement && !placementDone;
     var reviewPrimary = c.due > 0 && !placementOpen;
@@ -186,7 +204,7 @@
         <button type="button" class="btn" data-testid="btn-settings" onClick=${function () { p.go('settings'); }}>${t('home.settings')}</button>
         <button type="button" class="btn" data-testid="btn-catalog" onClick=${function () { p.go('catalog'); }}>${t('home.catalog')}</button>
       </div>
-      ${hasWeak ? renderWeakChips(t, weakList, dupes) : null}
+      ${hasWeak ? renderWeakChips(t, weakList) : null}
     </section>`;
   }
 
@@ -206,14 +224,13 @@
       </div>`;
   }
 
-  function renderWeakChips(t, weakList, dupes) {
+  function renderWeakChips(t, weakList) {
     return html`<div class="weak-chips-block">
         <h3 class="weak-title" id="weak-title" data-testid="weak-title">${t('home.weakspots')}</h3>
         <ul class="chips weak-chips" data-testid="weak-chips" aria-labelledby="weak-title">
           ${weakList.map(function (item) {
-            var plain = DojoExt.plain(weakLabel(item, dupes));
-            var truncated = plain.length > 24 ? plain.slice(0, 24) + '\u2026' : plain;
-            return html`<li><span class="chip" title=${plain}><span class="chip-text">${truncated}</span></span></li>`;
+            var label = weakLabel(t, item);
+            return html`<li><span class="chip" title=${label}><span class="chip-text">${label}</span></span></li>`;
           })}
         </ul>
       </div>`;

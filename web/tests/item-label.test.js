@@ -36,13 +36,14 @@ test('itemLabel falls back to numeric answer then prompt', async () => {
   assert.strictEqual(sh.itemLabel({ prompt: 'Write', answer: 42 }, null, {}), 'Write');
 });
 
-test('home weak chips show stimulus texts and weakList keeps id+prompt', async () => {
+test('home weak chips show the fixed aspect label, not stimulus texts', async () => {
   const items = [mk('a', { stimulus: 's1' }), mk('b', { stimulus: 's2' }), mk('c', { stimulus: 's3' })];
   const m = await H.mount({ items, course, stimuli: STIM });
   items.forEach((i) => { m.doc.items[i.id] = { s: 0, bad: 1, due: H.NOW - 86400000 }; });
   m.app.refresh();
   const chips = H.text(H.find(m.tree(), 'weak-chips'));
-  for (const w of ['alpha', 'beta', 'gamma']) assert.ok(chips.includes(w), w + ' in ' + chips);
+  for (const w of ['alpha', 'beta', 'gamma']) assert.ok(!chips.includes(w), w + ' must not be in ' + chips);
+  assert.ok(chips.includes('Item'), 'default aspect label in ' + chips);
 });
 
 test('prompts named like Object.prototype keys are not duplicates', async () => {
