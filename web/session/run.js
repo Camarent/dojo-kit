@@ -225,6 +225,20 @@
     return null;
   }
 
+  // Finish numbers from the core: answered, right, weak units left, next due, denominator.
+  function finishStats(rc, sum) {
+    var ctx = rc.ctx;
+    var sx = rc.sx;
+    var units = {};
+    ctx.items.forEach(function (it) { (units[it.unit] = units[it.unit] || []).push(it.id); });
+    return ctx.dojo.call('sessionFinish', {
+      answers: sum.review.map(function (r) { return { id: r.id, right: r.correct === true }; }),
+      units: Object.keys(units).map(function (u) { return units[u]; }),
+      records: ctx.fn.records(), now: ctx.now(),
+      planned: sx.plan.ids.length, repeatsAdded: Math.max(0, sx.queue.length - sx.plan.ids.length)
+    });
+  }
+
   function finish(rc) {
     var sx = rc.sx;
     if (sx.summary) return sx.summary;
@@ -232,6 +246,8 @@
     if (sx.mode === 'exam') {
       var failed = finishExam(rc, sum);
       if (failed) return failed;
+    } else if (sx.mode !== 'placement') {
+      sum.finish = finishStats(rc, sum);
     }
     if (sx.mode === 'placement') {
       rc.ctx.store.update(function (doc) {

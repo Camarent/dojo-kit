@@ -63,6 +63,7 @@
     "ui/session-boundary.js",
     "ui/session-panels.js",
     "ui/session-screen.js",
+    "ui/session-finish.js",
     "ui/results.js",
     "ui/placement.js",
     "ui/settings-speech.js",

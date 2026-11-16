@@ -13,6 +13,8 @@
   var renderText = DojoCommon.renderText;
   var cls = DojoCommon.cls;
   var Notice = DojoCommon.Notice;
+  var DojoSessionFinish = root.DojoSessionFinish || (typeof require !== 'undefined' ? require('./session-finish.js') : null) || {};
+  var SessionFinish = DojoSessionFinish.create ? DojoSessionFinish.create().SessionFinish : null;
 
   function label(t, value) {
     return value === 'known' ? t('session.known') : value === 'again' ? t('session.again') : value === '-' ? t('session.dontKnow') : value;
@@ -182,6 +184,7 @@
       var isPlacement = sum.mode === 'placement';
       var x = examNodes(t, sum, exam);
       var s = scoreNodes(p, sum, exam, isPlacement);
+      var fin = sum.finish && !exam && !isPlacement ? SessionFinish({ t: t, finish: sum.finish }) : null;
       return html`<main class="screen" data-testid="results">
         <header class="head"><h1>${t('results.title')}</h1></header>
         ${isPlacement ? html`<p class="banner good" data-testid="placement-result">${t('results.placement')}</p>` : null}
@@ -190,6 +193,7 @@
         ${x.training}
         ${s.stats}
         ${s.hint}
+        ${fin}
         ${x.parts}
         ${x.note}
         ${x.short}
