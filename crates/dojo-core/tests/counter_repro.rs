@@ -81,3 +81,42 @@ fn counter_item_scope_group_due_drops_without_sibling() {
     answer(&mut recs, "a1");
     assert_eq!(group_due(&recs), 0);
 }
+
+/// Same items under `srs.scope: "unit"` without aspects: each entity is one unit (E1 = {a1,a2,a3}).
+fn unit_course() -> Value {
+    json!({
+        "srs": {"scope": "unit"},
+        "groups": [{"id": "g1", "title": "G", "units": ["u1"]}],
+        "bars": [{"title": "B", "units": ["u1"]}],
+        "units": [{"id": "u1"}]
+    })
+}
+
+/// Group `g1` due count under the unit scope.
+fn unit_group_due(records: &Map<String, Value>) -> i64 {
+    let out: Value = serde_json::from_str(&api::call("groupCounts", &json!({"course": unit_course(), "items": items(), "records": records, "now": NOW}).to_string())).unwrap();
+    assert_eq!(out["ok"], true, "groupCounts failed: {out}");
+    out["value"]["groups"]["g1"]["due"].as_i64().unwrap()
+}
+
+/// Grades the whole unit `members` as one correct answer (unit scope grades the unit, not one member).
+fn answer_unit(records: &mut Map<String, Value>, members: &[&str]) {
+    let ids: Vec<Value> = members.iter().map(|id| json!({"id": id})).collect();
+    let out: Value = serde_json::from_str(&api::call("applyEntity", &json!({"members": ids, "records": records, "mode": "answer", "correct": true, "now": NOW}).to_string())).unwrap();
+    assert_eq!(out["ok"], true, "applyEntity failed: {out}");
+    for (id, r) in out["value"].as_object().unwrap() {
+        records.insert(id.clone(), r.clone());
+    }
+}
+
+#[test]
+fn counter_unit_scope_group_due_drops_by_one_unit() {
+    // Scenario C: a1 (unit E1) and c1 (unit E3) due. Two due units, two due records.
+    let mut recs = records(&["a1", "c1"]);
+    assert_eq!(unit_group_due(&recs), 2);
+    assert_eq!(session_due(&recs), 2);
+    // Answer unit E1 right: the group counter drops by exactly one unit and equals the session due.
+    answer_unit(&mut recs, &["a1", "a2", "a3"]);
+    assert_eq!(session_due(&recs), 1);
+    assert_eq!(unit_group_due(&recs), 1);
+}
