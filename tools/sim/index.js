@@ -72,6 +72,8 @@ function createSim(opts) {
     const built = wasm.call('buildSession', {
       units: course, items, records, now: clock.now, daysLeft: lastBuild.daysLeft,
       courseId: course.id || '', seed: daySeed ? simDaySeed(seed, clock.now) : String(seed), introducedToday: o.introducedToday || 0,
+      // The core reads session settings from `settings`, not from `units`: forward the course's session block.
+      settings: course.session || null, overrides: o.overrides || {},
     });
     current = { queue: built.queue.slice(), plan: built.plan, answers: [], repeats: {} };
     return { queue: built.queue, plan: built.plan };
