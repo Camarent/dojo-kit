@@ -107,9 +107,9 @@ Source of truth: the code cites below. Each rule names the file that enforces it
 
 Text wrapping:
 
-- Kana and kanji words never break inside the word. Ruby (`<ruby>`, `<rt>`) uses `white-space: nowrap`: `web/styles/app.css:391-392`, and in the detail table `web/styles/app.css:411`.
+- Kana and kanji words never break inside the word. Ruby (`<ruby>`, `<rt>`) uses `white-space: nowrap`: `web/styles/app.css:391-392`, and in the detail table `web/styles/app.css:410`.
 - Question, option and feedback text wrap between words only (`word-break: keep-all`): `web/styles/answer-block.css:9`, `web/styles/types-cloze.css:2`, `web/styles/types-order.css:14,23`.
-- A table wider than the viewport scrolls inside its wrapper (`overflow-x: auto`); its ruby cells stay nowrap: `web/styles/app.css:378`, `web/styles/app.css:411`.
+- A table wider than the viewport scrolls inside its wrapper (`overflow-x: auto`); its ruby cells stay nowrap: `web/styles/app.css:377`, `web/styles/app.css:410`.
 
 Buttons at 390x844:
 
