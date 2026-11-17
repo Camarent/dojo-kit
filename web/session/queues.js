@@ -272,6 +272,7 @@
     // Valid stored session:* values only; what the settings screen shows as the saved choice.
     h.sessionOverrides = function () { return sessionOverrides(ctx.store.doc.settings); };
     h.sessionPlan = function () {
+      var filter = h.weakFilter();
       var doc = ctx.store.doc;
       var stats = doc.stats || {};
       var overrides = sessionOverrides(doc.settings);
@@ -281,7 +282,7 @@
       return ctx.dojo.call('buildSession', {
         units: ctx.course, items: meta, records: ctx.fn.records(), settings: ctx.course.session, overrides: overrides,
         now: ctx.now(), daysLeft: util.K.SESSION_DAYS_LEFT, courseId: ctx.course.id || '',
-        introducedToday: (stats.newByDay || {})[ctx.today()] || 0, answerMs: stats.answerMs
+        introducedToday: (stats.newByDay || {})[ctx.today()] || 0, answerMs: stats.answerMs, filter: filter
       });
     };
     // {due, fresh} of the built session: an id is fresh when no member of its unit has a record.
