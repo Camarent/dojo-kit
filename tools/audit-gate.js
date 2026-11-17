@@ -32,6 +32,12 @@ function unallowedVulnerabilities(audit, allow, versionOf) {
   return Object.keys(vulns).filter((name) => !ok.has(name));
 }
 
+/** Allowlist entries npm audit no longer reports for their package: the advisory is fixed, the entry must go. */
+function staleEntries(audit, allow) {
+  const vulns = audit.vulnerabilities || {};
+  return allow.filter((a) => !(vulns[a.package] && vulns[a.package].via.some((via) => typeof via !== 'string' && String(via.url || '').endsWith(`/${a.advisory}`))));
+}
+
 function installedVersion(nodePath) {
   try {
     return JSON.parse(fs.readFileSync(path.join(__dirname, '..', nodePath, 'package.json'), 'utf8')).version;
@@ -49,10 +55,15 @@ function main() {
     console.error(`audit-gate: not allowed in audit-allow.json: ${bad.join(', ')}. Run npm audit for details.`);
     return 1;
   }
+  const stale = staleEntries(audit, allow);
+  if (stale.length) {
+    console.error(`audit-gate: no longer reported by npm audit, remove from audit-allow.json: ${stale.map((a) => `${a.package} ${a.advisory}`).join(', ')}`);
+    return 1;
+  }
   const total = Object.keys(audit.vulnerabilities || {}).length;
   console.log(`audit-gate: ok (${total} vulnerable package(s), all allowed in audit-allow.json)`);
   return 0;
 }
 
 if (require.main === module) process.exit(main());
-module.exports = { unallowedVulnerabilities };
+module.exports = { unallowedVulnerabilities, staleEntries };
