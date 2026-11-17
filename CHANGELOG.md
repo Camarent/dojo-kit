@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix(session): Next checks a typed answer; empty input keeps don't-know
 - fix(web): check button gets a gap to the answer input
 - fix(validate): hint_leaks_answer covers order items
+- feat(units): unit scope, 5-step default SRS ladder, session plan with perUnitMax, progress migration via migrateDoc (progress may reset for courses with number-range units)
+- feat(validate): bad_ladder strict check, hint_contains_answer for gap hints, ruby.checkAnswers opt-in ruby_missing check
+- fix(render): kana words wrap whole, Не знаю and Далее never clipped at 390 px, stale highlight cleared, wrong-answer feedback shows the correct answer first
+- feat(cloze): partial credit verdict with per-field right/wrong marks
+- fix(catalog): cards hide internal fields and empty sections, ruby on every kanji in rows and titles
+- feat(sim): session and grading simulator through the wasm loader, per-day session seed opt-in
+- docs(content): content shard layout rule for kanji-NN and sd-NN files
+- test(guard): course-test fails on a stale wasm, tmp-leak check uses its own TMPDIR, tracked tests never read private course paths
+- feat(units): unit entity is a number range, aspect is direction
 
 ## [0.3.10] - 2026-11-11
 
