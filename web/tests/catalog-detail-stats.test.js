@@ -9,142 +9,60 @@ const DAY = 24 * 60 * 60 * 1000;
 // Helper to create a simple choice item
 const choice = (id, unit, extra) => Object.assign({ id, unit, type: 'choice', prompt: 'Prompt ' + id, options: ['a', 'b', 'c'], answer: 0 }, extra);
 
-test('detail-step, detail-due, detail-counts are hidden when item has no record', async () => {
+// Catalog card rows that show learner progress internals; none may render on a catalog card.
+const INTERNAL_IDS = ['detail-stage', 'detail-step', 'detail-due', 'detail-counts'];
+
+async function openCard(rec, course) {
   const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }] } });
+  const m = await H.mount({ items, course: course || { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
+  if (rec) m.doc.items['a'] = rec;
   m.app.go('catalog');
   const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
   cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
-  assert.strictEqual(H.find(v, 'detail-step'), null, 'detail-step is not rendered when no record');
-  assert.strictEqual(H.find(v, 'detail-due'), null, 'detail-due is not rendered when no record');
-  assert.strictEqual(H.find(v, 'detail-counts'), null, 'detail-counts is not rendered when no record');
+  return cat.view();
+}
+
+test('catalog card hides stage, step, due and counts when item has no record', async () => {
+  const v = await openCard(null);
+  for (const id of INTERNAL_IDS) assert.strictEqual(H.find(v, id), null, id + ' is not rendered without record');
 });
 
-test('detail-due shows "now" when due is in the past', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
-  m.doc.items['a'] = { s: 1, due: NOW - 1000, ok: 1, bad: 0, last: NOW - DAY };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
-  const dueEl = H.find(v, 'detail-due');
-  assert.ok(dueEl, 'detail-due is rendered');
-  const dueText = H.text(dueEl);
-  assert.ok(/now/.test(dueText), 'detail-due shows "now" for past due: ' + dueText);
+test('catalog card hides due row when due is in the past', async () => {
+  const v = await openCard({ s: 1, due: NOW - 1000, ok: 1, bad: 0, last: NOW - DAY });
+  assert.strictEqual(H.find(v, 'detail-due'), null, 'detail-due is not rendered for past due');
+  assert.ok(!/now/.test(H.text(v)), 'no "now" due text on the card');
 });
 
-test('detail-due shows "in N days" in English when due is in the future', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
-  m.doc.items['a'] = { s: 1, due: NOW + 3 * DAY, ok: 1, bad: 0, last: NOW - DAY };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
-  const dueEl = H.find(v, 'detail-due');
-  assert.ok(dueEl, 'detail-due is rendered');
-  const dueText = H.text(dueEl);
-  assert.ok(/in 3 days/.test(dueText), 'detail-due shows "in 3 days" for +3 days: ' + dueText);
+test('catalog card hides due row when due is in the future', async () => {
+  const v = await openCard({ s: 1, due: NOW + 3 * DAY, ok: 1, bad: 0, last: NOW - DAY });
+  assert.strictEqual(H.find(v, 'detail-due'), null, 'detail-due is not rendered for future due');
+  assert.ok(!/in 3 days/.test(H.text(v)), 'no "in 3 days" due text on the card');
 });
 
-test('detail-counts shows correct ok and bad counts', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }] } });
-  m.doc.items['a'] = { s: 2, due: NOW + DAY, ok: 3, bad: 5, last: NOW };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
-  const countsEl = H.find(v, 'detail-counts');
-  assert.ok(countsEl, 'detail-counts is rendered');
-  const countsText = H.text(countsEl);
-  assert.ok(/✓ 3/.test(countsText), 'detail-counts shows ok=3: ' + countsText);
-  assert.ok(/✗ 5/.test(countsText), 'detail-counts shows bad=5: ' + countsText);
+test('catalog card hides ok and bad counts', async () => {
+  const v = await openCard({ s: 2, due: NOW + DAY, ok: 3, bad: 5, last: NOW });
+  assert.strictEqual(H.find(v, 'detail-counts'), null, 'detail-counts is not rendered');
+  assert.ok(!/✓ 3|✗ 5/.test(H.text(v)), 'no ok/bad counts on the card');
 });
 
-test('detail-step shows stage number', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
-  m.doc.items['a'] = { s: 3, due: NOW + DAY, ok: 1, bad: 0, last: NOW };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
-  const stepEl = H.find(v, 'detail-step');
-  assert.ok(stepEl, 'detail-step is rendered');
-  const stepText = H.text(stepEl);
-  assert.ok(/Stage 3/.test(stepText), 'detail-step shows "Stage 3": ' + stepText);
-});
-
-test('detail-step shows interval text', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
-  m.doc.items['a'] = { s: 3, due: NOW + 3 * DAY, ok: 1, bad: 0, last: NOW };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
-  const stepEl = H.find(v, 'detail-step');
-  assert.ok(stepEl, 'detail-step is rendered');
-  const stepText = H.text(stepEl);
-  assert.ok(/Stage 3/.test(stepText), 'detail-step shows "Stage 3": ' + stepText);
-  assert.ok(/in 3 days/.test(stepText), 'detail-step shows "in 3 days": ' + stepText);
+test('catalog card hides stage number and interval', async () => {
+  const v = await openCard({ s: 3, due: NOW + 3 * DAY, ok: 1, bad: 0, last: NOW });
+  assert.strictEqual(H.find(v, 'detail-step'), null, 'detail-step is not rendered');
+  assert.ok(!/Stage 3|in 3 days/.test(H.text(v)), 'no stage number or interval on the card');
 });
 
 test('screen text contains no undefined, {, or [object', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }] } });
-  m.doc.items['a'] = { s: 3, due: NOW + 3 * DAY, ok: 3, bad: 1, last: NOW };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  
+  const v = await openCard({ s: 3, due: NOW + 3 * DAY, ok: 3, bad: 1, last: NOW });
   const fullText = H.text(v);
   assert.ok(!/undefined/.test(fullText), 'no "undefined" in screen text');
   assert.ok(!/\{/.test(fullText), 'no "{" in screen text');
   assert.ok(!/\[object/.test(fullText), 'no "[object" in screen text');
 });
 
-test('detail-due uses singular for 1 day and rounds partial days up', async () => {
-  const items = [choice('a', 'u1'), choice('b', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
-  m.doc.items['a'] = { s: 1, due: NOW + DAY, ok: 1, bad: 0, last: NOW - DAY };
-  m.doc.items['b'] = { s: 1, due: NOW + DAY + 1000, ok: 1, bad: 0, last: NOW - DAY };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  cat.setState({ detailItem: items[0] });
-  assert.ok(/in 1 day(?!s)/.test(H.text(H.find(cat.view(), 'detail-due'))), 'singular');
-  cat.setState({ detailItem: items[1] });
-  assert.ok(/in 2 days/.test(H.text(H.find(cat.view(), 'detail-due'))), 'ceil to 2');
-});
-
-test('record without ok/bad/s renders no undefined', async () => {
-  const items = [choice('a', 'u1')];
-  const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'en' }, lang: 'en' });
-  m.doc.items['a'] = { due: NOW + DAY };
-  m.app.go('catalog');
-  const cat = m.screen(m.sb.DojoApp._CatalogScreen);
-  cat.setState({ detailItem: items[0] });
-  const v = cat.view();
-  for (const id of ['detail-step', 'detail-due', 'detail-counts']) {
-    assert.ok(!/undefined|NaN/.test(H.text(H.find(v, id))), id);
-  }
+test('record without ok/bad/s renders the card without undefined or NaN', async () => {
+  const v = await openCard({ due: NOW + DAY });
+  for (const id of INTERNAL_IDS) assert.strictEqual(H.find(v, id), null, id);
+  assert.ok(!/undefined|NaN/.test(H.text(v)), 'no undefined or NaN on the card');
 });
 
 test('detail without record does not call p.now and renders', async () => {

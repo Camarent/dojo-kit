@@ -195,7 +195,7 @@ test('Catalog: search matches DojoExt.plain() text and the raw reading', async (
   assert.ok(find(c.cat.view(), 'topic-g2'));
 });
 
-test('Catalog detail: prompt, answers, explanation, stage and plugin hook with isolated clones', async () => {
+test('Catalog detail: prompt, answers, explanation, no stage row and plugin hook with isolated clones', async () => {
   const c = await catalogSetup();
   let seen = null;
   c.sb.DojoExt.registerDetail((it, ctx) => { seen = { it, ctx }; it.prompt = 'MUTATED'; ctx.items.length = 0; return 'HOOK-OUT'; });
@@ -205,7 +205,7 @@ test('Catalog detail: prompt, answers, explanation, stage and plugin hook with i
   assert.strictEqual(find(v, 'detail-prompt'), null);
   assert.ok(texts(find(v, 'detail-answers')).join('').includes('x'));
   assert.ok(texts(find(v, 'detail-explanation')).join('').includes('E2'));
-  assert.ok(texts(find(v, 'detail-stage')).join('').includes('catalog.stage.new'));
+  assert.strictEqual(find(v, 'detail-stage'), null);
   assert.deepStrictEqual(texts(find(v, 'detail-hook')), ['HOOK-OUT']);
   assert.ok(seen.ctx.items !== c.content.items);
   assert.strictEqual(c.content.items.length, 3);

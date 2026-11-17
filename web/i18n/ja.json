@@ -282,7 +282,6 @@
   "results.points": "{n} 点",
   "results.total_points": "合計: {n} 点",
   "results.pass_points": "合格点: {n} 点",
-  "catalog.stage": "段階",
   "catalog.topicLevels": "レベル",
   "catalog.topicLevel": "総合レベル",
   "catalog.step": "段階 {s}",

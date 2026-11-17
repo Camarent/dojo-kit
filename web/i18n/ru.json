@@ -300,7 +300,6 @@
   "results.points": "{n} баллов",
   "results.total_points": "Всего: {n} баллов",
   "results.pass_points": "Проходной балл: {n}",
-  "catalog.stage": "Стадия",
   "catalog.topicLevels": "Уровни",
   "catalog.topicLevel": "Общий уровень",
   "catalog.step": "Этап {s}",
