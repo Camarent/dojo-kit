@@ -19,8 +19,13 @@
     var state = res && !p.exam ? (res.correct ? 'right' : 'wrong') : '';
     var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
     function submit() {
-      if (!res && canSubmit(p.state)) p.onSubmit({ text: text }, text);
+      if (res) return;
+      // An empty or whitespace answer is never graded: show the inline hint instead.
+      if (!canSubmit(p.state)) { p.setState({ emptyTried: true }); return; }
+      p.onSubmit({ text: text }, text);
     }
+    var emptyLine = !res && p.state.emptyTried && !canSubmit(p.state)
+      ? html`<p class="gap-empty" data-testid="gap-empty" role="status">${t('session.emptyAnswer')}</p>` : null;
     var field = html`<form class="gap" data-testid="gap-form" onSubmit=${function (e) {
       e.preventDefault();
       submit();
@@ -28,8 +33,9 @@
       <input type="text" inputmode=${p.item && p.item.inputMode ? p.item.inputMode : null} class=${cls('field', state)} value=${text} readOnly=${!!res} aria-readonly=${res ? 'true' : null} autocomplete="off" autocapitalize="off"
         autocorrect="off" spellcheck=${false} aria-label=${t('session.your_answer')} data-testid="gap-input" name="answer"
         ref=${p.inputRef} onInput=${function (e) { p.setState({ text: e.target.value }); }} />
+      ${emptyLine}
     </form>`;
-    var button = !res ? html`<button type="button" class="btn primary" disabled=${!canSubmit(p.state)} data-testid="btn-submit"
+    var button = !res ? html`<button type="button" class="btn primary" data-testid="btn-submit"
       onClick=${submit}>${t('session.check')}</button>` : null;
     return AnswerBlock({ cls: 'gap-block', testid: 'gap', fields: field, submit: button });
   }
@@ -46,7 +52,7 @@
     canSubmit: canSubmit,
     submitOf: submitOf,
     answerTexts: function (item) { return item.answers || []; },
-    initialState: function () { return { text: '' }; },
+    initialState: function () { return { text: '', emptyTried: false }; },
     Extra: Extra
   });
 })(typeof self !== 'undefined' ? self : this);

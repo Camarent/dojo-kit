@@ -6444,7 +6444,6 @@
                             "props": {
                               "data-testid": "btn-submit",
                               "class": "btn primary",
-                              "disabled": true,
                               "type": "button",
                               "children": [
                                 "Check"
@@ -6626,7 +6625,6 @@
                                   "props": {
                                     "data-testid": "btn-submit",
                                     "class": "btn primary",
-                                    "disabled": true,
                                     "type": "button",
                                     "children": [
                                       "Check"
@@ -6840,7 +6838,6 @@
                                   "props": {
                                     "data-testid": "btn-submit",
                                     "class": "btn primary",
-                                    "disabled": true,
                                     "type": "button",
                                     "children": [
                                       "Check"

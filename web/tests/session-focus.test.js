@@ -165,17 +165,17 @@ test('pointer interaction clears keyboard flag', async () => {
   assert.ok(doc.activeElement === newInput, 'new input is focused');
 });
 
-test('ArrowDown on disabled input does nothing', async () => {
+test('ArrowDown on empty gap input moves focus to the enabled submit', async () => {
   const m = await mount([GAP]);
   await start(m);
   const input = q(m.rootEl, 'gap-input');
-  // Empty input means submit is disabled
+  // Empty input: submit stays enabled (an empty submit is not graded, it shows a hint)
   const btn = q(m.rootEl, 'btn-submit');
-  assert.ok(btn.attrs.disabled, 'submit is disabled for empty gap');
+  assert.ok(!btn.attrs.disabled, 'submit is enabled for empty gap');
   doc.activeElement = input;
   await pr(m, key('ArrowDown', input));
-  // Should stay on input since submit is disabled
-  assert.ok(doc.activeElement === input, 'ArrowDown stays on input when submit disabled');
+  // Focus moves on: the enabled submit button takes it, so ArrowDown does not stay on the input
+  assert.ok(doc.activeElement !== input, 'ArrowDown leaves the input when submit enabled');
 });
 
 test('navigation skips disabled and readonly inputs', async () => {

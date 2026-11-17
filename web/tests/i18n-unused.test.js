@@ -6,7 +6,8 @@ const path = require('path');
 
 const web = path.join(__dirname, '..');
 // Keys read only by course plugins (ctx.t); listed in the reference so courses can translate them.
-const PLUGIN_KEYS = new Set([]);
+// session.field.* are added ahead of the field-result rendering (task-5), which must remove them from this list.
+const PLUGIN_KEYS = new Set(['session.field.right', 'session.field.wrong']);
 const PLURAL = /\.(one|few|many|other)$/;
 
 function sources() {

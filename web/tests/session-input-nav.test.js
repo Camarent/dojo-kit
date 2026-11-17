@@ -26,15 +26,15 @@ test('gap input with text: ArrowDown focuses btn-submit, defaultPrevented is tru
   assert.strictEqual(ev.prevented, true, 'defaultPrevented is true');
 });
 
-test('empty gap input: ArrowDown stays on the input (submit disabled)', async () => {
+test('empty gap input: ArrowDown focuses submit (submit enabled, empty not graded)', async () => {
   const m = await mount([GAP]);
   await start(m);
   const input = q(m.rootEl, 'gap-input');
   const btn = q(m.rootEl, 'btn-submit');
-  assert.ok(btn.attrs.disabled, 'submit button is disabled');
+  assert.ok(!btn.attrs.disabled, 'submit button is enabled');
   doc.activeElement = input;
   await pr(m, key('ArrowDown', input));
-  assert.ok(doc.activeElement === input, 'ArrowDown from empty gap input stays on input');
+  assert.ok(doc.activeElement === btn, 'ArrowDown from empty gap input focuses submit');
 });
 
 test('cloze with 3 blanks: Down and Up move between blanks', async () => {
