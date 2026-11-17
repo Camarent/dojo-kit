@@ -107,7 +107,7 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .stepper { display: inline-flex; align-items: center; gap: var(--space-3); }
 .stepper-value { min-width: 3ch; text-align: center; font-size: var(--fs-lg); font-weight: 700; font-variant-numeric: tabular-nums; }
 
-.topbar { display: flex; align-items: center; gap: var(--space-3); }
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .progress { flex: 1; height: 4px; background: var(--surface-2); border-radius: 999px; overflow: hidden; min-width: 40px; }
 .qtimer-slot { height: 22px; display: flex; align-items: center; }
 .qtimer { display: flex; align-items: center; gap: 8px; width: 100%; }
@@ -343,7 +343,6 @@ input[type="range"].field { box-sizing: border-box; max-width: 100%; margin-inli
 .glyph-ch { font-size: var(--fs-lg); min-width: 1.5em; }
 
 /* Session layout: header row, centered question card, full-width answers, action row, feedback with a colored edge. */
-.topbar { display: flex; align-items: center; gap: var(--space-3); }
 .icon-btn { flex: none; width: var(--tap); min-width: var(--tap); padding: 0; font-size: 1.5rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
 .session .qcard { align-items: stretch; padding: var(--space-5) var(--space-4); }
 .qcaption { margin: 0; text-align: center; font-size: var(--fs-sm); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); }
