@@ -4,7 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 
 const REPO = path.join(__dirname, '..');
 const SCRIPT = fs.readFileSync(path.join(REPO, 'scripts', 'check-all.sh'));
@@ -85,7 +85,8 @@ test('no gate flag runs no gate', () => {
 });
 
 test('cargo test step runs through the tmp-leak guard, step label unchanged', () => {
-  assert.match(SCRIPT.toString(), /step "cargo test --workspace" bash scripts\/tmp-leak-check\.sh -- cargo test --workspace/);
+  assert.match(SCRIPT.toString(), /CARGO_NAME="cargo test --workspace"/);
+  assert.match(SCRIPT.toString(), /run_bg "\$CARGO_TMP" bash scripts\/tmp-leak-check\.sh -- cargo test --workspace/);
 });
 
 test('cargo test step fails when cargo leaves a dojo-* entry in TMPDIR', () => {
@@ -99,4 +100,45 @@ test('cargo test step passes when cargo leaves no dojo-* entry', () => {
   const r = runCheckAll([], {}, 'mkdir "$TMPDIR/other-tool"');
   assert.strictEqual(r.status, 0, r.out);
   assert.match(r.out, /CHECK-ALL OK/);
+});
+
+// Ctrl-C while the cargo step runs: the step's children (tmp-leak-check.sh, cargo, sleep) must die too.
+test('INT stops check-all and the children of the cargo step', async () => {
+  const root = path.join(REPO, '.check-all-fixture-' + process.pid + '-' + Math.random().toString(36).slice(2));
+  makeFixture(root);
+  const pidFile = path.join(root, 'sleep.pid');
+  let sleepPid = 0;
+  try {
+    fs.mkdirSync(path.join(root, 'tmp'));
+    // The stub cargo starts a long sleep and writes its pid; the sleep is a grandchild of check-all.
+    fs.writeFileSync(path.join(root, 'bin', 'cargo'),
+      '#!/usr/bin/env bash\nsleep 60 & echo $! > ' + pidFile + '\nwait\n', { mode: 0o755 });
+    const child = spawn('bash', [path.join(root, 'scripts', 'check-all.sh')], {
+      cwd: root,
+      env: {
+        PATH: path.join(root, 'bin') + path.delimiter + process.env.PATH,
+        HOME: root,
+        TMPDIR: path.join(root, 'tmp'),
+      },
+      stdio: 'ignore',
+    });
+    const exited = new Promise((resolve) => child.on('exit', (code) => resolve(code)));
+    for (let i = 0; i < 200 && !sleepPid; i++) {
+      if (fs.existsSync(pidFile)) sleepPid = Number(fs.readFileSync(pidFile, 'utf8').trim()) || 0;
+      if (!sleepPid) await new Promise((r) => setTimeout(r, 50));
+    }
+    assert.ok(sleepPid > 0, 'cargo stub never started its sleep');
+    child.kill('SIGINT');
+    assert.strictEqual(await exited, 130);
+    let alive = true;
+    for (let i = 0; i < 40 && alive; i++) {
+      const ps = spawnSync('ps', ['-o', 'stat=', '-p', String(sleepPid)], { encoding: 'utf8' });
+      alive = ps.stdout.trim() !== '' && !ps.stdout.trim().startsWith('Z');
+      if (alive) await new Promise((r) => setTimeout(r, 50));
+    }
+    assert.strictEqual(alive, false, 'cargo-step sleep ' + sleepPid + ' outlived INT');
+  } finally {
+    if (sleepPid) spawnSync('kill', ['-KILL', String(sleepPid)]);
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
