@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const assert = require('assert');
-const { spawn, spawnSync } = require('child_process');
+const { spawn, spawnSync, execFileSync } = require('child_process');
 const { test } = require('node:test');
 
 const script = path.join(__dirname, '..', 'scripts', 'tmp-leak-check.sh');
@@ -69,20 +70,21 @@ function runAsync(env, args) {
   });
 }
 
-test('two concurrent guards on shared /tmp: only the one whose child leaks exits 1', async (t) => {
-  // Unique name per run; the guard uses its own private dir, so this name only appears in /tmp if the guard counts /tmp.
-  const name = `dojo-concurrent-${process.pid}-${Date.now()}`;
-  // Clean any leftover from a failing run of the old shared-/tmp behaviour.
-  t.after(() => fs.rmSync(path.join('/tmp', name), { recursive: true, force: true }));
+test('two concurrent guards: only the one whose child leaks exits 1', async (t) => {
+  // Unique names per run (no clock): the leak goes to the guard's private dir, the decoy to the test's private dir.
+  const name = `dojo-concurrent-${crypto.randomUUID()}`;
+  const decoy = `dojo-decoy-${crypto.randomUUID()}`;
+  // Private dir for the FIFO handshake and the decoy; removed when the test ends.
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'tmp-leak-concurrent-'));
+  t.after(() => fs.rmSync(work, { recursive: true, force: true }));
+  const fifo = path.join(work, 'go');
+  execFileSync('mkfifo', [fifo]);
   const env = { ...process.env };
   delete env.TMPDIR;
-  // Leaker: writes into its own TMPDIR after a short delay. Clean: sleeps so its window spans the leak.
-  // The leaker fails with 99 unless its own TMPDIR is set, so status 1 only comes from the guard's leak count.
-  const leaker = runAsync(env, ['--', 'sh', '-c', `sleep 0.3; mkdir "\${TMPDIR:?}/${name}" || exit 99; exit 0`]);
-  // Decoy: the clean child writes a matching entry into shared /tmp; the guard must not count it.
-  const decoy = `dojo-decoy-${process.pid}-${Date.now()}`;
-  t.after(() => fs.rmSync(path.join('/tmp', decoy), { recursive: true, force: true }));
-  const clean = runAsync(env, ['--', 'sh', '-c', `sleep 0.3; mkdir "/tmp/${decoy}"; sleep 0.7`]);
+  // Clean child: writes its decoy into the test's private dir, then blocks until the leaker signals.
+  const clean = runAsync(env, ['--', 'sh', '-c', 'mkdir "$1"; read go < "$2"', 'sh', path.join(work, decoy), fifo]);
+  // Leaker: writes its leak into its own TMPDIR, then signals the clean child (always, so it never hangs).
+  const leaker = runAsync(env, ['--', 'sh', '-c', 'mkdir "$TMPDIR/$1"; st=$?; echo go > "$2"; exit $st', 'sh', name, fifo]);
   const [leak, ok] = await Promise.all([leaker, clean]);
   assert.strictEqual(leak.status, 1, leak.stderr);
   assert.match(leak.stderr, new RegExp(name));
