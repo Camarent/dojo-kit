@@ -40,10 +40,21 @@
     return AnswerBlock({ cls: 'gap-block', testid: 'gap', fields: field, submit: button });
   }
 
+  // Each accepted answer renders like the expected-answer feedback line (DojoExt.textAll): ruby on marked kanji.
+  function acceptedNodes(list) {
+    var ext = root.DojoExt;
+    var out = [];
+    list.forEach(function (s, i) {
+      if (i) out.push(' / ');
+      out.push(ext && ext.textAll ? ext.textAll(s) : s);
+    });
+    return out;
+  }
+
   function Extra(p) {
     var res = p.result;
     return res.accepted && res.accepted.length > 1
-      ? html`<p data-testid="accepted">${p.t('session.accepted')}: <span class="pre">${res.accepted.join(' / ')}</span></p>`
+      ? html`<p data-testid="accepted">${p.t('session.accepted')}: <span class="pre">${acceptedNodes(res.accepted)}</span></p>`
       : null;
   }
 
