@@ -26,6 +26,22 @@ test('all controls are present in the unit settings dialog', async () => {
   assert.ok(find(rendered, 'btn-unit-reset-cancel'), 'Cancel button not found');
 });
 
+test('on-wrong field renders its translated label', async () => {
+  const content = mkContent([
+    { id: 'a', title: 'Unit A' }
+  ]);
+
+  const t = await setup(content);
+  const sb = loadApp();
+  const tr = sb.DojoApp._makeT(mkI18n(), 'en');
+
+  const screen = renderSettings({ sb, engine: t.engine, content, doc: t.doc, t: tr });
+  screen.openUnitDialog('a');
+  const rendered = screen.render(screen.props, screen.state);
+
+  assert.ok(allText(find(rendered, 'unit-settings-dialog')).join(' | ').includes('On wrong answer'), 'On wrong label not rendered');
+});
+
 // Mutation check: make the select handler write nothing and Reset a no-op
 test('mutation check - handlers must actually write', async () => {
   const content = mkContent([
