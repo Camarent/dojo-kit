@@ -21,7 +21,8 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 
 ## Layering (CONTRACT section 3)
 - Rules that decide what is correct or scheduled live in `dojo-core`. The browser reaches them only through `dojo-wasm`.
-- JS owns rendering, navigation, storage adapters, i18n lookup and timers.
+- The session builder and the unit view live in `dojo-core` too (`crates/dojo-core/src/api/session.rs`; `migrateDoc` in `api/progress.rs`): WASM `buildSession`, `sessionRequeue`, `sessionFinish` and `migrateDoc` decide the queue, repeats, results and migration. Home counters and sessions share one function (`buildSession`), so the numbers on Home match the session that starts.
+- JS owns rendering, navigation, storage adapters, i18n lookup and timers, and passes the answers and settings into those calls.
 - The WASM boundary is stateless: JSON in, JSON out, `now` and `seed` passed in. Errors come back as `{ok:false,error:{code,message}}`.
 
 ## Data and control flow

@@ -186,6 +186,16 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 - Practice setup: buttons sit in `setup-actions` (`web/ui/placement.js:69`) inside `PracticeSetup` (`web/ui/placement.js:33`).
 - Russian plurals: `pluralForm` (`web/ui/i18n.js:9`) gives `one` / `few` / `many` for `ru` (mod-10 / mod-100 rule) and `one` / `other` otherwise. The weak-items count `home.weak.count` (`web/i18n/ru.json`, `web/ui/home.js:203`) uses this; the weak list is capped at 8 (`web/ui/home.js:127`).
 
+## Unit-scope sessions (core builds the queue)
+- Courses with `srs.scope "unit"` build the daily queue in core: `web/session/queues.js` (`sessionHelpers`, ~line 264) calls WASM `buildSession` with the course session block, `session:*` settings overrides and answers; the result is `{queue, plan}`.
+- `web/session/counts.js` (`summarize`, ~line 81) takes the home numbers from the plan of the session that starts next, so home counters and sessions share one function (`buildSession`).
+- The weak filter (`weakFilter`, `web/session/queues.js:275`) is applied inside core `buildSession`; there is no JS matcher. Other courses keep `buildQueue`.
+- `web/session/run.js` (~line 237) calls WASM `sessionFinish` for the scored results. `web/ui/session-finish.js` renders the result it returns.
+- `web/session/grade.js` (~line 122-132) writes one record per member of a scoped entity (`{memberId: record}`): members and records come from `scopedMemberList` and `scopedRecords`.
+- Requeue after a wrong answer in the same session: WASM `sessionRequeue` (`web/session/run-view.js:95`), which picks the repeat from the unit pool.
+- Settings: the session section (`web/ui/settings-sections.js`, `SESSION_CORE_DEFAULTS` ~line 54) edits the `session:*` keys; invalid stored values fall back to the core defaults.
+- Old saves: `web/migrate.js` (~line 37) runs WASM `migrateDoc` when `course.srs.migrate` is set, once per doc.
+
 ## Depends on / used by
 - Depends on: `web/dojo-wasm.js` (WASM artifact built from `crates/dojo-wasm`), `data/content.json` written by `dojo build`, vendored Preact and htm (`vendor/`, listed in `web/bundle.json`); `window.speechSynthesis` for speech (optional; absent means no play buttons).
 - Used by: `dojo build` (inlines these files into `dist/<course>/index.html`); `tests/wasm-smoke.js` and `web/tests/*` for checks.
