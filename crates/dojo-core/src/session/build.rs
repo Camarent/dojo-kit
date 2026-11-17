@@ -1,7 +1,7 @@
 //! `build_session`: unit status from records, category mix, question choice, spread, capacity cut, plan numbers.
 use super::choice::pick_questions;
 use super::config::SessionConfig;
-use super::order::{mix_order, spread, UnitFlags};
+use super::order::{mix_order, spread, spread_fair, UnitFlags};
 use super::plan::{days_for_new, new_today, numbers, PlanNumbers};
 use crate::days::day_key;
 use crate::groups::{aspect_of, unit_key, AspectRule, ItemMeta};
@@ -85,6 +85,26 @@ fn flags_of(unit: &Unit, input: &SessionInput) -> UnitFlags {
     }
 }
 
+/// Spreads all slots by entity. Weak and due slots keep the places the entity spread gives them. When the capacity
+/// `cap` cuts the queue, the new slots take their places in an order fair across entities, so a small entity's
+/// new items reach the cut.
+fn spread_slots(slots: Vec<(String, Vec<String>, bool)>, cap: Option<u32>) -> Vec<(String, Vec<String>, bool)> {
+    let total: usize = slots.iter().map(|s| s.1.len()).sum();
+    let limit = cap.map_or(total, |c| c as usize);
+    let fresh: Vec<_> = slots.iter().filter(|s| s.2).cloned().collect();
+    let mut fresh = spread_fair(fresh, |s| s.0.as_str()).into_iter();
+    let mut before = 0usize;
+    spread(slots, |s| s.0.as_str())
+        .into_iter()
+        .map(|s| {
+            // Only slots that start before the cut take a fair new slot; later ones stay as spread.
+            let s = if s.2 && before < limit && limit < total { fresh.next().unwrap_or(s) } else { s };
+            before += s.1.len();
+            s
+        })
+        .collect()
+}
+
 /// Builds the session: category mix, per-unit question choice, entity spread, capacity cut and plan numbers.
 pub fn build_session(input: &SessionInput) -> Session {
     let units = group_units(input);
@@ -98,7 +118,7 @@ pub fn build_session(input: &SessionInput) -> Session {
     let mut weak = 0usize;
     // Plan due counts every due unit, also one placed under "weak" by the mix.
     let due = flags.iter().filter(|f| f.due).count();
-    let mut slots: Vec<(String, Vec<String>)> = Vec::new();
+    let mut slots: Vec<(String, Vec<String>, bool)> = Vec::new();
     for (i, kind) in order {
         match kind.as_str() {
             "new" if new_taken >= cap_new => continue,
@@ -109,11 +129,11 @@ pub fn build_session(input: &SessionInput) -> Session {
         let Some(unit) = units.get(i) else { continue };
         let members: Vec<&str> = unit.members.iter().map(String::as_str).collect();
         let questions = pick_questions(&members, input.records, input.cfg.per_unit_max as usize);
-        slots.push((unit.entity.clone(), questions));
+        slots.push((unit.entity.clone(), questions, kind == "new"));
     }
 
     let plan = numbers(input.cfg, input.answer_ms, weak, due, never, input.introduced_today, input.days_left);
-    let mut queue: Vec<String> = spread(slots, |slot| slot.0.as_str()).into_iter().flat_map(|slot| slot.1).collect();
+    let mut queue: Vec<String> = spread_slots(slots, plan.capacity).into_iter().flat_map(|slot| slot.1).collect();
     if let Some(cap) = plan.capacity {
         queue.truncate(cap as usize);
     }
