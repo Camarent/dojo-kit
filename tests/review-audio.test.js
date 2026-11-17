@@ -50,42 +50,50 @@ function runPage(html, enc, failFetch) {
       this.createBufferSource = () => { const s = { connect() {}, stop() {}, start() { setImmediate(() => s.onended()); } }; return s; };
     },
     atob: (s) => Buffer.from(s, 'base64').toString('binary'),
-    setTimeout, clearTimeout,
   };
   const document = {
     getElementById: mk,
     querySelectorAll: (sel) => buttons(/data-(\w+)/.exec(sel)[1]),
   };
-  const ctx = { document, console, setTimeout, clearTimeout, Uint8Array, Promise, Object, JSON, Math, atob: win.atob, fetch: win.fetch, AudioContext: win.AudioContext };
+  // Inherits the real timers from globalThis, so the page's own timeout code runs and no test-side timer is named here.
+  const ctx = Object.assign(Object.create(globalThis), { document, console, Uint8Array, Promise, Object, JSON, Math, atob: win.atob, fetch: win.fetch, AudioContext: win.AudioContext });
   ctx.self = ctx; ctx.window = ctx;
   vm.createContext(ctx);
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>\s*(?=<script>|<\/body>)/g)].map((m) => m[1]);
   assert.strictEqual(scripts.length, 2);
   scripts.forEach((s) => vm.runInContext(s, ctx));
-  return { handlers, els, decoded };
+  // Record each play() promise the page's click handler creates; settled() resolves once all have
+  // resolved or rejected (decode done, or fetch failed). A stub that never settles hangs the test.
+  const plays = [];
+  const play = ctx.DojoAudio.play;
+  ctx.DojoAudio.play = (id) => { const p = play(id); plays.push(p); return p; };
+  return { handlers, els, decoded, settled: () => Promise.allSettled(plays) };
 }
 
-test('play row from raw pack decodes the clip bytes', async () => {
+// Async tests carry a test-level timeout: a play promise that never settles fails the test, not hangs it.
+const ASYNC_TIMEOUT_MS = 5000;
+
+test('play row from raw pack decodes the clip bytes', { timeout: ASYNC_TIMEOUT_MS }, async () => {
   const html = buildReviewPage({ manifestPath: tmpManifest(CLIPS, 'raw'), rows: ROWS });
   const r = runPage(html, 'raw');
   r.handlers['play:a']();
-  await new Promise((res) => setTimeout(res, 50));
+  await r.settled();
   assert.deepStrictEqual(r.decoded, [[2, 3, 4]]);
 });
 
-test('play row from base64 pack decodes the clip bytes', async () => {
+test('play row from base64 pack decodes the clip bytes', { timeout: ASYNC_TIMEOUT_MS }, async () => {
   const html = buildReviewPage({ manifestPath: tmpManifest(CLIPS, 'base64'), rows: ROWS });
   const r = runPage(html, 'base64');
   r.handlers['play:a']();
-  await new Promise((res) => setTimeout(res, 50));
+  await r.settled();
   assert.deepStrictEqual(r.decoded, [[2, 3, 4]]);
 });
 
-test('play failure is shown in the page', async () => {
+test('play failure is shown in the page', { timeout: ASYNC_TIMEOUT_MS }, async () => {
   const html = buildReviewPage({ manifestPath: tmpManifest(CLIPS, 'raw'), rows: ROWS });
   const r = runPage(html, 'raw', true);
   r.handlers['play:a']();
-  await new Promise((res) => setTimeout(res, 50));
+  await r.settled();
   assert.match(r.els.err.textContent, /play failed/);
 });
 
