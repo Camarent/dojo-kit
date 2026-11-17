@@ -23,6 +23,7 @@
 
   // Alias from DojoCommon
   var renderText = DojoCommon.renderText;
+  var renderTextAll = DojoCommon.renderTextAll;
   var cls = DojoCommon.cls;
   var Chip = DojoCommon.Chip;
 
@@ -241,7 +242,7 @@
           return html`<li key=${'topic-' + r.id} data-testid=${'topic-' + r.id} class="catalog-item">
             <button type="button" class="catalog-btn" onClick=${function () { self.setState({ detailItem: r.item }); }}>
               <span class=${'catalog-state ' + state} data-testid=${'topic-state-' + r.id}>${t('catalog.state.' + state)}</span>
-              <span class="catalog-prompt" data-testid=${'topic-label-' + r.id}>${renderText(titles[i])}${ord ? html`<span class="muted catalog-ord"> #${ord}</span>` : null}</span>
+              <span class="catalog-prompt" data-testid=${'topic-label-' + r.id}>${renderTextAll(titles[i])}${ord ? html`<span class="muted catalog-ord"> #${ord}</span>` : null}</span>
               <span class="muted catalog-mastery" data-testid=${'topic-mastery-' + r.id}>${topicMastery(r.es)}%</span>
             </button>
           </li>`;

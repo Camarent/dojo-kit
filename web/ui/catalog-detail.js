@@ -19,6 +19,7 @@
 
   // Alias from DojoCommon
   var renderText = DojoCommon.renderText;
+  var renderTextAll = DojoCommon.renderTextAll;
 
   // Alias from DojoDetail
   var renderDeclarativeDetail = DojoDetail.renderDeclarativeDetail;
@@ -79,7 +80,7 @@
           <div class="catalog-detail-header" data-testid="catalog-detail-header">
             <button type="button" class="btn icon" data-testid="btn-close-detail" onClick=${close}>${t('close')}</button>
             ${detailGlyph(self, p, d)}
-            <h2 data-testid="detail-title">${renderText(self.labelOf(d).text)}${self.ordOf(d) ? ' #' + self.ordOf(d) : ''}</h2>
+            <h2 data-testid="detail-title">${renderTextAll(self.labelOf(d).text)}${self.ordOf(d) ? ' #' + self.ordOf(d) : ''}</h2>
           </div>
           ${renderDetailBody(self, p, t, d)}
         </div>
