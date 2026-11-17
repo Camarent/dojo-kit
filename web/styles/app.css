@@ -383,3 +383,27 @@ input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent, c
 
 .clip-lines p { margin: .25rem 0; }
 .clip-lines [data-testid="clip-tr-label"] { color: var(--muted, inherit); }
+
+/* 390px rendering: a kana or kanji word never splits inside the word; wrap only between words. */
+.qtext, .opt-text, .stimulus-text, .back, .feedback { word-break: keep-all; overflow-wrap: break-word; }
+ruby, rt { white-space: nowrap; }
+ruby { display: ruby; }
+
+/* 390px buttons: the dontKnow and next buttons stack full width, never clipped by a row. */
+.actions-row, .row.end { flex-wrap: wrap; min-width: 0; }
+.actions-row .btn, .row.end .btn { min-width: 0; max-width: 100%; overflow: visible; }
+@media (max-width: 600px) {
+  .actions-row .btn, .actions-row .btn:disabled { flex: 1 1 100%; }
+}
+
+/* Grammar table wider than the viewport: scrolls inside its wrapper, edge shadows show more content. */
+.detail-table-wrap {
+  background:
+    linear-gradient(to right, var(--bg) 40%, transparent) 0 0 / 2rem 100% no-repeat local,
+    linear-gradient(to left, var(--bg) 40%, transparent) 100% 0 / 2rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.2), transparent) 0 0 / 0.75rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.2), transparent) 100% 0 / 0.75rem 100% no-repeat scroll;
+  background-color: var(--bg);
+  overflow-x: auto;
+}
+.detail-table ruby, .detail-table rt { white-space: nowrap; }
