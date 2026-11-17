@@ -12,6 +12,9 @@
   var gradeMod = dep('DojoSessionGrade', './grade.js');
   var runViewMod = dep('DojoSessionRunView', './run-view.js');
   var examRunMod = dep('DojoSessionExamRun', './exam-run.js');
+  var runParts = dep('DojoSessionRunParts', './run-parts.js');
+  var makeSx = runParts.makeSx;
+  var remainingList = runParts.remainingList;
 
   function initialSession(ctx, mode, plan) {
     var resume = plan.resume;
@@ -28,15 +31,6 @@
       session.training = !!plan.training;
     }
     return session;
-  }
-
-  function remainingList(rc) {
-    var left = Math.max(0, rc.session.deadline - rc.ctx.now());
-    if (!rc.sx.groups) return [left];
-    return rc.sx.groups.map(function (g, gi) {
-      if (gi === rc.sx.groupIdx) return left;
-      return gi < rc.sx.groupIdx ? 0 : g.minutes * 60000;
-    });
   }
 
   function currentId(rc) {
@@ -167,6 +161,9 @@
     session.canOverride = rc.sx.fn.canOverride;
     session.overrideLast = rc.sx.fn.overrideLast;
     session.retryCount = function () { return Math.max(0, rc.sx.queue.length - Math.max(session.index, session.total)); };
+    // Counter denominator: planned questions plus the repeats queued so far; only repeats change it.
+    session.denominator = function () { return rc.sx.queue.length; };
+    session.repeats = function () { return rc.sx.queue.length - session.initialTotal; };
   }
 
   function nextGroupDue(rc) {
@@ -225,6 +222,20 @@
     return null;
   }
 
+  // Finish numbers from the core: answered, right, weak units left, next due, denominator.
+  function finishStats(rc, sum) {
+    var ctx = rc.ctx;
+    var sx = rc.sx;
+    var units = {};
+    ctx.items.forEach(function (it) { (units[it.unit] = units[it.unit] || []).push(it.id); });
+    return ctx.dojo.call('sessionFinish', {
+      answers: sum.review.map(function (r) { return { id: r.id, right: r.correct === true }; }),
+      units: Object.keys(units).map(function (u) { return units[u]; }),
+      records: ctx.fn.records(), now: ctx.now(),
+      planned: sx.plan.ids.length, repeatsAdded: Math.max(0, sx.queue.length - sx.plan.ids.length)
+    });
+  }
+
   function finish(rc) {
     var sx = rc.sx;
     if (sx.summary) return sx.summary;
@@ -232,6 +243,8 @@
     if (sx.mode === 'exam') {
       var failed = finishExam(rc, sum);
       if (failed) return failed;
+    } else if (sx.mode !== 'placement') {
+      sum.finish = finishStats(rc, sum);
     }
     if (sx.mode === 'placement') {
       rc.ctx.store.update(function (doc) {
@@ -280,25 +293,6 @@
     session.expire();
   }
 
-  // sx: shared session state for session/grade.js and session/exam-run.js; the reassigned fields live only here.
-  function makeSx(ctx, mode, plan, session) {
-    var groups = plan.groups || null;
-    var resume = plan.resume;
-    if (groups) session.group = { index: resume ? resume.group : 0, count: groups.length };
-    return {
-      mode: mode, plan: plan, session: session, resume: resume, groups: groups,
-      lockHolder: mode === 'exam' && plan.deadline !== undefined ? ctx.fn.acquireWakeLock() : null, queue: plan.ids.slice(),
-      startedAt: resume ? ctx.now() - resume.elapsedMs : ctx.now(), answeredAt: {}, graded: {}, review: [], requeued: {},
-      entityWrong: {}, // scoped entities that already dropped once in this session
-      skipped: [], // items skipped due to timer expiry
-      introduced: {}, // items that showed their intro (introNew)
-      introSeen: Object.create(null), // entities whose intro card was dismissed in this session
-      isTimedExam: mode === 'exam' && !plan.training && plan.deadline !== undefined, draftAnswers: {}, fn: {},
-      groupIdx: groups ? session.group.index : 0, revealed: false, summary: null, lastAnswer: null,
-      draftClosed: false, draftDirty: false, lastWriteAt: -Infinity
-    };
-  }
-
   function wireSx(rc) {
     var fn = rc.sx.fn;
     var view = rc.view;
@@ -308,7 +302,6 @@
     fn.recordGrade = view.recordGrade;
     fn.isNewFor = view.isNewFor;
     fn.prevOf = view.prevOf;
-    fn.requeueKey = view.requeueKey;
     var gradeApi = gradeMod.create(rc.ctx, rc.sx);
     ['gradeInput', 'nextRecord', 'applyVerdict', 'canOverride', 'overrideLast'].forEach(function (k) { fn[k] = gradeApi[k]; });
     var runApi = examRunMod.create(rc.ctx, rc.sx);

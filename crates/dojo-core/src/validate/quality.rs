@@ -228,6 +228,21 @@ pub(super) fn paren_hints(prompt: &str) -> Vec<&str> {
     hints
 }
 
+/// Check that no hint of a gap item (parenthesised prompt hint or `meta.hint_ru`) contains any accepted answer: answers or retry readings.
+pub(super) fn check_hint_contains_answer(item: &Item, sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
+    let Item::Gap(g) = item else { return };
+    let opts = fold_norm(g.normalize.as_ref(), course_norm).cloned().or_else(|| g.normalize.clone()).unwrap_or_default();
+    let accepted: Vec<String> = g.answers.iter().chain(&g.retry).map(|a| normalize(a, &opts)).collect();
+    let meta_hint = g.meta.as_ref().and_then(|m| m.get("hint_ru")).and_then(|v| v.as_str());
+    for hint in paren_hints(&g.prompt).into_iter().chain(meta_hint) {
+        let hint_norm = normalize(hint, &opts);
+        if let Some(answer) = accepted.iter().find(|a| contains_leak(&hint_norm, a)) {
+            sink.error("hint_contains_answer", file, line, format!("item '{}' hint '({hint})' contains its accepted answer '{answer}'", item.id()));
+            return;
+        }
+    }
+}
+
 /// Check that no parenthesised hint of a gap, cloze or choice prompt contains the item's correct answer.
 pub(super) fn check_hint_leak(item: &Item, sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
     let (prompt, item_norm, answers): (&str, Option<&Normalize>, Vec<String>) = match item {

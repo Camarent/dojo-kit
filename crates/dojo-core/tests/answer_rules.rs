@@ -18,8 +18,8 @@ fn rules(drop: i64, jump_to: Option<i64>, wrong_floor: Option<i64>) -> AnswerRul
 
 #[test]
 fn jump_applies_when_due_and_stage_1() {
-    let r = apply_answer_rules(Some(&rec(1, NOW)), true, NOW, &DEFAULT_LADDER, rules(1, Some(5), None));
-    assert_eq!(stage(&r), 5);
+    let r = apply_answer_rules(Some(&rec(1, NOW)), true, NOW, &DEFAULT_LADDER, rules(1, Some(4), None));
+    assert_eq!(stage(&r), 4);
 }
 
 #[test]
@@ -43,7 +43,7 @@ fn jump_skipped_for_new_item() {
 #[test]
 fn jump_clamped_to_max_stage() {
     let r = apply_answer_rules(Some(&rec(1, NOW)), true, NOW, &DEFAULT_LADDER, rules(1, Some(99), None));
-    assert_eq!(stage(&r), 6);
+    assert_eq!(stage(&r), 4);
 }
 
 #[test]
@@ -93,6 +93,6 @@ fn practice_not_due_correct_does_not_jump() {
 
 #[test]
 fn practice_due_correct_jumps() {
-    let r = apply_practice_rules(Some(&rec(1, NOW)), true, NOW, &DEFAULT_LADDER, rules(1, Some(5), None));
-    assert_eq!(stage(&r), 5);
+    let r = apply_practice_rules(Some(&rec(1, NOW)), true, NOW, &DEFAULT_LADDER, rules(1, Some(4), None));
+    assert_eq!(stage(&r), 4);
 }

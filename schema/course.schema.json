@@ -290,6 +290,17 @@
           "type": "null"
         }
       ]
+    },
+    "session": {
+      "description": "Session builder settings; absent = every default of `session::SessionConfig`.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SessionSettings"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,
@@ -421,6 +432,15 @@
           "format": "uint32",
           "minimum": 0
         },
+        "knownDistinct": {
+          "description": "`\"unit\"` scope: other questions answered right after a wrong one before the weak flag clears (integer >= 1, default 2; 1 when the unit pool has one question).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
         "mode": {
           "description": "Scheduling mode: `\"ladder\"` (default) or `\"errorWeighted\"`.\nNot allowed in `srsByType` (mode_by_type).",
           "anyOf": [
@@ -447,16 +467,28 @@
             "null"
           ],
           "format": "int64"
+        },
+        "migrate": {
+          "description": "One-time progress migration (course-level `srs` only): see `migrate_doc`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SrsMigrate"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
     },
     "SrsScope": {
-      "description": "Scheduling scope of a unit.",
+      "description": "Scheduling scope of a unit. `Unit` schedules one unit key (`<entity>|<aspect>`) as a whole.",
       "type": "string",
       "enum": [
         "item",
-        "entity"
+        "entity",
+        "unit"
       ]
     },
     "SrsMode": {
@@ -465,6 +497,32 @@
       "enum": [
         "ladder",
         "errorWeighted"
+      ]
+    },
+    "SrsMigrate": {
+      "description": "`srs.migrate`: runs once per save (marker `migrated[id]`). `ladderFrom` maps a unit id to its old ladder (ms);\n`unify` gives every recorded member of a unit key the best stage and latest due.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "ladderFrom": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "unify": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id"
       ]
     },
     "NewOrder": {
@@ -930,6 +988,13 @@
             "boolean",
             "null"
           ]
+        },
+        "checkAnswers": {
+          "description": "Opt-in (default false): error `ruby_missing` on answer texts (gap `answers` and `retry`, cloze blank alternatives) and on choice/multi options.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -1312,6 +1377,113 @@
       "additionalProperties": false,
       "required": [
         "id"
+      ]
+    },
+    "SessionSettings": {
+      "description": "`course.json` `session:{...}` block; every key optional, defaults live in `session::SessionConfig`.",
+      "type": "object",
+      "properties": {
+        "sessionMix": {
+          "description": "Question kinds in session order: `weak`, `new`, `due`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "perUnitMax": {
+          "description": "Maximum questions per unit in one session.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "repeatMax": {
+          "description": "Maximum repeats of one question in one session.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "sessionMode": {
+          "description": "`auto` sizes the session from `dailyMinutes`; `manual` uses `sessionCap`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SessionMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sessionCap": {
+          "description": "Manual session size; 0 = unlimited.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "dailyMinutes": {
+          "description": "Study minutes per day used by `auto` sizing.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "sessionMax": {
+          "description": "Upper bound of an `auto` session size.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "secPerAnswer": {
+          "description": "Seconds per answer used when no answer timing is recorded yet.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "reviewDays": {
+          "description": "Days before the exam kept free of new units for review.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "knownDistinct": {
+          "description": "Other distinct questions that must be answered right before a question leaves the queue.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SessionMode": {
+      "description": "How the session size is chosen: `auto` from the time budget, `manual` from `sessionCap`.",
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual"
       ]
     }
   }

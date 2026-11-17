@@ -33,10 +33,13 @@
     return canSubmit(p.state) ? { input: { inputs: p.state.inputs }, picked: p.state.inputs } : null;
   }
 
-  function blankMark(t, ok) {
+  // Partial result: each field is labelled right/wrong (session.field.*); otherwise the blank-result labels.
+  function blankMark(c, ok) {
     if (ok === null || ok === undefined) return null;
+    var key = c.partial ? (ok ? 'session.field.right' : 'session.field.wrong')
+      : (ok ? 'q.result.blankRight' : 'q.result.blankWrong');
     return html`<span class="cloze-mark" role="img"
-      aria-label=${t(ok ? 'q.result.blankRight' : 'q.result.blankWrong')}>${ok ? '✓' : '✗'}</span>`;
+      aria-label=${c.t(key)}>${ok ? '✓' : '✗'}</span>`;
   }
 
   // Answered without a mark (exam): the field is read-only and says it is not checked.
@@ -63,7 +66,7 @@
             next[n] = e.target.value;
             c.p.setState({ inputs: next });
           }} />
-        ${locked ? html`<span class="cloze-caption" data-testid=${'cloze-caption-' + n}>${c.t('q.cloze.locked')}</span>` : blankMark(c.t, ok)}
+        ${locked ? html`<span class="cloze-caption" data-testid=${'cloze-caption-' + n}>${c.t('q.cloze.locked')}</span>` : blankMark(c, ok)}
       </span>`;
   }
 
@@ -138,7 +141,8 @@
       t: t,
       res: res,
       inputs: inputs,
-      marks: res && !p.exam && res.detail ? res.detail.results : null
+      marks: res && !p.exam && res.detail ? res.detail.results : null,
+      partial: !!(res && !p.exam && res.detail && res.detail.partial)
     };
 
     var blanksCount = p.view.segments.filter(function (seg) { return seg.blank !== undefined; }).length;
@@ -170,6 +174,11 @@
       return (item.parts || []).filter(function (p) { return Array.isArray(p); }).map(function (p) { return p[0]; });
     },
     initialState: initialState,
-    onKey: onKey
+    onKey: onKey,
+    verdict: function (res, t) {
+      if (!res.correct && !res.timedOut && res.detail && res.detail.partial) return t('session.partial');
+      if (res.correct) return t('session.correct');
+      return res.timedOut ? t('session.timedOut') : t('session.wrong');
+    }
   });
 })(typeof self !== 'undefined' ? self : this);

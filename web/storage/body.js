@@ -93,7 +93,8 @@
     if (doc.resetAt >= store.doc.resetAt) {
       doc.resetAt = store.doc.resetAt;
     }
-    var merged = s.withCourse(s.mergeDocs(store.doc, doc));
+    // Migrate both sides before the merge, so an unmigrated import cannot bring its old stages back.
+    var merged = s.withCourse(s.mergeDocs(s.migrated(store.doc), s.migrated(doc)));
     if (adapters.same(merged, store.doc)) return { ok: true, added: 0 };
     var added = countNew(store.doc, merged);
     s.commit(merged);

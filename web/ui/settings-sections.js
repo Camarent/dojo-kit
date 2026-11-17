@@ -12,8 +12,6 @@
   var renderText = DojoCommon.renderText;
   var Stepper = DojoCommon.Stepper;
 
-  var PACE_LABEL_KEYS = { '0.5': 'muchDenser', '0.75': 'denser', '1': 'asInCourse', '1.5': 'longer', '2': 'muchLonger', '3': 'x3' };
-
   function sectionNewPerDay(p, t, self) {
     var perDay = p.store.doc.settings && typeof p.store.doc.settings.newPerDay === 'number' ? p.store.doc.settings.newPerDay : p.engine.globalNewPerDay();
     return html`<section class="group">
@@ -47,6 +45,56 @@
           <p class="muted">${t('settings.examDate.hint')}</p>
           <input id="exam-date" type="date" class="field" data-testid="exam-date" value=${examDate}
             onChange=${function (e) { self.setSetting('examDate', e.target.value || ''); }} />
+        </section>`;
+  }
+
+  // Shown when neither the save nor the course block sets a value; mirrors the core defaults (crates/dojo-core/src/session/config.rs).
+  var SESSION_CORE_DEFAULTS = { sessionMode: 'auto', sessionCap: 0, dailyMinutes: 30, sessionMax: 60, reviewDays: 3, perUnitMax: 1, repeatMax: 1, knownDistinct: 1, sessionMix: ['weak', 'new', 'due'] };
+  var SESSION_STEPPERS = [
+    { name: 'sessionCap', min: 0, max: 500, label: 'settings.session.cap' },
+    { name: 'dailyMinutes', min: 0, max: 600, label: 'settings.session.dailyMinutes' },
+    { name: 'sessionMax', min: 0, max: 500, label: 'settings.session.sessionMax' },
+    { name: 'reviewDays', min: 0, max: 365, label: 'settings.session.reviewDays' },
+    { name: 'perUnitMax', min: 0, max: 20, label: 'settings.session.perUnitMax' },
+    { name: 'repeatMax', min: 0, max: 20, label: 'settings.session.repeatMax' },
+    { name: 'knownDistinct', min: 1, max: 20, label: 'settings.session.knownDistinct' },
+  ];
+
+  function sectionSession(p, t, self) {
+    var saved = p.engine && p.engine.sessionOverrides ? p.engine.sessionOverrides() : {};
+    var course = p.course.session || {};
+    function current(name) {
+      var key = 'session:' + name;
+      if (Object.prototype.hasOwnProperty.call(saved, key)) return saved[key];
+      return Object.prototype.hasOwnProperty.call(course, name) ? course[name] : SESSION_CORE_DEFAULTS[name];
+    }
+    var mode = current('sessionMode');
+    var mix = current('sessionMix');
+    // The mix select picks the kind that comes first; the other two keep the default order.
+    function setMixFirst(kind) {
+      self.setSetting('session:sessionMix', [kind].concat(SESSION_CORE_DEFAULTS.sessionMix.filter(function (k) { return k !== kind; })));
+    }
+    return html`<section class="group" data-testid="session-settings">
+          <h2>${t('settings.session')}</h2>
+          <p class="muted">${t('settings.session.hint')}</p>
+          <label for="session-mode">${t('settings.session.mode')}</label>
+          <select id="session-mode" class="field" data-testid="session-mode" value=${mode}
+            onChange=${function (e) { self.setSetting('session:sessionMode', e.target.value); }}>
+            <option value="auto" selected=${mode === 'auto'}>${t('settings.session.mode.auto')}</option>
+            <option value="manual" selected=${mode === 'manual'}>${t('settings.session.mode.manual')}</option>
+          </select>
+          ${SESSION_STEPPERS.map(function (s) {
+            return html`<${Stepper} key=${s.name} testid=${'session-' + s.name} label=${t(s.label)} value=${current(s.name)}
+              min=${s.min} max=${s.max} step=${1} decLabel=${t('stepper.dec')} incLabel=${t('stepper.inc')}
+              onChange=${function (v) { self.setSetting('session:' + s.name, v); }} />`;
+          })}
+          <label for="session-mix">${t('settings.session.mix')}</label>
+          <select id="session-mix" class="field" data-testid="session-mix" value=${mix[0]}
+            onChange=${function (e) { setMixFirst(e.target.value); }}>
+            <option value="weak" selected=${mix[0] === 'weak'}>${t('settings.session.mix.weak')}</option>
+            <option value="new" selected=${mix[0] === 'new'}>${t('settings.session.mix.new')}</option>
+            <option value="due" selected=${mix[0] === 'due'}>${t('settings.session.mix.due')}</option>
+          </select>
         </section>`;
   }
 
@@ -153,123 +201,8 @@
         </section>`;
   }
 
-  // Shared shape of a labelled dialog field. o: {id, testid, label, hint, value, onChange, options, after}.
-  function selectField(o) {
-    return html`<div class="group">
-              <label for=${o.id} class="legend-like">${o.label}</label>
-              <p class="muted small">${o.hint}</p>
-              <select id=${o.id} class="field" data-testid=${o.testid} value=${o.value} onChange=${o.onChange}>${o.options}</select>
-              ${o.after || null}
-            </div>`;
-  }
-
-  function unitNewPerDayGroup(d, t, self) {
-    return html`<div class="group">
-              <label class="legend-like" for="unit-newperday-stepper">${t('settings.unitSettings.newPerDay')}</label>
-              <p class="muted small">${t('settings.unitSettings.newPerDay.hint')}</p>
-              <${Stepper} testid="unit-newperday" id="unit-newperday-stepper" label=${t('settings.unitSettings.newPerDay')}
-                value=${d.effective.newPerDay} min=${0} max=${50} step=${1}
-                decLabel=${t('stepper.dec')} incLabel=${t('stepper.inc')}
-                onChange=${function (v) { self.setUnitSettingField(d.unitId, 'newPerDay', v === d.course.newPerDay ? null : v); }} />
-            </div>`;
-  }
-
-  function unitLadderPaceGroup(d, t, self) {
-    var options = ['0.5', '0.75', '1', '1.5', '2', '3'].map(function (v) {
-      return html`<option key=${v} value=${v}>${t('settings.unitSettings.ladderPace.option.' + PACE_LABEL_KEYS[v])}</option>`;
-    });
-    var onChange = function (e) {
-      var value = self.ladderScaleFromValue(e.target.value);
-      self.setUnitSettingField(d.unitId, 'ladderScale', value === d.course.ladderScale ? null : value);
-    };
-    return selectField({ id: 'ladder-pace-' + d.unitId, testid: 'unit-ladder-pace', label: t('settings.unitSettings.ladderPace'),
-      hint: t('settings.unitSettings.ladderPace.hint'), value: self.ladderScaleToValue(d.effective.ladderScale), onChange: onChange, options: options,
-      after: html`<p class="muted small" data-testid="ladder-preview">${t('settings.unitSettings.ladderPreview', { ladder: d.ladderPreview })}</p>` });
-  }
-
-  function unitOnWrongGroup(d, t, self) {
-    var options = [0, 1, 2, 3].concat(d.effective.dropOnWrong > 3 ? [d.effective.dropOnWrong] : []).map(function (v) {
-      return html`<option key=${v} value=${v}>${v > 3 ? t('settings.unitSettings.dropN', { n: v }) : t('settings.unitSettings.onWrong.option.' + (v === 0 ? 'keep' : 'drop' + v))}</option>`;
-    });
-    var onChange = function (e) {
-      var value = parseInt(e.target.value, 10);
-      self.setUnitSettingField(d.unitId, 'dropOnWrong', value === d.course.dropOnWrong ? null : value);
-    };
-    return selectField({ id: 'on-wrong-' + d.unitId, testid: 'unit-on-wrong', label: t('settings.unitSettings.onWrong'),
-      hint: t('settings.unitSettings.onWrong.hint'), value: String(d.effective.dropOnWrong), onChange: onChange, options: options });
-  }
-
-  function unitNewOrderGroup(d, t, self) {
-    var options = ['file', 'random'].map(function (v) {
-      return html`<option key=${v} value=${v}>${t('settings.unitSettings.newOrder.option.' + v)}</option>`;
-    });
-    var onChange = function (e) {
-      var value = e.target.value;
-      self.setUnitSettingField(d.unitId, 'newOrder', value === d.course.newOrder ? null : value);
-    };
-    return selectField({ id: 'new-order-' + d.unitId, testid: 'unit-new-order', label: t('settings.unitSettings.newOrder'),
-      hint: t('settings.unitSettings.newOrder.hint'), value: d.effective.newOrder, onChange: onChange, options: options });
-  }
-
-  function unitDialogView(s, t, self) {
-    var d = s.unitDialog;
-    return d ? html`<div class="overlay" data-testid="unit-settings-dialog">
-          <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="unit-settings-dialog-title" tabIndex="-1">
-            <h2 id="unit-settings-dialog-title" data-testid="unit-settings-dialog-title">${t('settings.unitSettings.dialogTitle', { title: d.unitTitle })}</h2>
-            ${unitNewPerDayGroup(d, t, self)}
-            ${unitLadderPaceGroup(d, t, self)}
-            ${unitOnWrongGroup(d, t, self)}
-            ${unitNewOrderGroup(d, t, self)}
-            <div class="row end">
-              <button type="button" class="btn" data-testid="btn-unit-reset-cancel" onClick=${function () { self.closeUnitDialog(); }}>${t('cancel')}</button>
-              <button type="button" class="btn primary" data-testid="btn-unit-save" onClick=${function () { self.closeUnitDialog(true); }}>${t('save')}</button>
-              <button type="button" class="btn danger" data-testid="btn-unit-reset"
-                disabled=${Object.keys(d.override).length === 0}
-                onClick=${function () { self.resetUnitSettings(d.unitId); }}>${t('settings.unitSettings.reset')}</button>
-            </div>
-          </div>
-        </div>` : null;
-  }
-
-  function groupDialogView(s, t, self) {
-    var g = s.groupDialog;
-    var newOrderOptions = ['file', 'random'].map(function (v) {
-      return html`<option key=${v} value=${v}>${t('settings.unitSettings.newOrder.option.' + v)}</option>`;
-    });
-    var onlyTagsOptions = [html`<option value="default">${t('settings.unitSettings.noOverride')}</option>`, html`<option value="true">${t('session.known')}</option>`, html`<option value="false">${t('session.dontKnow')}</option>`];
-    return g ? html`<div class="overlay" data-testid="group-settings-dialog">
-          <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="group-settings-dialog-title" tabIndex="-1">
-            <h2 id="group-settings-dialog-title" data-testid="group-settings-dialog-title">${t('settings.groupSettings.dialogTitle', { title: g.groupTitle })}</h2>
-            <div class="group">
-              <label class="legend-like" for="group-newperday-stepper">${t('settings.groupSettings.newPerDay')}</label>
-              <p class="muted small">${t('settings.groupSettings.newPerDay.hint')}</p>
-              <${Stepper} testid="group-newperday" id="group-newperday-stepper" label=${t('settings.groupSettings.newPerDay')}
-                value=${g.effective.newPerDay !== undefined ? g.effective.newPerDay : 0} min=${0} max=${50} step=${1}
-                decLabel=${t('stepper.dec')} incLabel=${t('stepper.inc')}
-                onChange=${function (v) { self.setGroupSettingField(g.groupId, 'newPerDay', v === g.course.newPerDay ? null : v); }} />
-            </div>
-            ${selectField({ id: 'group-new-order-' + g.groupId, testid: 'group-new-order', label: t('settings.groupSettings.newOrder'),
-              hint: t('settings.groupSettings.newOrder.hint'), value: g.effective.newOrder || 'file', options: newOrderOptions,
-              onChange: function (e) {
-                var value = e.target.value;
-                self.setGroupSettingField(g.groupId, 'newOrder', value === g.course.newOrder ? null : value);
-              } })}
-            ${g.extraTags && g.extraTags.length > 0 ? selectField({ id: 'group-onlyTags-' + g.groupId, testid: 'group-onlyTags', label: t('settings.groupSettings.onlyTags'),
-              hint: t('settings.groupSettings.onlyTags.hint'), value: g.effective.onlyTags !== undefined ? (g.effective.onlyTags === true ? 'true' : 'false') : 'default', options: onlyTagsOptions,
-              onChange: function (e) {
-                var value = e.target.value === 'true' ? true : e.target.value === 'false' ? false : null;
-                self.setGroupSettingField(g.groupId, 'onlyTags', value === g.course.onlyTags ? null : value);
-              } }) : null}
-            <div class="row end">
-              <button type="button" class="btn" data-testid="btn-group-reset-cancel" onClick=${function () { self.closeGroupDialog(); }}>${t('cancel')}</button>
-              <button type="button" class="btn primary" data-testid="btn-group-save" onClick=${function () { self.closeGroupDialog(true); }}>${t('save')}</button>
-              <button type="button" class="btn danger" data-testid="btn-group-reset"
-                disabled=${Object.keys(g.override).length === 0}
-                onClick=${function () { self.resetGroupSettings(g.groupId); }}>${t('settings.groupSettings.reset')}</button>
-            </div>
-          </div>
-        </div>` : null;
-  }
+  var dialogsMod = root.DojoSettingsUnitDialogs || (typeof require !== 'undefined' ? require('./settings-unit-dialogs.js') : null);
+  var dialogViews = dialogsMod.create();
 
   var topicsMod = root.DojoSettingsTopics || (typeof require !== 'undefined' ? require('./settings-topics.js') : null);
   var renderTopicsSettings = topicsMod ? topicsMod.create().renderTopicsSettings : null;
@@ -278,9 +211,9 @@
   function create() {
     return {
       sectionNewPerDay: sectionNewPerDay, sectionTheme: sectionTheme, sectionTopics: sectionTopics,
-      sectionExamDate: sectionExamDate, sectionUnits: sectionUnits, sectionGroups: sectionGroups,
+      sectionExamDate: sectionExamDate, sectionSession: sectionSession, sectionUnits: sectionUnits, sectionGroups: sectionGroups,
       sectionPlacement: sectionPlacement, sectionExport: sectionExport, sectionImport: sectionImport,
-      sectionReset: sectionReset, sectionAbout: sectionAbout, unitDialogView: unitDialogView, groupDialogView: groupDialogView
+      sectionReset: sectionReset, sectionAbout: sectionAbout, unitDialogView: dialogViews.unitDialogView, groupDialogView: dialogViews.groupDialogView
     };
   }
 

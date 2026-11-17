@@ -163,15 +163,18 @@ test('relearn uses the unit ladder', async () => {
   while (s.index < s.total - 1) s.next();
   s.next();
   
-  // Now we have a relearn copy
+  // The queued repeat is another question of the unit (picked by core), not the answered one.
   const copy = s.current();
-  assert.strictEqual(copy.item.id, first.id);
-  
-  // Answer correctly on relearn
-  s.answer({ text: 'arelearn1' });
-  
-  // Check that the record uses the relearn ladder
-  const rec = t.doc.items[first.id];
+  assert.notStrictEqual(copy.item.id, first.id);
+  assert.strictEqual(copy.item.unit, 'relearn');
+
+  // Answer the repeat correctly; fixture answers are 'a' + unit + index
+  // The sibling has no record yet: seed a stage 0 record so the relearn writes to it.
+  t.doc.items[copy.item.id] = { s: 0, due: NOW - 1, ok: 0, bad: 1, last: NOW - DAY };
+  s.answer({ text: 'a' + copy.item.id.replace('-', '') });
+
+  // Check that the repeat's record uses the relearn ladder
+  const rec = t.doc.items[copy.item.id];
   assert.strictEqual(rec.s, 1);
   // With relearn ladder [0, 3600000, 7200000], stage 1 interval is 3600000 (1 hour)
   assert.strictEqual(rec.due, NOW + 3600000);

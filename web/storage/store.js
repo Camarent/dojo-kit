@@ -84,10 +84,13 @@
   }
 
   function installCommit(s) {
+    /** Doc after the migration hook, or the doc itself when the hook changes nothing. */
+    s.migrated = function (doc) { return s.migrate(doc) || doc; };
     function mergedWithStored(doc) {
       var stored = s.local.readLocal();
       if (!stored || same(stored, doc)) return doc;
-      return s.withCourse(s.mergeDocs(doc, stored));
+      // Both sides migrated: an unmigrated stored copy would win the merge on its higher old stage.
+      return s.withCourse(s.mergeDocs(s.migrated(doc), s.migrated(stored)));
     }
     s.commit = function (next) {
       var merged = next;

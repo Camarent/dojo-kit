@@ -59,6 +59,32 @@ pub struct Stats {
     pub tags: Vec<TagCount>,
     /// Exam section capacity per configured section.
     pub exam: Vec<ExamSectionStats>,
+    /// Last answer durations in milliseconds (at most `ANSWER_MS_KEEP`, oldest first).
+    #[serde(rename = "answerMs", default, skip_serializing_if = "Vec::is_empty")]
+    pub answer_ms: Vec<u64>,
+}
+
+/// Number of answer durations kept in `Stats::answer_ms`.
+pub const ANSWER_MS_KEEP: usize = 100;
+
+/// Appends one answer duration and drops the oldest ones beyond `ANSWER_MS_KEEP`.
+pub fn push_answer_ms(durations: &mut Vec<u64>, ms: u64) {
+    durations.push(ms);
+    let excess = durations.len().saturating_sub(ANSWER_MS_KEEP);
+    durations.drain(..excess);
+}
+
+/// Median of the durations (mean of the two middle values for an even count); `None` when empty.
+pub fn median_answer_ms(durations: &[u64]) -> Option<u64> {
+    let mut sorted = durations.to_vec();
+    sorted.sort_unstable();
+    let n = sorted.len();
+    let hi = *sorted.get(n / 2)?;
+    if n % 2 == 1 {
+        return Some(hi);
+    }
+    let lo = *sorted.get(n / 2 - 1)?;
+    Some(lo + (hi - lo) / 2)
 }
 
 /// Returns true if the item's type is self-rated (currently only Card).
@@ -159,6 +185,7 @@ pub fn compute(course: &Course, items: &[Item]) -> Stats {
         },
         tags,
         exam,
+        answer_ms: Vec::new(),
     }
 }
 

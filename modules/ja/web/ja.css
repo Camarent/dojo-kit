@@ -7,6 +7,8 @@
 }
 @media (max-width: 390px) {
   .fb-row-grid { gap: var(--space-1); }
-  .fb-mean { min-width: 0; overflow-wrap: anywhere; }
+  .fb-mean { min-width: 0; word-break: keep-all; overflow-wrap: break-word; }
   .fb-read { font-size: var(--fs-sm); text-align: right; }
 }
+/* Each reading stays whole; lines break only between readings */
+.fb-reading { white-space: nowrap; }

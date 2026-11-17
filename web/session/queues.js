@@ -5,13 +5,14 @@
   'use strict';
 
   var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./util.js') : null);
-  var shuffledIndexes = util.shuffledIndexes;
   var isRetired = util.isRetired;
   var UNIT_NEW_PREFIX = util.K.UNIT_NEW_PREFIX;
   var GROUP_NEW_PREFIX = util.K.GROUP_NEW_PREFIX;
+  var SESSION_PREFIX = 'session:';
   var DEFAULT_NEW_PER_DAY = util.K.DEFAULT_NEW_PER_DAY;
   var weighted = root.DojoSessionWeightedQueue || (typeof require === 'function' ? require('./weighted-queue.js') : null);
   var topicsMod = root.DojoSessionTopics || (typeof require === 'function' ? require('./topics.js') : null);
+  var pick = root.DojoSessionQueuesPick || (typeof require === 'function' ? require('./queues-pick.js') : null);
 
   // Each group fills the shared bag h from ctx; calls go through h at call time.
   function scopeHelpers(ctx, h) {
@@ -19,14 +20,16 @@
     h.scopedArgs = function () {
       return ctx.hasScope ? { scopedMembers: ctx.scopedMembers } : null;
     };
+    // Members of a scoped key: an entity, or a unit key under srs.scope "unit".
+    function membersOf(e) { return ctx.entityMembers[e] || ctx.scopedMembers[e]; }
     h.scopedRecords = function (e) {
       var recs = ctx.fn.records();
       var out = {};
-      ctx.entityMembers[e].forEach(function (id) { if (recs[id] !== undefined) out[id] = recs[id]; });
+      membersOf(e).forEach(function (id) { if (recs[id] !== undefined) out[id] = recs[id]; });
       return out;
     };
     h.scopedMemberList = function (e) {
-      return ctx.entityMembers[e].map(function (id) { return { id: id, retired: isRetired(byId[id]) }; });
+      return membersOf(e).map(function (id) { return { id: id, retired: isRetired(byId[id]) }; });
     };
     h.entityViewOf = function (e) {
       return ctx.dojo.call('entityView', { members: h.scopedMemberList(e), records: h.scopedRecords(e) });
@@ -149,120 +152,59 @@
     };
   }
 
-  // Shuffle items within each random-order unit's own slots.
-  function shuffleRandomUnits(ctx, h, order) {
-    var course = ctx.course;
-    var unitLookup = {};
-    (course.units || []).forEach(function (u) { unitLookup[u.id] = u; });
-    var itemUnit = {};
-    ctx.items.forEach(function (it) { itemUnit[it.id] = it.unit; });
-    // Group positions by unit
-    var unitPositions = {};
-    order.forEach(function (id, idx) {
-      var unitId = itemUnit[id];
-      if (!unitPositions[unitId]) unitPositions[unitId] = [];
-      unitPositions[unitId].push(idx);
-    });
-    // Shuffle positions within each random-order unit
-    var shuffledOrder = order.slice();
-    for (var unitId in unitPositions) {
-      var positions = unitPositions[unitId];
-      var unit = unitLookup[unitId];
-      var inCappedGroup = ctx.unitGroup[unitId] !== undefined && h.groupCap(ctx.groupById[ctx.unitGroup[unitId]]) !== null;
-      if (!inCappedGroup && h.resolveNewOrder(unit) === 'random' && positions.length > 1) {
-        var seed = course.id + '|' + ctx.today() + '|' + unitId;
-        var perm = shuffledIndexes(positions.length, seed);
-        positions.forEach(function (pos, i) {
-          shuffledOrder[pos] = order[positions[perm[i]]];
-        });
-      }
-    }
-    return shuffledOrder;
-  }
-
-  // Extra-group entities beyond the base share: filtered by extraTags and/or drawn at random in their slots.
-  function randomizeExtraSlots(o) {
-    var ctx = o.ctx, xg = o.xg, order2 = o.order, inGroup = o.inGroup, recs = o.recs, q0 = o.q0;
-    var slots = [];
-    order2.forEach(function (id, i) { if (inGroup[id] && recs[id] === undefined) slots.push(i); });
-    var baseEnt = {};
-    q0.fresh.forEach(function (id) { baseEnt[ctx.itemEntities[id]] = true; });
-    var head = [];
-    var rest = [];
-    var restOf = {};
-    slots.forEach(function (i) {
-      var id = order2[i];
-      var e = ctx.itemEntities[id];
-      if (baseEnt[e]) { head.push(id); return; }
-      if (!restOf[e]) { restOf[e] = []; rest.push(e); }
-      restOf[e].push(id);
-    });
-    var perm2 = shuffledIndexes(rest.length, (ctx.course.id || '') + '|' + ctx.today() + '|' + xg.id + '|extra');
-    var seq = head.slice();
-    perm2.forEach(function (pi) { restOf[rest[pi]].forEach(function (id) { seq.push(id); }); });
-    var out = order2.slice();
-    slots.forEach(function (pos, i) { out[pos] = seq[i]; });
-    return out;
-  }
-
-  // Two passes: the base share is picked as usual; entities beyond it are filtered by extraTags and/or drawn at random.
-  function extraTwoPass(ctx, args, order, o) {
-    var xg = o.xg, base = o.base, extra = o.extra, tagFilter = o.tagFilter, extraRandom = o.extraRandom;
-    var q0 = ctx.dojo.call('buildQueue', args);
-    var inQ0 = {};
-    q0.fresh.forEach(function (id) { inQ0[id] = true; });
-    var xUnits = args.groupUnits[xg.id];
-    var recs = ctx.fn.records();
-    var tagged = {};
-    ctx.items.forEach(function (it) {
-      if ((it.tags || []).some(function (t) { return o.tags.indexOf(t) >= 0; })) tagged[ctx.itemEntities[it.id]] = true;
-    });
-    var inGroup = {};
-    ctx.items.forEach(function (it) { if (xUnits.indexOf(it.unit) >= 0) inGroup[it.id] = true; });
-    var order2 = order.filter(function (id) {
-      return !inGroup[id] || recs[id] !== undefined || inQ0[id] || !tagFilter || tagged[ctx.itemEntities[id]];
-    });
-    var args2 = Object.assign({}, args, { order: order2 });
-    if (extraRandom) {
-      args2.order = randomizeExtraSlots({ ctx: ctx, xg: xg, order: order2, inGroup: inGroup, recs: recs, q0: q0 });
-      args2.randomGroups = (args.randomGroups || []).filter(function (gid) { return gid !== xg.id; });
-    }
-    var used = args.used[GROUP_NEW_PREFIX + xg.id] || 0;
-    var extraLeft = Math.max(0, Math.min(extra, base + extra - used));
-    args2.groupNewCaps = Object.assign({}, args.groupNewCaps);
-    args2.groupNewCaps[xg.id] = Math.max(0, base - used) + extraLeft + used;
-    var q2 = ctx.dojo.call('buildQueue', args2);
-    var more = q2.fresh.filter(function (id) { return !inQ0[id] && inGroup[id]; });
-    var merged = { due: q0.due, fresh: q0.fresh.concat(more) };
-    if (q0.drills) merged.drills = Object.assign({}, q0.drills, q2.drills);
-    return merged;
-  }
-
-  function queueWithExtraNew(ctx, h, args, order) {
-    var xg = h.extraGroup();
-    var extra = h.extraNewToday();
-    var base = xg ? h.groupCap(xg) : null;
-    if (!xg || base === null || !(extra > 0)) return ctx.dojo.call('buildQueue', args);
-    var tags = xg.extraTags || [];
-    var tagFilter = tags.length > 0 && ctx.fn.groupSettings(xg.id).onlyTags === true;
-    var extraRandom = ctx.fn.groupSettings(xg.id).extraRandom === true;
-    if (!tagFilter && !extraRandom) {
-      args.groupNewCaps[xg.id] = base + extra;
-      return ctx.dojo.call('buildQueue', args);
-    }
-    return extraTwoPass(ctx, args, order, { xg: xg, base: base, extra: extra, tags: tags, tagFilter: tagFilter, extraRandom: extraRandom });
-  }
-
   // Drops onlyTags-excluded ids from a built queue after selection, so caps and refills see the full order.
   function withoutOnlyTags(ctx, q) {
     return Object.assign({}, q, { due: ctx.fn.onlyTagsKeep(q.due), fresh: ctx.fn.onlyTagsKeep(q.fresh) });
   }
 
+  // Courses with srs.scope "unit" build the daily queue in core (buildSession); other courses keep buildQueue.
+  function sessionHelpers(ctx, h) {
+    var unitSession = null;
+    h.hasUnitSession = function () {
+      if (unitSession === null) unitSession = (ctx.course.units || []).some(function (u) { return ctx.fn.unitConfig(u.id).scope === 'unit'; });
+      return unitSession;
+    };
+    // buildSession {queue, plan}: course session block, session:* settings overrides, answer times of the stats.
+    // Valid stored session:* values only; what the settings screen shows as the saved choice.
+    h.sessionOverrides = function () { return sessionOverrides(ctx.store.doc.settings); };
+    h.sessionPlan = function () {
+      var filter = h.weakFilter();
+      var doc = ctx.store.doc;
+      var stats = doc.stats || {};
+      var overrides = sessionOverrides(doc.settings);
+      var meta = ctx.items.map(function (it) {
+        return { id: it.id, unit: it.unit, entity: ctx.itemEntities[it.id], tags: it.tags || [], retired: isRetired(it) };
+      });
+      return ctx.dojo.call('buildSession', {
+        units: ctx.course, items: meta, records: ctx.fn.records(), settings: ctx.course.session, overrides: overrides,
+        now: ctx.now(), daysLeft: util.K.SESSION_DAYS_LEFT, courseId: ctx.course.id || '',
+        introducedToday: (stats.newByDay || {})[ctx.today()] || 0, answerMs: stats.answerMs, filter: filter
+      });
+    };
+    // {due, fresh} of the built session: an id is fresh when no member of its unit has a record.
+    h.sessionQueue = function () {
+      var out = { due: [], fresh: [] };
+      h.sessionPlan().queue.forEach(function (id) {
+        var se = ctx.scopedEntityOf[id];
+        var rec = se !== undefined ? h.entityViewOf(se) : ctx.fn.records()[id];
+        (ctx.dojo.call('isNew', { rec: rec }) ? out.fresh : out.due).push(id);
+      });
+      return out;
+    };
+  }
+
   function queueHelpers(ctx, h) {
     h.rawBuiltQueue = function (sharedOnly, uncapped) {
+      if (h.hasUnitSession()) {
+        // Core session queue: the topic review cut and onlyTags apply here too (same rules as buildQueue below).
+        var sq = h.sessionQueue();
+        var sta = h.topicArgs(uncapped);
+        if (sta) sq = ctx.dojo.call('topicOnce', { queue: sq, topics: sta, itemEntities: ctx.itemEntities, records: ctx.fn.records() });
+        return withoutOnlyTags(ctx, sq);
+      }
       var order = ctx.fn.activeItems().map(function (it) { return it.id; });
       if (sharedOnly) order = h.preferShared(order);
-      order = shuffleRandomUnits(ctx, h, order);
+      order = pick.shuffleRandomUnits(ctx, h, order);
       var args = { items: ctx.fn.records(), order: order, now: ctx.now(), newAllowance: h.newAllowance(), unitNewCaps: h.buildUnitNewCaps(), itemUnits: h.buildItemUnits() };
       var ta = h.topicArgs(uncapped); if (ta) { args.topics = ta; args.itemEntities = ctx.itemEntities; args.records = args.items; }
       var sa = h.scopedArgs();
@@ -270,7 +212,7 @@
       var ga = h.groupQueueArgs();
       if (!ga) return withoutOnlyTags(ctx, ctx.dojo.call('buildQueue', args));
       Object.keys(ga).forEach(function (k) { args[k] = ga[k]; });
-      return withoutOnlyTags(ctx, queueWithExtraNew(ctx, h, args, order));
+      return withoutOnlyTags(ctx, pick.queueWithExtraNew(ctx, h, args, order));
     };
     // Queue without examOnly items unless that would leave the whole queue empty. uncapped: see topicArgs.
     h.builtQueue = function (uncapped) {
@@ -293,12 +235,38 @@
     };
   }
 
+  // Stored session:* values core would reject (wrong type or range) are dropped, so buildSession uses the default.
+  var SESSION_KINDS = ['weak', 'new', 'due'];
+  function isWhole(v) { return Number.isInteger(v) && v >= 0; }
+  var SESSION_RULES = {
+    sessionMode: function (v) { return v === 'auto' || v === 'manual'; },
+    sessionMix: function (v) { return Array.isArray(v) && v.length > 0 && v.every(function (k) { return SESSION_KINDS.indexOf(k) >= 0; }); },
+    knownDistinct: function (v) { return Number.isInteger(v) && v >= 1; },
+    sessionCap: isWhole,
+    dailyMinutes: isWhole,
+    sessionMax: isWhole,
+    reviewDays: isWhole,
+    perUnitMax: isWhole,
+    repeatMax: isWhole,
+  };
+  function sessionOverrides(settings) {
+    var out = {};
+    Object.keys(settings || {}).forEach(function (k) {
+      if (k.indexOf(SESSION_PREFIX) !== 0) return;
+      var name = k.slice(SESSION_PREFIX.length);
+      if (!Object.prototype.hasOwnProperty.call(SESSION_RULES, name)) return;
+      if (SESSION_RULES[name](settings[k])) out[k] = settings[k];
+    });
+    return out;
+  }
+
   function create(ctx) {
     var h = {};
     scopeHelpers(ctx, h);
     groupCapHelpers(ctx, h);
     allowanceHelpers(ctx, h);
     unitHelpers(ctx, h);
+    sessionHelpers(ctx, h);
     queueHelpers(ctx, h);
     weighted.practiceHelpers(ctx, h);
     weighted.weakHelpers(ctx, h);
@@ -306,7 +274,7 @@
     return h;
   }
 
-  var api = { create: create };
+  var api = { create: create, sessionOverrides: sessionOverrides };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DojoSessionQueues = api;
 })(typeof self !== 'undefined' ? self : this);

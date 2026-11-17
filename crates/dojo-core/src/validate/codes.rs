@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 124] = [
+pub const CODES: [(&str, Severity, &str); 126] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -11,7 +11,7 @@ pub const CODES: [(&str, Severity, &str); 124] = [
     ("bad_jump", Severity::Error, "srs.jumpTo must be an integer from 2 to the top stage of the ladder"),
     ("bad_floor", Severity::Error, "srs.wrongFloor must be an integer from 1 to the top stage of the ladder"),
     ("mixed_entity_scope", Severity::Warning, "entity spans units with different srs.scope; it stays per-item"),
-    ("bad_ladder", Severity::Error, "ladder needs >= 2 entries, first 0, non-negative, non-decreasing"),
+    ("bad_ladder", Severity::Error, "ladder needs >= 2 integer entries, first 0, non-negative, strictly increasing"),
     ("bad_placement", Severity::Error, "placement.perUnit < 1"),
     ("bad_learned_stage", Severity::Error, "learnedStage must be >= 1"),
     ("bad_pass_mark", Severity::Error, "exam.passMark outside 0..=1"),
@@ -83,6 +83,7 @@ pub const CODES: [(&str, Severity, &str); 124] = [
     ("ambiguous_answer", Severity::Warning, "gap with several answers (some non-ASCII, some alphabetic; number formats are skipped) and no disambiguation hint in the prompt, choice/multi option with '/' outside brackets, or duplicate options"),
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
     ("hint_leaks_answer", Severity::Warning, "parenthesised hint in a gap/cloze/choice/order prompt contains the item's correct answer or an order step (after normalization)"),
+    ("hint_contains_answer", Severity::Error, "gap hint (parenthesised prompt hint or meta.hint_ru) contains an accepted answer: answers or retry entry (after normalization)"),
     ("order_alt_invalid", Severity::Error, "order altOrders entry is not a permutation of the step indices, equals the identity order, or repeats another entry"),
     ("order_split_word", Severity::Warning, "order step in a Japanese course is a bare ending or case particle, not a whole chunk"),
     ("unknown_unit_in_group", Severity::Error, "group references a unit id that does not exist"),
@@ -122,6 +123,7 @@ pub const CODES: [(&str, Severity, &str); 124] = [
     ("module_key_unlisted", Severity::Error, "course.json uses a key or markup that a module provides, but the module is not in the course modules list"),
     ("topics_unit_unknown", Severity::Error, "topics.units lists a unit id that is not in course.units"),
     ("topics_unit_scoped", Severity::Error, "topics.units lists a unit whose srs.scope is entity; topics need item scope"),
+    ("unit_scope_no_topics", Severity::Error, "a unit has srs.scope unit but the course has no topics (unit keys need topics.aspects)"),
     ("topics_aspect_duplicate", Severity::Error, "two topics.aspects rules share the same id"),
     ("topics_aspect_empty", Severity::Error, "topics.aspects rule has neither tags nor units"),
     ("topics_cap_range", Severity::Error, "topics.sessionCap must be from 1 to 500"),

@@ -38,6 +38,7 @@ The `modules/registry` crate maps ids to validator implementations; the CLI and 
 - A module `web` script or style whose real path (symlinks followed) lies outside the module folder is rejected by `load` (`escapes_dir`, `crates/dojo-cli/src/modules.rs:184`, used at :165). A missing file is not an escape; the later read reports it.
 - A course that uses a `ja` key or markup without listing `ja` in `modules` gets `module_key_unlisted` (`crates/dojo-cli/src/course_files.rs:131`).
 - `ru` is validator-only: `modules/ru/module.json:5` has `"hooks": ["validator"]`, no web code.
+- `ruby.checkAnswers` (opt-in, default false) runs the `ja` checks on answer texts (gap `answers` and `retry`, cloze blank alternatives) and on choice/multi options: error `ruby_missing`. Needs `markup: ruby` and a skip source (`modules/ja/rust/src/ruby.rs:51`).
 - `ruby.checkQuestions` runs the `ja` checks only when `markup` is `ruby` and `skip` or `skipTag` is set (`modules/ja/rust/src/ruby.rs:51`).
 - Module codes are merged into the validator code list by `all_codes` (`crates/dojo-core/src/validate/codes.rs:121`); core built-in codes stay in `CODES`.
 - Core rules read module data only through the trait: `prompt_triggers` and `disambiguation_words` feed `ambiguous_answer` (`crates/dojo-core/src/validate/quality.rs:102`, :143). Language-specific words do not belong in core.
@@ -47,4 +48,4 @@ The `modules/registry` crate maps ids to validator implementations; the CLI and 
 ## Depends on / used by
 - Depends on: `dojo-core` (`ValidatorModule`, `Course`, `Item`, `ItemType`), `dojo-core` `validate::ItemChecker`.
 - Used by: `crates/dojo-cli` (`crates/dojo-cli/src/main.rs:36`, `crates/dojo-cli/src/course_files.rs:181`) via `dojo_modules::validator`; `crates/dojo-cli/tests/build_modules.rs` and `validate_modules.rs`; web build (`crates/dojo-cli/src/modules.rs`) for `web` paths.
-- Tests: `modules/ja/tests/*.test.js` and `modules/ru/tests/*.test.js` (run by `scripts/check-all.sh:60`), `modules/ja/rust/tests/*.rs`, `modules/ru/rust/tests/ru_words.rs`, `modules/registry/tests/registry.rs`.
+- Tests: `modules/ja/tests/*.test.js` and `modules/ru/tests/*.test.js` (run by the `node --test` step of `scripts/check-all.sh`), `modules/ja/rust/tests/*.rs`, `modules/ru/rust/tests/ru_words.rs`, `modules/registry/tests/registry.rs`.

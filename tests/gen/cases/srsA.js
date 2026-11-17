@@ -15,11 +15,11 @@ function srsApplyAnswerPart1(kit) {
   kit.applyAnswerCases.push(vec('null_rec_wrong', { rec: null, correct: false, now: T0 }, ref('applyAnswer', null, false, T0), 'reference'));
 
   for (let s = 0; s <= 5; s++) {
-    const rec = { s: s, due: T0 - INTERVALS[s], ok: 1, bad: 0, last: T0 - INTERVALS[s] };
+    const rec = { s: s, due: T0 - INTERVALS[Math.min(s, 4)], ok: 1, bad: 0, last: T0 - INTERVALS[Math.min(s, 4)] };
     kit.applyAnswerCases.push(vec(`stage_${s}_correct`, { rec: rec, correct: true, now: T0 }, ref('applyAnswer', rec, true, T0), 'reference'));
   }
 
-  kit.applyAnswerCases.push(vec('stage_6_correct_capped', { rec: { s: 6, due: T0 - INTERVALS[6], ok: 1, bad: 0, last: T0 - INTERVALS[6] }, correct: true, now: T0 }, ref('applyAnswer', { s: 6, due: T0 - INTERVALS[6], ok: 1, bad: 0, last: T0 - INTERVALS[6] }, true, T0), 'reference'));
+  kit.applyAnswerCases.push(vec('stage_6_correct_capped', { rec: { s: 6, due: T0 - INTERVALS[4], ok: 1, bad: 0, last: T0 - INTERVALS[4] }, correct: true, now: T0 }, ref('applyAnswer', { s: 6, due: T0 - INTERVALS[4], ok: 1, bad: 0, last: T0 - INTERVALS[4] }, true, T0), 'reference'));
 
   kit.applyAnswerCases.push(vec('stage_3_wrong_to_1', { rec: { s: 3, due: T0 - INTERVALS[3], ok: 1, bad: 0, last: T0 - INTERVALS[3] }, correct: false, now: T0 }, ref('applyAnswer', { s: 3, due: T0 - INTERVALS[3], ok: 1, bad: 0, last: T0 - INTERVALS[3] }, false, T0), 'reference'));
 

@@ -231,6 +231,9 @@ pub struct RubyConfig {
     /// Opt-in (default false): warn `ruby_on_skip_kanji` / `ruby_missing` on question prompt and options against the skip set.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub check_questions: Option<bool>,
+    /// Opt-in (default false): error `ruby_missing` on answer texts (gap `answers` and `retry`, cloze blank alternatives) and on choice/multi options.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub check_answers: Option<bool>,
 }
 
 /// Contents of `course.json`.
@@ -317,6 +320,54 @@ pub struct Course {
     /// Topics config: groups items of the listed units into topics and asks one item per topic per session.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub topics: Option<TopicsConfig>,
+    /// Session builder settings; absent = every default of `session::SessionConfig`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session: Option<SessionSettings>,
+}
+
+/// How the session size is chosen: `auto` from the time budget, `manual` from `sessionCap`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum SessionMode {
+    #[default]
+    Auto,
+    Manual,
+}
+
+/// `course.json` `session:{...}` block; every key optional, defaults live in `session::SessionConfig`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SessionSettings {
+    /// Question kinds in session order: `weak`, `new`, `due`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session_mix: Option<Vec<String>>,
+    /// Maximum questions per unit in one session.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub per_unit_max: Option<u32>,
+    /// Maximum repeats of one question in one session.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub repeat_max: Option<u32>,
+    /// `auto` sizes the session from `dailyMinutes`; `manual` uses `sessionCap`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session_mode: Option<SessionMode>,
+    /// Manual session size; 0 = unlimited.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session_cap: Option<u32>,
+    /// Study minutes per day used by `auto` sizing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub daily_minutes: Option<u32>,
+    /// Upper bound of an `auto` session size.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session_max: Option<u32>,
+    /// Seconds per answer used when no answer timing is recorded yet.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sec_per_answer: Option<u32>,
+    /// Days before the exam kept free of new units for review.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub review_days: Option<u32>,
+    /// Other distinct questions that must be answered right before a question leaves the queue.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub known_distinct: Option<i64>,
 }
 
 /// Kanji/Han breakdown configuration for kanjiIndex/kanjiBreakdown.

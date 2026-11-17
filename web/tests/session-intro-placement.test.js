@@ -61,7 +61,7 @@ function load(markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });
     sb.DojoExt.use('ruby');
   }
-  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js', 'ui/topic-levels.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog-detail.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-plugin.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js', 'ui/topic-levels.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog-detail.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-unit-dialogs.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-plugin.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
   return sb;
 }
 
@@ -195,7 +195,7 @@ test('Catalog: search matches DojoExt.plain() text and the raw reading', async (
   assert.ok(find(c.cat.view(), 'topic-g2'));
 });
 
-test('Catalog detail: prompt, answers, explanation, stage and plugin hook with isolated clones', async () => {
+test('Catalog detail: prompt, answers, explanation, no stage row and plugin hook with isolated clones', async () => {
   const c = await catalogSetup();
   let seen = null;
   c.sb.DojoExt.registerDetail((it, ctx) => { seen = { it, ctx }; it.prompt = 'MUTATED'; ctx.items.length = 0; return 'HOOK-OUT'; });
@@ -205,7 +205,7 @@ test('Catalog detail: prompt, answers, explanation, stage and plugin hook with i
   assert.strictEqual(find(v, 'detail-prompt'), null);
   assert.ok(texts(find(v, 'detail-answers')).join('').includes('x'));
   assert.ok(texts(find(v, 'detail-explanation')).join('').includes('E2'));
-  assert.ok(texts(find(v, 'detail-stage')).join('').includes('catalog.stage.new'));
+  assert.strictEqual(find(v, 'detail-stage'), null);
   assert.deepStrictEqual(texts(find(v, 'detail-hook')), ['HOOK-OUT']);
   assert.ok(seen.ctx.items !== c.content.items);
   assert.strictEqual(c.content.items.length, 3);

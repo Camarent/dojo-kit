@@ -128,23 +128,23 @@ function checkCheckClozePart1(kit) {
 }
 
 function checkCheckClozePart2(kit) {
-  kit.checkClozeCases.push(vec('all_blanks_match', { blanks: [['Paris'], ['Rome']], inputs: ['Paris', 'Rome'] }, { correct: true, results: [true, true] }, 'spec'));
+  kit.checkClozeCases.push(vec('all_blanks_match', { blanks: [['Paris'], ['Rome']], inputs: ['Paris', 'Rome'] }, { correct: true, partial: false, results: [true, true] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('second_alternative_matches', { blanks: [['Paris', 'paris']], inputs: ['paris'] }, { correct: true, results: [true] }, 'spec'));
+  kit.checkClozeCases.push(vec('second_alternative_matches', { blanks: [['Paris', 'paris']], inputs: ['paris'] }, { correct: true, partial: false, results: [true] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('case_sensitive_fail', { blanks: [['Paris']], inputs: ['paris'], opts: { caseSensitive: true, trim: true, collapseSpaces: true, stripPunctuation: false } }, { correct: false, results: [false] }, 'spec'));
+  kit.checkClozeCases.push(vec('case_sensitive_fail', { blanks: [['Paris']], inputs: ['paris'], opts: { caseSensitive: true, trim: true, collapseSpaces: true, stripPunctuation: false } }, { correct: false, partial: false, results: [false] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('input_missing_for_blank', { blanks: [['Paris'], ['Rome']], inputs: ['Paris'] }, { correct: false, results: [true, false] }, 'spec'));
+  kit.checkClozeCases.push(vec('input_missing_for_blank', { blanks: [['Paris'], ['Rome']], inputs: ['Paris'] }, { correct: false, partial: true, results: [true, false] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('empty_blanks_list', { blanks: [], inputs: [] }, { correct: false, results: [] }, 'spec'));
+  kit.checkClozeCases.push(vec('empty_blanks_list', { blanks: [], inputs: [] }, { correct: false, partial: false, results: [] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('extra_inputs_ignored', { blanks: [['Paris']], inputs: ['Paris', 'extra'] }, { correct: true, results: [true] }, 'spec'));
+  kit.checkClozeCases.push(vec('extra_inputs_ignored', { blanks: [['Paris']], inputs: ['Paris', 'extra'] }, { correct: true, partial: false, results: [true] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('wrong_answer', { blanks: [['Paris']], inputs: ['London'] }, { correct: false, results: [false] }, 'spec'));
+  kit.checkClozeCases.push(vec('wrong_answer', { blanks: [['Paris']], inputs: ['London'] }, { correct: false, partial: false, results: [false] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('multiple_blanks_all_correct', { blanks: [['A', 'a'], ['B', 'b'], ['C', 'c']], inputs: ['a', 'B', 'c'] }, { correct: true, results: [true, true, true] }, 'spec'));
+  kit.checkClozeCases.push(vec('multiple_blanks_all_correct', { blanks: [['A', 'a'], ['B', 'b'], ['C', 'c']], inputs: ['a', 'B', 'c'] }, { correct: true, partial: false, results: [true, true, true] }, 'spec'));
 
-  kit.checkClozeCases.push(vec('one_blank_wrong', { blanks: [['A'], ['B'], ['C']], inputs: ['A', 'X', 'C'] }, { correct: false, results: [true, false, true] }, 'spec'));
+  kit.checkClozeCases.push(vec('one_blank_wrong', { blanks: [['A'], ['B'], ['C']], inputs: ['A', 'X', 'C'] }, { correct: false, partial: true, results: [true, false, true] }, 'spec'));
 }
 
 module.exports = { checkCheckChoicePart1, checkCheckMatchPart1, checkCheckOrderPart1, checkCheckClozePart1, checkCheckClozePart2 };

@@ -76,6 +76,7 @@ function loadApp() {
   vm.runInContext(read('ui/results.js'), sandbox, { filename: 'ui/results.js' });
   vm.runInContext(read('ui/placement.js'), sandbox, { filename: 'ui/placement.js' });
   vm.runInContext(read('ui/settings-speech.js'), sandbox, { filename: 'ui/settings-speech.js' });
+  vm.runInContext(read('ui/settings-unit-dialogs.js'), sandbox, { filename: 'ui/settings-unit-dialogs.js' });
   vm.runInContext(read('ui/settings-sections.js'), sandbox, { filename: 'ui/settings-sections.js' });
   vm.runInContext(read('ui/settings-plugin.js'), sandbox, { filename: 'ui/settings-plugin.js' });
   vm.runInContext(read('ui/settings-dialogs.js'), sandbox, { filename: 'ui/settings-dialogs.js' });

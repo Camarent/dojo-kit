@@ -38,7 +38,7 @@ test('russian counter is plural-aware and has the noreplay text', () => {
   assert.strictEqual(t('audio.noreplay'), 'Повторов больше нет');
 });
 
-test('detail-due shows "через N дн." when due is in the future', async () => {
+test('catalog card shows no detail-due row even when due is in the future', async () => {
   const items = [choice('a', 'u1')];
   const m = await H.mount({ items, course: { id: 'c', title: 'C', units: [{ id: 'u1', title: 'U1' }], uiLanguage: 'ru' }, lang: 'ru' });
   m.doc.items['a'] = { s: 1, due: NOW + 3 * DAY, ok: 1, bad: 0, last: NOW - DAY };
@@ -48,8 +48,6 @@ test('detail-due shows "через N дн." when due is in the future', async ()
   cat.setState({ detailItem: items[0] });
   const v = cat.view();
   
-  const dueEl = H.find(v, 'detail-due');
-  assert.ok(dueEl, 'detail-due is rendered');
-  const dueText = H.text(dueEl);
-  assert.ok(/через 3/.test(dueText), 'detail-due shows "через 3 дн." for +3 days: ' + dueText);
+  assert.ok(H.find(v, 'catalog-detail'), 'positive control: card is open');
+  assert.strictEqual(H.find(v, 'detail-due'), null, 'due is an internal field, not shown on the card');
 });

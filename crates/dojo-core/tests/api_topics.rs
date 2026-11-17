@@ -183,3 +183,43 @@ fn absent_or_null_jump_and_floor_match_old_result() {
     let old = ok_value("applyAnswer", base.clone());
     assert_eq!(ok_value("applyAnswer", with(base, json!({"jumpTo": null, "wrongFloor": null}))), old);
 }
+
+/// `topicOnce` args: three due, unfresh items `a`, `b`, `c`.
+fn topic_once_args(topics: Value, item_entities: Value) -> Value {
+    let recs = json!({
+        "a": { "due": 0, "s": 1 },
+        "b": { "due": 0, "s": 2 },
+        "c": { "due": 0, "s": 3 }
+    });
+    json!({
+        "queue": { "due": ["a", "b", "c"], "fresh": [] },
+        "topics": topics,
+        "itemEntities": item_entities,
+        "records": recs
+    })
+}
+
+#[test]
+fn topic_once_three_due_items_of_one_topic_keep_one() {
+    let topics = json!({ "aspects": { "a": "meaning", "b": "meaning", "c": "meaning" }, "pools": [], "cap": null });
+    let entities = json!({ "a": "T", "b": "T", "c": "T" });
+    let v = ok_value("topicOnce", topic_once_args(topics, entities));
+    assert_eq!(v["due"].as_array().map(Vec::len), Some(1), "{v}");
+    assert_eq!(v["fresh"], json!([]));
+}
+
+#[test]
+fn topic_once_missing_topics_is_error() {
+    let entities = json!({ "a": "T", "b": "T", "c": "T" });
+    let out = call("topicOnce", topic_once_args(Value::Null, entities));
+    assert_eq!(out["ok"], json!(false));
+    assert_eq!(out["error"]["code"], json!("bad_args"));
+}
+
+#[test]
+fn topic_once_item_entities_not_object_is_error() {
+    let topics = json!({ "aspects": {}, "pools": [], "cap": null });
+    let out = call("topicOnce", topic_once_args(topics, json!([])));
+    assert_eq!(out["ok"], json!(false));
+    assert_eq!(out["error"]["code"], json!("bad_args"));
+}

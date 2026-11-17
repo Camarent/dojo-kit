@@ -125,10 +125,19 @@ fn group_counts(a: &Value) -> Result<Value, CallError> {
                 id,
             });
         }
+        // srs.scope "unit": a unit counts as one entity (keyed by its unit key) judged on the unit view.
+        let rules = topics::course_rules(course)?.unwrap_or_default();
+        let mut scoped = scoped_set(a)?.unwrap_or_default();
+        for m in &mut metas {
+            if crate::srs::unit_config(course, &m.unit).get("scope").and_then(Value::as_str) == Some("unit") {
+                m.entity = groups::unit_key(&m.entity, &m.tags, &m.unit, &rules);
+                scoped.insert(m.entity.clone());
+            }
+        }
         let empty = Map::new();
         let records = a.get("records").and_then(Value::as_object).unwrap_or(&empty);
         let extra = a.get("extraNew").and_then(Value::as_i64).unwrap_or(0);
-        let r = groups::group_counts_scoped(course, &metas, records, int(a, "now")?, &used_map(a)?, extra, scoped_set(a)?.as_ref());
+        let r = groups::group_counts_scoped(course, &metas, records, int(a, "now")?, &used_map(a)?, extra, Some(&scoped));
         let mut gmap = Map::new();
         for (id, c) in &r.groups {
             gmap.insert(id.clone(), json!({ "due": c.due, "fresh": c.fresh, "newToday": c.new_today, "started": c.started, "total": c.total }));

@@ -61,7 +61,7 @@ function load(markup) {
     sb.DojoExt.registerMarkup('ruby', { render: (s) => s, plain: (s) => s.replace(/\{([^|}]*)\|[^}]*\}/g, '$1') });
     sb.DojoExt.use('ruby');
   }
-  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog-detail.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-plugin.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
+  loadBundle(sb, { only: ['speech.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js'].concat(['ui/catalog-audio.js']).concat(['ui/catalog-detail.js']).concat(['ui/catalog.js']).concat(['ui/group-card.js']).concat(['ui/home.js']).concat(['ui/stimulus.js']).concat(['ui/session-feedback.js']).concat(['ui/session-focus.js']).concat(['ui/session-boundary.js']).concat(['ui/session-panels.js']).concat(['ui/session-screen.js']).concat(['ui/results.js']).concat(['ui/placement.js']).concat(['ui/settings-speech.js']).concat(['ui/settings-unit-dialogs.js']).concat(['ui/settings-sections.js']).concat(['ui/settings-plugin.js']).concat(['ui/settings-dialogs.js']).concat(['ui/settings.js']).concat(['ui/app-screens.js']).concat(['ui/app.js']) });
   return sb;
 }
 
@@ -137,12 +137,12 @@ test('requeue counter UI: shows position / initial total and a +N badge', async 
   const t = await setup(null, { n: 3 });
   const ui = sessionScreen(sb, t.engine.start('daily'));
   assert.match(find(ui.view(), 'retry-badge').props.class, /\bempty\b/);
-  assert.strictEqual(texts(find(ui.view(), 'progress')).join('').replace(/\s+/g, ''), '1/3');
+  assert.strictEqual(texts(find(ui.view(), 'progress')).join('').replace(/\s+/g, ''), '0/3');
   ui.answer({ text: 'zzz' });
   ui.next(); ui.answer({ text: 'x' });
   ui.next(); ui.answer({ text: 'x' });
   ui.next();
-  assert.strictEqual(texts(find(ui.view(), 'progress')).join('').replace(/\s+/g, ''), '3/3');
+  assert.strictEqual(texts(find(ui.view(), 'progress')).join('').replace(/\s+/g, ''), '3/4');
   assert.deepStrictEqual(texts(find(ui.view(), 'retry-badge')), ['session.retries{"n":1}']);
 });
 

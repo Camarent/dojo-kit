@@ -90,7 +90,7 @@ async function homeWithNoWeak(lang) {
   return m;
 }
 
-test('weak-chips: bad records present -> chips shown with prompts', async () => {
+test('weak-chips: bad records present -> chips shown with aspect labels', async () => {
   const m = await homeWithWeak('en', ['k1', 'v1', 'k2']);
   const tree = m.tree();
   
@@ -114,11 +114,10 @@ test('weak-chips: bad records present -> chips shown with prompts', async () => 
   walk(weakChips, (n) => { if (n.type === 'li') liCount++; });
   assert.strictEqual(liCount, 3, 'Should have 3 li elements for 3 weak items');
   
-  // Check that the chips contain the prompts
+  // Chips show the fixed aspect label, never the prompt text
   const fullText = text(weakChips);
-  assert.ok(fullText.includes('Q k1'), 'Should contain prompt for k1');
-  assert.ok(fullText.includes('Q v1'), 'Should contain prompt for v1');
-  assert.ok(fullText.includes('Q k2'), 'Should contain prompt for k2');
+  assert.ok(fullText.includes('Item'), 'Should contain the default aspect label');
+  assert.ok(!fullText.includes('Q k1'), 'Should not contain prompt text');
   
   // Check no bad strings in the whole screen
   assertNoBadStrings(tree);

@@ -1,11 +1,12 @@
 use super::*;
 use crate::groups;
 
-/// Topic calls: `itemAspects`, `topicLevels`. The `topics` argument of `buildQueue` is parsed here too.
+/// Topic calls: `itemAspects`, `topicLevels`, `topicOnce`. The `topics` argument of `buildQueue` is parsed here too.
 pub(super) fn topics_call(name: &str, a: &Value) -> Result<Value, CallError> {
     match name {
         "itemAspects" => item_aspects(a),
         "topicLevels" => topic_levels_call(a),
+        "topicOnce" => topic_once_call(a),
         other => Err(CallError { code: "unknown_function", message: format!("unknown function `{other}`") }),
     }
 }
@@ -64,7 +65,7 @@ fn item_str<'a>(item: &'a Value, key: &str) -> Result<&'a str, CallError> {
 }
 
 /// Course aspect rules from `course.topics.aspects`; `None` when the course has no topics.
-fn course_rules(course: &Value) -> Result<Option<Vec<groups::AspectRule>>, CallError> {
+pub(super) fn course_rules(course: &Value) -> Result<Option<Vec<groups::AspectRule>>, CallError> {
     let aspects = match course.get("topics").and_then(|t| t.get("aspects")) {
         None | Some(Value::Null) => return Ok(None),
         Some(v) => v.as_array().ok_or_else(|| bad("`course.topics.aspects` must be an array"))?,
@@ -96,8 +97,28 @@ fn item_aspects(a: &Value) -> Result<Value, CallError> {
     Ok(Value::Object(out))
 }
 
-fn is_retired(item: &Value) -> bool {
+pub(super) fn is_retired(item: &Value) -> bool {
     item.get("retired").and_then(Value::as_bool).unwrap_or(false) || item.get("status").and_then(Value::as_str) == Some("retired")
+}
+
+/// `topicOnce {queue: {due, fresh}, topics: {aspects, pools, cap}, itemEntities, records}` -> `{due, fresh}`:
+/// the topic review cut (`groups::topic_once`) applied to an already built queue, e.g. a core session.
+/// `topics` absent or null is an error: the caller has nothing to cut.
+fn topic_once_call(a: &Value) -> Result<Value, CallError> {
+    let q = field(a, "queue")?;
+    let queue = crate::srs::Queue { due: strings(field(q, "due")?, "queue.due")?, fresh: strings(field(q, "fresh")?, "queue.fresh")? };
+    let t = queue_topics(a)?.ok_or_else(|| bad("`topics` is required"))?;
+    let topic_of: HashMap<String, String> = match a.get("itemEntities") {
+        None | Some(Value::Null) => HashMap::new(),
+        Some(Value::Object(obj)) => obj
+            .iter()
+            .map(|(k, v)| v.as_str().map(|s| (k.clone(), s.to_string())).ok_or_else(|| bad("`itemEntities` values must be strings")))
+            .collect::<Result<_, _>>()?,
+        Some(_) => return Err(bad("`itemEntities` must be an object")),
+    };
+    let empty = Map::new();
+    let out = groups::topic_once(queue, &topic_of, &t.aspects, records_ref(a, &empty)?, &t.pools, t.cap);
+    Ok(json!({ "due": out.due, "fresh": out.fresh }))
 }
 
 fn topic_levels_call(a: &Value) -> Result<Value, CallError> {

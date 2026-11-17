@@ -8,6 +8,7 @@
   var h = preact.h;
   var html = htm.bind(h);
   var KEY = 'topics:sessionCap';
+  var WEAK_KEY = 'session:weakFilter';
   var MAX = 500;
 
   function create() {
@@ -36,7 +37,33 @@
             }} />
           <button type="button" class="btn" data-testid="topics-cap-reset" onClick=${function () { self.setSetting(KEY, null); }}>${p.t('settings.topics.default')}</button>
         </div>
+        ${renderWeakFilter(p, self, settings[WEAK_KEY])}
       </section>`;
+    }
+
+    // Weak mode filter: topic and aspect pickers, stored as {topic?, aspect?} under session:weakFilter; empty choice = no filter.
+    function renderWeakFilter(p, self, stored) {
+      var opts = p.engine && p.engine.weakFilterOptions ? p.engine.weakFilterOptions() : null;
+      if (!opts) return null;
+      var cur = stored && typeof stored === 'object' ? stored : {};
+      function save(field, value) {
+        var next = { topic: cur.topic || '', aspect: cur.aspect || '' };
+        next[field] = value;
+        self.setSetting(WEAK_KEY, next.topic || next.aspect ? next : null);
+      }
+      function picker(field, testid, label, options) {
+        return html`<label class="setting-row">${label}
+          <select class="field" data-testid=${testid} value=${cur[field] || ''} onChange=${function (e) { save(field, e.target.value); }}>
+            <option value="">${p.t('settings.weak.any')}</option>
+            ${options.map(function (o) { return html`<option value=${o.id} selected=${(cur[field] || '') === o.id}>${o.title || o.id}</option>`; })}
+          </select>
+        </label>`;
+      }
+      return html`<div data-testid="weak-filter">
+        <h3>${p.t('settings.weak.title')}</h3>
+        ${picker('topic', 'weak-filter-topic', p.t('settings.weak.topic'), opts.topics.map(function (e) { return { id: e }; }))}
+        ${picker('aspect', 'weak-filter-aspect', p.t('settings.weak.aspect'), opts.aspects)}
+      </div>`;
     }
 
     return { renderTopicsSettings: renderTopicsSettings };

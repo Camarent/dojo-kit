@@ -24,18 +24,18 @@ async function detailOf(course, items, records) {
   return cat.view();
 }
 
-test('topic levels: one row per aspect (stage, new when never started) and combined min', async () => {
+test('topic levels: catalog card shows no per-aspect level rows, even with topics configured', async () => {
   const v = await detailOf(COURSE, KANJI, { 'k-m': rec(3), 'k-w': rec(1) });
-  assert.ok(H.find(v, 'topic-levels'), 'topic-levels block rendered');
-  assert.ok(/Meaning: 3/.test(H.text(H.find(v, 'topic-level-meaning'))), 'meaning row shows 3');
-  assert.ok(/Writing: 1/.test(H.text(H.find(v, 'topic-level-writing'))), 'writing row shows 1');
-  assert.ok(/Reading: New/.test(H.text(H.find(v, 'topic-level-reading'))), 'reading row shows new');
-  assert.ok(/Combined level: 1/.test(H.text(H.find(v, 'topic-level-combined'))), 'combined level is min of recorded aspects: 1');
+  assert.ok(H.find(v, 'detail-answers'), 'positive control: card body renders');
+  assert.strictEqual(H.find(v, 'topic-levels'), null, 'no topic-levels block on the card');
+  for (const id of ['topic-level-meaning', 'topic-level-writing', 'topic-level-reading', 'topic-level-combined']) {
+    assert.strictEqual(H.find(v, id), null, id + ' is not rendered on the card');
+  }
 });
 
-test('topic levels: course without topics renders no block; detail still shows stage', async () => {
+test('topic levels: course without topics renders no block and no stage row on the card', async () => {
   const course = { id: 'c', title: 'C', uiLanguage: 'en', units: [{ id: 'u1', title: 'U1' }] };
   const v = await detailOf(course, KANJI, { 'k-m': rec(3) });
   assert.strictEqual(H.find(v, 'topic-levels'), null, 'no topic-levels block without course.topics');
-  assert.ok(H.find(v, 'detail-stage'), 'detail-stage still rendered');
+  assert.strictEqual(H.find(v, 'detail-stage'), null, 'no detail-stage row on the card');
 });

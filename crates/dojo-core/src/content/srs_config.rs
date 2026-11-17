@@ -5,8 +5,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SrsConfig {
+    // Numbers, not i64: a non-integer step must reach the validator as `bad_ladder`, not a parse error.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ladder: Option<Vec<i64>>,
+    #[schemars(with = "Option<Vec<i64>>")]
+    pub ladder: Option<Vec<serde_json::Number>>,
     /// Stages lost on a wrong answer (default 1; 0 keeps the stage).
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "dropOnWrong")]
     pub drop_on_wrong: Option<i64>,
@@ -17,6 +19,9 @@ pub struct SrsConfig {
     /// Items asked per entity slot when `scope` is `"entity"` (1..=5, default 1).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub drill: Option<u32>,
+    /// `"unit"` scope: other questions answered right after a wrong one before the weak flag clears (integer >= 1, default 2; 1 when the unit pool has one question).
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "knownDistinct")]
+    pub known_distinct: Option<u32>,
     /// Scheduling mode: `"ladder"` (default) or `"errorWeighted"`.
     /// Not allowed in `srsByType` (mode_by_type).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -27,12 +32,28 @@ pub struct SrsConfig {
     /// Lowest stage a wrong answer can drop to (1..=top stage of the resolved ladder). Not allowed in `srsByType`.
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "wrongFloor")]
     pub wrong_floor: Option<i64>,
+    /// One-time progress migration (course-level `srs` only): see `migrate_doc`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub migrate: Option<SrsMigrate>,
 }
 
-/// Scheduling scope of a unit.
+/// `srs.migrate`: runs once per save (marker `migrated[id]`). `ladderFrom` maps a unit id to its old ladder (ms);
+/// `unify` gives every recorded member of a unit key the best stage and latest due.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SrsMigrate {
+    pub id: String,
+    #[serde(default, rename = "ladderFrom", skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub ladder_from: std::collections::BTreeMap<String, Vec<i64>>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub unify: bool,
+}
+
+/// Scheduling scope of a unit. `Unit` schedules one unit key (`<entity>|<aspect>`) as a whole.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum SrsScope {
     Item,
     Entity,
+    Unit,
 }

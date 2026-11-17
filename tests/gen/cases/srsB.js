@@ -7,7 +7,7 @@ const { unitQueueOracle } = require('../oracles/srs.js');
 
 // applyAnswer with the optional rules (drop, jumpTo, wrongFloor); appended to the applyAnswer group.
 function srsApplyAnswerRulesPart1(kit) {
-  const rec = (s, ok) => ({ s: s, due: T0 - INTERVALS[s], ok: ok, bad: 0, last: T0 - INTERVALS[s] });
+  const rec = (s, ok) => ({ s: s, due: T0 - INTERVALS[Math.min(s, 4)], ok: ok, bad: 0, last: T0 - INTERVALS[Math.min(s, 4)] });
   const add = (name, input, base, correct) => kit.applyAnswerCases.push(vec(name, { rec: base, correct: correct, now: T0, ...input },
     ref('applyAnswer', base, correct, T0, input), 'reference'));
 
@@ -79,7 +79,7 @@ function srsApplyPlacementPart1(kit) {
   kit.applyPlacementCases.push(vec('known_stage_4_unchanged', { rec: { s: 4, due: T0 + INTERVALS[4], ok: 5, bad: 1, last: T0 }, known: true, now: T0, seed: '1' }, ref('applyPlacement', { s: 4, due: T0 + INTERVALS[4], ok: 5, bad: 1, last: T0 }, true, T0, undefined, 1), 'reference'));
 
   // Stage past 4 should stay unchanged (never lower)
-  kit.applyPlacementCases.push(vec('known_stage_5_unchanged', { rec: { s: 5, due: T0 + INTERVALS[5], ok: 10, bad: 2, last: T0 }, known: true, now: T0, seed: '1' }, ref('applyPlacement', { s: 5, due: T0 + INTERVALS[5], ok: 10, bad: 2, last: T0 }, true, T0, undefined, 1), 'reference'));
+  kit.applyPlacementCases.push(vec('known_stage_5_unchanged', { rec: { s: 5, due: T0 + INTERVALS[4], ok: 10, bad: 2, last: T0 }, known: true, now: T0, seed: '1' }, ref('applyPlacement', { s: 5, due: T0 + INTERVALS[4], ok: 10, bad: 2, last: T0 }, true, T0, undefined, 1), 'reference'));
 
   // known=false: return record unchanged
   kit.applyPlacementCases.push(vec('unknown_null_rec_unchanged', { rec: null, known: false, now: T0, seed: '1' }, ref('applyPlacement', null, false, T0, undefined, 1), 'reference'));
@@ -236,28 +236,28 @@ function srsLadderPart2(kit) {
   });
   const all3 = (rec) => ({ a: rec, b: rec, c: rec });
   const sync = (s, ok, bad) => kit.R(s, T0 - 1, ok, bad, T0 - D);
-  addEnt('new_entity_correct', {}, all3(kit.R(1, T0 + 4 * H, 1, 0, T0)));
-  addEnt('synced_correct', { records: all3(sync(2, 2, 0)) }, all3(kit.R(3, T0 + 3 * D, 3, 0, T0)));
-  addEnt('drift_self_heals', { records: { a: kit.R(4, T0 + D, 5, 0, T0 - H), b: sync(2, 4, 0), c: sync(2, 4, 0) } }, all3(kit.R(3, T0 + 3 * D, 6, 0, T0)));
-  addEnt('wrong_drop_once', { correct: false, records: all3(sync(3, 3, 1)) }, all3(kit.R(2, T0 + D, 3, 2, T0)));
+  addEnt('new_entity_correct', {}, all3(kit.R(1, T0 + D, 1, 0, T0)));
+  addEnt('synced_correct', { records: all3(sync(2, 2, 0)) }, all3(kit.R(3, T0 + 10 * D, 3, 0, T0)));
+  addEnt('drift_self_heals', { records: { a: kit.R(4, T0 + D, 5, 0, T0 - H), b: sync(2, 4, 0), c: sync(2, 4, 0) } }, all3(kit.R(3, T0 + 10 * D, 6, 0, T0)));
+  addEnt('wrong_drop_once', { correct: false, records: all3(sync(3, 3, 1)) }, all3(kit.R(2, T0 + 5 * D, 3, 2, T0)));
   addEnt('old_client_wrong_counts_once', { correct: false, records: { a: kit.R(2, T0 - 1, 1, 2, T0 - D), b: kit.R(3, T0 - 1, 2, 1, T0 - D), c: kit.R(3, T0 - 1, 2, 1, T0 - D) } },
-    all3(kit.R(1, T0 + 4 * H, 2, 3, T0)));
-  addEnt('new_member_inherits', { records: { a: sync(3, 3, 0), b: sync(3, 3, 0) } }, all3(kit.R(4, T0 + 7 * D, 4, 0, T0)));
+    all3(kit.R(1, T0 + D, 2, 3, T0)));
+  addEnt('new_member_inherits', { records: { a: sync(3, 3, 0), b: sync(3, 3, 0) } }, all3(kit.R(4, T0 + 30 * D, 4, 0, T0)));
   addEnt('retired_excluded', { members: [{ id: 'a' }, { id: 'b' }, { id: 'r', status: 'retired' }], records: { a: sync(2, 2, 0), b: sync(2, 2, 0), r: kit.R(0, T0 - 1, 0, 0, T0 - 1) } },
-    { a: kit.R(3, T0 + 3 * D, 3, 0, T0), b: kit.R(3, T0 + 3 * D, 3, 0, T0) });
+    { a: kit.R(3, T0 + 10 * D, 3, 0, T0), b: kit.R(3, T0 + 10 * D, 3, 0, T0) });
   addEnt('unknown_fields_per_member', { records: { a: Object.assign(sync(2, 2, 0), { x: 1 }), b: sync(2, 2, 0), c: sync(2, 2, 0) } },
-    { a: kit.R(3, T0 + 3 * D, 3, 0, T0, { x: 1 }), b: kit.R(3, T0 + 3 * D, 3, 0, T0), c: kit.R(3, T0 + 3 * D, 3, 0, T0) });
+    { a: kit.R(3, T0 + 10 * D, 3, 0, T0, { x: 1 }), b: kit.R(3, T0 + 10 * D, 3, 0, T0), c: kit.R(3, T0 + 10 * D, 3, 0, T0) });
   addEnt('practice_not_due_correct', { mode: 'practice', records: all3(kit.R(3, T0 + D, 3, 0, T0 - H)) }, all3(kit.R(3, T0 + D, 4, 0, T0)));
-  addEnt('practice_due_correct_advances', { mode: 'practice', records: all3(sync(3, 3, 0)) }, all3(kit.R(4, T0 + 7 * D, 4, 0, T0)));
-  addEnt('relearn_s0', { mode: 'relearn', records: all3(kit.R(0, T0 - 1, 1, 2, T0 - D)) }, all3(kit.R(1, T0 + 4 * H, 1, 2, T0)));
+  addEnt('practice_due_correct_advances', { mode: 'practice', records: all3(sync(3, 3, 0)) }, all3(kit.R(4, T0 + 30 * D, 4, 0, T0)));
+  addEnt('relearn_s0', { mode: 'relearn', records: all3(kit.R(0, T0 - 1, 1, 2, T0 - D)) }, all3(kit.R(1, T0 + D, 1, 2, T0)));
   addEnt('relearn_s_gt0_noop', { mode: 'relearn', records: all3(sync(2, 2, 0)) }, {});
   addEnt('relearn_no_records_noop', { mode: 'relearn' }, {});
   addEnt('placement_known_same_for_all', { mode: 'placement', correct: true, seed: '1' },
     (() => { const p = ref('applyPlacement', null, true, T0, undefined, 1); return all3(p); })());
   addEnt('placement_unknown_noop', { mode: 'placement', correct: false, seed: '1' }, {});
-  addEnt('ladder_top_clamped', { records: all3(sync(6, 6, 0)) }, all3(kit.R(6, T0 + 30 * D, 7, 0, T0)));
-  addEnt('custom_drop_2', { correct: false, dropOnWrong: 2, records: all3(sync(4, 4, 0)) }, all3(kit.R(2, T0 + D, 4, 1, T0)));
-  addEnt('drop_never_below_one_when_learned', { correct: false, dropOnWrong: 5, records: all3(sync(2, 2, 0)) }, all3(kit.R(1, T0 + 4 * H, 2, 1, T0)));
+  addEnt('ladder_top_clamped', { records: all3(sync(6, 6, 0)) }, all3(kit.R(4, T0 + 30 * D, 7, 0, T0)));
+  addEnt('custom_drop_2', { correct: false, dropOnWrong: 2, records: all3(sync(4, 4, 0)) }, all3(kit.R(2, T0 + 5 * D, 4, 1, T0)));
+  addEnt('drop_never_below_one_when_learned', { correct: false, dropOnWrong: 5, records: all3(sync(2, 2, 0)) }, all3(kit.R(1, T0 + D, 2, 1, T0)));
   kit.groups.push({ fn: 'applyEntity', cases: kit.entCases });
 }
 

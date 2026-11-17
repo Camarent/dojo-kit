@@ -54,13 +54,19 @@ test('feedback rows: testid and class pairs of the rendered markup are pinned', 
     ['fb-mean', 'fb-mean'],
     ['fb-read', 'fb-read muted'],
     ['fb-on', ''],
+    ['fb-reading', 'fb-reading'],
+    ['fb-reading', 'fb-reading'],
     ['fb-kun', ''],
+    ['fb-reading', 'fb-reading'],
+    ['fb-reading', 'fb-reading'],
     ['fb-row', 'fb-row-grid'],
     ['fb-ch', 'glyph-ch'],
     ['fb-mean', 'fb-mean'],
     ['fb-read', 'fb-read muted'],
     ['fb-on', ''],
-    ['fb-kun', '']
+    ['fb-reading', 'fb-reading'],
+    ['fb-kun', ''],
+    ['fb-reading', 'fb-reading']
   ]);
 });
 

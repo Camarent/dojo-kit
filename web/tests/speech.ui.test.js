@@ -51,7 +51,7 @@ function session(questions, mode) {
     mode: mode || 'daily', deadline: null, total: questions.length, done: false,
     current: () => (i < questions.length ? Object.assign({ position: i + 1, total: questions.length, view: {} }, questions[i]) : null),
     next() { i++; if (i >= questions.length) s.done = true; return s.current(); },
-    initialTotal: questions.length, retryCount: () => 0, shouldShowIntro: () => false,
+    initialTotal: questions.length, answered: 0, denominator: () => questions.length, repeats: () => 0, retryCount: () => 0, shouldShowIntro: () => false,
     finish: () => ({}), answer: () => ({}), reveal() {}
   };
   return s;

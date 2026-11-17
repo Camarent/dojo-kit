@@ -1,5 +1,5 @@
 /* session/run-view.js — per-session view building, result shaping and grade recording of the study session engine.
- * Exports DojoSessionRunView: create(ctx, sx) -> { rightsOf, viewFor, isNewFor, scopedPrev, requeueKey, result, prevOf, recordGrade }.
+ * Exports DojoSessionRunView: create(ctx, sx) -> { rightsOf, viewFor, isNewFor, scopedPrev, result, prevOf, recordGrade }.
  */
 (function (root) {
   'use strict';
@@ -61,13 +61,8 @@
   function scopedPrev(ctx, e) {
     var snap = {};
     var recs = ctx.fn.records();
-    ctx.entityMembers[e].forEach(function (id) { snap[id] = recs[id]; });
+    (ctx.entityMembers[e] || ctx.scopedMembers[e]).forEach(function (id) { snap[id] = recs[id]; });
     return snap;
-  }
-
-  function requeueKey(ctx, item) {
-    var se = ctx.scopedEntityOf[item.id];
-    return se !== undefined ? 'e:' + se : item.id;
   }
 
   function feedback(item, graded) {
@@ -93,18 +88,30 @@
     return se !== undefined ? scopedPrev(ctx, se) : ctx.fn.records()[item.id];
   }
 
+  // Core picks the repeat from the unit pool (sessionRequeue); null when the unit has no other question or the repeat cap is reached.
+  function requeueRepeat(ctx, sx, item) {
+    var session = ctx.course.session || {};
+    var pool = ctx.items.filter(function (it) { return it.unit === item.unit; }).map(function (it) { return it.id; });
+    var picked = ctx.dojo.call('sessionRequeue', {
+      unit: item.unit, pool: pool, answered: item.id,
+      alreadyRepeated: sx.repeated[item.id] || 0,
+      repeatMax: session.repeatMax === undefined ? util.K.REPEAT_MAX_DEFAULT : session.repeatMax,
+      seed: String(ctx.now())
+    });
+    if (typeof picked !== 'string') return null;
+    sx.repeated[picked] = (sx.repeated[picked] || 0) + 1;
+    sx.queue.push(picked);
+    return picked;
+  }
+
+  // Returns the id of the repeat queued for this wrong answer, or null.
   function recordGrade(ctx, sx, item, verdict) {
     sx.graded[item.id] = verdict.correct;
     var entry = { id: item.id, correct: verdict.correct, given: verdict.given, expected: util.expectedFor(item) };
     if (verdict.timedOut === true) entry.timedOut = true;
     sx.review.push(entry);
-    var rk = requeueKey(ctx, item);
-    if (!verdict.correct && sx.mode !== 'exam' && !sx.requeued[rk]) {
-      sx.requeued[rk] = true;
-      sx.queue.push(item.id);
-      return true;
-    }
-    return false;
+    if (verdict.correct || sx.mode === 'exam') return null;
+    return requeueRepeat(ctx, sx, item);
   }
 
   function baseSummary(ctx, sx) {
@@ -127,7 +134,6 @@
       viewFor: function (item) { return viewFor(sx, item); },
       isNewFor: function (item) { return isNewFor(ctx, item); },
       scopedPrev: function (e) { return scopedPrev(ctx, e); },
-      requeueKey: function (item) { return requeueKey(ctx, item); },
       result: function (item, graded) { return result(ctx, sx, item, graded); },
       prevOf: function (item) { return prevOf(ctx, item); },
       recordGrade: function (item, verdict) { return recordGrade(ctx, sx, item, verdict); }

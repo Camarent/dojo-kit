@@ -6,6 +6,13 @@ const MAX_SESSION_CAP: u32 = 500;
 
 pub(super) fn check_topics(course: &Course, sink: &mut Sink) {
     let Some(topics) = &course.topics else {
+        // A unit key is `<entity>|<aspect>`; without topics there are no aspects to key by.
+        for unit in &course.units {
+            let scope = unit.srs.as_ref().and_then(|s| s.scope).or(course.srs.as_ref().and_then(|s| s.scope));
+            if scope == Some(SrsScope::Unit) {
+                sink.error("unit_scope_no_topics", COURSE_FILE, 0, format!("unit '{}' has srs.scope unit but the course has no topics", unit.id));
+            }
+        }
         return;
     };
 

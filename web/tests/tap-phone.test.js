@@ -172,7 +172,7 @@ test('Harness: weak chip has title attribute with full plain text', async () => 
   });
   
   assert.ok(foundChipWithTitle, 'At least one chip should have a title attribute');
-  assert.ok(foundLongText, 'At least one chip should have a title longer than 24 chars');
+  assert.ok(!foundLongText, 'chip titles are the short fixed label, not the prompt text');
 });
 
 test('Harness: toggle label chip is rendered', async () => {

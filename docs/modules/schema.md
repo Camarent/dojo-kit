@@ -16,7 +16,7 @@ Machine-readable description of the authoring format, for editors and AI agents.
 - Regenerate: `dojo schema --out schema` (`write_schemas`, `crates/dojo-cli/src/main.rs`, writes both files). `dojo schema --brief` prints the compact cheat-sheet instead (`crates/dojo-core/src/schema.rs`).
 
 ## Key files
-- `course.schema.json` - top-level course fields.
+- `course.schema.json` - top-level course fields. New in it: `$defs/SrsMigrate` (`srs.migrate`: `id`, `ladderFrom`, `unify`), `$defs/SrsScope` (`item`, `entity`, `unit`), top-level `session` (`$defs/SessionSettings`, `$defs/SessionMode`), and `ruby.checkAnswers` next to `checkQuestions`.
 - `item.schema.json` - one object per item type, discriminated by `type`. Order items accept optional `altOrders` (`schema/item.schema.json:585`): a list of extra accepted step orders, each a permutation of the step indices. Gap items accept optional `retry`: the variation list, readings that are close but not correct (use it for a sibling word that also fits, e.g. どんな/どれ). Outside a real exam the learner sees "Тоже подходит / Попробуйте другую форму" and the item stays open; in a real exam (not training) a retry is graded wrong with no hint (see `docs/modules/web.md`).
 
 ## Invariants and gotchas

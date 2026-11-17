@@ -58,11 +58,11 @@ fn course_id_validation() {
 
 #[test]
 fn bad_ladders() {
-    for ladder in ["[0]", "[1,2]", "[0,-1]", "[0,5,3]"] {
+    for ladder in ["[0]", "[1,2]", "[0,-1]", "[0,5,3]", "[0,5,5]"] {
         fires(&with_course(&format!(r#""srs":{{"ladder":{ladder}}}"#)), &[CHOICE], "bad_ladder");
         fires(&with_course(&format!(r#""srsByType":{{"gap":{{"ladder":{ladder}}}}}"#)), &[CHOICE], "bad_ladder");
     }
-    let ok = with_course(r#""srs":{"ladder":[0,5,5]}"#);
+    let ok = with_course(r#""srs":{"ladder":[0,5,10]}"#);
     assert_eq!(run(&ok, &[CHOICE]), vec![]);
 }
 
@@ -83,7 +83,7 @@ fn bad_jump_and_floor() {
     fires(&with_course(r#""srs":{"ladder":[0,5,10],"wrongFloor":3}"#), &[CHOICE], "bad_floor");
     let ok = with_course(r#""srs":{"ladder":[0,5,10],"jumpTo":2,"wrongFloor":2}"#);
     assert_eq!(run(&ok, &[CHOICE]), vec![]);
-    let ok = with_course(r#""srs":{"jumpTo":6,"wrongFloor":1}"#);
+    let ok = with_course(r#""srs":{"jumpTo":4,"wrongFloor":1}"#);
     assert_eq!(run(&ok, &[CHOICE]), vec![]);
     fires(&with_course(r#""srsByType":{"gap":{"jumpTo":2}}"#), &[CHOICE], "scope_by_type");
     fires(&with_course(r#""srsByType":{"gap":{"wrongFloor":1}}"#), &[CHOICE], "scope_by_type");

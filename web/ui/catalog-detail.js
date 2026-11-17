@@ -1,6 +1,6 @@
 /*
- * ui/catalog-detail.js — CatalogScreen detail dialog: glyph, play button, body (intro, answers, stats).
- * Globals expected: preact, htm, DojoExt, DojoCommon, DojoDetail, DojoTopicLevels.
+ * ui/catalog-detail.js — CatalogScreen detail dialog: glyph, play button, body (intro, answers, explanation, hook).
+ * Globals expected: preact, htm, DojoExt, DojoCommon, DojoDetail.
  * Functions take the CatalogScreen instance as `self` (self.ca, self.introOf, self.hookCtx, self.unitById, self.labelOf, self.ordOf, self.setState, self.state).
  */
 (function (root) {
@@ -15,10 +15,10 @@
   }
   var DojoCommon = loadDep('DojoCommon', './common.js') || {};
   var DojoDetail = loadDep('DojoDetail', './detail.js') || {};
-  var DojoTopicLevels = loadDep('DojoTopicLevels', './topic-levels.js') || {};
 
   // Alias from DojoCommon
   var renderText = DojoCommon.renderText;
+  var renderTextAll = DojoCommon.renderTextAll;
 
   // Alias from DojoDetail
   var renderDeclarativeDetail = DojoDetail.renderDeclarativeDetail;
@@ -47,14 +47,7 @@
     return html`<section class="intro" data-testid="detail-intro">${renderIntroBody({ intro: dIntro, item: d, ctx: self.hookCtx(), decl: dDecl, all: false, pre: dIntroOut })}</section>`;
   }
 
-  // Topic levels and record stats, in that order.
-  function renderStatsPart(p, t, d, rec) {
-    return [
-      DojoTopicLevels.renderTopicLevels(p.course, d.entity || d.id, p.engine.topicLevels(), t),
-      DojoDetail.renderRecordStats(rec, rec ? p.now() : 0, t),
-    ];
-  }
-
+  // Catalog cards show content, not progress rows (no stage, topic level, due or ok/bad counts); error-rate/timeouts/confusions stay.
   function renderDetailBody(self, p, t, d) {
     var rec = p.engine.record(d);
     var dIntro = self.introOf(d);
@@ -66,8 +59,7 @@
           ${detailPlay(self, p, d)}
           <p data-testid="detail-answers"><b>${t('session.expected')}</b> <span class="pre">${renderText(p.engine.expected(d))}</span></p>
           ${d.explanation ? html`<p class="pre" data-testid="detail-explanation">${renderText(d.explanation)}</p>` : null}
-          <p class="muted" data-testid="detail-stage">${t('catalog.stage')}: ${t('catalog.stage.' + p.engine.stage(d))}</p>
-          ${renderStatsPart(p, t, d, rec)}
+          ${DojoDetail.renderExtrasStats(rec, t)}
           ${detailHookOut ? html`<div data-testid="detail-hook">${detailHookOut}</div>` : null}
         </article>`;
   }
@@ -79,7 +71,7 @@
           <div class="catalog-detail-header" data-testid="catalog-detail-header">
             <button type="button" class="btn icon" data-testid="btn-close-detail" onClick=${close}>${t('close')}</button>
             ${detailGlyph(self, p, d)}
-            <h2 data-testid="detail-title">${renderText(self.labelOf(d).text)}${self.ordOf(d) ? ' #' + self.ordOf(d) : ''}</h2>
+            <h2 data-testid="detail-title">${renderTextAll(self.labelOf(d).text)}${self.ordOf(d) ? ' #' + self.ordOf(d) : ''}</h2>
           </div>
           ${renderDetailBody(self, p, t, d)}
         </div>

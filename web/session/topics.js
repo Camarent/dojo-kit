@@ -1,6 +1,6 @@
 /* session/topics.js — topic review for the study session engine: one item per topic in the daily queue (contract: topic rule).
  * Exports DojoSessionTopics: topicHelpers(ctx, h) adds h.topicArgs(uncapped) -> null | {aspects, pools, cap}, h.topicsSessionCap() -> n | null,
- *   h.sharedWithLinked(ids, examOnlyUnits, unitOf) -> ids.
+ *   h.sharedWithLinked(ids, examOnlyUnits, unitOf) -> ids, h.weakFilter() -> {topic, aspect} | null, *   h.weakFilterOptions() -> {topics, aspects} | null (weak mode filter, settings key session:weakFilter).
  */
 (function (root) {
   'use strict';
@@ -9,6 +9,8 @@
   function capOf(n) {
     return typeof n === 'number' && n >= 1 ? Math.floor(n) : null;
   }
+
+  var WEAK_FILTER_KEY = 'session:weakFilter';
 
   function topicHelpers(ctx, h) {
     var aspects = null;
@@ -46,6 +48,31 @@
         seen[key] = true;
         return true;
       });
+    };
+    // Stored weak-mode filter {topic?, aspect?} (settings key session:weakFilter); null when absent or invalid.
+    h.weakFilter = function () {
+      var f = (ctx.store.doc.settings || {})[WEAK_FILTER_KEY];
+      if (!f || typeof f !== 'object') return null;
+      var topic = typeof f.topic === 'string' && f.topic !== '' ? f.topic : null;
+      var aspect = typeof f.aspect === 'string' && f.aspect !== '' ? f.aspect : null;
+      return topic || aspect ? { topic: topic, aspect: aspect } : null;
+    };
+    // {topics: [entity], aspects: [{id, title?}]} for the weak filter pickers, from the wasm itemAspects call; null without course.topics.
+    h.weakFilterOptions = function () {
+      var tp = ctx.course.topics;
+      if (!tp) return null;
+      var asp = aspectsOfCourse();
+      var seenTopic = {};
+      var seenAspect = {};
+      var topics = [];
+      ctx.items.forEach(function (it) {
+        if (asp[it.id] === undefined) return;
+        var e = ctx.itemEntities[it.id];
+        if (!seenTopic[e]) { seenTopic[e] = true; topics.push(e); }
+        seenAspect[asp[it.id]] = true;
+      });
+      var aspects = (tp.aspects || []).filter(function (a) { return seenAspect[a.id]; }).map(function (a) { return { id: a.id, title: a.title }; });
+      return { topics: topics, aspects: aspects };
     };
     // Shared ids, plus examOnly ids whose topic (entity) also has a shared id; with topics only.
     h.sharedWithLinked = function (ids, examOnlyUnits, unitOf) {

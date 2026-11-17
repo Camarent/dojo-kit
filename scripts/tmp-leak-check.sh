@@ -27,7 +27,17 @@ if [ $# -eq 0 ]; then
     exit 2
 fi
 
-dir="${TMPDIR:-/tmp}"
+# Shared /tmp (TMPDIR unset or /tmp): use a private dir so concurrent writers to /tmp are never counted.
+# The private dir is exported to the child as TMPDIR and removed when the guard ends.
+if [ -z "${TMPDIR:-}" ] || [ "$TMPDIR" = /tmp ]; then
+    dir=$(mktemp -d) || { echo "tmp-leak-check: cannot create a private temp dir" >&2; exit 2; }
+    trap 'rm -rf -- "$dir"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+    export TMPDIR="$dir"
+else
+    dir="$TMPDIR"
+fi
 
 # list_matches: sorted names of entries directly in $dir matching any pattern.
 list_matches() {

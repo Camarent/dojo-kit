@@ -74,7 +74,7 @@ test('choice wrong answer: expected, explanation, detail with tags', async () =>
   const { sc } = await setup('choice');
   sc.answer({ index: 0 }, 0);
   assert.strictEqual(sc.state.result.correct, false);
-  assert.strictEqual(fb(sc), 'feedback,verdict,expected,explanation,feedback-detail,feedback-tags');
+  assert.strictEqual(fb(sc), 'feedback,verdict,expected,feedback-card,explanation,feedback-detail,feedback-tags');
   assert.strictEqual(txt(find(sc.renderFeedback(sc.props, sc.state), 'feedback-tags')), 'T1');
   assert.strictEqual(txt(find(sc.renderFeedback(sc.props, sc.state), 'verdict')), 'session.wrong');
   assert.strictEqual(txt(find(sc.renderFeedback(sc.props, sc.state), 'expected')), 'session.expected B');

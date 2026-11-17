@@ -116,7 +116,7 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 - `text(str, {annotate:true})` returns `str` unchanged when no markup is active (`web/ext.js`); annotation needs an active markup and a loaded reading dictionary.
 - `text(str, {annotate:true, hide:[...]})` renders segments whose reading is in `hide` (exact match) as bare base (`web/ext.js`); the session prompt passes the item's accepted answers via `answerReadings` (`web/ui/app.js`) so answers are not shown as furigana.
 - Unit hiding has one rule: `DojoCommon.countActiveByUnit(items)` (`web/ui/common.js:217`) counts non-retired items per unit as `{unitId: {total}}`, and `DojoCommon.visibleUnits(units, byUnit)` (`web/ui/common.js:227`) keeps only units with `total > 0`. "Non-retired" is `DojoCommon.isActive(item)` (`web/ui/common.js:211`), the single predicate; use it instead of `status !== 'retired'`. Catalog tabs (`web/ui/catalog.js:88`), practice units (`web/ui/placement.js:43`) and home (`web/ui/home.js:231`, `:252`) all use it; a unit with only retired items is hidden everywhere.
-- `DojoDetail.renderRecordStats(rec, now, t)` (`web/ui/detail.js:243`) renders the step, due and ok/bad count lines (`detail-step`, `detail-due`, `detail-counts`) plus the extras (`detail-errrate`, `detail-timeouts`, `detail-confusions`); returns `null` when there is no record. Used by the Catalog detail (`web/ui/catalog-detail.js:54`).
+- `DojoDetail.renderRecordStats(rec, now, t)` (`web/ui/detail.js:243`) renders the step, due and ok/bad count lines (`detail-step`, `detail-due`, `detail-counts`) plus the extras (`detail-errrate`, `detail-timeouts`, `detail-confusions`); returns `null` when there is no record. Not called by the Catalog detail; `web/ui/catalog-detail.js:62` uses `DojoDetail.renderExtrasStats` only.
 - Speech text comes only from `speak`: stimulus `speak.lines` or item `speak` string. `DojoSpeech.lines` passes it through `DojoExt.plain`, so markup is never spoken.
 - Speech never grades, schedules or writes progress. It uses the browser's `speechSynthesis`. When a remote voice (e.g., Chrome "Google ..." or Edge "Online") is used, the browser may send the utterance text to a vendor server. `pickVoice` prefers voices with `localService === true` to avoid this.
 - Exam: a stimulus play button can be used once per session. `played` lives on the SessionScreen (`web/ui/app.js`) and is keyed `s:<stimulus id>`, so items that share a stimulus share the flag. Play buttons in exam are disabled once played (`web/ui/app.js`).
@@ -185,6 +185,16 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 - Stimulus with no playable source (hidden text, no clip): notice `stimulus-nosource-notice` uses `stimulus.nosource` (`web/ui/stimulus.js:84`, `web/i18n/en.json:220`), not `speech.unavailable`.
 - Practice setup: buttons sit in `setup-actions` (`web/ui/placement.js:69`) inside `PracticeSetup` (`web/ui/placement.js:33`).
 - Russian plurals: `pluralForm` (`web/ui/i18n.js:9`) gives `one` / `few` / `many` for `ru` (mod-10 / mod-100 rule) and `one` / `other` otherwise. The weak-items count `home.weak.count` (`web/i18n/ru.json`, `web/ui/home.js:203`) uses this; the weak list is capped at 8 (`web/ui/home.js:127`).
+
+## Unit-scope sessions (core builds the queue)
+- Courses with `srs.scope "unit"` build the daily queue in core: `web/session/queues.js` (`sessionHelpers`, ~line 264) calls WASM `buildSession` with the course session block, `session:*` settings overrides and answers; the result is `{queue, plan}`.
+- `web/session/counts.js` (`summarize`, ~line 81) takes the home numbers from the plan of the session that starts next, so home counters and sessions share one function (`buildSession`).
+- The weak filter (`weakFilter`, `web/session/queues.js:275`) is applied inside core `buildSession`; there is no JS matcher. Other courses keep `buildQueue`.
+- `web/session/run.js` (~line 237) calls WASM `sessionFinish` for the scored results. `web/ui/session-finish.js` renders the result it returns.
+- `web/session/grade.js` (~line 122-132) writes one record per member of a scoped entity (`{memberId: record}`): members and records come from `scopedMemberList` and `scopedRecords`.
+- Requeue after a wrong answer in the same session: WASM `sessionRequeue` (`web/session/run-view.js:95`), which picks the repeat from the unit pool.
+- Settings: the session section (`web/ui/settings-sections.js`, `SESSION_CORE_DEFAULTS` ~line 54) edits the `session:*` keys; invalid stored values fall back to the core defaults.
+- Old saves: `web/migrate.js` (~line 37) runs WASM `migrateDoc` when `course.srs.migrate` is set, once per doc.
 
 ## Depends on / used by
 - Depends on: `web/dojo-wasm.js` (WASM artifact built from `crates/dojo-wasm`), `data/content.json` written by `dojo build`, vendored Preact and htm (`vendor/`, listed in `web/bundle.json`); `window.speechSynthesis` for speech (optional; absent means no play buttons).

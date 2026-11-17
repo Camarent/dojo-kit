@@ -145,12 +145,19 @@
     return ctx.dojo.call('weakest', { items: ctx.fn.records(), limit: limit, validIds: valid });
   }
 
-  function weakValidIds(ctx) {
+  function weakValidIds(ctx, h) {
     var valid = {};
+    // Stored weak filter: the core buildSession (filter {topic, aspect}) decides which items qualify.
+    var allowed = null;
+    if (h.weakFilter()) {
+      allowed = {};
+      h.sessionPlan().queue.forEach(function (id) { allowed[id] = true; });
+    }
     var recs = ctx.fn.records();
     var seenEntity = {};
     ctx.fn.activeItems().forEach(function (it) {
       if (ctx.fn.onlyTagsExcluded(it)) return;
+      if (allowed && !allowed[it.id]) return;
       var se = ctx.scopedEntityOf[it.id];
       if (se !== undefined) {
         var r = recs[it.id];
@@ -162,19 +169,25 @@
     return valid;
   }
 
-  function weakRow(ctx, id) {
+  // kanji: the written form of the item (meta.kanji, else meta.entry), used by the home chip label; undefined when absent.
+  function weakRow(ctx, id, aspect) {
     var it = ctx.byId[id];
     var st = it && it.stimulus && ctx.stimById ? ctx.stimById[it.stimulus] : null;
-    return { id: id, prompt: it ? it.prompt : '', stimText: st ? st.text : undefined, answer: it ? it.answer : undefined };
+    var meta = it && it.meta ? it.meta : {};
+    var kanji = typeof meta.kanji === 'string' ? meta.kanji : (typeof meta.entry === 'string' ? meta.entry : undefined);
+    return { id: id, prompt: it ? it.prompt : '', stimText: st ? st.text : undefined, answer: it ? it.answer : undefined, aspect: aspect, kanji: kanji };
   }
 
   // Adds weakIds / weakValidIds / weakQueue / weakList to the queue helper object h (needs h.preferShared).
   function weakHelpers(ctx, h) {
     h.weakIds = function (valid, limit) { return weakIds(ctx, h, valid, limit); };
-    h.weakValidIds = function () { return weakValidIds(ctx); };
+    h.weakValidIds = function () { return weakValidIds(ctx, h); };
     h.weakQueue = function (opts) { return h.weakIds(h.weakValidIds(), opts.limit || util.K.DEFAULT_WEAK_LIMIT); };
+    // Each row carries its aspect (course topic rule; 'default' without topics) for the home chip label.
     h.weakList = function (limit) {
-      return h.weakIds(h.weakValidIds(), limit).map(function (id) { return weakRow(ctx, id); });
+      var ta = h.topicArgs(true);
+      var asp = ta ? ta.aspects : {};
+      return h.weakIds(h.weakValidIds(), limit).map(function (id) { return weakRow(ctx, id, asp[id] || 'default'); });
     };
   }
 

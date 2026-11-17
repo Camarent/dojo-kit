@@ -1,7 +1,7 @@
 //! Kanji-ruby checks for course `ruby` config: `ruby_on_skip_kanji` and `ruby_missing`.
 //! The skip rules run only when `markup` is `ruby` and a skip source (`skip` or `skipTag`) is set.
 
-use dojo_core::content::{Course, Item, RubyConfig};
+use dojo_core::content::{ClozePart, Course, Item, RubyConfig};
 use dojo_core::validate::{Diagnostic, ItemChecker, Severity};
 use std::collections::HashSet;
 
@@ -48,10 +48,11 @@ fn meta_str<'a>(item: &'a Item, key: &str) -> Option<&'a str> {
 }
 
 /// The skip set: Han of `ruby.skip` plus Han of the `skipKey` string of every item tagged `skipTag`.
-/// `None` unless `markup` is `ruby`, `ruby.checkQuestions` is true and a skip source is set.
+/// `None` unless `markup` is `ruby`, `ruby.checkQuestions` or `ruby.checkAnswers` is true and a skip source is set.
 pub(crate) fn skip_set<'a>(course: &Course, items: impl Iterator<Item = &'a Item>) -> Option<HashSet<char>> {
     let ruby = course.ruby.as_ref()?;
-    if ruby.check_questions != Some(true) || course.markup.as_deref() != Some(RUBY_MARKUP) || (ruby.skip.is_none() && ruby.skip_tag.is_none()) {
+    let checking = ruby.check_questions == Some(true) || ruby.check_answers == Some(true);
+    if !checking || course.markup.as_deref() != Some(RUBY_MARKUP) || (ruby.skip.is_none() && ruby.skip_tag.is_none()) {
         return None;
     }
     let mut set: HashSet<char> = ruby.skip.as_deref().unwrap_or("").chars().filter(|c| is_han(*c)).collect();
@@ -80,6 +81,23 @@ fn options(item: &Item) -> &[String] {
     }
 }
 
+/// Answer-side texts: gap `answers` and `retry`, and the alternatives of cloze blanks.
+fn answer_texts(item: &Item) -> Vec<&str> {
+    match item {
+        Item::Gap(i) => i.answers.iter().chain(&i.retry).map(String::as_str).collect(),
+        Item::Cloze(i) => i
+            .parts
+            .iter()
+            .filter_map(|p| match p {
+                ClozePart::Blank(alts) => Some(alts.iter().map(String::as_str)),
+                _ => None,
+            })
+            .flatten()
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
 /// A base whose Han characters are all in the skip set renders bare, so its ruby is redundant.
 fn hidden_base(base: &str, skip: &HashSet<char>) -> bool {
     let han: Vec<char> = base.chars().filter(|c| is_han(*c)).collect();
@@ -88,6 +106,10 @@ fn hidden_base(base: &str, skip: &HashSet<char>) -> bool {
 
 fn warning(code: &'static str, file: &str, line: usize, message: String) -> Diagnostic {
     Diagnostic { severity: Severity::Warning, code, file: file.to_string(), line, message }
+}
+
+fn error(code: &'static str, file: &str, line: usize, message: String) -> Diagnostic {
+    Diagnostic { severity: Severity::Error, code, file: file.to_string(), line, message }
 }
 
 /// Per-item ruby check built once per course by `Ja::course_checker`.
@@ -108,12 +130,28 @@ impl ItemChecker for RubyChecker {
         }
 
         let Some(skip) = self.skip.as_ref() else { return Vec::new() };
+        let questions = ruby.check_questions == Some(true);
+        let answers = ruby.check_answers == Some(true);
+        let bare_hit = |text: &str| scan_ruby(text).1.iter().any(|c| !skip.contains(c));
         let mut hidden = false;
         let mut missing = false;
-        for text in std::iter::once(item.prompt()).chain(options(item).iter().map(String::as_str)) {
-            let (bases, bare) = scan_ruby(text);
-            hidden |= bases.iter().any(|b| hidden_base(b, skip));
-            missing |= bare.iter().any(|c| !skip.contains(c));
+        let mut missing_answer = false;
+        if questions {
+            for text in std::iter::once(item.prompt()).chain(options(item).iter().map(String::as_str)) {
+                hidden |= scan_ruby(text).0.iter().any(|b| hidden_base(b, skip));
+            }
+            missing |= bare_hit(item.prompt());
+        }
+        for text in options(item) {
+            let hit = bare_hit(text.as_str());
+            if answers {
+                missing_answer |= hit;
+            } else if questions {
+                missing |= hit;
+            }
+        }
+        if answers {
+            missing_answer |= answer_texts(item).into_iter().any(bare_hit);
         }
         let mut out = Vec::new();
         if hidden {
@@ -121,6 +159,9 @@ impl ItemChecker for RubyChecker {
         }
         if missing {
             out.push(warning("ruby_missing", file, line, format!("item '{id}' has a kanji outside the ruby skip set without a {{base|reading}} ruby")));
+        }
+        if missing_answer {
+            out.push(error("ruby_missing", file, line, format!("item '{id}' has a kanji outside the ruby skip set without a {{base|reading}} ruby in an answer")));
         }
         out
     }

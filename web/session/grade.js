@@ -5,6 +5,7 @@
   'use strict';
 
   var util = root.DojoSessionUtil || (typeof require === 'function' ? require('./util.js') : null);
+  var writes = root.DojoSessionGradeWrites || (typeof require === 'function' ? require('./grade-writes.js') : null);
 
   function stableGiven(g) {
     return typeof g === 'string' ? g.substring(0, util.K.MAX_ANSWER_G) : '';
@@ -98,7 +99,7 @@
     if (!Array.isArray(input.inputs) || input.inputs.length !== blanks.length) return null;
     if (!input.inputs.every(function (x) { return typeof x === 'string'; })) return null;
     var r = ctx.dojo.call('checkCloze', { blanks: blanks, inputs: input.inputs, opts: ctx.fn.normalizeOpts(item) });
-    return { correct: r.correct, given: input.inputs.join(' | '), detail: { results: r.results } };
+    return { correct: r.correct, given: input.inputs.join(' | '), detail: { results: r.results, partial: !!r.partial } };
   }
 
   function gradeNumeric(g, item, input) {
@@ -117,30 +118,6 @@
     var grader = NEW_GRADERS[item.type];
     if (grader) return grader({ ctx: ctx, sx: sx }, item, input,sx.session.id + '|' + item.id);
     return gradeRating(input);
-  }
-
-  // Writes for one scoped entity: {memberId: record} (possibly empty). A repeated wrong in the same session goes
-  // through relearn so the entity drops once.
-  function scopedWrites(g, e, correct, relearn) {
-    var ctx = g.ctx;
-    var sx = g.sx;
-    var unit = ctx.scopedUnit[e];
-    var cfg = ctx.fn.unitConfig(unit);
-    var args = {
-      members: ctx.fn.scopedMemberList(e), records: ctx.fn.scopedRecords(e), now: ctx.now(), correct: correct,
-      ladder: ctx.fn.ladderForUnit(unit), jumpTo: cfg.jumpTo, wrongFloor: cfg.wrongFloor
-    };
-    if (sx.mode === 'placement') {
-      args.mode = 'placement';
-      args.known = correct;
-      args.seed = util.hashString(sx.session.seed + '|' + e).toString();
-      return ctx.dojo.call('applyEntity', args);
-    }
-    var override = ctx.fn.getUnitSettingsOverride(unit);
-    args.dropOnWrong = override.dropOnWrong !== undefined ? override.dropOnWrong : ctx.fn.unitConfig(unit).dropOnWrong;
-    args.mode = relearn || sx.entityWrong[e] ? 'relearn' : (sx.mode === 'daily' ? 'answer' : 'practice');
-    if (args.mode === 'relearn' && !correct) return {};
-    return ctx.dojo.call('applyEntity', args);
   }
 
   function nextItemRecord(g, item, correct, relearn) {
@@ -169,7 +146,7 @@
   // Records to store for one answer: {id: record} or null.
   function nextRecord(g, item, correct, relearn) {
     var se = g.ctx.scopedEntityOf[item.id];
-    if (se !== undefined) return scopedWrites(g, se, correct, relearn);
+    if (se !== undefined) return writes.scopedWrites(g, { entity: se, correct: correct, relearn: relearn, answeredId: item.id });
     var one = nextItemRecord(g, item, correct, relearn);
     if (!one) return null;
     var out = {};
@@ -177,40 +154,12 @@
     return out;
   }
 
-  function bumpCounter(stats, key, day) {
-    stats[key] = util.ensureObject(stats[key]);
-    stats[key][day] = (stats[key][day] || 0) + 1;
-  }
-
-  function groupStarted(ctx, doc, item) {
-    var mates = ctx.entityMembers[ctx.itemEntities[item.id]] || [];
-    return ctx.scopedEntityOf[item.id] === undefined && mates.some(function (m) { return m !== item.id && doc.items && doc.items[m] !== undefined; });
-  }
-
-  function countNewItem(ctx, doc, item, day) {
-    doc.stats.newByDay = util.ensureObject(doc.stats.newByDay);
-    doc.stats.newByDay[day] = (doc.stats.newByDay[day] || 0) + 1;
-    var gid = ctx.unitGroup[item.unit];
-    if (gid !== undefined && !groupStarted(ctx, doc, item)) bumpCounter(doc.stats, util.K.GROUP_NEW_PREFIX + gid, day);
-    if (item.unit) bumpCounter(doc.stats, util.K.UNIT_NEW_PREFIX + item.unit, day);
-  }
-
-  function commit(g, item, writes, countsNew) {
-    var ctx = g.ctx;
-    var sx = g.sx;
-    var day = ctx.today();
-    ctx.store.update(function (doc) {
-      if (writes) {
-        doc.items = doc.items || {};
-        Object.keys(writes).forEach(function (id) { doc.items[id] = writes[id]; });
-      }
-      if (sx.mode === 'placement') return;
-      doc.stats = doc.stats || {};
-      doc.stats.days = doc.stats.days || {};
-      doc.stats.days[day] = (doc.stats.days[day] || 0) + 1;
-      if (countsNew) countNewItem(ctx, doc, item, day);
-    });
-    if (sx.mode !== 'placement') ctx.store.noteAnswer();
+  // Milliseconds since the previous grade of this session (or its start); the clock restarts at every grade.
+  function answerDuration(g) {
+    var now = g.ctx.now();
+    var ms = Math.max(0, now - (g.sx.answerClock !== undefined ? g.sx.answerClock : g.sx.startedAt));
+    g.sx.answerClock = now;
+    return ms;
   }
 
   function markEntityWrong(ctx, sx, item, verdict) {
@@ -236,19 +185,28 @@
     else if (g.sx.mode !== 'placement') g.ctx.fn.qtimerAfter(item, verdict);
   }
 
+  function recordFor(g, item, options, verdict) {
+    return options.relearn || g.sx.mode === 'placement' ? options.rec : g.ctx.fn.extrasFor(item, options.rec, verdict);
+  }
+
+  function answerMs(g, relearn) {
+    var mode = g.sx.mode;
+    return mode === 'exam' || mode === 'placement' || relearn ? undefined : answerDuration(g);
+  }
+
   function applyVerdict(g, item, verdict, options) {
     var ctx = g.ctx;
     var sx = g.sx;
     verdict = markTimedOut(ctx, verdict, options);
-    var rec = options.relearn || sx.mode === 'placement' ? options.rec : ctx.fn.extrasFor(item, options.rec, verdict);
     var relearn = options.relearn;
-    commit(g, item, rec, sx.mode === 'daily' && !relearn && options.isNewRecord);
+    var countsNew = sx.mode === 'daily' && !relearn && options.isNewRecord;
+    writes.commit(g, { item: item, writes: recordFor(g, item, options, verdict), countsNew: countsNew, ms: answerMs(g, relearn) });
     var setWrong = markEntityWrong(ctx, sx, item, verdict);
     var timerSnap = ctx.fn.qtimerSnapshot();
     advanceTimer(g, item, verdict, relearn);
     sx.answeredAt[sx.session.index] = true;
     sx.session.answered++;
-    var pushed = false;
+    var pushed = null; // id of the repeat queued for this answer
     if (!relearn && sx.mode !== 'placement') pushed = sx.fn.recordGrade(item, verdict);
     sx.lastAnswer = sx.mode === 'placement' ? null : { index: sx.session.index, item: item, prev: options.prev, relearn: relearn, verdict: verdict, pushed: pushed, setWrong: setWrong, timer: relearn ? null : timerSnap };
     recordDraftAnswer(sx, verdict);
@@ -291,9 +249,9 @@
     sx.graded[item.id] = true;
     var row = sx.review[sx.review.length - 1];
     if (row && row.id === item.id) row.correct = true;
-    if (la.pushed && sx.queue[sx.queue.length - 1] === item.id) {
+    if (la.pushed && sx.queue[sx.queue.length - 1] === la.pushed) {
       sx.queue.pop();
-      delete sx.requeued[sx.fn.requeueKey(item)];
+      sx.repeated[la.pushed] -= 1;
     }
   }
 

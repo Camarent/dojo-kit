@@ -1,0 +1,8 @@
+[
+  {
+    "advisory": "GHSA-fc5q-39xc-vjpf",
+    "package": "picomatch",
+    "versions": ["4.0.7"],
+    "reason": "ReDoS in extglob matching; no fixed release exists. Reached only through dev tools (knip, madge), never shipped. Remove this entry when picomatch publishes a fix."
+  }
+]

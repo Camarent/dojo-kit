@@ -74,7 +74,17 @@
       out.bars = gc.bars;
       if (ctx.groupList.length) out.summary = summarize(ctx, gc.groups, bq, dueQ);
     }
+    if (ctx.fn.hasUnitSession()) fromPlan(out, ctx.fn.sessionPlan().plan);
     return out;
+  }
+
+  // Courses with srs.scope "unit": the home numbers are the plan of the session that starts (same buildSession call).
+  function fromPlan(out, plan) {
+    out.due = plan.due;
+    out.newToday = plan.new;
+    out.queue = plan.total;
+    if (out.summary) { out.summary.due = plan.due; out.summary.newToday = plan.new; out.summary.queue = plan.total; }
+    out.plan = plan;
   }
 
   // Home summary of a course with groups, consistent with the group cards: due = group due (entities) + due items of

@@ -14,12 +14,12 @@ use config::{interval, max_stage};
 pub use entity::*;
 pub use queue::*;
 pub use timer::{timer_limit, timer_next, TimerIn};
-pub use extras::{apply_extras, Outcome};
+pub use extras::{apply_extras, apply_question_extras, Outcome, Question};
 pub use weighted::{draw_index, unit_random, weight, weighted_queue, WeightedIn};
 
 pub const HOUR: i64 = 3_600_000;
 pub const DAY: i64 = 24 * HOUR;
-pub const DEFAULT_LADDER: [i64; 7] = [0, 4 * HOUR, DAY, 3 * DAY, 7 * DAY, 14 * DAY, 30 * DAY];
+pub const DEFAULT_LADDER: [i64; 5] = [0, DAY, 5 * DAY, 10 * DAY, 30 * DAY];
 
 
 /// Stages lost on a wrong answer when the API gets no explicit drop (keeps golden vectors).
@@ -301,8 +301,8 @@ mod placement_tests {
         let dues: std::collections::HashSet<i64> =
             (0..20).map(|s| apply_placement(None, true, NOW, &DEFAULT_LADDER, s)["due"].as_i64().unwrap()).collect();
         assert!(dues.len() > 10);
-        let lo = NOW + (7.0 * DAY as f64 * 0.6) as i64 - 1;
-        let hi = NOW + (7.0 * DAY as f64 * 1.4) as i64 + 1;
+        let lo = NOW + (30.0 * DAY as f64 * 0.6) as i64 - 1;
+        let hi = NOW + (30.0 * DAY as f64 * 1.4) as i64 + 1;
         assert!(dues.iter().all(|d| (lo..=hi).contains(d)));
     }
 

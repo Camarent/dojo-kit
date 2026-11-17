@@ -11,7 +11,7 @@ mod topics;
 pub use course::{
     Bar, BreakdownConfig, Course, CourseCheck, DetailConfig, DetailField, ExamConfig, Group, GroupNewOrder,
     PassBasis, PassMode, PassRule, PlacementConfig, Plugins, RubyConfig, ScoringPart, SrsConfig,
-    SrsScope, Section, TagLabel, TagLabelDetail, TimingGroup, Unit,
+    SessionMode, SessionSettings, SrsScope, Section, TagLabel, TagLabelDetail, TimingGroup, Unit,
 };
 pub use topics::{AspectRule, TopicsConfig};
 pub use input_mode::InputMode;
