@@ -14,6 +14,16 @@ function mulberry(seed) {
   };
 }
 
+const MS_PER_DAY = 86400000;
+const U64_MASK = (1n << 64n) - 1n;
+
+// Session seed for one sim day: the base seed mixed with the UTC day key of `nowMs` (as the app does per day).
+// Deterministic for the same base seed and day; a different day gives a different decimal u64 string.
+function simDaySeed(seed, nowMs) {
+  const day = BigInt(Math.floor(Number(nowMs) / MS_PER_DAY));
+  return String((BigInt(seed) + day * 2654435761n) & U64_MASK);
+}
+
 // A text that no accepted answer of a gap item equals (a wrong typed answer).
 function wrongText(answers) {
   let text = '-';
@@ -21,10 +31,11 @@ function wrongText(answers) {
   return text;
 }
 
-// createSim({course, items, intros?, stimuli?, now, seed, wasm}) -> sim. wasm: a loaded dojo handle from web/dojo-wasm.js load().
+// createSim({course, items, intros?, stimuli?, now, seed, wasm, daySeed?}) -> sim. wasm: a loaded dojo handle from web/dojo-wasm.js load().
+// daySeed (default false): true derives the session seed per sim day like the app; false passes the base seed as is.
 // intros and stimuli are accepted for API parity; the core build does not read them, so they change nothing here.
 function createSim(opts) {
-  const { course, items, now, seed, wasm } = opts || {};
+  const { course, items, now, seed, wasm, daySeed = false } = opts || {};
   if (!course || !Array.isArray(items) || !wasm) throw new TypeError('createSim needs course, items and wasm');
   const byId = new Map(items.map((it) => [it.id, it]));
   const clock = {
@@ -60,7 +71,7 @@ function createSim(opts) {
     if (o.daysLeft !== undefined) lastBuild.daysLeft = o.daysLeft;
     const built = wasm.call('buildSession', {
       units: course, items, records, now: clock.now, daysLeft: lastBuild.daysLeft,
-      courseId: course.id || '', seed: String(seed), introducedToday: o.introducedToday || 0,
+      courseId: course.id || '', seed: daySeed ? simDaySeed(seed, clock.now) : String(seed), introducedToday: o.introducedToday || 0,
     });
     current = { queue: built.queue.slice(), plan: built.plan, answers: [], repeats: {} };
     return { queue: built.queue, plan: built.plan };
