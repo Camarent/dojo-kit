@@ -26,7 +26,7 @@
       return ctx.dojo.call('applyEntity', args);
     }
     var override = ctx.fn.getUnitSettingsOverride(unit);
-    args.dropOnWrong = override.dropOnWrong !== undefined ? override.dropOnWrong : ctx.fn.unitConfig(unit).dropOnWrong;
+    args.dropOnWrong = override.dropOnWrong !== undefined ? override.dropOnWrong : cfg.dropOnWrong;
     args.mode = spec.relearn || sx.entityWrong[e] ? 'relearn' : (sx.mode === 'daily' ? 'answer' : 'practice');
     if (args.mode === 'relearn' && !spec.correct) return {};
     return ctx.dojo.call('applyEntity', args);
