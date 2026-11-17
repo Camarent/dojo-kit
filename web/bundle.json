@@ -22,6 +22,7 @@
     "session/grade.js",
     "session/exam-run.js",
     "session/run-view.js",
+    "session/run-parts.js",
     "session/run.js",
     "session/qtimer.js",
     "session/clip-flags.js",
