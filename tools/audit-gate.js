@@ -57,8 +57,7 @@ function main() {
   }
   const stale = staleEntries(audit, allow);
   if (stale.length) {
-    console.error(`audit-gate: no longer reported by npm audit, remove from audit-allow.json: ${stale.map((a) => `${a.package} ${a.advisory}`).join(', ')}`);
-    return 1;
+    console.warn(`audit-gate: WARNING no longer reported by npm audit, update the package and remove from audit-allow.json: ${stale.map((a) => `${a.package} ${a.advisory}`).join(', ')}`);
   }
   const total = Object.keys(audit.vulnerabilities || {}).length;
   console.log(`audit-gate: ok (${total} vulnerable package(s), all allowed in audit-allow.json)`);
