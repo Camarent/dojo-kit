@@ -20,7 +20,7 @@
     }).map(function (it) { return { id: it.id, status: it.status, supersedes: it.supersedes }; });
     var members = (opts.items || []).filter(function (it) {
       return it && it.id && it.unit;
-    }).map(function (it) { return { id: it.id, unit: it.unit }; });
+    }).map(function (it) { return { id: it.id, unit: it.unit, key: it.unit }; });
     var disabled = !withMigrateDoc && !links.some(function (l) { return l.supersedes; });
 
     function disable(why) {
