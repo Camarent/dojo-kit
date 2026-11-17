@@ -17,6 +17,7 @@
     "session/queues.js",
     "session/counts.js",
     "session/exam.js",
+    "session/grade-writes.js",
     "session/grade.js",
     "session/exam-run.js",
     "session/run-view.js",
