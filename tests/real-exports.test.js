@@ -28,16 +28,41 @@ test('no exports gives []', () => {
   assert.deepStrictEqual(findRealExports('zztest-nonexistent'), []);
 });
 
+// Unique per process and per run: parallel gates share one real-exports dir in the main checkout.
+const uniqueCourse = () => `zztest-${process.pid}-${Date.now()}`;
+
 test('every dated json in main checkout dir, oldest first', () => {
-  const dir = realExportsDir('zztest');
+  const course = uniqueCourse();
+  const dir = realExportsDir(course);
   assert.ok(!fs.existsSync(dir), 'test dir must not pre-exist');
-  fs.mkdirSync(dir, { recursive: true });
+  // No recursive flag: an overlapping run on the same dir must throw EEXIST, not pass silently.
+  fs.mkdirSync(dir);
   try {
-    fs.writeFileSync(path.join(dir, 'zztest-progress-2026-02-01.json'), '{}');
-    fs.writeFileSync(path.join(dir, 'zztest-progress-2026-01-01.json'), '{}');
+    // Children set a hold so two concurrent runs overlap while the dir exists.
+    const hold = Number(process.env.REAL_EXPORTS_TEST_HOLD_MS) || 0;
+    if (hold) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, hold);
+    fs.writeFileSync(path.join(dir, `${course}-progress-2026-02-01.json`), '{}');
+    fs.writeFileSync(path.join(dir, `${course}-progress-2026-01-01.json`), '{}');
     fs.writeFileSync(path.join(dir, 'note.txt'), '');
-    assert.deepStrictEqual(findRealExports('zztest'), ['2026-01-01', '2026-02-01'].map((d) => path.join(dir, `zztest-progress-${d}.json`)));
+    assert.deepStrictEqual(findRealExports(course), ['2026-01-01', '2026-02-01'].map((d) => path.join(dir, `${course}-progress-${d}.json`)));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('two processes running the same dir case at once both pass', async () => {
+  const { spawn } = require('child_process');
+  const run = () => new Promise((resolve, reject) => {
+    const env = { ...process.env, REAL_EXPORTS_TEST_HOLD_MS: '1500' };
+    delete env.NODE_TEST_CONTEXT; // inherited from this runner; a child must report its own results
+    const child = spawn(process.execPath, ['--test', '--test-name-pattern=every dated json', __filename], { env });
+    let out = '';
+    child.stdout.on('data', (d) => { out += d; });
+    child.stderr.on('data', (d) => { out += d; });
+    child.on('error', reject);
+    child.on('close', (code) => resolve({ code, out }));
+  });
+  const [a, b] = await Promise.all([run(), run()]);
+  assert.strictEqual(a.code, 0, a.out);
+  assert.strictEqual(b.code, 0, b.out);
 });
 
 test('summary: per-file lines, mixed set passes', () => {
