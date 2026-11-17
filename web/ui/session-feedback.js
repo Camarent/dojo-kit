@@ -188,20 +188,30 @@
     return html`<button type="button" class="btn" data-testid="btn-override" onClick=${function () { host.overrideAnswer(); }}>${p.t('session.override')}</button>`;
   }
 
+  // Explanation text and the detail block (the wrong-answer card body, or the correct-answer detail hook output).
+  function explainParts(host, p, s, res) {
+    return [
+      res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null,
+      host.feedbackDetail(p, s)
+    ];
+  }
+
   // Result view on the shared answer block: Extra part (verdict, detail, rows) in the feedback slot, answer texts after it.
+  // A wrong answer with an explanation or detail wraps them in a scrollable card (feedback-card) so the action row stays on screen.
   function resultBody(host, p, s, fbRows) {
     var t = p.t;
     var res = s.result;
     var def = DojoTypes.get(s.cur.item.type) || {};
     var AnswerBlock = root.DojoAnswerBlock.AnswerBlock;
+    var parts = explainParts(host, p, s, res);
+    var explain = res.correct || !parts.some(Boolean) ? parts : html`<div class="feedback-card" data-testid="feedback-card">${parts}</div>`;
     return AnswerBlock({ cls: cls('feedback', res.correct ? 'right' : 'wrong'), testid: 'feedback', role: 'status',
       feedback: html`<b data-testid="verdict">${verdictText(def, res, t)}</b>
         ${expectedLine(def, res, t)}
         ${revealedLine(s, t)}
         ${root.DojoClipText ? root.DojoClipText.render(s, t, p.lang) : null}
         ${def.Extra ? h(def.Extra, { result: res, t: t, raw: s.qstate && s.qstate.text }) : null}
-        ${res.explanation ? html`<p class="pre" data-testid="explanation">${renderTextAll(res.explanation)}</p>` : null}
-        ${host.feedbackDetail(p, s)}
+        ${explain}
         ${fbRows(p, s, host.isExamMode())}
         ${overrideButton(host, p, s)}
         ${flagButton(host, p, s)}` });

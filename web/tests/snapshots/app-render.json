@@ -7109,6 +7109,12 @@
                             }
                           },
                           {
+                            "type": "div",
+                            "props": {
+                              "data-testid": "feedback-card",
+                              "class": "feedback-card",
+                              "children": [
+                          {
                             "type": "p",
                             "props": {
                               "data-testid": "explanation",
@@ -7142,6 +7148,9 @@
                                     ]
                                   }
                                 }
+                              ]
+                            }
+                          }
                               ]
                             }
                           },

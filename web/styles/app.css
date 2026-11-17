@@ -364,6 +364,8 @@ input[type="range"].field { box-sizing: border-box; max-width: 100%; margin-inli
 .session .feedback-detail { border-top: 1px solid var(--border); padding-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
 .session .feedback-detail .tags { margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .session .feedback-detail .chip { padding: 2px 10px; min-height: 0; font-size: var(--fs-sm); }
+.session .feedback-card { max-height: 40vh; overflow-y: auto; overscroll-behavior: contain; }
+.session .actions-row { position: sticky; bottom: 0; z-index: 1; background: var(--bg); }
 .exams { display: flex; flex-direction: column; gap: var(--space-2); }
 .exams .exam-box { padding: var(--space-2) var(--space-3); flex-wrap: wrap; }
 @media (min-width: 700px) {
