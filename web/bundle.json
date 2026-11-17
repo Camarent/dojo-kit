@@ -14,6 +14,7 @@
     "session/placement-queue.js",
     "session/weighted-queue.js",
     "session/topics.js",
+    "session/queues-pick.js",
     "session/queues.js",
     "session/counts.js",
     "session/exam.js",
