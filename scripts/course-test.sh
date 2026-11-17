@@ -2,6 +2,10 @@
 # Generic course test runner: all node and python tests of one course, from any cwd.
 # Usage: scripts/course-test.sh <course-dir> [node|python|all]   (default: all)
 # Before the node suites (modes node and all), when course.json exists, runs `dojo validate <course-dir> --strict`: any warning or error sets exit 1.
+# Before the node suites (modes node and all), the wasm at target/wasm32-unknown-unknown/release/dojo_wasm.wasm
+# under the framework root must be fresh (same rule as web/tests/loader.js checkWasmFresh: not older than any
+# .rs under crates/dojo-core/src or crates/dojo-wasm/src). Stale or missing: runs scripts/build-wasm.sh; if the
+# build fails, or DOJO_WASM_NO_BUILD=1 is set, prints 'WASM stale: run scripts/build-wasm.sh' and exits 1.
 # Discovers all tests in the course: *.test.js (node) and every dir with test_*.py (python).
 # Skipped paths: any component named node_modules, .git, fixtures, dist, __pycache__, .venv, venv or site-packages.
 # Exit: 0 green (or nothing to run in mode all and validate clean), 1 a suite failed, 2 usage error or unknown dir
@@ -12,6 +16,8 @@
 #   DOJO_QRUN         path to qrun.py. Set: each suite runs as python3 -I "$DOJO_QRUN" -- <cmd>.
 #                     Unset: each suite runs directly.
 #   DOJO_GIT_SAFE=1   export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*'.
+#   DOJO_BUILD_WASM   wasm build script run when the wasm is stale (default: <framework root>/scripts/build-wasm.sh).
+#   DOJO_WASM_NO_BUILD=1  do not build a stale wasm; fail with exit 1 instead.
 set -u
 
 FW_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -53,6 +59,14 @@ find_tests() {
         -o "$@"
 }
 
+# wasm_stale: success when the wasm is missing or older than a Rust source of the wasm crates.
+WASM="$FW_ROOT/target/wasm32-unknown-unknown/release/dojo_wasm.wasm"
+wasm_stale() {
+    [ -f "$WASM" ] || return 0
+    [ -n "$(find "$FW_ROOT/crates/dojo-core/src" "$FW_ROOT/crates/dojo-wasm/src" \
+        -name '*.rs' -newer "$WASM" -print -quit 2>/dev/null)" ]
+}
+
 rc=0
 ran=0
 node_files=()
@@ -65,6 +79,13 @@ if [ "$MODE" = "python" ] || [ "$MODE" = "all" ]; then
 fi
 
 if [ "$MODE" = "node" ] || [ "$MODE" = "all" ]; then
+    if wasm_stale; then
+        build="${DOJO_BUILD_WASM:-$FW_ROOT/scripts/build-wasm.sh}"
+        if [ "${DOJO_WASM_NO_BUILD:-}" = "1" ] || ! (cd "$FW_ROOT" && "$build"); then
+            echo "WASM stale: run scripts/build-wasm.sh" >&2
+            exit 1
+        fi
+    fi
     if [ -f course.json ]; then
         run_suite "$FW_ROOT/dojo" validate "$COURSE" --strict || rc=1
     fi
