@@ -10,3 +10,5 @@
   .fb-mean { min-width: 0; overflow-wrap: anywhere; }
   .fb-read { font-size: var(--fs-sm); text-align: right; }
 }
+/* Each reading stays whole; lines break only between readings */
+.fb-reading { white-space: nowrap; }

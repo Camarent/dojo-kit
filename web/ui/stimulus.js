@@ -98,8 +98,11 @@
     </section>`;
   }
 
+  // Each reading in its own element (class fb-reading, nowrap in ja.css) so a line break falls only between readings.
   function readingText(list) {
-    return Array.isArray(list) && list.length > 0 ? list.join(' / ') : null;
+    return Array.isArray(list) && list.length > 0
+      ? list.map((r, i) => html`${i > 0 ? ' / ' : ''}<span class="fb-reading" data-testid="fb-reading">${r}</span>`)
+      : null;
   }
 
   function fbRow(k) {
