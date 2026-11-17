@@ -5,8 +5,12 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const frameworkRoot = require('./fw-root.js');
 
-/** Main (non-worktree) checkout of the framework; falls back to the framework root. */
+/**
+ * Main (non-worktree) checkout of the framework; falls back to the framework root.
+ * Env DOJO_REAL_EXPORTS_ROOT overrides it (tests point it at a private temp dir).
+ */
 function mainCheckoutRoot(root = frameworkRoot()) {
+  if (process.env.DOJO_REAL_EXPORTS_ROOT) return process.env.DOJO_REAL_EXPORTS_ROOT;
   try {
     const common = execFileSync('git', ['-c', 'safe.directory=*', '-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
     if (path.basename(common) === '.git') return path.dirname(common);
