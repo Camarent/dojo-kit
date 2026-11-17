@@ -195,7 +195,13 @@
 
   function queueHelpers(ctx, h) {
     h.rawBuiltQueue = function (sharedOnly, uncapped) {
-      if (h.hasUnitSession()) return h.sessionQueue();
+      if (h.hasUnitSession()) {
+        // Core session queue: the topic review cut and onlyTags apply here too (same rules as buildQueue below).
+        var sq = h.sessionQueue();
+        var sta = h.topicArgs(uncapped);
+        if (sta) sq = ctx.dojo.call('topicOnce', { queue: sq, topics: sta, itemEntities: ctx.itemEntities, records: ctx.fn.records() });
+        return withoutOnlyTags(ctx, sq);
+      }
       var order = ctx.fn.activeItems().map(function (it) { return it.id; });
       if (sharedOnly) order = h.preferShared(order);
       order = pick.shuffleRandomUnits(ctx, h, order);
