@@ -47,62 +47,14 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
         "applyRelearn" => Ok(srs::apply_relearn(rec(a), int(a, "now")?, &ladder(a)?).unwrap_or(Value::Null)),
         "applyPlacement" => Ok(srs::apply_placement(rec(a), flag(a, "known"), int(a, "now")?, &ladder(a)?, seed(a)?)),
         "entityView" => {
-            let ids = active_members(a)?;
+            let (ids, records) = entity_input(a)?;
             let ids: Vec<&str> = ids.iter().map(String::as_str).collect();
             let empty = Map::new();
-            let records = a.get("records").and_then(Value::as_object).unwrap_or(&empty);
-            Ok(srs::entity_view(&ids, records).unwrap_or(Value::Null))
+            Ok(srs::entity_view(&ids, records.unwrap_or(&empty)).unwrap_or(Value::Null))
         }
-        "applyEntity" => {
-            let ids = active_members(a)?;
-            let ids: Vec<&str> = ids.iter().map(String::as_str).collect();
-            let empty = Map::new();
-            let records = a.get("records").and_then(Value::as_object).unwrap_or(&empty);
-            let mode = match text(a, "mode")? {
-                "answer" => srs::EntityMode::Answer,
-                "practice" => srs::EntityMode::Practice,
-                "relearn" => srs::EntityMode::Relearn,
-                "placement" => srs::EntityMode::Placement { seed: seed(a)? },
-                other => return Err(bad(format!("unknown mode `{other}`"))),
-            };
-            let correct = if matches!(mode, srs::EntityMode::Placement { .. }) { flag(a, "known") || flag(a, "correct") } else { flag(a, "correct") };
-            let drop = match a.get("dropOnWrong") {
-                None | Some(Value::Null) => drop(a)?,
-                Some(d) => d.as_i64().filter(|n| *n >= 0).ok_or_else(|| bad("`dropOnWrong` must be a non-negative integer"))?,
-            };
-            let answered = match a.get("answered") {
-                None | Some(Value::Null) => None,
-                Some(v) => Some(v.as_str().filter(|id| ids.contains(id)).ok_or_else(|| bad("`answered` must be a member id"))?),
-            };
-            let now = int(a, "now")?;
-            let mut next = srs::apply_entity(&ids, records, mode, correct, now, &ladder(a)?, answer_rules(a, drop)?);
-            if let (srs::EntityMode::Answer, Some(id)) = (mode, answered) {
-                let known_distinct = match a.get("knownDistinct") {
-                    None | Some(Value::Null) => srs::KNOWN_DISTINCT_DEFAULT,
-                    Some(v) => v.as_i64().filter(|n| *n >= 1).ok_or_else(|| bad("`knownDistinct` must be an integer >= 1"))?,
-                };
-                srs::apply_question_extras(&mut next, &srs::Question { id, correct, now, pool: ids.len(), known_distinct });
-            }
-            Ok(Value::Object(next))
-        }
-        "unitKey" => {
-            let rules = super::topics::course_rules(field(a, "course")?)?.unwrap_or_default();
-            let (_, entity, tags, unit) = unit_parts(field(a, "item")?)?;
-            Ok(json!(groups::unit_key(&entity, &tags, &unit, &rules)))
-        }
-        "unitMembers" => {
-            let rules = super::topics::course_rules(field(a, "course")?)?.unwrap_or_default();
-            let key = text(a, "unitKey")?;
-            let items = field(a, "items")?.as_array().ok_or_else(|| bad("`items` must be an array"))?;
-            let mut ids = Vec::new();
-            for item in items.iter().filter(|i| !super::topics::is_retired(i)) {
-                let (id, entity, tags, unit) = unit_parts(item)?;
-                if groups::unit_key(&entity, &tags, &unit, &rules) == key {
-                    ids.push(id);
-                }
-            }
-            Ok(json!(ids))
-        }
+        "applyEntity" => apply_entity_call(a),
+        "unitKey" => unit_key_call(a),
+        "unitMembers" => unit_members_call(a),
         "isDue" => Ok(Value::Bool(srs::is_due(rec(a), int(a, "now")?))),
         "isNew" => Ok(Value::Bool(srs::is_new(rec(a)))),
         "weakest" => {
@@ -146,6 +98,66 @@ pub(super) fn srs_call(name: &str, a: &Value) -> Result<Value, CallError> {
     }
 }
 
+
+/// Active member ids and the optional `records` object shared by the entity calls.
+type EntityInput<'a> = (Vec<String>, Option<&'a Map<String, Value>>);
+
+fn entity_input(a: &Value) -> Result<EntityInput<'_>, CallError> {
+    Ok((active_members(a)?, a.get("records").and_then(Value::as_object)))
+}
+
+fn apply_entity_call(a: &Value) -> Result<Value, CallError> {
+    let (ids, records) = entity_input(a)?;
+    let ids: Vec<&str> = ids.iter().map(String::as_str).collect();
+    let empty = Map::new();
+    let records = records.unwrap_or(&empty);
+    let mode = match text(a, "mode")? {
+        "answer" => srs::EntityMode::Answer,
+        "practice" => srs::EntityMode::Practice,
+        "relearn" => srs::EntityMode::Relearn,
+        "placement" => srs::EntityMode::Placement { seed: seed(a)? },
+        other => return Err(bad(format!("unknown mode `{other}`"))),
+    };
+    let correct = if matches!(mode, srs::EntityMode::Placement { .. }) { flag(a, "known") || flag(a, "correct") } else { flag(a, "correct") };
+    let drop = match a.get("dropOnWrong") {
+        None | Some(Value::Null) => drop(a)?,
+        Some(d) => d.as_i64().filter(|n| *n >= 0).ok_or_else(|| bad("`dropOnWrong` must be a non-negative integer"))?,
+    };
+    let answered = match a.get("answered") {
+        None | Some(Value::Null) => None,
+        Some(v) => Some(v.as_str().filter(|id| ids.contains(id)).ok_or_else(|| bad("`answered` must be a member id"))?),
+    };
+    let now = int(a, "now")?;
+    let mut next = srs::apply_entity(&ids, records, mode, correct, now, &ladder(a)?, answer_rules(a, drop)?);
+    if let (srs::EntityMode::Answer, Some(id)) = (mode, answered) {
+        let known_distinct = match a.get("knownDistinct") {
+            None | Some(Value::Null) => srs::KNOWN_DISTINCT_DEFAULT,
+            Some(v) => v.as_i64().filter(|n| *n >= 1).ok_or_else(|| bad("`knownDistinct` must be an integer >= 1"))?,
+        };
+        srs::apply_question_extras(&mut next, &srs::Question { id, correct, now, pool: ids.len(), known_distinct });
+    }
+    Ok(Value::Object(next))
+}
+
+fn unit_key_call(a: &Value) -> Result<Value, CallError> {
+    let rules = super::topics::course_rules(field(a, "course")?)?.unwrap_or_default();
+    let (_, entity, tags, unit) = unit_parts(field(a, "item")?)?;
+    Ok(json!(groups::unit_key(&entity, &tags, &unit, &rules)))
+}
+
+fn unit_members_call(a: &Value) -> Result<Value, CallError> {
+    let rules = super::topics::course_rules(field(a, "course")?)?.unwrap_or_default();
+    let key = text(a, "unitKey")?;
+    let items = field(a, "items")?.as_array().ok_or_else(|| bad("`items` must be an array"))?;
+    let mut ids = Vec::new();
+    for item in items.iter().filter(|i| !super::topics::is_retired(i)) {
+        let (id, entity, tags, unit) = unit_parts(item)?;
+        if groups::unit_key(&entity, &tags, &unit, &rules) == key {
+            ids.push(id);
+        }
+    }
+    Ok(json!(ids))
+}
 
 fn weighted_call(a: &Value) -> Result<Value, CallError> {
     let ids = field(a, "ids")?.as_array().ok_or_else(|| bad("`ids` must be an array"))?;
