@@ -2,15 +2,14 @@
 'use strict';
 
 // Read-only check of a web-tester report (webtest-final.md).
-// Usage: check-webtest-report.js <report.md>
-// Needs one "## <app>" section per app in APPS, each with a row per CHECKS name:
+// Usage: check-webtest-report.js <report.md> <app>...
+// Needs one "## <app>" section per given app, each with a row per CHECKS name:
 //   | check | PASS|FAIL | evidence |
 // and one line "VERDICT: PASS" or "VERDICT: FAIL" that agrees with the rows.
 // Exit 0 when valid; exit 1 and one line per problem otherwise.
 
 const fs = require('fs');
 
-const APPS = ['n5', 'fr-numbers'];
 const CHECKS = [
   'viewport 390x844',
   'session 10 answers',
@@ -43,11 +42,11 @@ function verdictOf(text) {
   return lines.map((l) => l.slice(VERDICT_PREFIX.length).trim());
 }
 
-function check(text) {
+function check(text, apps) {
   const problems = [];
   const secs = sections(text);
   let allPass = true;
-  for (const app of APPS) {
+  for (const app of apps) {
     if (!secs.has(app)) {
       problems.push(`missing section: ${app}`);
       allPass = false;
@@ -86,8 +85,9 @@ function check(text) {
 
 function main(argv) {
   const file = argv[2];
-  if (!file) {
-    process.stdout.write('usage: check-webtest-report.js <report.md>\n');
+  const apps = argv.slice(3);
+  if (!file || apps.length === 0) {
+    process.stdout.write('usage: check-webtest-report.js <report.md> <app>...\n');
     return 1;
   }
   let text;
@@ -97,7 +97,7 @@ function main(argv) {
     process.stdout.write(`cannot read ${file}: ${err.code || err.message}\n`);
     return 1;
   }
-  const problems = check(text);
+  const problems = check(text, apps);
   for (const p of problems) process.stdout.write(`${p}\n`);
   if (problems.length === 0) process.stdout.write(`ok: ${file}\n`);
   return problems.length === 0 ? 0 : 1;
@@ -107,4 +107,4 @@ if (require.main === module) {
   process.exitCode = main(process.argv);
 }
 
-module.exports = { check, CHECKS, APPS };
+module.exports = { check, CHECKS };
