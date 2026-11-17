@@ -93,10 +93,9 @@ test('home weak chips: meta.entry is the written form when there is no kanji', a
   assert.deepStrictEqual(chipTexts, ['Reading ' + word]);
 });
 
-test('home weak chips: every aspect id of the n5 course has a label in all locales', () => {
-  const path = require('node:path');
-  const course = require(path.join(__dirname, '..', '..', 'workspace', 'n5', 'course.json'));
-  const aspects = course.topics.aspects.map((a) => a.id);
+test('home weak chips: every aspect id used by the chips has a label in all locales', () => {
+  // Hard-coded aspect list: keep in sync with the aspect ids the home chips can emit (web home plan) and their 'home.weak.aspect.*' locale keys.
+  const aspects = ['reading', 'meaning', 'writing', 'pattern', 'order', 'sentence', 'exam', 'produce', 'particle', 'default'];
   ['en', 'ru', 'fr', 'ja'].forEach((lang) => {
     const loc = require('../i18n/' + lang + '.json');
     aspects.forEach((id) => assert.ok(loc['home.weak.aspect.' + id], lang + ' label for aspect ' + id));

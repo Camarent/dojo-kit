@@ -103,7 +103,7 @@ Topics group items that teach one thing; each review session asks one item per t
 - `examOnly` (bool, default false): exam sections draw this unit's items first, fill up from shared units; training prefers shared items and uses these only if the queue would be empty (`crates/dojo-core/src/exam/`); see "Exams".
 
 Course-level counterparts and extras: `srs`, `srsByType` (per item type), `newOrder`, `learnedStage`, `types` (restrict item types), `introNew`, `dontKnow`, `allowOverride`, `normalize`, `speech`, `scripts`, `captions`, `ruby` (see "Question captions and ruby skip set").
-- `srs.ladder`: intervals in milliseconds by stage; at least 2 entries, first 0, non-negative, non-decreasing. Default `[0, 14400000, 86400000, 259200000, 604800000, 1209600000, 2592000000]`. Leave it alone unless the user asks (e.g. an exam date soon).
+- `srs.ladder`: intervals in milliseconds by stage; at least 2 entries, first 0, non-negative, strictly increasing (`bad_ladder`). Default `[0, 86400000, 432000000, 864000000, 2592000000]` (0, 1d, 5d, 10d, 30d; `DEFAULT_LADDER`, `crates/dojo-core/src/srs/mod.rs:22`). Leave it alone unless the user asks (e.g. an exam date soon).
 - `srs.dropOnWrong`: stages lost on a wrong answer, integer 0-10, default 1.
 - `srs.jumpTo`: integer 2..=top stage of the ladder. A correct answer on an item at stage 1 that is due goes to this stage instead of stage 2. Absent: +1 stage.
 - `srs.wrongFloor`: integer 1..=top stage of the ladder. A wrong answer on an item that was ever learned cannot drop below this stage. Absent: stage 1.
@@ -152,9 +152,10 @@ Course tests that need the framework find it with `tools/fw-root.js`; set `DOJO_
   - The skip set is the Han characters (kanji) of `skip`, plus those of the string at item path `skipKey` (default `meta.kanji`) of every item tagged `skipTag`.
   - `{base|reading}` whose base characters are all in the set shows only the base. A base with any other kanji keeps its reading.
   - Only the displayed ruby changes. Speech, search and plain text never include readings.
-- Ruby checks (`dojo validate`, `crates/dojo-core/src/validate/ruby.rs`; both are warnings, so `--strict` fails on them):
+- Ruby checks (`dojo validate`, `modules/ja/rust/src/ruby.rs`; warnings; answer ruby_missing is an error):
   - `drillTags` / `drillUnits` (lists): items with any of those tags, or in those units, are reading drills. They are exempt from both ruby checks (the headword stays bare, ruby would give away the answer).
   - `checkQuestions: true` (opt-in, default off; needs `"markup": "ruby"` and `skip` or `skipTag`): checks question prompt and options against the skip set. `ruby_on_skip_kanji`: ruby on a kanji the skip set already hides. `ruby_missing`: a kanji outside the skip set with no `{base|reading}`.
+  - `checkAnswers: true` (opt-in, default off; same needs as `checkQuestions`): also checks gap `answers` and `retry`, cloze blank alternatives and choice/multi options. A missing ruby in an answer is an error `ruby_missing` (`modules/ja/rust/src/ruby.rs:164`), not a warning.
   ```json
   "ruby": { "skipTag": "core", "skipKey": "meta.kanji" }
   ```
@@ -231,6 +232,11 @@ When a retired item is replaced by a new one, list the retired ids on the live i
 - Validator error `bad_supersedes`: field on a retired item, empty list, duplicate id, the item itself, an id that is not retired, or an id listed by two successors. For a chain, list all transitive predecessors.
 - Fold rule (`crates/dojo-core/src/migrate.rs` `migrate_progress`): the successor is folded only if some predecessor has a record and the successor has none or an older `last`. Result: `s` and `due` = min, `ok` and `bad` = max, `last` = max over successor and predecessors (predecessors with `last` before `resetAt` are ignored). Retired records are never changed. Re-running is a no-op, so it is idempotent.
 - Content using `supersedes` needs a framework build that knows the field (unknown fields are rejected).
+
+## Unit scope, progress migration and session block
+- `srs.scope: "unit"` (course `srs` or `units[].srs`): one unit key `<entity>|<aspect>` is scheduled as a whole. The course needs `topics` aspects, else `unit_scope_no_topics`. Values: `item` (default), `entity`, `unit`.
+- `srs.migrate` (course `srs` only): `{id, ladderFrom?: {<unitId>: [old ladder ms]}, unify?: true}`. It runs once: the first load/save with the declaration writes `migrated[id]` in the progress document. Order: `supersedes` fold, ladder remap (the old stage's interval becomes the new stage on the new ladder; old stage kept in `s0`), then `unify` (one record per unit key; changed fields kept in `m0`). It never sets `wk`. Code: `migrate_doc` (`crates/dojo-core/src/migrate.rs`).
+- `session` block (course `course.json`, `SessionSettings`): `sessionMix` (`weak`, `new`, `due`), `perUnitMax`, `repeatMax`, `sessionMode` (`auto` sizes from `dailyMinutes`, `manual` uses `sessionCap`), `sessionCap` (0 = unlimited), `dailyMinutes`, `sessionMax`, `secPerAnswer`, `reviewDays`, `knownDistinct`. Learners override each key with a `session:<name>` setting (`crates/dojo-core/src/session/config.rs`).
 
 ## Legacy progress import
 
