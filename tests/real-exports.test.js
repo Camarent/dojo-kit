@@ -35,7 +35,11 @@ test('every dated json in main checkout dir, oldest first', () => {
   const course = uniqueCourse();
   const dir = realExportsDir(course);
   assert.ok(!fs.existsSync(dir), 'test dir must not pre-exist');
-  // No recursive flag: an overlapping run on the same dir must throw EEXIST, not pass silently.
+  // The parent is gitignored and absent on a clean checkout: create it, and remove it again only if this run made it.
+  const parent = path.dirname(dir);
+  const madeParent = !fs.existsSync(parent);
+  if (madeParent) fs.mkdirSync(parent, { recursive: true });
+  // No recursive flag on the leaf: an overlapping run on the same dir must throw EEXIST, not pass silently.
   fs.mkdirSync(dir);
   try {
     // Children set a hold so two concurrent runs overlap while the dir exists.
@@ -45,7 +49,10 @@ test('every dated json in main checkout dir, oldest first', () => {
     fs.writeFileSync(path.join(dir, `${course}-progress-2026-01-01.json`), '{}');
     fs.writeFileSync(path.join(dir, 'note.txt'), '');
     assert.deepStrictEqual(findRealExports(course), ['2026-01-01', '2026-02-01'].map((d) => path.join(dir, `${course}-progress-${d}.json`)));
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    if (madeParent) { try { fs.rmdirSync(parent); } catch { /* a concurrent run still uses it */ } }
+  }
 });
 
 test('two processes running the same dir case at once both pass', async () => {
