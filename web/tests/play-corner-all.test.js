@@ -181,7 +181,7 @@ test('CSS: text element rule has min-width:0', () => {
 });
 
 // Test (c): 390px long-text case
-test('CSS: 390px case - qtext has min-width:0 and overflow-wrap:anywhere, btn.play has flex:none', () => {
+test('CSS: 390px case - qtext has min-width:0 and overflow-wrap:break-word, btn.play has flex:none', () => {
   const css = read('styles/app.css');
   
   // Check .qline .qtext
@@ -189,8 +189,8 @@ test('CSS: 390px case - qtext has min-width:0 and overflow-wrap:anywhere, btn.pl
   assert.ok(qlineQtextMatch, 'app.css should contain .qline .qtext rule');
   const qlineQtextRule = qlineQtextMatch[0];
   assert.ok(qlineQtextRule.includes('min-width: 0'), '.qline .qtext should have min-width: 0');
-  assert.ok(qlineQtextRule.includes('overflow-wrap: anywhere') || css.includes('.qtext') && css.match(/\.qtext\s*\{[^}]*overflow-wrap: anywhere[^}]*\}/),
-    '.qtext should have overflow-wrap: anywhere');
+  assert.ok(qlineQtextRule.includes('overflow-wrap: break-word') || css.includes('.qtext') && css.match(/\.qtext\s*\{[^}]*overflow-wrap: break-word[^}]*\}/),
+    '.qtext should have overflow-wrap: break-word');
   
   // Check .btn.play has flex:none
   const playMatch = css.match(/\.btn\.play\s*\{[^}]*\}/);
