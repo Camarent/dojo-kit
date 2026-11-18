@@ -15,7 +15,7 @@ REQUIRED=(package.json package-lock.json Cargo.toml Cargo.lock CHANGELOG.md)
 current() {
   local ref="${1:-}" text
   if [ -n "$ref" ]; then text=$(git show "$ref:package.json"); else text=$(cat package.json); fi
-  printf '%s\n' "$text" | perl -ne 'if (/^  "version"\s*:\s*"(\d+\.\d+\.\d+)"/) { print "$1\n"; exit }'
+  perl -ne 'if (/^  "version"\s*:\s*"(\d+\.\d+\.\d+)"/) { print "$1\n"; exit }' <<< "$text"
 }
 
 # Package names of the workspace members listed in Cargo.toml (these are the crates that carry our version).

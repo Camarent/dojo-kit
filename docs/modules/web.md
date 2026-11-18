@@ -161,6 +161,7 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 
 ## Audio, timers and weighted sessions (CONTRACT section 12)
 - Audio packs: `DojoAudio` base = `window.DOJO_AUDIO_BASE` > `course.audio.base` > `data/audio/` (`web/audio.js`; wired in `web/boot.js`). Packs are fetched lazily and cached per pack; decode via `AudioContext.decodeAudioData`, and on failure the clip plays through an `Audio` element with a Blob URL.
+- n5 ships Kokoro clips (`data/audio/manifest.json`, `pack-00.mp3`), `audio.requireClips` on.
 - `DojoAudio.play(clipId)` resolves `{ms}` at playback end (`web/audio.js`). Variant pick (`pick`, `web/audio.js`) avoids the variant played last for the same stimulus. On failure the text is spoken or shown; grading is never blocked.
 - Listening stimulus: `hideText` + `audio` on a stimulus; numeric input gets `inputmode="numeric"`, focus after playback, Enter submits (CONTRACT 12.5; UI in `web/ui/dictation.js`).
 - Per-question timer (`web/session/qtimer.js`): base = settings `timer:baseMs` when finite (clamped 2000..30000) > unit `timer.baseMs` > course `timer.baseMs` > 8000 (`baseOf`, `web/session/qtimer.js`; the 8000 fallback applies only when the materialised value is missing or not finite). Then scaled by `timer:scale` and clamped by core `timerLimit` (`crates/dojo-core/src/srs/timer.rs`). The clock starts at playback end; `session.answer` rejects with `{error:'timed_out'}` once the limit has passed (`web/session/qtimer.js`). Not used in exams or placement.
