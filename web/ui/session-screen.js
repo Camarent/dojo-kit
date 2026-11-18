@@ -34,7 +34,9 @@
   // Pure helpers (no `this`).
 
   function introTextOf(item) {
-    return DojoExt.preAnswerText ? DojoExt.preAnswerText(item, item.explanation) : item.explanation;
+    var src = item.explanation;
+    var out = DojoExt.preAnswerText ? DojoExt.preAnswerText(item, src) : src;
+    return out || null;
   }
 
   // The intro shows only when it has text that does not leak the answer.

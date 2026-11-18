@@ -164,3 +164,32 @@ test('App: plain item shows intro element before answering', async () => {
   scr.answer({ index: 0 });
   assert.ok(H.find(scr.view(), 'explanation'));
 });
+
+// ---- Grammar/exam items: title only before answering ----
+
+test('App: grammar item intro shows only the title, explanation only after answering', async () => {
+  H.loadApp();
+  const items = [
+    { id: 'g1', unit: 'grammar', tags: ['grammar'], type: 'choice', prompt: 'Q', options: ['a', 'b'], answer: 0, explanation: 'Secret explanation', meta: { title: 'N wa N desu' } }
+  ];
+  const m = await H.mount({ items, course: { introNew: true } });
+  m.app.startMode('daily', {});
+  const scr = m.screen(m.sb.DojoApp._SessionScreen);
+  const intro = H.find(scr.view(), 'intro');
+  assert.ok(intro);
+  assert.ok(JSON.stringify(intro).includes('N wa N desu'));
+  assert.ok(!JSON.stringify(intro).includes('Secret explanation'));
+  scr.answer({ index: 0 });
+  assert.ok(H.find(scr.view(), 'explanation'));
+});
+
+test('App: grammar item without title has no intro line', async () => {
+  H.loadApp();
+  const items = [
+    { id: 'g2', unit: 'grammar', tags: ['grammar'], type: 'choice', prompt: 'Q', options: ['a', 'b'], answer: 0, explanation: 'Secret explanation' }
+  ];
+  const m = await H.mount({ items, course: { introNew: true } });
+  m.app.startMode('daily', {});
+  const scr = m.screen(m.sb.DojoApp._SessionScreen);
+  assert.strictEqual(H.find(scr.view(), 'intro'), null);
+});
