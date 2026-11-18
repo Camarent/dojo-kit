@@ -45,6 +45,7 @@ function make(o) {
   const statuses = [];
   const warnings = [];
   const timers = [];
+  const cleared = [];
   const store = DojoStorage.createStore({
     courseId: COURSE,
     dojo: dojo,
@@ -57,9 +58,9 @@ function make(o) {
     random: () => 0,
     connectRetryDelaysMs: o.connectRetryDelaysMs,
     setTimeoutFn: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
-    clearTimeoutFn: () => {}
+    clearTimeoutFn: (id) => { cleared.push(id); }
   });
-  return { store, statuses, warnings, timers };
+  return { store, statuses, warnings, timers, cleared };
 }
 
 function settle() {
@@ -137,4 +138,57 @@ test('attachRemote throws: status error and onWarn called with the error', async
   const hit = t.warnings.find((w) => w.where === 'store.connect');
   assert.ok(hit, 'onWarn got store.connect, got ' + t.warnings.map((w) => w.where).join(','));
   assert.strictEqual(hit.err.message, 'listener down');
+});
+
+test('reload cancels the pending connect retry: old timer fires, no second connect', async () => {
+  let calls = 0;
+  const t = make({ claude: () => { calls++; return null; }, connectRetryDelaysMs: [5] });
+  await t.store.load();
+  const oldFn = t.timers[0].fn;
+  await t.store.load();
+  const afterReload = calls;
+  oldFn();
+  await settle();
+  assert.strictEqual(calls, afterReload, 'old retry must not call claude');
+  assert.strictEqual(t.store.status, 'syncing');
+});
+
+test('detach cancels the pending connect retry: old timer fires, status stays local', async () => {
+  let calls = 0;
+  const t = make({ claude: () => { calls++; return null; }, connectRetryDelaysMs: [5] });
+  await t.store.load();
+  const oldFn = t.timers[0].fn;
+  t.store.detach();
+  const afterDetach = calls;
+  oldFn();
+  await settle();
+  assert.strictEqual(calls, afterDetach, 'old retry must not call claude after detach');
+  assert.strictEqual(t.store.status, 'local');
+});
+
+test('goLocal cancels the pending connect retry: pending timer is cleared, status local', async () => {
+  let calls = 0;
+  let rejectStuck;
+  const stuck = new Promise((_, rej) => { rejectStuck = rej; });
+  const second = { use: async (name) => (name === 'db' ? { doc: () => ({ get: () => stuck }) } : { id: async () => 'u1' }) };
+  // call 2 is the retry (last allowed attempt) and hangs; call 3 is the reload, absent again.
+  const t = make({ claude: () => { calls++; return calls === 2 ? second : null; }, connectRetryDelaysMs: [5] });
+  await t.store.load();
+  t.timers.shift().fn();
+  await settle();
+  assert.strictEqual(calls, 2);
+  await t.store.load();
+  assert.strictEqual(t.timers.length, 1, 'reload queued a retry');
+  rejectStuck({ kind: 'absent' });
+  await settle();
+  assert.strictEqual(t.store.status, 'local');
+  assert.deepStrictEqual(t.cleared, [1], 'goLocal must clear the pending retry (id 1: queue was shifted)');
+});
+
+test('reload clears the pending connect timer handle', async () => {
+  const t = make({ claude: () => null, connectRetryDelaysMs: [5] });
+  await t.store.load();
+  assert.deepStrictEqual(t.cleared, []);
+  await t.store.load();
+  assert.deepStrictEqual(t.cleared, [1], 'timer id 1 (first queued) must be cleared');
 });
