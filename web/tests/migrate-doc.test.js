@@ -96,3 +96,19 @@ test('a failed migrateDoc call keeps the unmigrated doc and does not block load'
   assert.deepStrictEqual(store.doc.items, OLD().items);
   assert.strictEqual(store.doc.migrated, undefined);
 });
+
+test('n5-units-1 save is repaired by n5-units-2 (undo + keepLearned) and equals a fresh migration', async () => {
+  const units = [{ id: 'u1', srs: { ladder: [0, D, 3 * D, 7 * D, 14 * D, 30 * D] } }, { id: 'u2' }];
+  const C1 = { id: 'demo', units, srs: { migrate: { id: 'n5-units-1', ladderFrom: LADDER_FROM } } };
+  const C2 = { id: 'demo', units, srs: { migrate: { id: 'n5-units-2', undo: 'n5-units-1', ladderFrom: LADDER_FROM, keepLearned: { u1: 5 } } } };
+  const ls = mockLocal({ [KEY]: JSON.stringify(OLD()) });
+  const first = mk(ls, C1, real);
+  await first.load();
+  assert.strictEqual(first.doc.migrated['n5-units-1'], NOW);
+  const repaired = mk(ls, C2, real);
+  await repaired.load();
+  const fresh = mk(mockLocal({ [KEY]: JSON.stringify(OLD()) }), C2, real);
+  await fresh.load();
+  assert.deepStrictEqual(repaired.doc.items, fresh.doc.items);
+  assert.deepStrictEqual(repaired.doc.migrated, { 'n5-units-2': NOW });
+});
