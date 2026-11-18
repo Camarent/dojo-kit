@@ -7,10 +7,11 @@ const path = require('path');
 const assert = require('assert');
 const { test, beforeEach, afterEach } = require('node:test');
 
+const { execFileSync } = require('child_process');
 const { findRealExports, summarizeGate, realExportsDir, realGateStrict } = require('../tools/real-exports.js');
 
 let saved;
-beforeEach(() => { saved = { ...process.env }; delete process.env.FIXTURE_REAL_EXPORT; delete process.env.REAL_GATE_STRICT; });
+beforeEach(() => { saved = { ...process.env }; delete process.env.FIXTURE_REAL_EXPORT; delete process.env.REAL_GATE_STRICT; delete process.env.DOJO_REAL_EXPORTS_ROOT; });
 afterEach(() => { process.env = saved; });
 
 test('env var path wins', () => {
@@ -80,4 +81,32 @@ test('dir resolves under the injected root', (t) => {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   process.env.DOJO_REAL_EXPORTS_ROOT = root;
   assert.strictEqual(realExportsDir('fixture'), path.join(root, 'workspace', 'progress', 'fixture'));
+});
+
+test('default root: lookup from a linked worktree resolves to the main checkout', (t) => {
+  // Synthetic layout: private main repo (one commit) plus a linked worktree; all removed on end.
+  const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'real-exports-')));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const main = path.join(base, 'main');
+  const wt = path.join(base, 'wt');
+  fs.mkdirSync(main);
+  const git = (cwd, args) => execFileSync('git', ['-c', 'safe.directory=*', '-c', 'user.name=t', '-c', 'user.email=t@localhost', '-C', cwd, ...args], { stdio: 'ignore' });
+  git(main, ['init', '-q']);
+  git(main, ['commit', '-q', '--allow-empty', '-m', 'init']);
+  git(main, ['worktree', 'add', '-q', '--detach', wt]);
+  // Framework root = the worktree (marker file only), so the default lookup runs git from it.
+  fs.mkdirSync(path.join(wt, 'web'));
+  fs.writeFileSync(path.join(wt, 'web', 'dojo-wasm.js'), '');
+  process.env.DOJO_KIT_ROOT = wt;
+  const cwd = process.cwd();
+  process.chdir(wt);
+  try {
+    // Default lookup, no override: must resolve to the main checkout; read-only (no mkdir/write).
+    const dir = realExportsDir('zz-none');
+    assert.strictEqual(dir, path.join(main, 'workspace', 'progress', 'zz-none'));
+    assert.ok(!dir.startsWith(wt + path.sep));
+    assert.strictEqual(fs.existsSync(dir), false);
+  } finally {
+    process.chdir(cwd);
+  }
 });
