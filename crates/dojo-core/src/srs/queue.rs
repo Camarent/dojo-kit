@@ -113,3 +113,37 @@ pub fn build_queue_with_caps(
 
     Queue { due: due.into_iter().map(|(id, _)| id.to_string()).collect(), fresh }
 }
+
+#[cfg(test)]
+mod direct_tests {
+    use super::weakest;
+    use serde_json::json;
+
+    fn items() -> serde_json::Value {
+        json!({
+            "a": {"s": 1, "bad": 3, "ok": 0, "last": 10, "due": 5},
+            "b": {"s": 1, "bad": 0, "ok": 4, "last": 20, "due": 6},
+            "c": {"s": 2, "bad": 1, "ok": 2, "last": 30, "due": 7}
+        })
+    }
+
+    #[test]
+    fn limit_caps_the_result() {
+        assert_eq!(weakest(&items(), Some(1), None).len(), 1);
+        assert_eq!(weakest(&items(), Some(2), None).len(), 2);
+    }
+
+    #[test]
+    fn valid_ids_filter_drops_unlisted_and_falsy_ids() {
+        let valid = json!({"a": true, "b": false});
+        let got = weakest(&items(), None, Some(&valid));
+        assert!(got.contains(&"a".to_string()), "{got:?}");
+        assert!(!got.contains(&"b".to_string()), "{got:?}");
+        assert!(!got.contains(&"c".to_string()), "{got:?}");
+    }
+
+    #[test]
+    fn non_object_items_give_empty_result() {
+        assert!(weakest(&json!([1, 2]), None, None).is_empty());
+    }
+}

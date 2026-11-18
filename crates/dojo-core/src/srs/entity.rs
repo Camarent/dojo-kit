@@ -85,3 +85,33 @@ pub fn pick_drill(members: &[String], n: usize, course_id: &str, day: &str, enti
     list.truncate(n.max(1));
     list
 }
+
+#[cfg(test)]
+mod direct_tests {
+    use super::entity_view;
+    use serde_json::{Map, Value, json};
+
+    fn records() -> Map<String, Value> {
+        json!({
+            "a": {"s": 3, "due": 50, "ok": 2, "bad": 0, "last": 10},
+            "b": {"s": 1, "due": 40, "ok": 1, "bad": 1, "last": 20}
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default()
+    }
+
+    #[test]
+    fn no_members_with_records_gives_none() {
+        assert_eq!(entity_view(&[], &records()), None);
+        assert_eq!(entity_view(&["missing"], &records()), None);
+    }
+
+    #[test]
+    fn view_takes_latest_record_fields_and_min_stage_and_due() {
+        let view = entity_view(&["a", "b"], &records()).unwrap_or_default();
+        assert_eq!(view["last"], json!(20));
+        assert_eq!(view["s"], json!(1));
+        assert_eq!(view["due"], json!(40));
+    }
+}
