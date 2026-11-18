@@ -2,6 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
@@ -10,7 +11,7 @@ const SCRIPT = fs.readFileSync(path.join(REPO, 'scripts', 'check-all.sh'));
 const OK = '#!/usr/bin/env bash\nexit 0\n';
 
 function run(args, courses) {
-  const root = path.join(REPO, '.check-all-courses-' + process.pid + '-' + Math.random().toString(36).slice(2));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'check-all-courses-'));
   const write = (rel, body, mode) => {
     const p = path.join(root, rel);
     fs.mkdirSync(path.dirname(p), { recursive: true });

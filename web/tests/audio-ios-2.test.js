@@ -9,6 +9,8 @@ require('../ui/question-timer.js');
 
 const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const tick = () => new Promise((r) => setImmediate(r));
+// Flush immediates until cond holds (bounded; no wall-clock wait).
+const until = async (cond) => { for (let i = 0; i < 1000 && !cond(); i++) await tick(); };
 
 function mkAudio(o = {}) {
   const e = { started: 0, urls: [], resumed: 0 };
@@ -115,7 +117,7 @@ test('stop releases the Blob URL and detaches the element handlers', async () =>
 test('a decode result that arrives after stop() never starts', async () => {
   const { A, e } = mkAudio({ defer: true });
   const p = A.play('c');
-  await new Promise((r) => setTimeout(r, 20));
+  await until(() => e.decodeCalls);
   A.stop();
   e.ok({ duration: 1 });
   await p;
@@ -125,7 +127,7 @@ test('a decode result that arrives after stop() never starts', async () => {
 test('a decode failure after stop() does not start the Audio fallback', async () => {
   const { A, e } = mkAudio({ defer: true });
   const p = A.play('c');
-  await new Promise((r) => setTimeout(r, 20));
+  await until(() => e.decodeCalls);
   A.stop();
   e.bad(new Error('late'));
   const r = await p;
@@ -153,7 +155,7 @@ test('onStart of a superseded element play is not delivered', async () => {
 test('unlock starts preload of manifest and packs', async () => {
   const { A } = mkAudio();
   A.unlock();
-  await new Promise((r) => setTimeout(r, 20));
+  await until(() => A.status().packs === '0:ok');
   assert.strictEqual(A.status().manifest, 'ok');
   assert.strictEqual(A.status().packs, '0:ok');
 });

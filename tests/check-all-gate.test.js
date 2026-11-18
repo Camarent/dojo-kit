@@ -103,16 +103,39 @@ test('cargo test step passes when cargo leaves no dojo-* entry', () => {
 });
 
 // Ctrl-C while the cargo step runs: the step's children (tmp-leak-check.sh, cargo, sleep) must die too.
-test('INT stops check-all and the children of the cargo step', async () => {
+// readToEnd resolves with the file's full text once every writer has closed it (EOF).
+function readToEnd(file) {
+  return new Promise((resolve, reject) => {
+    let text = '';
+    const stream = fs.createReadStream(file, { encoding: 'utf8' });
+    stream.on('data', (chunk) => { text += chunk; });
+    stream.on('error', reject);
+    stream.on('end', () => resolve(text));
+  });
+}
+
+// Safety net only: the waits below are event-driven; this timeout just turns a hang into a failure.
+test('INT stops check-all and the children of the cargo step', { timeout: 30000 }, async () => {
   const root = path.join(REPO, '.check-all-fixture-' + process.pid + '-' + Math.random().toString(36).slice(2));
   makeFixture(root);
-  const pidFile = path.join(root, 'sleep.pid');
+  const pidFifo = path.join(root, 'sleep.pid.fifo');
+  const deathFifo = path.join(root, 'sleep.death.fifo');
   let sleepPid = 0;
   try {
     fs.mkdirSync(path.join(root, 'tmp'));
-    // The stub cargo starts a long sleep and writes its pid; the sleep is a grandchild of check-all.
+    spawnSync('mkfifo', [pidFifo, deathFifo]);
+    // Readers open first; each read resolves on its own (pid text, or EOF once the sleep is gone).
+    const pidText = readToEnd(pidFifo);
+    const sleepDead = readToEnd(deathFifo);
+    // The stub cargo starts a long sleep and writes its pid. The sleep inherits a write fd on
+    // deathFifo; the stub drops its own copy, so deathFifo reaches EOF exactly when the sleep dies.
     fs.writeFileSync(path.join(root, 'bin', 'cargo'),
-      '#!/usr/bin/env bash\nsleep 60 & echo $! > ' + pidFile + '\nwait\n', { mode: 0o755 });
+      '#!/usr/bin/env bash\n' +
+      'exec 9>' + deathFifo + '\n' +
+      'sleep 60 &\n' +
+      'exec 9>&-\n' +
+      'echo $! > ' + pidFifo + '\n' +
+      'wait\n', { mode: 0o755 });
     const child = spawn('bash', [path.join(root, 'scripts', 'check-all.sh')], {
       cwd: root,
       env: {
@@ -123,20 +146,11 @@ test('INT stops check-all and the children of the cargo step', async () => {
       stdio: 'ignore',
     });
     const exited = new Promise((resolve) => child.on('exit', (code) => resolve(code)));
-    for (let i = 0; i < 200 && !sleepPid; i++) {
-      if (fs.existsSync(pidFile)) sleepPid = Number(fs.readFileSync(pidFile, 'utf8').trim()) || 0;
-      if (!sleepPid) await new Promise((r) => setTimeout(r, 50));
-    }
+    sleepPid = Number(String(await pidText).trim()) || 0;
     assert.ok(sleepPid > 0, 'cargo stub never started its sleep');
     child.kill('SIGINT');
     assert.strictEqual(await exited, 130);
-    let alive = true;
-    for (let i = 0; i < 40 && alive; i++) {
-      const ps = spawnSync('ps', ['-o', 'stat=', '-p', String(sleepPid)], { encoding: 'utf8' });
-      alive = ps.stdout.trim() !== '' && !ps.stdout.trim().startsWith('Z');
-      if (alive) await new Promise((r) => setTimeout(r, 50));
-    }
-    assert.strictEqual(alive, false, 'cargo-step sleep ' + sleepPid + ' outlived INT');
+    await sleepDead;
   } finally {
     if (sleepPid) spawnSync('kill', ['-KILL', String(sleepPid)]);
     fs.rmSync(root, { recursive: true, force: true });

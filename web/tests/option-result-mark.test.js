@@ -103,7 +103,9 @@ async function focusOnLoad(kbd) {
   scr.qbox = { querySelector: (sel) => (sel === '[data-autofocus]' ? el : null), querySelectorAll: (sel) => (sel === '[data-nofocusring]' && 'data-nofocusring' in el.attrs ? [el] : []), contains: () => false };
   if (kbd) scr.onModality({ type: 'keydown' });
   scr.focusSoon();
-  await new Promise((r) => setTimeout(r, 5));
+  await new Promise((r) => setImmediate(r));
+  await new Promise((r) => setTimeout(r));
+  await new Promise((r) => setImmediate(r));
   return { scr, el };
 }
 

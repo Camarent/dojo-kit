@@ -8,9 +8,15 @@ const DojoWasm = require('../dojo-wasm.js');
 const DojoStorage = require('../storage.js');
 const { checkWasmFresh } = require('./loader.js');
 const fakeRoot = {};
+const hadSelf = Object.prototype.hasOwnProperty.call(globalThis, 'self');
+const savedSelf = globalThis.self;
 globalThis.self = fakeRoot;
 const DojoSession = require('../session.js');
 const DojoAudio = require('../audio.js');
+test.after(() => {
+  if (hadSelf) globalThis.self = savedSelf;
+  else delete globalThis.self;
+});
 const BOOT = fs.readFileSync(path.join(__dirname, '../boot.js'), 'utf8');
 
 const NOW = 1760000000000;
@@ -33,6 +39,8 @@ async function runBoot(cont, manifestFetch) {
   const dojo = await DojoWasm.load(fs.readFileSync(checkWasmFresh()));
   const requests = [];
   const sb = { requests, started: null, failed: null };
+  let settle;
+  const settled = new Promise((resolve) => { settle = resolve; });
   sb.self = sb;
   sb.setTimeout = setTimeout; sb.clearTimeout = clearTimeout;
   sb.document = { getElementById: () => ({}) };
@@ -49,11 +57,17 @@ async function runBoot(cont, manifestFetch) {
       const store = DojoStorage.createStore({ courseId: 'c', dojo, now: () => NOW, localStorage: mockLocal(), claude: null });
       store.update((d) => { d.settings = d.settings || {}; d.settings['clipFlag:a-1'] = true; d.settings['heard:a-1'] = 7; d.settings['heard:c-1'] = 3; });
       sb.started = DojoSession.createEngine({ dojo, store, content: o.content, now: () => NOW, today: () => '2025-10-09', random: () => 0.5 });
+      settle();
     },
-    fail: (_, e) => { sb.failed = e; }
+    fail: (_, e) => { sb.failed = e; settle(); }
   };
   vm.runInNewContext(BOOT, vm.createContext(sb));
-  for (let i = 0; i < 50 && !sb.started && !sb.failed; i++) await new Promise((r) => setTimeout(r, 10));
+  // Bounded wait: boot that never reaches start or fail fails by assertion, not by hang.
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new assert.AssertionError({ message: 'boot did not reach start or fail' })), 10000);
+  });
+  try { await Promise.race([settled, timeout]); } finally { clearTimeout(timer); }
   return sb;
 }
 

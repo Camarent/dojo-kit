@@ -31,7 +31,7 @@ async function mount(items, courseExtra, intros) {
   let app = null;
   sb.preact.render(sb.preact.h(sb.DojoApp._App, { ref: (a) => { app = a; }, t, lang: 'en', store, engine, dojo, content, course, byId, now: () => NOW, today: () => TODAY, win }), rootEl);
   // Two timer turns: a render can queue a focus timer from inside the first one (session-focus.js focusSoon).
-  const flush = async () => { await new Promise((r) => setTimeout(r, 5)); await new Promise((r) => setTimeout(r, 5)); };
+  const flush = async () => { await new Promise((r) => setImmediate(r)); await new Promise((r) => setTimeout(r)); await new Promise((r) => setImmediate(r)); };
   doc.root = rootEl;
   mounted.push(() => sb.preact.render(null, rootEl));
   return { sb, app, rootEl, engine, win, flush, store };

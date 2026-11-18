@@ -94,11 +94,18 @@ fi
 
 # Test that a changed source file triggers a rebuild of the CLI binary
 echo "Testing stale rebuild..."
-before=$(stat -c %Y "$REPO_ROOT/target/release/dojo")
-sleep 1
-touch "$REPO_ROOT/crates/dojo-core/src/lib.rs"
+bin="$REPO_ROOT/target/release/dojo"
+src="$REPO_ROOT/crates/dojo-core/src/lib.rs"
+# Restore the source and binary mtimes on exit: the touches below change the real checkout.
+src_mtime=$(stat -c %Y "$src")
+bin_mtime=$(stat -c %Y "$bin")
+trap 'touch -d "@$src_mtime" "$src"; touch -d "@$bin_mtime" "$bin"; rm -rf "$TMP_DIR"' EXIT
+# Put the binary 10 s in the past so the rebuild lands on a later mtime without sleeping.
+touch -d "@$(( $(date +%s) - 10 ))" "$bin"
+before=$(stat -c %Y "$bin")
+touch "$src"
 "$REPO_ROOT/dojo" stats "$WORKSPACE/test-course" >/dev/null
-after=$(stat -c %Y "$REPO_ROOT/target/release/dojo")
+after=$(stat -c %Y "$bin")
 if [ "$after" -le "$before" ]; then
     echo "ERROR: wrapper did not rebuild after a source change" >&2
     exit 1

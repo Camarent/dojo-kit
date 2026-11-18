@@ -13,5 +13,6 @@ test('empty hidden, text shown', () => {
   assert.strictEqual(mtVisible('Bonjour', '1346'), true);
 });
 test('translation equal to a letter answer hidden', () => {
-  assert.strictEqual(mtVisible('Paris, ', 'paris'.replace('p', 'P')), false);
+  assert.strictEqual(mtVisible('Paris, ', 'Paris'), false);
+  assert.strictEqual(mtVisible('Paris', 'paris'), true);
 });

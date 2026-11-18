@@ -1,6 +1,6 @@
 {
   "name": "dojo-kit",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Generic exam-trainer framework: build offline study apps from course content.",
   "license": "MIT",
   "author": "Camarent",
@@ -26,6 +26,9 @@
   },
   "scripts": {
     "test": "bash scripts/check-all.sh",
+    "test:unit": "bash scripts/check-all.sh --unit",
+    "test:premerge": "bash scripts/check-all.sh --premerge",
+    "test:smoke": "bash scripts/check-all.sh --smoke",
     "lint": "eslint .",
     "audit:js": "knip --no-config-hints && madge --circular --extensions js web modules && jscpd web modules --min-lines 10 --min-tokens 70 --threshold 5 --ignore \"**/vendor/**,**/tests/**\" --silent && node tools/audit-gate.js"
   },

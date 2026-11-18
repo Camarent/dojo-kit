@@ -74,4 +74,11 @@ mod tests {
         assert!(!is_valid_course_id("Demo"));
         assert!(!is_valid_course_id("MyCourse"));
     }
+
+    #[test]
+    fn non_ascii_invalid() {
+        assert!(!is_valid_course_id("café"));
+        assert!(!is_valid_course_id("\u{043a}\u{0443}\u{0440}\u{0441}"));
+        assert!(!is_valid_course_id("a\u{00e9}"));
+    }
 }

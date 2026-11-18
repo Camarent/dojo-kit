@@ -189,6 +189,7 @@ expect_refused "Test 24: pre-commit fails without gitleaks and without override"
 expect_refused "Test 25: pre-push fails without gitleaks and without override" "gitleaks not found" sh -c "printf 'refs/heads/m %s refs/heads/m 0000000000000000000000000000000000000000\\n' \"\$(git rev-parse HEAD)\" | env -u DOJO_ALLOW_NO_GITLEAKS PATH='$nogl' '$guard_dir/pre-push'"
 expect_ok "Test 25b: delete-only push does not need gitleaks" sh -c "printf 'refs/heads/m 0000000000000000000000000000000000000000 refs/heads/m abc\\n' | env -u DOJO_ALLOW_NO_GITLEAKS PATH='$nogl' '$guard_dir/pre-push'"
 expect_ok "Test 26: override lets commit pass" git commit --quiet -m "chore(test): withov" --author="$A"
+rm -rf "$nogl"
 cd "$scratch"
 
 # Forbidden build artifact target/x is refused
@@ -458,22 +459,21 @@ out=$(printf 'refs/heads/main %s refs/heads/main %s\n' "$(git rev-parse HEAD)" 0
 if [ $? -ne 0 ]; then echo "PASS"; else echo "FAIL: pre-push passed message with email"; fail_count=$((fail_count + 1)); fi
 cd "$scratch"
 
-# Test 16: staged file with fake GitHub token is refused (skip if gitleaks missing)
+# Test 16: staged file with fake GitHub token is refused by the gitleaks scan
 echo "Test 16: staged file with fake GitHub token is refused"
 new_repo
 # Generate exactly 36 alphanumeric characters for a realistic GitHub token
 fake_token=$(printf 'ghp_%s' "$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c36)")
 echo "token: $fake_token" > secret.txt
 git add secret.txt
-if command -v gitleaks >/dev/null 2>&1; then
-  if git commit --quiet --message "chore(test): add secret" --author="Test <Camarent@users.noreply.github.com>" 2>/dev/null; then
-    echo "FAIL: fake GitHub token was accepted"
-    fail_count=$((fail_count + 1))
-  else
-    echo "PASS"
-  fi
+if out=$(git commit --quiet --message "chore(test): add secret" --author="Test <Camarent@users.noreply.github.com>" 2>&1); then
+  echo "FAIL: fake GitHub token was accepted"
+  fail_count=$((fail_count + 1))
+elif echo "$out" | grep -qE "leaks found"; then
+  echo "PASS"
 else
-  echo "SKIP"
+  echo "FAIL: refused without gitleaks block message"
+  fail_count=$((fail_count + 1))
 fi
 cd "$scratch"
 
