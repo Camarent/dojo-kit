@@ -4,6 +4,22 @@ use std::collections::HashSet;
 
 const MAX_SESSION_CAP: u32 = 500;
 
+/// The grammar word followed by ` #<number>`: a catalogue title that names no grammar point.
+pub(super) fn is_grammar_number_title(topic: &str) -> bool {
+    topic
+        .trim()
+        .strip_prefix("\u{0413}\u{0440}\u{0430}\u{043c}\u{043c}\u{0430}\u{0442}\u{0438}\u{043a}\u{0430} #")
+        .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
+}
+
+/// The answer word followed by `:` and a `;`-separated list: an answer list used as the catalogue entry text.
+pub(super) fn is_answer_list(topic: &str) -> bool {
+    topic
+        .trim()
+        .strip_prefix("\u{041f}\u{0440}\u{0430}\u{0432}\u{0438}\u{043b}\u{044c}\u{043d}\u{043e}:")
+        .is_some_and(|rest| rest.split(';').all(|part| !part.trim().is_empty()))
+}
+
 pub(super) fn check_topics(course: &Course, sink: &mut Sink) {
     let Some(topics) = &course.topics else {
         // A unit key is `<entity>|<aspect>`; without topics there are no aspects to key by.

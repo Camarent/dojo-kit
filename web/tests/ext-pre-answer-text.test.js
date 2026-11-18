@@ -13,6 +13,13 @@ test('preAnswerText returns the text unchanged without a hook', () => {
   assert.strictEqual(ext().preAnswerText({ id: 'a' }, 'x\n\ny'), 'x\n\ny');
 });
 
+test('preAnswerText: a hook returning null shows nothing; a string is shown', () => {
+  const E = ext();
+  E.registerPreAnswerText((item) => (item.title ? item.title : null));
+  assert.strictEqual(E.preAnswerText({ id: 'a', title: 'T' }, 'expl'), 'T');
+  assert.strictEqual(E.preAnswerText({ id: 'b' }, 'expl'), null);
+});
+
 test('preAnswerText applies the registered hook; non-string or throwing hook falls back to the text', () => {
   const E = ext();
   E.registerPreAnswerText((item, t) => t.split('\n\n')[0]);

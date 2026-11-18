@@ -136,3 +136,49 @@ fn api_migrate_doc_and_unmigrate() {
     let back: Value = serde_json::from_str(&call("unmigrate", &json!({"doc": out["value"]["doc"], "id": "m1"}).to_string())).unwrap();
     assert_eq!(back["value"], sanitized(&d));
 }
+
+/// Course with migration id `id`, optional `undo` id and optional `keepLearned` map; learned stage 4.
+fn course_v2(id: &str, undo: Option<&str>, keep: Option<Value>) -> Value {
+    let mut mig = json!({"id": id, "ladderFrom": {"u1": [0, 2 * H, 4 * H, 8 * H, D, 2 * D, 3 * D, 4 * D, 7 * D, 14 * D, 30 * D]}});
+    if let Some(u) = undo {
+        mig["undo"] = json!(u);
+    }
+    if let Some(k) = keep {
+        mig["keepLearned"] = k;
+    }
+    json!({"id": "c", "learnedStage": 4, "units": [{"id": "u1"}, {"id": "u2"}], "srs": {"migrate": mig}})
+}
+
+fn stage_members() -> Vec<Member> {
+    (0..=10).map(|s| Member { id: format!("i{s}"), unit: "u1".into(), key: format!("k{s}") }).collect()
+}
+
+fn all_stages_doc() -> Value {
+    let items: serde_json::Map<String, Value> = (0..=10).map(|s| (format!("i{s}"), rec(s, 5000))).collect();
+    doc(Value::Object(items))
+}
+
+#[test]
+fn keep_learned_lifts_items_at_or_above_min_old_stage() {
+    let c = course_v2("n5-units-2", None, Some(json!({"u1": 5})));
+    let out = migrate_doc(&all_stages_doc(), &c, &vec![], &stage_members(), 1).unwrap().doc.unwrap();
+    let got: Vec<i64> = (0..=10).map(|s| stage(&out, &format!("i{s}"))).collect();
+    // Old stages 0..=4 keep the remap table; 5..=10 remap to 1,2,2,2,3,4 and are lifted to learned stage 4.
+    assert_eq!(got, [0, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4]);
+    assert_eq!(out["items"]["i7"]["s0"], 7);
+}
+
+#[test]
+fn undo_reverses_prior_marker_then_migrates_once() {
+    let d = doc(json!({"a": rec(6, 3000), "b": rec(3, 3000)}));
+    let c1 = course_v2("n5-units-1", None, None);
+    let c2 = course_v2("n5-units-2", Some("n5-units-1"), Some(json!({"u1": 5})));
+    let prev = migrate_doc(&d, &c1, &vec![], &members(), 1).unwrap().doc.unwrap();
+    assert_eq!(prev["migrated"], json!({"n5-units-1": 1}));
+    let fresh = migrate_doc(&d, &c2, &vec![], &members(), 2).unwrap().doc.unwrap();
+    let via = migrate_doc(&prev, &c2, &vec![], &members(), 2).unwrap().doc.unwrap();
+    assert_eq!(via, fresh);
+    assert_eq!(via["migrated"], json!({"n5-units-2": 2}));
+    assert_eq!(via["items"]["a"]["s0"], 6);
+    assert!(migrate_doc(&via, &c2, &vec![], &members(), 3).unwrap().doc.is_none());
+}

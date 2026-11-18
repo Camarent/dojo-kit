@@ -14,6 +14,17 @@ This project includes third-party software components with the following license
 - **License**: Apache-2.0
 - **License Text**: See [web/vendor/htm.LICENSE](web/vendor/htm.LICENSE)
 
+## TTS Voice Models
+
+Japanese narration audio is generated with the following neural voice model (not linked into the WASM binary):
+
+### Kokoro-82M
+- **Voice**: Japanese voice (ja) from the Kokoro-82M model
+- **Source**: https://huggingface.co/hexgrad/Kokoro-82M
+- **License**: Apache-2.0
+- **SPDX**: Apache-2.0
+- **Use**: Generated audio files are shipped with the course content
+
 ## Rust Crates (Linked into WASM)
 
 The following Rust crates from crates.io are linked into the WASM binary:

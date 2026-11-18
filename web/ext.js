@@ -84,10 +84,14 @@ function extMarkup(S, builtins, warn) {
 
 // Text shown before the answer, voice ranking and state reset.
 function extRenderHooks(S, warn, runResets) {
-  // Text of item.explanation shown before the answer (inline intro); the plugin hook may drop answer-revealing parts.
+  // Text shown before the answer (inline intro). Without a hook: the text unchanged.
+  // The hook returns a string to show, or null to show nothing; other results or a throw fall back to the text.
   function preAnswerText(item, text) {
     if (!S.preTextFn) return text;
-    try { var r = S.preTextFn(extClone(item), text); return typeof r === 'string' ? r : text; }
+    try {
+      var r = S.preTextFn(extClone(item), text);
+      return r === null || typeof r === 'string' ? r : text;
+    }
     catch (e) { warn('preAnswerText failed', e); return text; }
   }
 

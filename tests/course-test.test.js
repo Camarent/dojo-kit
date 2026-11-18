@@ -142,3 +142,36 @@ test('a test file inside .venv is ignored', () => {
   write('tests/a.test.js', PASS, dir);
   assert.strictEqual(run([dir]).status, 0);
 });
+
+test('a test listed in tests/final-tests.txt is skipped by node and all modes', () => {
+  const dir = course();
+  write('tests/final-tests.txt', '# final set\ntests/slow.test.js\n', dir);
+  write('tests/slow.test.js', FAIL, dir);
+  write('tests/fast.test.js', PASS, dir);
+  assert.strictEqual(run([dir, 'node']).status, 0);
+  assert.strictEqual(run([dir]).status, 0);
+});
+
+test('final mode runs only the listed tests', () => {
+  const dir = course();
+  write('tests/final-tests.txt', './tests/keep.test.js\n', dir);
+  write('tests/keep.test.js', PASS, dir);
+  write('tests/other.test.js', FAIL, dir);
+  assert.strictEqual(run([dir, 'final']).status, 0);
+  write('tests/keep.test.js', FAIL, dir);
+  assert.strictEqual(run([dir, 'final']).status, 1);
+});
+
+test('a listed path that matches no test exits 2 in every mode', () => {
+  const dir = course();
+  write('tests/final-tests.txt', 'tests/old-name.test.js\n', dir);
+  write('tests/a.test.js', PASS, dir);
+  assert.strictEqual(run([dir, 'node']).status, 2);
+  assert.strictEqual(run([dir, 'final']).status, 2);
+});
+
+test('final mode with no listed test found exits 2', () => {
+  const dir = course();
+  write('tests/a.test.js', PASS, dir);
+  assert.strictEqual(run([dir, 'final']).status, 2);
+});

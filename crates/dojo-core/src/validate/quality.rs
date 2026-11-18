@@ -1,7 +1,7 @@
 use super::{Sink, ValidatorModule};
 use crate::check::{Normalize, normalize};
 use super::items::{contains_leak, fold_norm};
-use crate::content::{ClozePart, Item, ItemType};
+use crate::content::{ClozePart, Intro, Item, ItemType};
 use std::collections::HashSet;
 
 /// Whitelisted Unicode script ranges (Latin, Cyrillic, Hiragana, Katakana, CJK)
@@ -243,9 +243,9 @@ pub(super) fn check_hint_contains_answer(item: &Item, sink: &mut Sink, file: &st
     }
 }
 
-/// Check that no parenthesised hint of a gap, cloze or choice prompt contains the item's correct answer.
-pub(super) fn check_hint_leak(item: &Item, sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
-    let (prompt, item_norm, answers): (&str, Option<&Normalize>, Vec<String>) = match item {
+/// Prompt, normalization and accepted answers of an item kind that has answer-leak checks.
+fn leak_inputs(item: &Item) -> Option<(&str, Option<&Normalize>, Vec<String>)> {
+    Some(match item {
         Item::Gap(g) => (&g.prompt, g.normalize.as_ref(), g.answers.clone()),
         Item::Cloze(c) => {
             let accepted = c.parts.iter().flat_map(|p| match p {
@@ -256,14 +256,41 @@ pub(super) fn check_hint_leak(item: &Item, sink: &mut Sink, file: &str, line: us
         }
         Item::Choice(c) => (&c.prompt, None, c.options.get(c.answer).cloned().into_iter().collect()),
         Item::Order(o) => (&o.prompt, None, o.steps.clone()),
-        _ => return,
-    };
+        _ => return None,
+    })
+}
+
+/// Check that no parenthesised hint of a gap, cloze or choice prompt contains the item's correct answer.
+pub(super) fn check_hint_leak(item: &Item, sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
+    let Some((prompt, item_norm, answers)) = leak_inputs(item) else { return };
     let opts = fold_norm(item_norm, course_norm).cloned().or_else(|| item_norm.cloned()).unwrap_or_default();
     let answers: Vec<String> = answers.iter().map(|a| normalize(a, &opts)).collect();
     for hint in paren_hints(prompt) {
         let hint_norm = normalize(hint, &opts);
         if let Some(answer) = answers.iter().find(|a| contains_leak(&hint_norm, a)) {
             sink.warning("hint_leaks_answer", file, line, format!("item '{}' hint '({hint})' contains its answer '{answer}'", item.id()));
+            return;
+        }
+    }
+}
+
+/// `meta.kind` values of intro cards that teach a single glyph or word on first view; their text may show the answer by design.
+const EXEMPT_INTRO_KINDS: [&str; 2] = ["kanji", "word"];
+
+/// Check that an intro card (title and text, shown before the first question of its entity) of an entity does not contain a correct answer of any item of that entity. Cards with an exempt `meta.kind` are skipped.
+pub(super) fn check_preanswer_leak(intro: &Intro, items: &[&Item], sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
+    let kind = intro.meta.as_ref().and_then(|m| m.get("kind")).and_then(|k| k.as_str());
+    if kind.is_some_and(|k| EXEMPT_INTRO_KINDS.contains(&k)) {
+        return;
+    }
+    let shown = format!("{}\n{}", intro.title.as_deref().unwrap_or_default(), intro.text.as_deref().unwrap_or_default());
+    for item in items {
+        let Some((_, item_norm, answers)) = leak_inputs(item) else { continue };
+        let opts = fold_norm(item_norm, course_norm).cloned().or_else(|| item_norm.cloned()).unwrap_or_default();
+        let shown_norm = normalize(&shown, &opts);
+        let answers: Vec<String> = answers.iter().map(|a| normalize(a, &opts)).collect();
+        if let Some(answer) = answers.iter().find(|a| contains_leak(&shown_norm, a)) {
+            sink.warning("preanswer_leaks_answer", file, line, format!("intro '{}' pre-answer text contains the answer '{answer}' of item '{}'", intro.id, item.id()));
             return;
         }
     }

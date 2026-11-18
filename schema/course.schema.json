@@ -518,6 +518,21 @@
         },
         "unify": {
           "type": "boolean"
+        },
+        "undo": {
+          "description": "Prior migration id whose marker is reversed first (`unmigrate`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "keepLearned": {
+          "description": "Unit id to minimum old stage; remapped stages of items at or above it lift to the learned stage.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int64"
+          }
         }
       },
       "additionalProperties": false,
@@ -1287,6 +1302,10 @@
             "string",
             "null"
           ]
+        },
+        "requireClips": {
+          "description": "When true, strict validation warns on every speech item without an audio clip.",
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

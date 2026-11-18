@@ -184,7 +184,7 @@ pub fn validate_with_modules(
         .collect();
 
     let stimuli_info = files::check_stimuli_file(stimuli, course.as_ref(), &mut course_sink);
-    files::check_intros_file(intros, &all, &mut course_sink);
+    files::check_intros_file(intros, &all, course.as_ref().and_then(|c| c.normalize.as_ref()), &mut course_sink);
 
     let checkers: Vec<Box<dyn ItemChecker>> = match &course {
         Some(c) => {

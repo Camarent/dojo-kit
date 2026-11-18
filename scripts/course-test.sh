@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Generic course test runner: all node and python tests of one course, from any cwd.
-# Usage: scripts/course-test.sh <course-dir> [node|python|all]   (default: all)
+# Usage: scripts/course-test.sh <course-dir> [node|python|all|final]   (default: all)
+# <course-dir>/tests/final-tests.txt lists the tests of the final set, one course-relative path per line
+# (a python test is listed by its dir); '#' starts a comment. Modes node, python and all skip the listed
+# tests; mode final runs only them (plus the wasm freshness check), and no validate.
 # Before the node suites (modes node and all), when course.json exists, runs `dojo validate <course-dir> --strict`: any warning or error sets exit 1.
 # Before the node suites (modes node and all), the wasm at target/wasm32-unknown-unknown/release/dojo_wasm.wasm
 # under the framework root must be fresh (same rule as web/tests/loader.js checkWasmFresh: not older than any
@@ -23,12 +26,12 @@ set -u
 FW_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-    echo "usage: $0 <course-dir> [node|python|all]" >&2
+    echo "usage: $0 <course-dir> [node|python|all|final]" >&2
     exit 2
 fi
 MODE="${2:-all}"
 case "$MODE" in
-    python|node|all) ;;
+    python|node|all|final) ;;
     *) echo "course-test: unknown mode: $MODE" >&2; exit 2 ;;
 esac
 
@@ -37,6 +40,19 @@ if ! COURSE="$(cd "$1" 2>/dev/null && pwd)"; then
     exit 2
 fi
 cd "$COURSE" || exit 2
+
+# Final set: course-relative paths from tests/final-tests.txt (blank lines and '#' comments dropped).
+FINAL_FILE="tests/final-tests.txt"
+FINAL_LIST=()
+if [ -f "$FINAL_FILE" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        line="${line%%#*}"
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+        [ -n "$line" ] || continue
+        FINAL_LIST+=("${line#./}")
+    done < "$FINAL_FILE"
+fi
 
 export DOJO_KIT_ROOT="${DOJO_KIT_ROOT:-$FW_ROOT}"
 if [ "${DOJO_GIT_SAFE:-}" = "1" ]; then
@@ -49,6 +65,27 @@ run_suite() {
         python3 -I "$DOJO_QRUN" -- "$@"
     else
         "$@"
+    fi
+}
+
+# is_final <path...>: success when one of the course-relative paths is named in the final list.
+is_final() {
+    local p f
+    for p in "$@"; do
+        p="${p#./}"
+        for f in ${FINAL_LIST[@]+"${FINAL_LIST[@]}"}; do
+            [ "$p" = "$f" ] && return 0
+        done
+    done
+    return 1
+}
+
+# selected <path...>: success when the test belongs to this run: final mode takes the listed tests, others skip them.
+selected() {
+    if [ "$MODE" = "final" ]; then
+        is_final "$@"
+    else
+        ! is_final "$@"
     fi
 }
 
@@ -71,14 +108,31 @@ rc=0
 ran=0
 node_files=()
 py_dirs=()
-if [ "$MODE" = "node" ] || [ "$MODE" = "all" ]; then
-    mapfile -t node_files < <(find_tests -type f -name '*.test.js' -print)
+mapfile -t all_node < <(find_tests -type f -name '*.test.js' -print)
+mapfile -t all_py < <(find_tests -type f -name 'test_*.py' -printf '%h\n' | sort -u)
+# Every final-list entry must name a discovered test file or python test dir.
+for entry in ${FINAL_LIST[@]+"${FINAL_LIST[@]}"}; do
+    found=0
+    for f in ${all_node[@]+"${all_node[@]}"} ${all_py[@]+"${all_py[@]}"}; do
+        [ "${f#./}" = "$entry" ] && found=1 && break
+    done
+    if [ "$found" -eq 0 ]; then
+        echo "course-test: $FINAL_FILE lists '$entry' but no such test was found" >&2
+        exit 2
+    fi
+done
+if [ "$MODE" = "node" ] || [ "$MODE" = "all" ] || [ "$MODE" = "final" ]; then
+    for f in ${all_node[@]+"${all_node[@]}"}; do
+        selected "$f" && node_files+=("$f")
+    done
 fi
-if [ "$MODE" = "python" ] || [ "$MODE" = "all" ]; then
-    mapfile -t py_dirs < <(find_tests -type f -name 'test_*.py' -printf '%h\n' | sort -u)
+if [ "$MODE" = "python" ] || [ "$MODE" = "all" ] || [ "$MODE" = "final" ]; then
+    for d in ${all_py[@]+"${all_py[@]}"}; do
+        selected "$d" && py_dirs+=("$d")
+    done
 fi
 
-if [ "$MODE" = "node" ] || [ "$MODE" = "all" ]; then
+if [ "$MODE" = "node" ] || [ "$MODE" = "all" ] || [ "$MODE" = "final" ]; then
     if wasm_stale; then
         build="${DOJO_BUILD_WASM:-$FW_ROOT/scripts/build-wasm.sh}"
         if [ "${DOJO_WASM_NO_BUILD:-}" = "1" ] || ! (cd "$FW_ROOT" && "$build"); then
@@ -86,7 +140,7 @@ if [ "$MODE" = "node" ] || [ "$MODE" = "all" ]; then
             exit 1
         fi
     fi
-    if [ -f course.json ]; then
+    if [ -f course.json ] && [ "$MODE" != "final" ]; then
         run_suite "$FW_ROOT/dojo" validate "$COURSE" --strict || rc=1
     fi
 fi

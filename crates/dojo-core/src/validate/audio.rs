@@ -176,11 +176,18 @@ pub(super) fn check_stimuli_audio(
     stimuli: &[(usize, Stimulus)],
     name: &str,
     state: &ManifestState,
+    require_clips: bool,
     sink: &mut Sink,
 ) {
     for (line, st) in stimuli {
-        let Some(clips) = &st.audio else { continue };
         let loc = Loc { file: name, line: *line };
+        let Some(clips) = &st.audio else {
+            if require_clips && st.speak.is_some() {
+                let msg = format!("speech item '{}' has no audio clip", st.id);
+                sink.warning("audio_missing_clip", name, *line, msg);
+            }
+            continue;
+        };
         check_clip_list(&st.id, clips, &loc, sink);
         match state {
             ManifestState::NoConfig => {

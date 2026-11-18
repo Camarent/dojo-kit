@@ -1,3 +1,4 @@
+use super::topics::{is_answer_list, is_grammar_number_title};
 use super::{MAX_PROMPT_CHARS, MIN_LEAK_CHARS, Sink, validate_fold};
 use crate::check::{Normalize, normalize};
 use crate::content::{ClozePart, Item, ItemType};
@@ -66,6 +67,12 @@ fn check_topic(item: &Item, file: &str, line: usize, sink: &mut Sink) {
     let norm = Normalize::default();
     if normalize(topic, &norm) == normalize(item.prompt(), &norm) {
         sink.warning("topic_is_prompt", file, line, format!("item '{id}' topic repeats the prompt"));
+    }
+    if is_grammar_number_title(topic) {
+        sink.warning("topic_grammar_number", file, line, format!("item '{id}' topic is a numbered grammar title; name the grammar point"));
+    }
+    if is_answer_list(topic) {
+        sink.warning("topic_answer_list", file, line, format!("item '{id}' topic is an answer list; the catalogue entry must not show answers"));
     }
 }
 

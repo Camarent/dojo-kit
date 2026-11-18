@@ -1,6 +1,6 @@
 use super::audio::{ManifestState, check_manifest, check_mode_by_type, check_pack_files, check_stimuli_audio, check_timer_config, load_manifest};
 use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm, item_body};
-use super::quality::{check_ambiguous_answer, check_hint_contains_answer, check_hint_leak, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
+use super::quality::{check_ambiguous_answer, check_hint_contains_answer, check_hint_leak, check_order_blanks_mismatch, check_preanswer_leak, check_prompt_type_mismatch, has_foreign_script};
 use super::dupes::{check_dup_word, check_same_prompt_diff_answers};
 use super::speech::validate_speak;
 use super::{COURSE_FILE, Diagnostic, ItemChecker, LOCK_FILE, Severity, Sink, SourceFile, ValidatorModule, exam, is_valid_id};
@@ -45,7 +45,7 @@ pub(super) fn check_stimuli_file(stimuli: Option<&SourceFile>, course: Option<&C
     StimulusInfo { hide_text: stimulus_hide_text, map: stimulus_map }
 }
 
-pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, course_sink: &mut Sink) {
+pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, course_norm: Option<&Normalize>, course_sink: &mut Sink) {
     if let Some(intro_file) = intros {
         let ip = parse_intros(&intro_file.text);
         for e in &ip.errors {
@@ -63,6 +63,8 @@ pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, cou
             if !intro.id.trim().is_empty() && !entities.contains(intro.id.as_str()) {
                 course_sink.warning("intro_unknown_entity", &intro_file.name, *line, format!("intro '{}' matches no item entity", intro.id));
             }
+            let entity_items: Vec<&Item> = all.iter().map(|(_, _, it)| *it).filter(|it| it.entity().unwrap_or_else(|| it.id()) == intro.id).collect();
+            check_preanswer_leak(intro, &entity_items, course_sink, &intro_file.name, *line, course_norm);
         }
     }
 }
@@ -295,21 +297,21 @@ pub fn check_audio_files(
     let parsed = stimuli.as_ref().map(|s| parse_stimuli(&s.text).stimuli).unwrap_or_default();
     let name = stimuli.as_ref().map_or("stimuli.jsonl", |s| s.name.as_str());
     let Some(audio) = &course.audio else {
-        check_stimuli_audio(&parsed, name, &ManifestState::NoConfig, &mut sink);
+        check_stimuli_audio(&parsed, name, &ManifestState::NoConfig, false, &mut sink);
         return sink.out;
     };
     if audio.manifest.is_empty() {
         sink.error("audio_without_manifest", COURSE_FILE, 0, "audio config has empty manifest path".to_string());
-        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, &mut sink);
+        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, audio.require_clips, &mut sink);
         return sink.out;
     }
     let loaded = load_manifest(audio, course_dir, &mut sink);
     let Some((manifest, dir)) = loaded else {
-        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, &mut sink);
+        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, audio.require_clips, &mut sink);
         return sink.out;
     };
     check_manifest(&manifest, &audio.manifest, &mut sink);
     check_pack_files(&manifest, &dir, &audio.manifest, &mut sink);
-    check_stimuli_audio(&parsed, name, &ManifestState::Loaded(&manifest), &mut sink);
+    check_stimuli_audio(&parsed, name, &ManifestState::Loaded(&manifest), audio.require_clips, &mut sink);
     sink.out
 }

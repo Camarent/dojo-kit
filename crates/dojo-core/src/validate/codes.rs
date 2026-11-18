@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 126] = [
+pub const CODES: [(&str, Severity, &str); 130] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -52,6 +52,8 @@ pub const CODES: [(&str, Severity, &str); 126] = [
     ("bad_topic", Severity::Error, "item topic is present but empty"),
     ("topic_too_long", Severity::Warning, "topic longer than 80 characters"),
     ("topic_is_prompt", Severity::Warning, "topic equals the prompt; the catalog must not show the question"),
+    ("topic_grammar_number", Severity::Warning, "topic is a numbered grammar title (grammar word #<number>) that names no grammar point"),
+    ("topic_answer_list", Severity::Warning, "topic is an answer list (answer word: a; b; c); the catalog entry must not show answers"),
     ("prompt_too_long", Severity::Warning, "prompt longer than 600 characters"),
     ("unit_empty", Severity::Warning, "unit has no active items"),
     ("cloze_many_blanks", Severity::Warning, "cloze has more than 5 blanks"),
@@ -84,6 +86,7 @@ pub const CODES: [(&str, Severity, &str); 126] = [
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
     ("hint_leaks_answer", Severity::Warning, "parenthesised hint in a gap/cloze/choice/order prompt contains the item's correct answer or an order step (after normalization)"),
     ("hint_contains_answer", Severity::Error, "gap hint (parenthesised prompt hint or meta.hint_ru) contains an accepted answer: answers or retry entry (after normalization)"),
+    ("preanswer_leaks_answer", Severity::Warning, "intro card (title or text, shown before the first question) of an entity contains a correct answer of an item of its entity (after normalization); intros with meta.kind kanji or word are exempt"),
     ("order_alt_invalid", Severity::Error, "order altOrders entry is not a permutation of the step indices, equals the identity order, or repeats another entry"),
     ("order_split_word", Severity::Warning, "order step in a Japanese course is a bare ending or case particle, not a whole chunk"),
     ("unknown_unit_in_group", Severity::Error, "group references a unit id that does not exist"),
@@ -113,6 +116,7 @@ pub const CODES: [(&str, Severity, &str); 126] = [
     ("audio_pack_missing", Severity::Error, "audio pack file is missing"),
     ("audio_pack_mismatch", Severity::Error, "audio pack file size does not match manifest bytes"),
     ("audio_bad_stimulus", Severity::Error, "stimulus audio list must have 1..=32 clips"),
+    ("audio_missing_clip", Severity::Warning, "speech item has no audio clip while audio.requireClips is set"),
     ("audio_path_escape", Severity::Error, "audio manifest path in course.json escapes the course directory"),
     ("bad_timer", Severity::Error, "timer config is invalid (baseMs, adaptive, or replays)"),
     ("mode_by_type", Severity::Error, "srs.mode is set in srsByType which is not allowed"),
