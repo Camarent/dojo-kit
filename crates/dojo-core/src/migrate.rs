@@ -138,7 +138,9 @@ const STATS: [&str; 5] = ["s", "due", "ok", "bad", "last"];
 /// ran (no declaration, or already migrated). Order: (3) supersedes fold, (1) ladder remap by the interval of the
 /// old stage in the record's own unit (old stage kept in `s0`), (2) `unify` per unit key with 2+ recorded members
 /// (max `s`, latest `due`, max `ok`/`bad`/`last`; changed fields kept in `m0`). Never sets `wk`. Deterministic;
-/// `members` maps items to units and unit keys.
+/// `members` maps items to units and unit keys. `undo` names a prior id whose marker is reversed first
+/// ([`unmigrate`]). `keepLearned {<unit>: minOldStage}` lifts remapped stages of items whose old stage is at least
+/// `minOldStage` to the course learned stage (`learned_stage_of`) or higher.
 pub fn migrate_doc(doc: &Value, course: &Value, links: &Links, members: &[Member], now: i64) -> Result<Migration, MigrateError> {
     let fold = migrate_progress(doc, links)?;
     let Some((id, spec)) = migrate_spec(course) else {
@@ -151,6 +153,11 @@ pub fn migrate_doc(doc: &Value, course: &Value, links: &Links, members: &[Member
     if out.get("migrated").and_then(|m| m.get(id)).is_some() {
         return Ok(Migration { doc: None, folded: Vec::new(), skipped: Vec::new() });
     }
+    if let Some(undo) = spec.get("undo").and_then(Value::as_str) {
+        out = unmigrate(&out, undo);
+    }
+    let learned = crate::groups::learned_stage_of(course, None);
+    let keep = spec.get("keepLearned").and_then(Value::as_object);
     let mut items = out.get("items").and_then(Value::as_object).cloned().unwrap_or_default();
     for m in members {
         let Some(old) = spec.get("ladderFrom").and_then(|l| l.get(&m.unit)).and_then(Value::as_array) else { continue };
@@ -160,8 +167,14 @@ pub fn migrate_doc(doc: &Value, course: &Value, links: &Links, members: &[Member
         let s = r.get("s").and_then(Value::as_i64).unwrap_or(0).max(0);
         let idx = usize::try_from(s).unwrap_or(0).min(old.len().saturating_sub(1));
         let interval = old.get(idx).copied().unwrap_or(0.0);
+        let mut next = remap_stage(interval, &new);
+        if let Some(min) = keep.and_then(|k| k.get(&m.unit)).and_then(Value::as_i64)
+            && s >= min
+        {
+            next = next.max(learned);
+        }
         r.insert("s0".into(), Value::from(s));
-        r.insert("s".into(), Value::from(remap_stage(interval, &new)));
+        r.insert("s".into(), Value::from(next));
     }
     if spec.get("unify").and_then(Value::as_bool) == Some(true) {
         let mut groups: Vec<(&str, Vec<&str>)> = Vec::new();
