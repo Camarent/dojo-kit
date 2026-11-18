@@ -49,7 +49,7 @@
           <button type="button" class="btn secondary" data-testid="btn-clip-unflag" onClick=${function () { eng.flagClip(id, false); self.setState({ clipFlagsText: null }); }}>${t('settings.clipFlags.unflag')}</button></li>`;
       })}</ul>` : html`<p class="muted" data-testid="clip-flags-empty">${t('settings.clipFlags.empty')}</p>`}
       ${ids.length ? html`<div class="row"><button type="button" class="btn" data-testid="btn-clip-copy" onClick=${copy}>${t('settings.clipFlags.copy')}</button></div>` : null}
-      ${text != null ? html`<textarea data-testid="clip-flags-ids" readonly rows="4" value=${text}></textarea>` : null}
+      ${text != null ? html`<textarea id="clip-flags-ids" name="clip-flags-ids" data-testid="clip-flags-ids" readonly rows="4" value=${text}></textarea>` : null}
     </section>`;
   }
 

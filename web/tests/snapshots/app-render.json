@@ -2345,6 +2345,7 @@
                 "props": {
                   "data-testid": "export-text",
                   "class": "field mono",
+                  "id": "export-text",
                   "value": "",
                   "aria-label": "Export progress",
                   "readOnly": true
@@ -2399,6 +2400,7 @@
                 "props": {
                   "data-testid": "import-text",
                   "class": "field mono",
+                  "id": "import-text",
                   "value": "",
                   "aria-label": "Import progress",
                   "autocomplete": "off"
@@ -3771,6 +3773,7 @@
                 "props": {
                   "data-testid": "export-text",
                   "class": "field mono",
+                  "id": "export-text",
                   "value": "",
                   "aria-label": "Export progress",
                   "readOnly": true
@@ -3825,6 +3828,7 @@
                 "props": {
                   "data-testid": "import-text",
                   "class": "field mono",
+                  "id": "import-text",
                   "value": "",
                   "aria-label": "Import progress",
                   "autocomplete": "off"
@@ -5574,6 +5578,7 @@
                 "props": {
                   "data-testid": "export-text",
                   "class": "field mono",
+                  "id": "export-text",
                   "value": "",
                   "aria-label": "Export progress",
                   "readOnly": true
@@ -5628,6 +5633,7 @@
                 "props": {
                   "data-testid": "import-text",
                   "class": "field mono",
+                  "id": "import-text",
                   "value": "",
                   "aria-label": "Import progress",
                   "autocomplete": "off"

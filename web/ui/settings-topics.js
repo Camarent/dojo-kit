@@ -53,7 +53,7 @@
       }
       function picker(field, testid, label, options) {
         return html`<label class="setting-row">${label}
-          <select class="field" data-testid=${testid} value=${cur[field] || ''} onChange=${function (e) { save(field, e.target.value); }}>
+          <select class="field" id=${testid} name=${testid} data-testid=${testid} value=${cur[field] || ''} onChange=${function (e) { save(field, e.target.value); }}>
             <option value="">${p.t('settings.weak.any')}</option>
             ${options.map(function (o) { return html`<option value=${o.id} selected=${(cur[field] || '') === o.id}>${o.title || o.id}</option>`; })}
           </select>
