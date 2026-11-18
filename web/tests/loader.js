@@ -6,9 +6,13 @@ const ROOT = path.join(__dirname, '../..');
 const TARGET_WASM = path.join(ROOT, 'target', 'wasm32-unknown-unknown', 'release', 'dojo_wasm.wasm');
 const CRATES_SRC = path.join(ROOT, 'crates');
 
+let checkedOnce = false;
+
 /// Check if the WASM file is fresh (newer than all Rust source files).
 /// Returns the WASM path if fresh, throws an error if stale.
+/// A passing check is cached for the process: the source walk runs once.
 function checkWasmFresh() {
+    if (checkedOnce) return TARGET_WASM;
     if (!fs.existsSync(TARGET_WASM)) {
         throw new Error(`WASM not found at ${TARGET_WASM}. Run: scripts/build-wasm.sh`);
     }
@@ -21,7 +25,8 @@ function checkWasmFresh() {
             `Run: scripts/build-wasm.sh`
         );
     }
-    
+
+    checkedOnce = true;
     return TARGET_WASM;
 }
 
