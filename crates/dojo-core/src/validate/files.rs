@@ -1,6 +1,6 @@
 use super::audio::{ManifestState, check_manifest, check_mode_by_type, check_pack_files, check_stimuli_audio, check_timer_config, load_manifest};
 use super::items::{check_item_body, check_leak, check_stimulus_groups, fold_norm, item_body};
-use super::quality::{check_ambiguous_answer, check_hint_contains_answer, check_hint_leak, check_order_blanks_mismatch, check_prompt_type_mismatch, has_foreign_script};
+use super::quality::{check_ambiguous_answer, check_hint_contains_answer, check_hint_leak, check_order_blanks_mismatch, check_preanswer_leak, check_prompt_type_mismatch, has_foreign_script};
 use super::dupes::{check_dup_word, check_same_prompt_diff_answers};
 use super::speech::validate_speak;
 use super::{COURSE_FILE, Diagnostic, ItemChecker, LOCK_FILE, Severity, Sink, SourceFile, ValidatorModule, exam, is_valid_id};
@@ -45,7 +45,7 @@ pub(super) fn check_stimuli_file(stimuli: Option<&SourceFile>, course: Option<&C
     StimulusInfo { hide_text: stimulus_hide_text, map: stimulus_map }
 }
 
-pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, course_sink: &mut Sink) {
+pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, course_norm: Option<&Normalize>, course_sink: &mut Sink) {
     if let Some(intro_file) = intros {
         let ip = parse_intros(&intro_file.text);
         for e in &ip.errors {
@@ -63,6 +63,8 @@ pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, cou
             if !intro.id.trim().is_empty() && !entities.contains(intro.id.as_str()) {
                 course_sink.warning("intro_unknown_entity", &intro_file.name, *line, format!("intro '{}' matches no item entity", intro.id));
             }
+            let entity_items: Vec<&Item> = all.iter().map(|(_, _, it)| *it).filter(|it| it.entity().unwrap_or_else(|| it.id()) == intro.id).collect();
+            check_preanswer_leak(intro, &entity_items, course_sink, &intro_file.name, *line, course_norm);
         }
     }
 }
