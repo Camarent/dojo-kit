@@ -22,6 +22,11 @@ mod glue {
     }
 
     fn read(ptr: u32, len: u32) -> Option<&'static str> {
+        // `from_raw_parts` needs a non-null pointer even for length 0; a caller may pass 0 for an empty input.
+        // Not covered by native tests: this module compiles only for wasm32; the wasm build gate covers it.
+        if len == 0 {
+            return Some("");
+        }
         let bytes = unsafe { std::slice::from_raw_parts(ptr as *const u8, len as usize) };
         std::str::from_utf8(bytes).ok()
     }

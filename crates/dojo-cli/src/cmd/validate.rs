@@ -28,7 +28,10 @@ const CHECK_STDERR_TAIL: usize = 2048;
 enum Captured {
     Text(String),
     TooLarge,
+    NotText,
 }
+
+const NOT_UTF8: &str = "stdout is not UTF-8 text";
 
 pub(crate) fn count(diags: &[Diagnostic], severity: Severity) -> usize {
     diags.iter().filter(|d| d.severity == severity).count()
@@ -112,9 +115,12 @@ fn run_check(root: &Path, script: &Path, check: &CourseCheck, timeout: Duration)
     };
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
-        let mut text = String::new();
-        let _ = stdout.by_ref().take(CHECK_STDOUT_CAP + 1).read_to_string(&mut text);
-        let captured = if text.len() as u64 > CHECK_STDOUT_CAP { Captured::TooLarge } else { Captured::Text(text) };
+        let mut bytes = Vec::new();
+        let captured = match stdout.by_ref().take(CHECK_STDOUT_CAP + 1).read_to_end(&mut bytes) {
+            Ok(_) if bytes.len() as u64 > CHECK_STDOUT_CAP => Captured::TooLarge,
+            Ok(_) => String::from_utf8(bytes).map_or(Captured::NotText, Captured::Text),
+            Err(_) => Captured::NotText,
+        };
         let _ = tx.send(captured);
     });
     let (err_tx, err_rx) = mpsc::channel();
@@ -130,6 +136,10 @@ fn run_check(root: &Path, script: &Path, check: &CourseCheck, timeout: Duration)
         if matches!(captured, Some(Captured::TooLarge)) {
             kill_group(&mut child);
             return fail(too_large);
+        }
+        if matches!(captured, Some(Captured::NotText)) {
+            kill_group(&mut child);
+            return fail(NOT_UTF8.to_string());
         }
         match child.try_wait() {
             Ok(Some(status)) => break status,
@@ -150,6 +160,10 @@ fn run_check(root: &Path, script: &Path, check: &CourseCheck, timeout: Duration)
         Some(Captured::TooLarge) => {
             kill_group(&mut child);
             return fail(too_large);
+        }
+        Some(Captured::NotText) => {
+            kill_group(&mut child);
+            return fail(NOT_UTF8.to_string());
         }
         None => {
             kill_group(&mut child);
@@ -332,6 +346,24 @@ mod tests {
         assert_eq!(diags.len(), 1, "{diags:?}");
         assert_eq!((diags[0].code, diags[0].severity), ("check_failed", Severity::Error));
         assert_eq!(diags[0].message, "checks 'big': stdout is over 16 MiB, truncated");
+    }
+
+    #[test]
+    fn non_utf8_stdout_is_check_failed() {
+        let _guard = SCRIPT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let dir = std::env::temp_dir().join(format!("dojo-check-utf8-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let _cleanup = Cleanup(dir.clone());
+        fs::create_dir_all(&dir).unwrap();
+        let script = dir.join("bin.sh");
+        fs::write(&script, "#!/bin/sh\nprintf '\\377\\376 not text'\n").unwrap();
+        fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
+        let text = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"}],"checks":[{"id":"bin","script":"bin.sh"}]}"#;
+        let diags = run_checks_with(&dir, text, CHECK_TIMEOUT);
+        let _ = fs::remove_dir_all(&dir);
+        assert_eq!(diags.len(), 1, "{diags:?}");
+        assert_eq!((diags[0].code, diags[0].severity), ("check_failed", Severity::Error));
+        assert_eq!(diags[0].message, "checks 'bin': stdout is not UTF-8 text");
     }
 
     #[test]
