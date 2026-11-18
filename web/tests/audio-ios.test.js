@@ -9,6 +9,8 @@ const QT = require('../ui/question-timer.js');
 
 const read = (p) => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
 const tick = () => new Promise((r) => setImmediate(r));
+// Flush immediates until cond holds (bounded; no wall-clock wait).
+const until = async (cond) => { for (let i = 0; i < 1000 && !cond(); i++) await tick(); };
 
 function mkAudio(o = {}) {
   const e = { started: 0, urls: [], resumed: 0 };
@@ -248,11 +250,10 @@ test('different clip while one plays stops the first (web audio)', async () => {
   delete require.cache[require.resolve('../audio.js')];
   const B = require('../audio.js');
   B.configure({ win: e.win, fetch: async (u) => (u.endsWith('.json') ? { ok: true, json: async () => m } : { ok: true, arrayBuffer: async () => new Uint8Array(10).buffer }) });
-  const wait = () => new Promise((r) => setTimeout(r, 30));
   const p1 = B.play('c');
-  await wait();
+  await until(() => e.started >= 1);
   const p2 = B.play('d');
-  await wait();
+  await until(() => e.started >= 2);
   assert.strictEqual(e.stopped, 1);
   assert.strictEqual(e.started, 2);
   await p1;
