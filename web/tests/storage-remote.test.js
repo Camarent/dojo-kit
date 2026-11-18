@@ -83,6 +83,22 @@ test('provider path: openRef(ctx) result is attached and used for writes', async
   assert.ok(remote.data, 'provider ref received a write');
 });
 
+test('claude getter is resolved at connect time', async () => {
+  const claude = mockClaude();
+  let late = null;
+  const t = make({ claude: () => late });
+  late = claude;
+  await t.store.load();
+  assert.ok(t.statuses.includes('cloud'), 'status cloud, got ' + t.statuses.join(','));
+  assert.deepStrictEqual(claude.paths, [PATH]);
+});
+
+test('claude getter returning null goes local', async () => {
+  const t = make({ claude: () => null });
+  await t.store.load();
+  assert.ok(!t.statuses.includes('cloud') && !t.statuses.includes('syncing'), 'got ' + t.statuses.join(','));
+});
+
 test('provider works without claude', async () => {
   const provider = {
     openRef: async () => ({ ref: { get: async () => ({ exists: false }), set: async () => {}, onSnapshot: () => () => {} }, snap: { exists: false } })

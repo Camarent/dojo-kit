@@ -46,7 +46,7 @@
         content: content,
         i18n: root.__DOJO_I18N__,
         lang: content.course.uiLanguage,
-        claude: root.claude || null,
+        claude: function () { return root.claude || null; },
         localStorage: safeLocalStorage(),
         win: root
       }); });

@@ -201,6 +201,7 @@
         return Promise.resolve().then(function () { return s.provider.openRef({ courseId: s.courseId, key: s.key }); })
           .then(function (opened) { return attachRemote(myGen, opened); }).catch(connectError);
       }
+      s.claude = typeof s.opts.claude === 'function' ? s.opts.claude() : s.opts.claude;
       if (!s.claude || typeof s.claude.use !== 'function') { s.setStatus('local'); return Promise.resolve(); }
       s.setStatus('syncing');
       return s.db.openRef().then(function (opened) { return attachRemote(myGen, opened); }).catch(connectError);
