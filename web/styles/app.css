@@ -15,6 +15,7 @@ h2 { font-size: var(--fs-lg); margin: 0 0 var(--space-2); }
 p { margin: 0; }
 button, input, textarea { font: inherit; color: inherit; }
 input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
+input[type=checkbox] { min-width: 24px; min-height: 24px; }
 .muted { color: var(--fg-muted); font-size: var(--fs-sm); }
 .dojo-credit { text-align: center; padding: var(--space-3); color: var(--fg-muted); font-size: var(--fs-sm); }
 .dojo-credit a { color: inherit; display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
@@ -174,9 +175,11 @@ details pre { overflow: auto; max-height: 40vh; margin: var(--space-2) 0 0; padd
 summary { cursor: pointer; min-height: var(--tap); display: list-item; padding-block: var(--space-2); }
 
 .overlay { position: fixed; inset: 0; background: var(--overlay); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 10; }
-.dialog { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-5); max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: var(--space-4); }
+.dialog { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-5); max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: var(--space-4); max-height: calc(100vh - 2 * var(--space-4)); max-height: calc(100dvh - 2 * var(--space-4)); overflow-y: auto; }
 .dialog .row { flex-wrap: wrap; }
 .dialog .row.end .btn { flex: 1 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; padding-block: var(--space-2); height: auto; min-height: var(--tap); }
+.dialog > h2:first-child { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.dialog > .row.end { position: sticky; bottom: 0; background: var(--surface); z-index: 1; }
 
 @media (prefers-reduced-motion: no-preference) {
   .btn, .opt, .chip, .field { transition: background-color 0.12s, border-color 0.12s; }
@@ -213,7 +216,7 @@ summary { cursor: pointer; min-height: var(--tap); display: list-item; padding-b
 .catalog-state.due { border-color: var(--warn); font-weight: 700; }
 .catalog-state.learned { border-color: var(--good); }
 .catalog-mastery { flex-shrink: 0; }
-.catalog-prompt { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.catalog-prompt { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: normal; }
 .catalog-ord { font-size: .85em; }
 html.dojo-no-scroll { overflow: hidden !important; }
 .catalog-detail-dialog { max-width: min(720px, 100%); max-height: 80vh; overflow: auto; margin: 0 auto; }

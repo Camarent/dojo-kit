@@ -25,7 +25,7 @@
         <h2>${t('finish.title')}</h2>
         <div class="stat" data-testid="finish-answered"><b>${f.answered}</b><span>${t('finish.answered')}</span></div>
         <div class="stat" data-testid="finish-right"><b>${f.right}</b><span>${t('finish.right')}</span></div>
-        <div class="stat" data-testid="finish-weak-left"><b>${f.weakLeft}</b><span>${t('finish.weakLeft')}</span></div>
+        <div class="stat" data-testid="finish-weak-left"><b>${f.weakLeft}</b><span>${t('finish.weakLeft', { n: f.weakLeft })}</span></div>
         <div class="stat" data-testid="finish-next-due"><b>${nextDueText(t, f.nextDue)}</b><span>${t('finish.nextDue')}</span></div>
         <p class="notice" data-testid="finish-no-round">${t('finish.noRound')}</p>
       </section>`;

@@ -179,6 +179,8 @@
   "finish.title": "Run finished",
   "finish.answered": "answered",
   "finish.right": "right",
+  "finish.weakLeft.one": "weak unit left",
+  "finish.weakLeft.other": "weak units left",
   "finish.weakLeft": "weak units left",
   "finish.nextDue": "next due",
   "finish.none": "nothing recorded",
