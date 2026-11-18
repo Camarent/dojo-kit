@@ -5,14 +5,14 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { writeCourse } = require('./helpers/synthetic-course.js');
 
 const REPO = path.join(__dirname, '..');
 
 function run(withWarning) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'course-strict-'));
   try {
-    const dir = path.join(tmp, 'c');
-    fs.cpSync(path.join(REPO, 'examples', 'demo'), dir, { recursive: true });
+    const dir = writeCourse(path.join(tmp, 'c'));
     if (withWarning) {
       const f = path.join(dir, 'content', 'math.jsonl');
       const first = fs.readFileSync(f, 'utf8').split('\n')[0];
