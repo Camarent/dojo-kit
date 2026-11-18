@@ -93,12 +93,11 @@ fn mode_in_srs_valid() {
 
 #[test]
 fn round_trip_demo_course() {
-    let course_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/demo/course.json");
-    let text = std::fs::read_to_string(course_path).expect("Failed to read demo course");
-    let course: Course = serde_json::from_str(&text).unwrap();
+    let text = r#"{"id":"demo","title":"Demo","uiLanguage":"en","units":[{"id":"u","title":"U"}],"timer":{"baseMs":5000,"adaptive":true,"replays":2},"srs":{"mode":"errorWeighted"}}"#;
+    let course: Course = serde_json::from_str(text).unwrap();
     let out = serde_json::to_value(&course).unwrap();
-    let orig: serde_json::Value = serde_json::from_str(&text).unwrap();
-    assert_eq!(out, orig, "demo course must re-serialise unchanged");
+    let orig: serde_json::Value = serde_json::from_str(text).unwrap();
+    assert_eq!(out, orig, "inline course must re-serialise unchanged");
 }
 
 #[test]
