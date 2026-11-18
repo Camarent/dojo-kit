@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 126] = [
+pub const CODES: [(&str, Severity, &str); 128] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -52,6 +52,8 @@ pub const CODES: [(&str, Severity, &str); 126] = [
     ("bad_topic", Severity::Error, "item topic is present but empty"),
     ("topic_too_long", Severity::Warning, "topic longer than 80 characters"),
     ("topic_is_prompt", Severity::Warning, "topic equals the prompt; the catalog must not show the question"),
+    ("topic_grammar_number", Severity::Warning, "topic is a numbered grammar title (grammar word #<number>) that names no grammar point"),
+    ("topic_answer_list", Severity::Warning, "topic is an answer list (answer word: a; b; c); the catalog entry must not show answers"),
     ("prompt_too_long", Severity::Warning, "prompt longer than 600 characters"),
     ("unit_empty", Severity::Warning, "unit has no active items"),
     ("cloze_many_blanks", Severity::Warning, "cloze has more than 5 blanks"),
