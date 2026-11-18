@@ -45,7 +45,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 ## Build and test
 Source of these commands: `CONTRACT.md`, `Cargo.toml`, `package.json`, `.github/workflows/ci.yml`, `dojo` wrapper, `tests/wrapper.sh`. The repo has no Makefile.
 - Build workspace: `cargo build --workspace` (CONTRACT section 9).
-- Node deps and checks: `npm ci`, `npm run lint` (ESLint), `npm test` (= `scripts/check-all.sh`, unit tests plus smoke steps). The split runs: `npm run test:unit` (`--unit`), `npm run test:premerge` (`--premerge`, isolation proof), `npm run test:smoke` (`--smoke`, wasm smoke, vectors drift, hooks-test, course tests). See [tests.md](modules/tests.md#test-runs-scriptscheck-allsh-modes). CI (`.github/workflows/ci.yml`) runs on Node 22 and 24; `scripts/ci.sh` runs the same steps locally.
+- Node deps and checks: `npm ci`, `npm run lint` (ESLint), `npm test` (= `scripts/check-all.sh`, unit tests plus smoke steps). The split runs: `npm run test:unit` (`--unit`), `npm run test:premerge` (`--premerge`, isolation proof), `npm run test:smoke` (`--smoke`, wasm smoke, vectors drift, hooks-test, course tests). See [tests.md](modules/tests.md#test-runs-scriptscheck-allsh-modes). CI (`.github/workflows/ci.yml`) runs on Node 24 (matrix `[24]`); `scripts/ci.sh` runs the same steps locally.
 - Release CLI: `cargo build -q --release -p dojo-cli`.
 - WASM: `scripts/build-wasm.sh -q` (cargo release build with `--remap-path-prefix` so no build-machine paths land in the wasm).
 - Rust tests: `cargo test -p dojo-core`, `cargo test -p dojo-cli`.
