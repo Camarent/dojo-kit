@@ -8,15 +8,13 @@ const { checkWasmFresh } = require('./loader.js');
 
 const COURSE = 'demo';
 let dojo;
-let wasmAvailable = false;
 
+// A missing or stale wasm build throws here, so every test in this file fails loudly.
 test.before(async () => {
   try {
-    checkWasmFresh();
     dojo = await DojoWasm.load(fs.readFileSync(checkWasmFresh()));
-    wasmAvailable = true;
-  } catch {
-    wasmAvailable = false;
+  } catch (e) {
+    assert.fail('wasm build missing or stale: ' + e.message);
   }
 });
 
@@ -29,8 +27,7 @@ function mockLocal(init, failSet) {
   };
 }
 
-test('storage warn: failing setItem triggers onWarn with label and error', async (t) => {
-  if (!wasmAvailable) return t.skip('wasm build missing');
+test('storage warn: failing setItem triggers onWarn with label and error', async () => {
   let warnCalled = false;
   let warnCount = 0;
   let warnWhere = null;
@@ -57,8 +54,7 @@ test('storage warn: failing setItem triggers onWarn with label and error', async
   assert.ok(warnErr instanceof Error, 'err should be an Error instance');
 });
 
-test('storage warn: with no onWarn, setItem failure produces no console output', async (t) => {
-  if (!wasmAvailable) return t.skip('wasm build missing');
+test('storage warn: with no onWarn, setItem failure produces no console output', async () => {
   let consoleWarnCalled = false;
   const originalWarn = console.warn;
   console.warn = function() { consoleWarnCalled = true; };
@@ -85,8 +81,7 @@ test('storage warn: with no onWarn, setItem failure produces no console output',
   }
 });
 
-test('storage warn: app continues after setItem failure', async (t) => {
-  if (!wasmAvailable) return t.skip('wasm build missing');
+test('storage warn: app continues after setItem failure', async () => {
   let warnCalled = false;
   const ls = mockLocal({}, true);
   
@@ -112,8 +107,7 @@ test('storage warn: app continues after setItem failure', async (t) => {
   assert.ok(store.doc.course === COURSE, 'store.doc.course should be set');
 });
 
-test('storage warn: throwing onWarn does not propagate out of update', async (t) => {
-  if (!wasmAvailable) return t.skip('wasm build missing');
+test('storage warn: throwing onWarn does not propagate out of update', async () => {
   const store = DojoStorage.createStore({
     courseId: COURSE,
     dojo: dojo,
