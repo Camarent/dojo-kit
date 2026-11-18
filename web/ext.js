@@ -84,22 +84,14 @@ function extMarkup(S, builtins, warn) {
 
 // Text shown before the answer, voice ranking and state reset.
 function extRenderHooks(S, warn, runResets) {
-  // Grammar and exam items: only the grammar-point title shows before answering.
-  function isTitleOnly(item) {
-    var tags = Array.isArray(item.tags) ? item.tags : [];
-    var unit = typeof item.unit === 'string' ? item.unit : '';
-    return unit === 'grammar' || unit.indexOf('exam') === 0 || tags.indexOf('grammar') >= 0 || tags.indexOf('exam') >= 0;
-  }
-
-  // Text shown before the answer (inline intro). Grammar/exam items: their title or null, never the explanation.
-  // Others: item.explanation; the plugin hook may drop answer-revealing parts.
+  // Text shown before the answer (inline intro). Without a hook: the text unchanged.
+  // The hook returns a string to show, or null to show nothing; other results or a throw fall back to the text.
   function preAnswerText(item, text) {
-    if (item && isTitleOnly(item)) {
-      var t = (item.meta && item.meta.title) || item.title;
-      return typeof t === 'string' && t ? t : null;
-    }
     if (!S.preTextFn) return text;
-    try { var r = S.preTextFn(extClone(item), text); return typeof r === 'string' ? r : text; }
+    try {
+      var r = S.preTextFn(extClone(item), text);
+      return r === null || typeof r === 'string' ? r : text;
+    }
     catch (e) { warn('preAnswerText failed', e); return text; }
   }
 

@@ -13,6 +13,7 @@ test('registerIntro / registerPreAnswerText require a function', () => {
 
 test('preAnswerText: no hook, string result, non-string result, throwing hook', () => {
   const ext = require('../ext.js');
+  ext.reset(); // test 1 left a null-returning hook registered; the no-hook case needs none
   const warn = console.warn;
   console.warn = () => {};
   try {

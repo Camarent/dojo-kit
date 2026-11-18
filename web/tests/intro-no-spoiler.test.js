@@ -13,6 +13,8 @@ path.join(__dirname, '..', '..');
 const NOW = 1760000000000;
 const TODAY = '2025-10-09';
 const tr = (k, v) => k + (v ? JSON.stringify(v) : '');
+// Course plugin hook: grammar items show only their title before answering, never the explanation.
+const titleOnlyHook = (sb) => sb.DojoExt.registerPreAnswerText((item) => (item.meta && item.meta.title) || null);
 
 let dojoP;
 function getDojo() {
@@ -172,7 +174,7 @@ test('App: grammar item intro shows only the title, explanation only after answe
   const items = [
     { id: 'g1', unit: 'grammar', tags: ['grammar'], type: 'choice', prompt: 'Q', options: ['a', 'b'], answer: 0, explanation: 'Secret explanation', meta: { title: 'N wa N desu' } }
   ];
-  const m = await H.mount({ items, course: { introNew: true } });
+  const m = await H.mount({ items, course: { introNew: true }, setup: titleOnlyHook });
   m.app.startMode('daily', {});
   const scr = m.screen(m.sb.DojoApp._SessionScreen);
   const intro = H.find(scr.view(), 'intro');
@@ -188,8 +190,46 @@ test('App: grammar item without title has no intro line', async () => {
   const items = [
     { id: 'g2', unit: 'grammar', tags: ['grammar'], type: 'choice', prompt: 'Q', options: ['a', 'b'], answer: 0, explanation: 'Secret explanation' }
   ];
-  const m = await H.mount({ items, course: { introNew: true } });
+  const m = await H.mount({ items, course: { introNew: true }, setup: titleOnlyHook });
   m.app.startMode('daily', {});
   const scr = m.screen(m.sb.DojoApp._SessionScreen);
   assert.strictEqual(H.find(scr.view(), 'intro'), null);
+});
+
+test('App: exam item intro shows only the title, explanation only after answering', async () => {
+  H.loadApp();
+  const items = [
+    { id: 'e1', unit: 'exam_n5', tags: ['exam'], type: 'choice', prompt: 'Q', options: ['a', 'b'], answer: 0, explanation: 'Secret explanation', meta: { title: 'Exam part 1' } }
+  ];
+  const m = await H.mount({ items, course: { introNew: true }, setup: titleOnlyHook });
+  m.app.startMode('daily', {});
+  const scr = m.screen(m.sb.DojoApp._SessionScreen);
+  const intro = H.find(scr.view(), 'intro');
+  assert.ok(intro);
+  assert.ok(JSON.stringify(intro).includes('Exam part 1'));
+  assert.ok(!JSON.stringify(intro).includes('Secret explanation'));
+  scr.answer({ index: 0 });
+  assert.ok(H.find(scr.view(), 'explanation'));
+});
+
+test('App: plugin hook returning null hides the intro even for an unlisted unit name', async () => {
+  H.loadApp();
+  const items = [
+    { id: 'l1', unit: 'lesson', tags: ['grammar'], type: 'choice', prompt: 'Q', options: ['a', 'b'], answer: 0, explanation: 'Secret explanation', meta: { title: 'Lesson title' } }
+  ];
+  const m = await H.mount({ items, course: { introNew: true }, setup: (sb) => sb.DojoExt.registerPreAnswerText(() => null) });
+  m.app.startMode('daily', {});
+  const scr = m.screen(m.sb.DojoApp._SessionScreen);
+  assert.strictEqual(H.find(scr.view(), 'intro'), null);
+});
+
+test('App: without a hook the core shows the item explanation before answering', async () => {
+  H.loadApp();
+  const items = [
+    { id: 'l2', unit: 'lesson', type: 'choice', prompt: 'Q', options: ['a', 'b'], answer: 0, explanation: 'Plain explanation' }
+  ];
+  const m = await H.mount({ items, course: { introNew: true } });
+  m.app.startMode('daily', {});
+  const scr = m.screen(m.sb.DojoApp._SessionScreen);
+  assert.ok(JSON.stringify(H.find(scr.view(), 'intro')).includes('Plain explanation'));
 });
