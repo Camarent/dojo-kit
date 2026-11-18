@@ -274,13 +274,13 @@ pub(super) fn check_hint_leak(item: &Item, sink: &mut Sink, file: &str, line: us
     }
 }
 
-/// `meta.kind` values of intro cards that teach a single glyph or word on first view; their text may show the answer by design.
-const EXEMPT_INTRO_KINDS: [&str; 2] = ["kanji", "word"];
+/// Default `validate.preanswerExemptKinds`: `meta.kind` values of intro cards that teach a single glyph or word on first view; their text may show the answer by design.
+pub(super) const DEFAULT_PREANSWER_EXEMPT_KINDS: [&str; 2] = ["kanji", "word"];
 
-/// Check that an intro card (title and text, shown before the first question of its entity) of an entity does not contain a correct answer of any item of that entity. Cards with an exempt `meta.kind` are skipped.
-pub(super) fn check_preanswer_leak(intro: &Intro, items: &[&Item], sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
+/// Check that an intro card (title and text, shown before the first question of its entity) of an entity does not contain a correct answer of any item of that entity. Cards whose `meta.kind` is in `exempt_kinds` are skipped.
+pub(super) fn check_preanswer_leak(intro: &Intro, items: &[&Item], sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>, exempt_kinds: &[String]) {
     let kind = intro.meta.as_ref().and_then(|m| m.get("kind")).and_then(|k| k.as_str());
-    if kind.is_some_and(|k| EXEMPT_INTRO_KINDS.contains(&k)) {
+    if kind.is_some_and(|k| exempt_kinds.iter().any(|e| e == k)) {
         return;
     }
     let shown = format!("{}\n{}", intro.title.as_deref().unwrap_or_default(), intro.text.as_deref().unwrap_or_default());

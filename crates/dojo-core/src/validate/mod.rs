@@ -184,7 +184,12 @@ pub fn validate_with_modules(
         .collect();
 
     let stimuli_info = files::check_stimuli_file(stimuli, course.as_ref(), &mut course_sink);
-    files::check_intros_file(intros, &all, course.as_ref().and_then(|c| c.normalize.as_ref()), &mut course_sink);
+    let exempt_kinds: Vec<String> = course
+        .as_ref()
+        .and_then(|c| c.validate.as_ref())
+        .and_then(|v| v.preanswer_exempt_kinds.clone())
+        .unwrap_or_else(|| quality::DEFAULT_PREANSWER_EXEMPT_KINDS.iter().map(|k| k.to_string()).collect());
+    files::check_intros_file(intros, &all, course.as_ref().and_then(|c| c.normalize.as_ref()), &exempt_kinds, &mut course_sink);
 
     let checkers: Vec<Box<dyn ItemChecker>> = match &course {
         Some(c) => {

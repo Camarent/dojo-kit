@@ -45,7 +45,7 @@ pub(super) fn check_stimuli_file(stimuli: Option<&SourceFile>, course: Option<&C
     StimulusInfo { hide_text: stimulus_hide_text, map: stimulus_map }
 }
 
-pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, course_norm: Option<&Normalize>, course_sink: &mut Sink) {
+pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, course_norm: Option<&Normalize>, exempt_kinds: &[String], course_sink: &mut Sink) {
     if let Some(intro_file) = intros {
         let ip = parse_intros(&intro_file.text);
         for e in &ip.errors {
@@ -64,7 +64,7 @@ pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, cou
                 course_sink.warning("intro_unknown_entity", &intro_file.name, *line, format!("intro '{}' matches no item entity", intro.id));
             }
             let entity_items: Vec<&Item> = all.iter().map(|(_, _, it)| *it).filter(|it| it.entity().unwrap_or_else(|| it.id()) == intro.id).collect();
-            check_preanswer_leak(intro, &entity_items, course_sink, &intro_file.name, *line, course_norm);
+            check_preanswer_leak(intro, &entity_items, course_sink, &intro_file.name, *line, course_norm, exempt_kinds);
         }
     }
 }
