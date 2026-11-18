@@ -47,6 +47,12 @@ pub struct SrsMigrate {
     pub ladder_from: std::collections::BTreeMap<String, Vec<i64>>,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub unify: bool,
+    /// Prior migration id whose marker is reversed first (`unmigrate`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub undo: Option<String>,
+    /// Unit id to minimum old stage; remapped stages of items at or above it lift to the learned stage.
+    #[serde(default, rename = "keepLearned", skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub keep_learned: std::collections::BTreeMap<String, i64>,
 }
 
 /// Scheduling scope of a unit. `Unit` schedules one unit key (`<entity>|<aspect>`) as a whole.
