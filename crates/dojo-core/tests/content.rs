@@ -6,17 +6,57 @@ fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
-fn demo(rel: &str) -> String {
-    match std::fs::read_to_string(root().join("examples/demo").join(rel)) {
-        Ok(text) => text,
-        Err(e) => unreachable!("demo fixture {rel}: {e}"),
+const COURSE_JSON: &str = r#"{
+  "id": "synthetic",
+  "title": "Synthetic course",
+  "uiLanguage": "en",
+  "contentLanguage": "en",
+  "units": [
+    { "id": "geo", "title": "Geography" },
+    { "id": "geo-exam", "title": "Geography exam", "examOnly": true },
+    { "id": "math", "title": "Math" },
+    { "id": "math-exam", "title": "Math exam", "examOnly": true }
+  ],
+  "exam": {
+    "minutes": 10,
+    "passMark": 0.7,
+    "sections": [
+      { "title": "Geography", "count": 4, "units": ["geo", "geo-exam"] },
+      { "title": "Math", "count": 4, "units": ["math", "math-exam"], "types": ["choice", "gap"] }
+    ]
+  }
+}"#;
+
+const GEO_JSONL: &str = r#"{"type":"choice","id":"geo-1","unit":"geo","tags":["capitals"],"prompt":"What is the capital of France?","options":["Paris","Rome","Madrid","Berlin"],"answer":0}
+{"type":"choice","id":"geo-2","unit":"geo","tags":["capitals"],"prompt":"What is the capital of Japan?","options":["Seoul","Tokyo","Beijing"],"answer":1,"explanation":"Tokyo has been the capital since 1868."}
+{"type":"choice","id":"geo-3","unit":"geo","tags":["oceans"],"prompt":"Which is the largest ocean?","options":["Atlantic","Indian","Pacific","Arctic"],"answer":2}
+{"type":"gap","id":"geo-4","unit":"geo","tags":["capitals"],"prompt":"The capital of Italy is ___.","answers":["Rome","Roma"]}
+{"type":"gap","id":"geo-5","unit":"geo","tags":["continents"],"prompt":"The continent that contains Egypt is ___.","answers":["Africa"],"normalize":{"caseSensitive":true}}
+{"type":"card","id":"geo-6","unit":"geo","tags":["capitals"],"prompt":"Capital of Spain","back":"Madrid"}
+{"type":"card","id":"geo-7","unit":"geo","tags":["capitals"],"prompt":"Capital of Canada","back":"Ottawa"}
+{"type":"card","id":"geo-8","unit":"geo","tags":["capitals"],"prompt":"Capital of Australia","back":"Canberra","status":"retired"}"#;
+
+const MATH_JSONL: &str = r#"{"type":"choice","id":"math-1","unit":"math","tags":["arithmetic"],"prompt":"What is 7 times 8?","options":["54","56","58","64"],"answer":1}
+{"type":"choice","id":"math-2","unit":"math","tags":["geometry"],"prompt":"How many sides does a hexagon have?","options":["5","6","7","8"],"answer":1}
+{"type":"choice","id":"math-3","unit":"math","tags":["geometry"],"prompt":"The angles of a triangle add up to how many degrees?","options":["90","180","270","360"],"answer":1,"explanation":"This holds for every flat triangle."}
+{"type":"gap","id":"math-4","unit":"math","tags":["arithmetic"],"prompt":"12 + 15 = ___","answers":["27"]}
+{"type":"gap","id":"math-5","unit":"math","tags":["geometry"],"prompt":"A square has ___ equal sides.","answers":["4","four"]}
+{"type":"card","id":"math-6","unit":"math","tags":["arithmetic"],"prompt":"9 squared","back":"81"}
+{"type":"card","id":"math-7","unit":"math","tags":["geometry"],"prompt":"Sum of angles in a quadrilateral","back":"360 degrees"}"#;
+
+fn fixture(rel: &str) -> &'static str {
+    match rel {
+        "course.json" => COURSE_JSON,
+        "content/geo.jsonl" => GEO_JSONL,
+        "content/math.jsonl" => MATH_JSONL,
+        other => unreachable!("unknown fixture {other}"),
     }
 }
 
 #[test]
 fn demo_course_parses() {
-    let c = parse_course(&demo("course.json")).unwrap();
-    assert_eq!(c.id, "demo");
+    let c = parse_course(fixture("course.json")).unwrap();
+    assert_eq!(c.id, "synthetic");
     assert_eq!(c.units.len(), 4);
     assert!(c.exam.is_some());
 }
@@ -25,7 +65,7 @@ fn demo_course_parses() {
 fn demo_items_parse_with_expected_counts() {
     let mut items = Vec::new();
     for f in ["content/geo.jsonl", "content/math.jsonl"] {
-        let p = parse_items(&demo(f));
+        let p = parse_items(fixture(f));
         assert!(p.errors.is_empty(), "{:?}", p.errors);
         items.extend(p.items);
     }
@@ -44,7 +84,7 @@ fn demo_items_parse_with_expected_counts() {
 #[test]
 fn items_round_trip() {
     for f in ["content/geo.jsonl", "content/math.jsonl"] {
-        for (_, item) in parse_items(&demo(f)).items {
+        for (_, item) in parse_items(fixture(f)).items {
             let text = serde_json::to_string(&item).unwrap();
             let again = parse_items(&text);
             assert!(again.errors.is_empty());
@@ -174,7 +214,7 @@ fn committed_schema_files_match_generated() {
 }
 
 #[test]
-fn brief_examples_parse() {
+fn brief_samples_parse() {
     let b = brief();
     for (t, line) in ["choice", "gap", "card", "multi", "match", "order", "cloze", "numeric"].into_iter().zip(EXAMPLE_LINES) {
         assert!(b.contains(&format!("TYPE {t}")));
