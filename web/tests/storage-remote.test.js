@@ -48,8 +48,9 @@ function make(o) {
     onStatus: (s) => statuses.push(s),
     onRemoteChange: () => {},
     random: () => 0,
-    setTimeoutFn: () => 0,
-    clearTimeoutFn: () => {}
+    connectRetryDelaysMs: o.connectRetryDelaysMs,
+    setTimeoutFn: o.setTimeoutFn || (() => 0),
+    clearTimeoutFn: o.clearTimeoutFn || (() => {})
   });
   return { store, ls, statuses };
 }
@@ -94,9 +95,49 @@ test('claude getter is resolved at connect time', async () => {
 });
 
 test('claude getter returning null goes local', async () => {
-  const t = make({ claude: () => null });
+  const t = make({ claude: () => null, connectRetryDelaysMs: [] });
   await t.store.load();
-  assert.ok(!t.statuses.includes('cloud') && !t.statuses.includes('syncing'), 'got ' + t.statuses.join(','));
+  assert.ok(!t.statuses.includes('cloud'), 'got ' + t.statuses.join(','));
+  assert.strictEqual(t.store.status, 'local');
+});
+
+test('absent claude retries at each delay, then goes local', async () => {
+  const timers = [];
+  const t = make({ claude: () => null, connectRetryDelaysMs: [5, 7], setTimeoutFn: (fn, ms) => { timers.push({ fn, ms }); return timers.length; } });
+  await t.store.load();
+  assert.strictEqual(t.store.status, 'syncing');
+  assert.deepStrictEqual(timers.map((x) => x.ms), [5]);
+  timers.shift().fn();
+  await new Promise((r) => setImmediate(r));
+  assert.deepStrictEqual(timers.map((x) => x.ms), [7]);
+  assert.strictEqual(t.store.status, 'syncing');
+  timers.shift().fn();
+  await new Promise((r) => setImmediate(r));
+  assert.strictEqual(t.store.status, 'local');
+  assert.strictEqual(timers.length, 0);
+});
+
+test('non-absent connect error goes to error status without retry', async () => {
+  const claude = { use: async (name) => (name === 'db' ? { doc: () => ({ get: async () => ({ exists: false }) }) } : { id: async () => { throw new Error('boom'); } }) };
+  const timers = [];
+  const t = make({ claude: claude, connectRetryDelaysMs: [5], setTimeoutFn: (fn) => { timers.push(fn); return timers.length; } });
+  await t.store.load();
+  assert.strictEqual(t.store.status, 'error');
+  assert.strictEqual(timers.length, 0);
+});
+
+test('claude that appears during a retry connects to the cloud', async () => {
+  const claude = mockClaude();
+  let late = null;
+  const timers = [];
+  const t = make({ claude: () => late, connectRetryDelaysMs: [5], setTimeoutFn: (fn) => { timers.push(fn); return timers.length; } });
+  await t.store.load();
+  assert.strictEqual(t.store.status, 'syncing');
+  late = claude;
+  timers.shift()();
+  await new Promise((r) => setImmediate(r));
+  assert.ok(t.statuses.includes('cloud'), 'status cloud, got ' + t.statuses.join(','));
+  assert.deepStrictEqual(claude.paths, [PATH]);
 });
 
 test('provider works without claude', async () => {
