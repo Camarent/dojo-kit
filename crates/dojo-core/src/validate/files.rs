@@ -57,6 +57,12 @@ pub(super) fn check_intros_file(intros: Option<&SourceFile>, all: &AllItems, cou
             if intro.id.trim().is_empty() || (intro.title.is_none() && intro.text.is_none() && intro.meta.is_none()) {
                 course_sink.error("bad_intro", &intro_file.name, *line, "intro needs a non-empty id and a title, text or meta".to_string());
             }
+            if intro.title.as_deref().is_some_and(|t| t.trim_end().ends_with('…')) {
+                course_sink.warning("intro_title_ellipsis", &intro_file.name, *line, format!("intro '{}' title ends with '…'", intro.id));
+            }
+            if intro.text.as_deref().is_some_and(|t| t.trim().is_empty()) {
+                course_sink.warning("intro_empty_text", &intro_file.name, *line, format!("intro '{}' text is blank", intro.id));
+            }
             if !seen_intro.insert(intro.id.as_str()) {
                 course_sink.error("duplicate_intro", &intro_file.name, *line, format!("intro id '{}' is used more than once", intro.id));
             }

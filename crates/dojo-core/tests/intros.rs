@@ -48,3 +48,18 @@ fn duplicate_empty_and_unknown_fields_are_reported() {
     assert!(has(&run("{\"id\":\"e-1\"}\n"), "bad_intro"));
     assert!(has(&run("{\"id\":\"e-1\",\"text\":\"x\",\"nope\":1}\n"), "parse_error"));
 }
+
+#[test]
+fn title_ending_with_ellipsis_warns_but_mid_title_ellipsis_does_not() {
+    assert!(has(&run("{\"id\":\"e-1\",\"title\":\"Tokyo…\"}\n"), "intro_title_ellipsis"));
+    assert!(has(&run("{\"id\":\"e-1\",\"title\":\"Tokyo… \"}\n"), "intro_title_ellipsis"));
+    let decoy = run("{\"id\":\"e-1\",\"title\":\"Tokyo… city\",\"text\":\"x\"}\n");
+    assert!(!has(&decoy, "intro_title_ellipsis"), "{decoy:?}");
+}
+
+#[test]
+fn blank_text_warns_and_real_text_does_not() {
+    assert!(has(&run("{\"id\":\"e-1\",\"text\":\"  \"}\n"), "intro_empty_text"));
+    let ok = run("{\"id\":\"e-1\",\"text\":\"x\"}\n");
+    assert!(!has(&ok, "intro_empty_text"), "{ok:?}");
+}
