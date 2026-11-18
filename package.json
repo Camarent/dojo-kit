@@ -29,6 +29,7 @@
     "test:unit": "bash scripts/check-all.sh --unit",
     "test:premerge": "bash scripts/check-all.sh --premerge",
     "test:smoke": "bash scripts/check-all.sh --smoke",
+    "test:final": "for f in workspace/*/tests/final-tests.txt; do [ -f \"$f\" ] || continue; bash scripts/course-test.sh \"${f%/tests/final-tests.txt}\" final || exit 1; done",
     "lint": "eslint .",
     "audit:js": "knip --no-config-hints && madge --circular --extensions js web modules && jscpd web modules --min-lines 10 --min-tokens 70 --threshold 5 --ignore \"**/vendor/**,**/tests/**\" --silent && node tools/audit-gate.js"
   },

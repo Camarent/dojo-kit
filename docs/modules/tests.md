@@ -30,6 +30,7 @@ The suite runs in three modes, each a `package.json` script that calls `scripts/
 - `npm run test:unit` (`--unit`): `scripts/build-wasm.sh`, `cargo test --workspace`, and the node tests (`modules/*/tests/*.test.js`, `web/tests/*.test.js`, `tests/*.test.js`). No wasm smoke, no course tests.
 - `npm run test:premerge` (`--premerge`): isolation proof only. `tests/isolation-proof.sh` runs `--unit` twice concurrently and twice in sequence.
 - `npm run test:smoke` (`--smoke`): `node tests/wasm-smoke.js`, the vectors drift check (`node tests/gen-vectors.js && git diff --exit-code -- tests/vectors`), `tests/hooks-test.sh`, then `scripts/course-test.sh` for every `workspace/*/course.json` course. This includes the `*-real` guards of the local courses. No cargo or node unit tests.
+- Final set: `<course>/tests/final-tests.txt` lists course tests (one course-relative path per line, a python test by its dir, `#` comments). `scripts/course-test.sh <course> node|python|all` skips them; `scripts/course-test.sh <course> final` runs only them (wasm check, no `validate`). `npm run test:final` runs final mode for every `workspace/*/tests/final-tests.txt`. The `--smoke` course steps use mode `all`, so they never run the final set.
 - `npm test` (no flag): build-wasm, unit tests, then the smoke steps (wasm smoke, vectors drift, hooks-test). It runs no premerge proof. Course tests run only with `--with-courses`, and the course gate only with `--with-course-gate`.
 
 ## Key files
