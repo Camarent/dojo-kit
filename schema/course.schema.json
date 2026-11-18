@@ -1287,6 +1287,10 @@
             "string",
             "null"
           ]
+        },
+        "requireClips": {
+          "description": "When true, strict validation warns on every speech item without an audio clip.",
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

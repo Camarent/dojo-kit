@@ -19,6 +19,9 @@ pub struct AudioConfig {
     /// Optional base URL or relative prefix for audio files.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub base: Option<String>,
+    /// When true, strict validation warns on every speech item without an audio clip.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub require_clips: bool,
 }
 
 /// Timer configuration for adaptive time limits.

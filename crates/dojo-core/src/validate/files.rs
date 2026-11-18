@@ -295,21 +295,21 @@ pub fn check_audio_files(
     let parsed = stimuli.as_ref().map(|s| parse_stimuli(&s.text).stimuli).unwrap_or_default();
     let name = stimuli.as_ref().map_or("stimuli.jsonl", |s| s.name.as_str());
     let Some(audio) = &course.audio else {
-        check_stimuli_audio(&parsed, name, &ManifestState::NoConfig, &mut sink);
+        check_stimuli_audio(&parsed, name, &ManifestState::NoConfig, false, &mut sink);
         return sink.out;
     };
     if audio.manifest.is_empty() {
         sink.error("audio_without_manifest", COURSE_FILE, 0, "audio config has empty manifest path".to_string());
-        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, &mut sink);
+        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, audio.require_clips, &mut sink);
         return sink.out;
     }
     let loaded = load_manifest(audio, course_dir, &mut sink);
     let Some((manifest, dir)) = loaded else {
-        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, &mut sink);
+        check_stimuli_audio(&parsed, name, &ManifestState::Unloaded, audio.require_clips, &mut sink);
         return sink.out;
     };
     check_manifest(&manifest, &audio.manifest, &mut sink);
     check_pack_files(&manifest, &dir, &audio.manifest, &mut sink);
-    check_stimuli_audio(&parsed, name, &ManifestState::Loaded(&manifest), &mut sink);
+    check_stimuli_audio(&parsed, name, &ManifestState::Loaded(&manifest), audio.require_clips, &mut sink);
     sink.out
 }

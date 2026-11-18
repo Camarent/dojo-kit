@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 128] = [
+pub const CODES: [(&str, Severity, &str); 129] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -115,6 +115,7 @@ pub const CODES: [(&str, Severity, &str); 128] = [
     ("audio_pack_missing", Severity::Error, "audio pack file is missing"),
     ("audio_pack_mismatch", Severity::Error, "audio pack file size does not match manifest bytes"),
     ("audio_bad_stimulus", Severity::Error, "stimulus audio list must have 1..=32 clips"),
+    ("audio_missing_clip", Severity::Warning, "speech item has no audio clip while audio.requireClips is set"),
     ("audio_path_escape", Severity::Error, "audio manifest path in course.json escapes the course directory"),
     ("bad_timer", Severity::Error, "timer config is invalid (baseMs, adaptive, or replays)"),
     ("mode_by_type", Severity::Error, "srs.mode is set in srsByType which is not allowed"),

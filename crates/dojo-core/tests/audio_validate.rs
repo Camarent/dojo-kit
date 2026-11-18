@@ -147,6 +147,7 @@ fn make_course_with_audio(manifest_path: &str) -> Course {
         audio: Some(dojo_core::content::AudioConfig {
             manifest: manifest_path.to_string(),
             base: None,
+            require_clips: false,
         }),
         timer: None,
         confusions: None,
@@ -271,6 +272,48 @@ fn audio_bad_manifest_version() {
     let d = check_audio_files(&course, &temp_dir, &None);
     assert_eq!(d.len(), 1, "{d:?}");
     assert!(d[0].code == "audio_bad_manifest" && d[0].message.contains("version"), "{d:?}");
+}
+
+/// Writes the valid one-clip manifest and pack, then runs the audio check on `stimuli` with `requireClips` set as given.
+fn run_with_one_clip_pack(stimuli: &str, require_clips: bool) -> Vec<Diagnostic> {
+    let temp_dir = TempDir::new();
+    fs::write(temp_dir.join("manifest.json"), r#"{"v":1,"packs":[{"file":"p.bin","bytes":100,"enc":"raw"}],"clips":{"clip-1":{"pack":0,"off":0,"len":100,"ms":1000,"mime":"audio/mp3"}}}"#).unwrap();
+    fs::write(temp_dir.join("p.bin"), vec![0u8; 100]).unwrap();
+    let mut course = make_course_with_audio("manifest.json");
+    if let Some(audio) = course.audio.as_mut() {
+        audio.require_clips = require_clips;
+    }
+    let stimuli = Some(SourceFile { name: "stimuli.jsonl".to_string(), text: stimuli.to_string() });
+    check_audio_files(&course, &temp_dir, &stimuli)
+}
+
+fn missing_clip_count(d: &[Diagnostic]) -> usize {
+    d.iter().filter(|d| d.code == "audio_missing_clip").count()
+}
+
+#[test]
+fn speech_item_without_clip_warns_when_clips_required() {
+    let d = run_with_one_clip_pack(r#"{"id":"s1","text":"Test","speak":{"lines":[{"text":"Test"}]}}"#, true);
+    assert_eq!(missing_clip_count(&d), 1, "expected one audio_missing_clip: {d:?}");
+    assert!(d.iter().all(|d| d.severity != Severity::Error), "unexpected errors: {d:?}");
+}
+
+#[test]
+fn speech_item_with_clip_does_not_warn() {
+    let d = run_with_one_clip_pack(r#"{"id":"s1","text":"Test","speak":{"lines":[{"text":"Test"}]},"audio":["clip-1"]}"#, true);
+    assert_eq!(missing_clip_count(&d), 0, "unexpected audio_missing_clip: {d:?}");
+}
+
+#[test]
+fn speech_item_without_clip_does_not_warn_by_default() {
+    let d = run_with_one_clip_pack(r#"{"id":"s1","text":"Test","speak":{"lines":[{"text":"Test"}]}}"#, false);
+    assert_eq!(missing_clip_count(&d), 0, "unexpected audio_missing_clip: {d:?}");
+}
+
+#[test]
+fn plain_item_without_clip_does_not_warn() {
+    let d = run_with_one_clip_pack(r#"{"id":"s1","text":"Test"}"#, true);
+    assert_eq!(missing_clip_count(&d), 0, "unexpected audio_missing_clip: {d:?}");
 }
 
 #[test]
