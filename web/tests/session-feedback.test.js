@@ -92,7 +92,7 @@ async function mount(items, courseExtra) {
   const rootEl = new Node_(1, 'DIV');
   let app = null;
   sb.preact.render(sb.preact.h(sb.DojoApp._App, { ref: (a) => { app = a; }, t, lang: 'en', store, engine, dojo, content, course, byId, now: () => NOW, today: () => TODAY, win }), rootEl);
-  const flush = async () => { await new Promise((r) => setTimeout(r, 5)); };
+  const flush = async () => { await new Promise((r) => setImmediate(r)); };
   return { sb, app, rootEl, engine, win, flush, errors: [] };
 }
 function typeInto(m, id, value) {
