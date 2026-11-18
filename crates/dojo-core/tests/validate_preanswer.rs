@@ -30,6 +30,16 @@ fn kanji_and_word_intros_exempt() {
 }
 
 #[test]
+fn intro_leak_flagged_for_any_entity_kind() {
+    // Items of a non-grammar, non-exam entity (vocabulary ids): the check applies to every entity.
+    const VOCAB: &str = concat!(
+        r#"{"id":"vocab-1","type":"gap","unit":"u","prompt":"Fruit: ___","answers":["apple"],"entity":"v-1"}"#, "\n",
+    );
+    let d: Vec<Diagnostic> = validate_all(COURSE, &[file("content/v.jsonl", VOCAB)], None, None, Some(&file("intros.jsonl", r#"{"id":"v-1","title":"Fruit","text":"An apple is red."}"#)));
+    assert!(d.iter().any(|d| d.code == "preanswer_leaks_answer"));
+}
+
+#[test]
 fn intro_without_answer_not_flagged() {
     assert!(!leaks(r#"{"id":"e-1","title":"Italy","text":"A country in Europe."}"#));
     // Answer of another entity does not count.

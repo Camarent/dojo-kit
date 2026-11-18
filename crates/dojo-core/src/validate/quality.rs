@@ -277,7 +277,7 @@ pub(super) fn check_hint_leak(item: &Item, sink: &mut Sink, file: &str, line: us
 /// `meta.kind` values of intro cards that teach a single glyph or word on first view; their text may show the answer by design.
 const EXEMPT_INTRO_KINDS: [&str; 2] = ["kanji", "word"];
 
-/// Check that an intro card (title and text, shown before the first question of its entity) of a grammar or exam entity does not contain a correct answer of any item of that entity. Cards with an exempt `meta.kind` are skipped.
+/// Check that an intro card (title and text, shown before the first question of its entity) of an entity does not contain a correct answer of any item of that entity. Cards with an exempt `meta.kind` are skipped.
 pub(super) fn check_preanswer_leak(intro: &Intro, items: &[&Item], sink: &mut Sink, file: &str, line: usize, course_norm: Option<&Normalize>) {
     let kind = intro.meta.as_ref().and_then(|m| m.get("kind")).and_then(|k| k.as_str());
     if kind.is_some_and(|k| EXEMPT_INTRO_KINDS.contains(&k)) {

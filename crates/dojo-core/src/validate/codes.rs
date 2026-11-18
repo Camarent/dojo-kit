@@ -86,7 +86,7 @@ pub const CODES: [(&str, Severity, &str); 130] = [
     ("order_blanks_mismatch", Severity::Warning, "number of ___ blanks in prompt differs from number of steps"),
     ("hint_leaks_answer", Severity::Warning, "parenthesised hint in a gap/cloze/choice/order prompt contains the item's correct answer or an order step (after normalization)"),
     ("hint_contains_answer", Severity::Error, "gap hint (parenthesised prompt hint or meta.hint_ru) contains an accepted answer: answers or retry entry (after normalization)"),
-    ("preanswer_leaks_answer", Severity::Warning, "intro card (title or text, shown before the first question) of a grammar or exam entity contains a correct answer of an item of its entity (after normalization); intros with meta.kind kanji or word are exempt"),
+    ("preanswer_leaks_answer", Severity::Warning, "intro card (title or text, shown before the first question) of an entity contains a correct answer of an item of its entity (after normalization); intros with meta.kind kanji or word are exempt"),
     ("order_alt_invalid", Severity::Error, "order altOrders entry is not a permutation of the step indices, equals the identity order, or repeats another entry"),
     ("order_split_word", Severity::Warning, "order step in a Japanese course is a bare ending or case particle, not a whole chunk"),
     ("unknown_unit_in_group", Severity::Error, "group references a unit id that does not exist"),
