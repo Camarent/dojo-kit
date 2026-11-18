@@ -45,7 +45,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 ## Build and test
 Source of these commands: `CONTRACT.md`, `Cargo.toml`, `package.json`, `.github/workflows/ci.yml`, `dojo` wrapper, `tests/wrapper.sh`. The repo has no Makefile.
 - Build workspace: `cargo build --workspace` (CONTRACT section 9).
-- Node deps and checks: `npm ci`, `npm run lint` (ESLint), `npm test` (= `scripts/check-all.sh`). CI (`.github/workflows/ci.yml`) runs on Node 22 and 24; `scripts/ci.sh` runs the same steps locally.
+- Node deps and checks: `npm ci`, `npm run lint` (ESLint), `npm test` (= `scripts/check-all.sh`, unit tests plus smoke steps). The split runs: `npm run test:unit` (`--unit`), `npm run test:premerge` (`--premerge`, isolation proof), `npm run test:smoke` (`--smoke`, wasm smoke, vectors drift, hooks-test, course tests). See [tests.md](modules/tests.md#test-runs-scriptscheck-allsh-modes). CI (`.github/workflows/ci.yml`) runs on Node 22 and 24; `scripts/ci.sh` runs the same steps locally.
 - Release CLI: `cargo build -q --release -p dojo-cli`.
 - WASM: `scripts/build-wasm.sh -q` (cargo release build with `--remap-path-prefix` so no build-machine paths land in the wasm).
 - Rust tests: `cargo test -p dojo-core`, `cargo test -p dojo-cli`.
@@ -55,7 +55,7 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `package.json`, `.github/
 - Groups: `node --test web/tests/groups.test.js web/tests/groups-ui.test.js web/tests/groups-build.test.js`.
 - Web unit test: `node --test web/tests/storage.test.js`; exam flow: `node --test web/tests/exams.test.js`; placement: `node --test web/tests/placement.test.js`; unit caps and unit ladders: `node --test web/tests/unit-settings.test.js`.
 - Full web test run: the directory form `node --test web/tests` fails (checked on Node 24.22.1: `Cannot find module '…/web/tests'`; Node 22 not checked in this repo, so the file-glob form below is the one to use); web test files live under `web/tests/`, Node test files also live in `tests/` (`tests/fw-root.test.js`, `tests/reference-generic.test.js`, `tests/build-wasm-paths.test.js`).
-- Full suite (from repo root, replaces the web-only run): `scripts/build-wasm.sh && cargo test --workspace && node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js && node tests/wasm-smoke.js && node tests/gen-vectors.js && git diff --exit-code -- tests/vectors && bash tests/hooks-test.sh`.
+- Full suite (from repo root, replaces the web-only run; the split modes `test:unit`, `test:premerge`, `test:smoke` are listed in tests.md): `scripts/build-wasm.sh && cargo test --workspace && node --test modules/ja/tests/*.test.js modules/ru/tests/*.test.js web/tests/*.test.js tests/*.test.js && node tests/wasm-smoke.js && node tests/gen-vectors.js && git diff --exit-code -- tests/vectors && bash tests/hooks-test.sh`.
 - End-to-end wrapper check: `tests/wrapper.sh` (`bash tests/wrapper.sh`).
 - Build a course: `./dojo validate <course-dir>` then `./dojo build <course-dir>`.
 - Section 12 (audio, timers, weighted sessions): `node --test web/tests/audio.test.js web/tests/question-timer.test.js web/tests/weighted-session.test.js`; Rust `crates/dojo-core/tests/audio_validate.rs`, `timer_extras_vectors.rs`, `weighted_vectors.rs`; CLI `crates/dojo-cli/tests/build_audio.rs`.

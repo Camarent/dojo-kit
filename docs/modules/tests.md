@@ -23,6 +23,13 @@ Holds the shared golden data (`tests/vectors/*.json`) that pins progress, SRS, c
 - `tests/real-exports.test.js` (9 tests) - `tools/real-exports.js`: env override, sorted directory listing, legacy fallback, `REAL_GATE_STRICT`, `summarizeGate` verdicts.
 - Packaging and CI node tests: `tests/ci-workflow.test.js` (`ci.yml` covers every `scripts/ci.sh` step on Node 24, `:43`; step order, `:47`; scripts are executable, `:67`), `tests/validate-examples.test.js` (shipped examples exit 0, `:19`; a broken `course.json` exits non-zero, `:24`), `tests/version-parity.test.js` (`package.json`, `Cargo.toml` `[workspace.package]` and the top CHANGELOG release agree, `:62`; mutation cases `:75`, `:84`, `:91`).
 
+## Test runs (`scripts/check-all.sh` modes)
+The suite runs in three modes, each a `package.json` script that calls `scripts/check-all.sh` with one flag:
+- `npm run test:unit` (`--unit`): `scripts/build-wasm.sh`, `cargo test --workspace`, and the node tests (`modules/*/tests/*.test.js`, `web/tests/*.test.js`, `tests/*.test.js`). No wasm smoke, no course tests.
+- `npm run test:premerge` (`--premerge`): isolation proof only. `tests/isolation-proof.sh` runs `--unit` twice concurrently and twice in sequence.
+- `npm run test:smoke` (`--smoke`): `node tests/wasm-smoke.js`, the vectors drift check (`node tests/gen-vectors.js && git diff --exit-code -- tests/vectors`), `tests/hooks-test.sh`, then `scripts/course-test.sh` for every `workspace/*/course.json` course. This includes the `*-real` guards of the local courses. No cargo or node unit tests.
+- `npm test` (no flag): build-wasm, unit tests, then the smoke steps (wasm smoke, vectors drift, hooks-test). It runs no premerge proof. Course tests run only with `--with-courses`, and the course gate only with `--with-course-gate`.
+
 ## Key files
 - `gen/` - generator modules behind `gen-vectors.js`; reads `tools/reference/*.js` through `gen/ref.js`.
 - `wasm-smoke.js` - the only JS test that runs the compiled core.
