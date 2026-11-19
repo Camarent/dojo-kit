@@ -23,9 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - test(guard): course-test fails on a stale wasm, tmp-leak check uses its own TMPDIR, tracked tests never read private course paths
 - feat(units): unit entity is a number range, aspect is direction
 
-## [0.4.4] - 2026-11-19
+## [0.4.5] - 2026-11-19
 
 - fix(web): sweep fixes for finish card, dialogs, catalogue, validator and docs
+
+## [0.4.4] - 2026-11-19
+
+- fix(storage): retry cloud connect when window.claude arrives late; surface connect errors
 
 ## [0.4.3] - 2026-11-18
 
