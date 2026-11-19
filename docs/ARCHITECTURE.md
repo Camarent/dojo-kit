@@ -51,7 +51,7 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `package.json`, `.github/
 - WASM: `scripts/build-wasm.sh -q` (cargo release build with `--remap-path-prefix` so no build-machine paths land in the wasm).
 - Rust tests: `cargo test -p dojo-core`, `cargo test -p dojo-cli`.
 - Vectors: `node tests/gen-vectors.js && git diff --exit-code` (must be a no-op).
-- Secret scan: no CI step runs gitleaks (`ci.yml` has no install or scan step; `scripts/ci.sh` has none either). The scan runs only in the local pre-commit and pre-push hooks, which need `gitleaks` on PATH (see `CONTRIBUTING.md`).
+- Secret scan: no CI step scans with gitleaks (`scripts/ci.sh` has none). `ci.yml` installs it (pinned, checksum verified) only so `tests/hooks-test.sh` can exercise the pre-commit and pre-push hooks. The scan itself runs in those local hooks, which need `gitleaks` on PATH (see `CONTRIBUTING.md`).
 - WASM smoke test: `node tests/wasm-smoke.js` (needs the WASM build).
 - Exam resume: `node --test web/tests/exam-resume.test.js web/tests/app-resume.test.js`.
 - Groups: `node --test web/tests/groups.test.js web/tests/groups-ui.test.js web/tests/groups-build.test.js`.
