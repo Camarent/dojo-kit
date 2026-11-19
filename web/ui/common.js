@@ -133,7 +133,7 @@
     var t = p.t;
     var s = p.status;
     return html`<span class=${cls('status', 'status-' + s)} data-testid="status-chip" data-status=${s}
-      title=${t('status.' + s + '.tip')}><i class="dot" aria-hidden="true"></i>${t('status.' + s)}</span>`;
+      title=${p.title || t('status.' + s + '.tip')}><i class="dot" aria-hidden="true"></i>${t('status.' + s)}</span>`;
   }
 
   // Bar segments (learned, learning, new) with widths that sum to 100%; the last one takes the rest.
