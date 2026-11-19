@@ -20,6 +20,7 @@
   function installCloud(s) {
     s.partRef = null;
     s.partUnsubs = [];
+    s.partLimit = 0;
     function applyRemote(remote, localDoc) {
       var merged = remote ? s.withCourse(s.mergeDocs(localDoc, remote)) : localDoc;
       var saved = s.commit(merged);
@@ -38,7 +39,9 @@
       s.dirty = dirty;
       s.notifyRemote();
     }
-    function onPartSnapshot(snap) {
+    /** Part k above s.partLimit is stale (main shrank below it): ignored. */
+    function onPartSnapshot(k, snap) {
+      if (k > s.partLimit) return;
       if (!snap.exists || (snap.metadata && snap.metadata.hasPendingWrites)) return;
       s.guarded(function () {
         var p = s.sanitize(snap.data());
@@ -49,7 +52,7 @@
     /** Reads the parts that are not watched yet (k > partUnsubs.length), then watches them. */
     function fetchPart(ref, k) {
       Promise.resolve().then(function () { return s.partRef(k).get(); })
-        .then(function (snap) { if (s.ref === ref) onPartSnapshot(snap); })
+        .then(function (snap) { if (s.ref === ref) onPartSnapshot(k, snap); })
         .catch(function (e) { s.warn('store.fetchParts', e); });
     }
     function fetchParts(n) {
@@ -60,12 +63,17 @@
     /** One onSnapshot per part 1..n; the unsubscribers live in s.partUnsubs. */
     s.watchParts = function (n) {
       for (var k = s.partUnsubs.length + 1; k <= n; k++) {
-        s.partUnsubs.push(s.partRef(k).onSnapshot(onPartSnapshot, function () { /* listener errors: keep writing */ }));
+        s.partUnsubs.push(s.partRef(k).onSnapshot(onPartSnapshot.bind(null, k), function () { /* listener errors: keep writing */ }));
       }
     };
     function dropParts(where) {
       s.partUnsubs.splice(0).forEach(function (u) { try { u(); } catch (e) { s.warn(where, e); } });
     }
+    /** Sets the part count of the main doc; unwatches parts above it (their docs stay in the db). */
+    s.setPartLimit = function (n) {
+      s.partLimit = n;
+      s.partUnsubs.splice(n).forEach(function (u) { try { u(); } catch (e) { s.warn('store.setPartLimit', e); } });
+    };
     var dropMain = s.dropUnsub;
     s.dropUnsub = function (where) { dropMain(where); dropParts(where); };
     function onSnapshot(snap) {
@@ -79,6 +87,7 @@
         var m = s.withCourse(s.mergeDocs(s.store.doc, base));
         var cmp = n ? s.lastRemote : base;
         if (!same(m, cmp)) s.dirty = true;
+        s.setPartLimit(n);
         if (n && s.partRef && n > s.partUnsubs.length) fetchParts(n);
         if (same(m, s.store.doc)) return;
         var saved = s.commit(m);
@@ -97,7 +106,9 @@
       s.setReason('ok', '');
       s.dropUnsub('store.attachRemote.unsub');
       s.unsub = s.ref.onSnapshot(onSnapshot, function () { /* listener errors: keep writing */ });
-      if (s.partRef) s.watchParts(opened.partSnaps ? opened.partSnaps.length : 0);
+      var partN = opened.partSnaps ? opened.partSnaps.length : 0;
+      s.setPartLimit(partN);
+      if (s.partRef) s.watchParts(partN);
       var done = s.dirty ? s.store.flush() : Promise.resolve();
       return done.then(function () { if (changed) s.notifyRemote(); });
     }

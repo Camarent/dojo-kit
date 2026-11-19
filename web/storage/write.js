@@ -39,6 +39,7 @@
       s.lastRemote = known;
       s.setReason('ok', '');
       s.setStatus(s.dirty ? 'saving' : 'cloud');
+      s.setPartLimit(parts);
       if (parts > 0) s.watchParts(parts);
     }
     function onWriteFailed(r, e, built) {
