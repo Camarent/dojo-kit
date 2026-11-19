@@ -17,11 +17,13 @@
       var known = b;
       try { if (s.lastRemote) known = s.mergeDocs(s.lastRemote, b); } catch (e) { s.warn('store.onWriteDone.merge', e); known = b; }
       s.lastRemote = known;
+      s.setReason('ok', '');
       s.setStatus(s.dirty ? 'saving' : 'cloud');
     }
     function onWriteFailed(r, e) {
       s.dirty = true;
       if (r !== s.ref || (e && e.cancelled)) return;
+      s.setReason('write-error', s.reasonDetail(e));
       if (e && adapters.FATAL_CODES.indexOf(e.code) >= 0) s.goLocal();
       else s.setStatus('error');
     }

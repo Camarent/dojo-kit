@@ -39,6 +39,7 @@
       s.ref = opened.ref;
       s.mode = 'cloud';
       s.setStatus('cloud');
+      s.setReason('ok', '');
       s.dropUnsub('store.attachRemote.unsub');
       s.unsub = s.ref.onSnapshot(onSnapshot, function () { /* listener errors: keep writing */ });
       var done = s.dirty ? s.store.flush() : Promise.resolve();
@@ -51,9 +52,10 @@
     /** attempt = retries done so far; null on the provider path, where absent means local at once. */
     function connectError(e, myGen, attempt) {
       s.warn('store.connect', e);
-      if (e && e.kind === 'wasm') { s.goLocal('error'); return; }
-      if (e && e.kind === 'refused') { s.goLocal('foreign'); return; }
-      if (!e || e.kind !== 'absent') { s.goLocal('error'); return; }
+      if (e && e.kind === 'wasm') { s.setReason('open-error', s.reasonDetail(e)); s.goLocal('error'); return; }
+      if (e && e.kind === 'refused') { s.setReason('refused', s.reasonDetail(e)); s.goLocal('foreign'); return; }
+      if (!e || e.kind !== 'absent') { s.setReason('open-error', s.reasonDetail(e)); s.goLocal('error'); return; }
+      s.setReason(e.step || 'no-use', '');
       if (attempt === null || attempt >= connectDelays.length) { s.goLocal('local'); return; }
       if (myGen !== s.gen) return;
       s.connectTimer = s.setTimer(function () {
@@ -70,7 +72,7 @@
       s.setStatus('syncing');
       return Promise.resolve().then(function () {
         s.claude = typeof s.opts.claude === 'function' ? s.opts.claude() : s.opts.claude;
-        if (!s.claude || typeof s.claude.use !== 'function') throw { kind: 'absent' };
+        if (!s.claude || typeof s.claude.use !== 'function') throw { kind: 'absent', step: 'no-claude' };
         return s.db.openRef();
       }).then(function (opened) { return attachRemote(myGen, opened); })
         .catch(function (e) { connectError(e, myGen, attempt || 0); });

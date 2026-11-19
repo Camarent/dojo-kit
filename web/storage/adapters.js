@@ -91,14 +91,17 @@
 
     function openRef() {
       var claude = s.claude;
-      return Promise.all([
-        Promise.resolve().then(function () { return claude.use('db'); }).catch(function (e) { s.warn('store.openRef.db', e); return null; }),
-        Promise.resolve().then(function () { return claude.use('user'); }).catch(function (e) { s.warn('store.openRef.user', e); return null; })
-      ]).then(function (caps) {
-        if (!caps[0] || !caps[1]) throw { kind: 'absent' };
-        return Promise.resolve(caps[1].id()).then(function (uid) {
-          if (!uid) throw { kind: 'absent' };
-          var r = caps[0].doc('data/users/' + uid + '/progress-' + s.courseId);
+      function use(name) {
+        return Promise.resolve().then(function () { return claude.use(name); }).then(
+          function (cap) { return cap ? { cap: cap } : { step: name + '-null' }; },
+          function (e) { s.warn('store.openRef.' + name, e); return { step: 'no-use' }; });
+      }
+      return Promise.all([use('db'), use('user')]).then(function (caps) {
+        var miss = caps[0].step || caps[1].step;
+        if (miss) throw { kind: 'absent', step: miss };
+        return Promise.resolve(caps[1].cap.id()).then(function (uid) {
+          if (!uid) throw { kind: 'absent', step: 'no-uid' };
+          var r = caps[0].cap.doc('data/users/' + uid + '/progress-' + s.courseId);
           return Promise.resolve(r.get()).then(function (snap) { return { ref: r, snap: snap }; });
         });
       });

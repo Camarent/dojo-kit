@@ -46,6 +46,7 @@
   }
 
   function installCore(s) {
+    s.store.reason = null;
     function wasm(name, args) {
       try { return s.dojo.call(name, args); } catch (e) { throw { kind: 'wasm', cause: e }; }
     }
@@ -76,6 +77,13 @@
       s.store.status = st;
       try { s.onStatus(st); } catch (e) { s.warn('store.setStatus.onStatus', e); }
     };
+    /** Records why sync is or is not working: step is a short code, detail a short error code or name. */
+    s.setReason = function (step, detail) {
+      s.store.reason = { step: step, detail: String(detail || '').slice(0, 200) };
+      try { if (s.opts.onReason) s.opts.onReason(s.store.reason); } catch (e) { s.warn('store.setReason.onReason', e); }
+    };
+    /** Error code or name only: e.message can hold the uid path and never goes into the reason. */
+    s.reasonDetail = function (e) { return String((e && (e.code || e.name)) || ''); };
     s.failed = function () { s.setStatus('error'); };
     s.notifyRemote = function () {
       try { s.onRemoteChange(); } catch (e) { s.warn('store.notifyRemote.onRemoteChange', e); }
