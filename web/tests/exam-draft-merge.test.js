@@ -201,7 +201,7 @@ function playXThenOpenY(A, B, ca) {
   return { sa, sb };
 }
 
-test('oversize fallback keeps closedSids as a payload-free tombstone so B cannot record a second result', async () => {
+test('oversize body splits into parts; closedSids stay in main so B cannot record a second result', async () => {
   const dojo = await loadDojo();
   const pa = { t: NOW };
   const probe = cloudDevice(dojo, pa, null);
@@ -218,9 +218,7 @@ test('oversize fallback keeps closedSids as a payload-free tombstone so B cannot
   const w = cloud.data;
   assert.ok(w.examDraft, 'closure survives in remote');
   assert.deepStrictEqual(w.examDraft.closedSids.map((c) => c.sid), [sa.id]);
-  assert.ok(w.examDraft.closed);
-  assert.strictEqual(w.examDraft.answers, undefined);
-  assert.strictEqual(w.examDraft.ids, undefined);
+  assert.ok(!w.examDraft.closed, 'open draft Y kept whole: the body splits into parts, main is not trimmed');
   assert.ok(A.store.doc.examDraft && !A.store.doc.examDraft.closed, 'local open Y untouched');
   B.store.importText(JSON.stringify(w));
   cb.t = NOW + 3000;

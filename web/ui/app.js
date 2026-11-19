@@ -59,7 +59,7 @@
   class App extends Component {
     constructor(props) {
       super(props);
-      this.state = { screen: 'home', status: props.store.status, notice: null, session: null, summary: null, home: null, placementIntro: false, confirmNew: null };
+      this.state = { screen: 'home', status: props.store.status, syncReason: props.store.reason, notice: null, session: null, summary: null, home: null, placementIntro: false, confirmNew: null };
       this.state.home = this.homeData();
       this.lastStart = null;
     }
@@ -83,6 +83,7 @@
       if (w && typeof w.scrollTo === 'function') { try { w.scrollTo(0, 0); } catch { /* no scroll */ } }
     }
     setStatus(status) { this.setState({ status: status }); }
+    setSyncReason(reason) { this.setState({ syncReason: reason }); }
     remoteChanged() {
       this.setState({ home: this.homeData() });
     }
@@ -211,7 +212,7 @@
     }
     render(p, s) {
       var self = this;
-      var common = { t: p.t, course: p.course, status: s.status, notice: s.notice, dojo: p.dojo, go: function (x) { self.go(x); } };
+      var common = { t: p.t, course: p.course, status: s.status, syncReason: s.syncReason, notice: s.notice, dojo: p.dojo, go: function (x) { self.go(x); } };
       var body = this.overlayBody(p, s, common) || (SCREENS[s.screen] || SCREENS.home)(self, p, s, common);
       return html`<div class="app">${body}</div>`;
     }
@@ -275,6 +276,7 @@
       claude: opts.claude || null,
       storageProvider: DojoExt.getStorageProvider ? DojoExt.getStorageProvider() : null,
       onStatus: function (s) { if (holder.app) holder.app.setStatus(s); },
+      onReason: function (r) { if (holder.app) holder.app.setSyncReason(r); },
       onRemoteChange: function () { if (holder.app) holder.app.remoteChanged(); }
     });
     return store.load().then(function () {

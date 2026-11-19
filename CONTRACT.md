@@ -101,6 +101,9 @@ JS, in `web/storage.js`. Interface: `load()`, `update(fn)` (load -> merge -> sav
 - Storage failure must not break the app.
 - Remote storage provider: `DojoExt.registerStorage(provider)` (`web/ext/registry.js`). `provider.openRef({courseId, key})` resolves `{ref, snap}`: `snap` is read with `readRemote`, `ref` takes `get`, `set`, `onSnapshot`. One provider; a second call replaces the first.
 - Base layer is always `local` (localStorage, key above): read first, written on every save. The remote layer is optional: the registered provider, else the artifact db (item 1) when `window.claude.use` exists. Neither present: local only. Key and db path are unchanged.
+- Cloud size budget: every cloud document stays under `CLOUD_DOC_BUDGET_BYTES` (120000 compact UTF-8 bytes, `web/storage/parts.js`). A larger progress is written as sibling part docs `<db path>.part<k>` (k = 1..parts, the main doc's `parts` field): parts first, main last (the main doc is the commit point). Readers merge the main doc and all parts. A main doc without `parts` (older format) loads unchanged. The rule is framework-generic (no course work).
+- Part docs: optional `partRef(k)` on the `openRef` result enables the split; without it the single-doc format is used as before.
+- Sync reason `{step, detail}` (`store.reason`, `opts.onReason`): steps are `no-claude`, `no-use`, `db-null`, `user-null`, `no-uid`, `open-error`, `refused`, `write-too-large`, `write-error`, `ok`. `detail` is at most 200 chars and never holds uids or content. A write rejected with `invalid_argument` is status `error` with reason `write-too-large`.
 
 ## 7. CLI behaviour
 - `dojo schema (--out <dir> | --brief)`: writes `course.schema.json` and `item.schema.json`, or prints the compact cheat-sheet of item types for AI prompts.

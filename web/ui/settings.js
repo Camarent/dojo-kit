@@ -27,6 +27,12 @@
   var timerMod = root.DojoSettingsTimer || null;
   var renderTimerSettings = timerMod ? timerMod.create().renderTimerSettings : function () { return null; };
 
+  // Sync reason as one text line; null when the store has no outcome yet.
+  function syncReasonLine(t, reason) {
+    if (!reason) return null;
+    return t('about.status') + ': ' + t('sync.step.' + reason.step) + (reason.detail ? ' (' + reason.detail + ')' : '');
+  }
+
   // Section renderers and the speech block, set by create(); render() reads them from here.
   class SettingsScreen extends Component {
     constructor(props) {
@@ -141,8 +147,10 @@
       var sec = SettingsScreen.parts.sec;
       var renderSpeechSettings = SettingsScreen.parts.renderSpeechSettings;
       var renderPluginSettings = SettingsScreen.parts.renderPluginSettings;
+      var reasonLine = syncReasonLine(t, p.syncReason);
       return html`<main class="screen settings-screen" data-testid="settings">
-        <header class="head"><h1>${t('settings.title')}</h1><${StatusChip} t=${t} status=${p.status} /></header>
+        <header class="head"><h1>${t('settings.title')}</h1><${StatusChip} t=${t} status=${p.status} title=${reasonLine} /></header>
+        ${reasonLine ? html`<p class="muted" data-testid="sync-reason">${reasonLine}</p>` : null}
         <${Notice} text=${p.notice} />
         ${sec.sectionNewPerDay(p, t, self)}
         ${sec.sectionTheme(p, t, self)}

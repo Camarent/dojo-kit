@@ -7,10 +7,11 @@
   var warn = root.DojoStorageWarn ? root.DojoStorageWarn.warn : require('./warn.js').warn;
   var adapters = root.DojoStorageAdapters || require('./adapters.js');
   var body = root.DojoStorageBody || require('./body.js');
+  var parts = root.DojoStorageParts || require('./parts.js');
+  var write = root.DojoStorageWrite || require('./write.js');
+  var connect = root.DojoStorageConnect || require('./connect.js');
   var clone = adapters.clone;
   var same = adapters.same;
-  /** Waits before each connect retry after a missing claude or uid; about 10 s in total. */
-  var CONNECT_RETRY_DELAYS_MS = [1000, 2000, 3000, 4000];
 
   function initState(opts) {
     return Object.assign(baseState(opts), timerState(opts));
@@ -25,7 +26,7 @@
       onStatus: opts.onStatus || function () {},
       onRemoteChange: opts.onRemoteChange || function () {},
       flushEvery: opts.flushEvery || 5,
-      maxDocBytes: opts.maxDocBytes || 800000,
+      maxDocBytes: opts.maxDocBytes || parts.CLOUD_DOC_BUDGET_BYTES,
       random: opts.random || Math.random,
       key: 'dojo.' + opts.courseId + '.progress.v1',
       mode: 'local', ref: null, unsub: null, lastRemote: null, lastRemoteSeen: false,
@@ -46,6 +47,7 @@
   }
 
   function installCore(s) {
+    s.store.reason = null;
     function wasm(name, args) {
       try { return s.dojo.call(name, args); } catch (e) { throw { kind: 'wasm', cause: e }; }
     }
@@ -76,7 +78,18 @@
       s.store.status = st;
       try { s.onStatus(st); } catch (e) { s.warn('store.setStatus.onStatus', e); }
     };
-    s.failed = function () { s.setStatus('error'); };
+    /** Records why sync is or is not working: step is a short code, detail a short error code or name. */
+    s.setReason = function (step, detail) {
+      s.store.reason = { step: step, detail: String(detail || '').slice(0, 200) };
+      try { if (s.opts.onReason) s.opts.onReason(s.store.reason); } catch (e) { s.warn('store.setReason.onReason', e); }
+    };
+    /** Error code or name only: e.message can hold the uid path and never goes into the reason. */
+    s.reasonDetail = function (e) { return String((e && (e.code || e.name)) || ''); };
+    /** Sets status error; records step local-error when no failure reason is known yet. */
+    s.failed = function () {
+      if (!s.store.reason || s.store.reason.step === 'ok') s.setReason('local-error', '');
+      s.setStatus('error');
+    };
     s.notifyRemote = function () {
       try { s.onRemoteChange(); } catch (e) { s.warn('store.notifyRemote.onRemoteChange', e); }
     };
@@ -125,105 +138,6 @@
       s.cancelConnect();
       s.dropUnsub('store.goLocal.unsub');
       s.setStatus(status || 'local');
-    };
-  }
-
-  function installWrite(s) {
-    s.buildBody = function () {
-      var b = s.lastRemote ? s.withCourse(s.mergeDocs(s.store.doc, s.lastRemote)) : s.withCourse(s.store.doc);
-      return body.buildBody(b, s.lastRemote, s.maxDocBytes);
-    };
-    function onWriteDone(r, b) {
-      if (r !== s.ref) { s.dirty = true; return; }
-      var known = b;
-      try { if (s.lastRemote) known = s.mergeDocs(s.lastRemote, b); } catch (e) { s.warn('store.onWriteDone.merge', e); known = b; }
-      s.lastRemote = known;
-      s.setStatus(s.dirty ? 'saving' : 'cloud');
-    }
-    function onWriteFailed(r, e) {
-      s.dirty = true;
-      if (r !== s.ref || (e && e.cancelled)) return;
-      if (e && adapters.FATAL_CODES.indexOf(e.code) >= 0) s.goLocal();
-      else s.setStatus('error');
-    }
-    s.startWrite = function (b) {
-      var r = s.ref;
-      s.dirty = false;
-      s.setStatus('saving');
-      s.writing = s.db.setWithRetry(r, b).then(function () { onWriteDone(r, b); }, function (e) { onWriteFailed(r, e); }).then(function () {
-        s.writing = null;
-        if (s.pendingWrite) { s.pendingWrite = false; return s.store.flush(); }
-      });
-      return s.writing;
-    };
-    s.canWrite = function () { return s.mode === 'cloud' && s.ref && s.dirty && s.lastRemoteSeen; };
-  }
-
-  function installCloud(s) {
-    function applyRemote(remote, localDoc) {
-      var merged = remote ? s.withCourse(s.mergeDocs(localDoc, remote)) : localDoc;
-      var saved = s.commit(merged);
-      s.lastRemote = remote;
-      s.lastRemoteSeen = true;
-      s.dirty = !remote || !same(remote, saved);
-      return !same(saved, localDoc);
-    }
-    function onSnapshot(snap) {
-      if (!snap.exists || (snap.metadata && snap.metadata.hasPendingWrites)) return;
-      s.guarded(function () {
-        var r = s.sanitize(snap.data());
-        if (!r || s.foreignCourse(r)) return;
-        s.lastRemote = s.lastRemote ? s.mergeDocs(s.lastRemote, r) : r;
-        var m = s.withCourse(s.mergeDocs(s.store.doc, r));
-        if (!same(m, r)) s.dirty = true;
-        if (same(m, s.store.doc)) return;
-        var saved = s.commit(m);
-        s.dirty = !same(saved, r);
-        s.notifyRemote();
-      });
-    }
-    function attachRemote(myGen, opened) {
-      if (myGen !== s.gen) { s.setStatus('local'); return Promise.resolve(); }
-      var remote = s.db.readRemote(opened.snap);
-      var changed = applyRemote(remote, s.store.doc);
-      s.ref = opened.ref;
-      s.mode = 'cloud';
-      s.setStatus('cloud');
-      s.dropUnsub('store.attachRemote.unsub');
-      s.unsub = s.ref.onSnapshot(onSnapshot, function () { /* listener errors: keep writing */ });
-      var done = s.dirty ? s.store.flush() : Promise.resolve();
-      return done.then(function () { if (changed) s.notifyRemote(); });
-    }
-    var connectDelays = s.opts.connectRetryDelaysMs || CONNECT_RETRY_DELAYS_MS;
-    s.cancelConnect = function () {
-      if (s.connectTimer !== null) { s.clearTimer(s.connectTimer); s.connectTimer = null; }
-    };
-    /** attempt = retries done so far; null on the provider path, where absent means local at once. */
-    function connectError(e, myGen, attempt) {
-      s.warn('store.connect', e);
-      if (e && e.kind === 'wasm') { s.goLocal('error'); return; }
-      if (e && e.kind === 'refused') { s.goLocal('foreign'); return; }
-      if (!e || e.kind !== 'absent') { s.goLocal('error'); return; }
-      if (attempt === null || attempt >= connectDelays.length) { s.goLocal('local'); return; }
-      if (myGen !== s.gen) return;
-      s.connectTimer = s.setTimer(function () {
-        s.connectTimer = null;
-        if (myGen === s.gen) s.connect(myGen, attempt + 1);
-      }, connectDelays[attempt]);
-    }
-    s.connect = function (myGen, attempt) {
-      if (s.provider) {
-        s.setStatus('syncing');
-        return Promise.resolve().then(function () { return s.provider.openRef({ courseId: s.courseId, key: s.key }); })
-          .then(function (opened) { return attachRemote(myGen, opened); }).catch(function (e) { connectError(e, myGen, null); });
-      }
-      s.setStatus('syncing');
-      return Promise.resolve().then(function () {
-        s.claude = typeof s.opts.claude === 'function' ? s.opts.claude() : s.opts.claude;
-        if (!s.claude || typeof s.claude.use !== 'function') throw { kind: 'absent' };
-        return s.db.openRef();
-      }).then(function (opened) { return attachRemote(myGen, opened); })
-        .catch(function (e) { connectError(e, myGen, attempt || 0); });
     };
   }
 
@@ -279,10 +193,10 @@
       s.cancelTimer();
       if (!s.canWrite()) return Promise.resolve();
       if (s.writing) { s.pendingWrite = true; return s.writing; }
-      var b;
-      try { b = s.buildBody(); } catch (e) { s.warn('store.flush.buildBody', e); s.failed(); return Promise.resolve(); }
-      if (!b) { s.failed(); return Promise.resolve(); }
-      return s.startWrite(b);
+      var built;
+      try { built = s.buildBody(); } catch (e) { s.warn('store.flush.buildBody', e); s.failed(); return Promise.resolve(); }
+      if (!built.docs) { s.buildFailed(built); return Promise.resolve(); }
+      return s.startWrite(built);
     };
   }
 
@@ -330,8 +244,8 @@
     s.local = adapters.localAdapter(s);
     s.db = adapters.dbAdapter(s);
     installCommit(s);
-    installWrite(s);
-    installCloud(s);
+    write.installWrite(s);
+    connect.installCloud(s);
     installLoad(s);
     body.installImport(s);
     installLifecycle(s);

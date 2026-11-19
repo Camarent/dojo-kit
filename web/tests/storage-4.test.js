@@ -248,15 +248,18 @@ test('safety: a snapshot arriving during a write keeps remote knowledge and the 
   assert.deepStrictEqual(Object.keys(last.items).sort(), ['a', 'b', 'r']);
 });
 
-test('safety: body still over maxDocBytes after day maps are dropped is not written (status error, doc kept)', async () => {
+test('oversize body is split into part docs: every set fits maxDocBytes and no record is lost', async () => {
   const claude = mockClaude();
   const { store } = make({ claude, maxDocBytes: 300 });
   await store.load();
   claude.sets.length = 0;
   store.update((d) => { for (let i = 0; i < 20; i++) d.items['id-' + i] = rec(1, 700 + i); });
   await store.flush();
-  assert.strictEqual(claude.sets.length, 0);
-  assert.strictEqual(store.status, 'error');
+  assert.ok(claude.sets.length > 1);
+  for (const set of claude.sets) assert.ok(Buffer.byteLength(JSON.stringify(set)) <= 300);
+  const ids = claude.sets.reduce((acc, d) => acc.concat(Object.keys(d.items)), []);
+  assert.strictEqual(ids.length, 20);
+  assert.strictEqual(store.status, 'cloud');
   assert.strictEqual(Object.keys(store.doc.items).length, 20);
 });
 
