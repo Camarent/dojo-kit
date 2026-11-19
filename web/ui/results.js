@@ -169,10 +169,19 @@
       </ul>`;
     }
 
+    // Exam items never answered: not in review nor skipped. Practice has no fixed total, so 0.
+    function unansweredOf(sum) {
+      if (sum.mode !== 'exam') return 0;
+      return Math.max(0, sum.total - sum.answered - (sum.skipped || []).length);
+    }
+
     return function missedSection(p, t, sum, missed) {
+      var unanswered = unansweredOf(sum);
+      var none = missed.length === 0 && (!sum.skipped || sum.skipped.length === 0);
       return html`<section>
         <h2>${t('results.missed')}</h2>
-        ${missed.length === 0 && (!sum.skipped || sum.skipped.length === 0) ? html`<p class="muted" data-testid="no-missed">${t('results.none')}</p>` : missedList(p, t, sum, missed)}
+        ${unanswered > 0 ? html`<p class="notice" data-testid="results-unanswered">${t('session.finish.unanswered', { n: unanswered })}</p>` : null}
+        ${none && unanswered === 0 ? html`<p class="muted" data-testid="no-missed">${t('results.none')}</p>` : (none ? null : missedList(p, t, sum, missed))}
       </section>`;
     };
   }
@@ -206,6 +215,7 @@
       return html`<main class="screen" data-testid="results">
         <header class="head"><h1>${t('results.title')}</h1></header>
         ${isPlacement ? html`<p class="banner good" data-testid="placement-result">${t('results.placement')}</p>` : null}
+        ${isPlacement && sum.level ? html`<p data-testid="placement-level">${t('results.placement.level', { level: sum.level })}</p>` : null}
         ${x.verdict}
         ${x.estimate}
         ${x.training}

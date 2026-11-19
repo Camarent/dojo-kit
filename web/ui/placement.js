@@ -253,7 +253,7 @@
       if (which === 'exit') return s.confirm === 'exit' ? html`<${Dialog} testid="dlg-exit" title=${t('session.exit.title')} body=${t('session.exit.body')}
           cancelLabel=${t('session.stay')} confirmLabel=${t('session.exit')} danger=${true}
           onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { p.onExit(); }} />` : null;
-      return s.confirm === 'finish' ? html`<${Dialog} testid="dlg-finish" title=${t('session.finish.title')}
+      return s.confirm === 'finish' ? html`<${Dialog} testid="dlg-finish" title=${t('placement.finish.title')}
           body=${t('session.finish.all')}
           cancelLabel=${t('session.stay')} confirmLabel=${t('placement.finish')}
           onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { self.setState({ confirm: null }); self.finish(); }} />` : null;
