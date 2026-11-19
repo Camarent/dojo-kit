@@ -5,8 +5,9 @@
   'use strict';
 
   var adapters = root.DojoStorageAdapters || (typeof require !== 'undefined' ? require('./adapters.js') : null);
+  var parts = root.DojoStorageParts || (typeof require !== 'undefined' ? require('./parts.js') : null);
 
-  function size(body) { return JSON.stringify(body).length; }
+  function size(body) { return parts.byteSize(body); }
 
   function shrinks(body, lastRemote) {
     return !!lastRemote && body.resetAt === lastRemote.resetAt &&
@@ -57,6 +58,32 @@
   function buildBody(body, lastRemote, max) {
     if (shrinks(body, lastRemote)) return null;
     return fit(body, max);
+  }
+
+  /**
+   * Cloud docs for body: {docs} in write order (parts first, main last), or {error}.
+   * error 'shrink' when it would shrink the remote; 'too-large' when it cannot fit max bytes.
+   */
+  function buildDocs(body, lastRemote, max, canSplit) {
+    if (shrinks(body, lastRemote)) return { error: 'shrink' };
+    var total = size(body);
+    if (total <= max) return { docs: [body], total: total, largest: total };
+    if (canSplit) {
+      var split = parts.splitItems(body, max);
+      var main = split ? fit(split.main, max) : null;
+      if (!main) {
+        var cands = split ? [split.main].concat(split.parts) : [body];
+        return { error: 'too-large', total: total, largest: largestOf(cands) };
+      }
+      return { docs: split.parts.concat([main]), total: total, largest: largestOf(split.parts.concat([main])) };
+    }
+    var fitted = fit(body, max);
+    if (!fitted) return { error: 'too-large', total: total, largest: total };
+    return { docs: [fitted], total: total, largest: total };
+  }
+
+  function largestOf(docs) {
+    return docs.reduce(function (m, d) { return Math.max(m, size(d)); }, 0);
   }
 
   /** Copy of doc with progress cleared and resetAt advanced past stamp. */
@@ -128,7 +155,7 @@
     };
   }
 
-  var api = { buildBody: buildBody, emptied: emptied, installImport: installImport };
+  var api = { buildBody: buildBody, buildDocs: buildDocs, emptied: emptied, installImport: installImport };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
   } else {

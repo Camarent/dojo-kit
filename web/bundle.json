@@ -6,6 +6,7 @@
     "migrate.js",
     "storage/adapters.js",
     "storage/warn.js",
+    "storage/parts.js",
     "storage/body.js",
     "storage/write.js",
     "storage/connect.js",
