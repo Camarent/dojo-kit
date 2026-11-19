@@ -9,6 +9,7 @@
     "storage/parts.js",
     "storage/body.js",
     "storage/write.js",
+    "storage/remote-parts.js",
     "storage/connect.js",
     "storage/store.js",
     "storage.js",

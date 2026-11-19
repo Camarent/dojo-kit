@@ -7,6 +7,7 @@
   var adapters = root.DojoStorageAdapters || require('./adapters.js');
   var same = adapters.same;
   var parts = root.DojoStorageParts || require('./parts.js');
+  var remoteParts = root.DojoStorageRemoteParts || require('./remote-parts.js');
   /** Waits before each connect retry after a missing claude or uid; about 10 s in total. */
   var CONNECT_RETRY_DELAYS_MS = [1000, 2000, 3000, 4000];
 
@@ -29,53 +30,7 @@
       s.dirty = !remote || !same(remote, saved);
       return !same(saved, localDoc);
     }
-    /** Merges a part doc into lastRemote and store.doc; keeps the dirty flag as it was. */
-    function mergePart(p) {
-      s.lastRemote = s.lastRemote ? s.mergeDocs(s.lastRemote, p) : p;
-      var m = s.withCourse(s.mergeDocs(s.store.doc, p));
-      if (same(m, s.store.doc)) return;
-      var dirty = s.dirty;
-      s.commit(m);
-      s.dirty = dirty;
-      s.notifyRemote();
-    }
-    /** Part k above s.partLimit is stale (main shrank below it): ignored. */
-    function onPartSnapshot(k, snap) {
-      if (k > s.partLimit) return;
-      if (!snap.exists || (snap.metadata && snap.metadata.hasPendingWrites)) return;
-      s.guarded(function () {
-        var p = s.sanitize(snap.data());
-        if (!p || s.foreignCourse(p)) return;
-        mergePart(p);
-      });
-    }
-    /** Reads the parts that are not watched yet (k > partUnsubs.length), then watches them. */
-    function fetchPart(ref, k) {
-      Promise.resolve().then(function () { return s.partRef(k).get(); })
-        .then(function (snap) { if (s.ref === ref) onPartSnapshot(k, snap); })
-        .catch(function (e) { s.warn('store.fetchParts', e); });
-    }
-    function fetchParts(n) {
-      var ref = s.ref;
-      for (var k = s.partUnsubs.length + 1; k <= n; k++) fetchPart(ref, k);
-      s.watchParts(n);
-    }
-    /** One onSnapshot per part 1..n; the unsubscribers live in s.partUnsubs. */
-    s.watchParts = function (n) {
-      for (var k = s.partUnsubs.length + 1; k <= n; k++) {
-        s.partUnsubs.push(s.partRef(k).onSnapshot(onPartSnapshot.bind(null, k), function () { /* listener errors: keep writing */ }));
-      }
-    };
-    function dropParts(where) {
-      s.partUnsubs.splice(0).forEach(function (u) { try { u(); } catch (e) { s.warn(where, e); } });
-    }
-    /** Sets the part count of the main doc; unwatches parts above it (their docs stay in the db). */
-    s.setPartLimit = function (n) {
-      s.partLimit = n;
-      s.partUnsubs.splice(n).forEach(function (u) { try { u(); } catch (e) { s.warn('store.setPartLimit', e); } });
-    };
-    var dropMain = s.dropUnsub;
-    s.dropUnsub = function (where) { dropMain(where); dropParts(where); };
+    remoteParts.installRemoteParts(s);
     function onSnapshot(snap) {
       if (!snap.exists || (snap.metadata && snap.metadata.hasPendingWrites)) return;
       s.guarded(function () {
@@ -88,7 +43,7 @@
         var cmp = n ? s.lastRemote : base;
         if (!same(m, cmp)) s.dirty = true;
         s.setPartLimit(n);
-        if (n && s.partRef && n > s.partUnsubs.length) fetchParts(n);
+        if (n && s.partRef && n > s.partUnsubs.length) s.fetchParts(n);
         if (same(m, s.store.doc)) return;
         var saved = s.commit(m);
         s.dirty = !same(saved, cmp);
