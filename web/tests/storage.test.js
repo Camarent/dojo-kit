@@ -71,6 +71,7 @@ function make(o) {
     onStatus: (s) => statuses.push(s),
     onRemoteChange: () => remoteChanges.push(1),
     random: () => 0,
+    connectRetryDelaysMs: o.connectRetryDelaysMs,
     setTimeoutFn: (fn) => { if (o.instantTimers) { Promise.resolve().then(fn); return 0; } timers.push(fn); return timers.length; },
     clearTimeoutFn: () => {},
     maxDocBytes: o.maxDocBytes
@@ -175,10 +176,10 @@ test('load: unreadable local is backed up exactly once and start is empty', asyn
 });
 
 test('load: absent claude gives local; rejecting use gives local', async () => {
-  const a = make({ claude: null });
+  const a = make({ claude: null, connectRetryDelaysMs: [] });
   await a.store.load();
   assert.strictEqual(a.store.status, 'local');
-  const b = make({ claude: mockClaude({ rejectUse: true }) });
+  const b = make({ claude: mockClaude({ rejectUse: true }), connectRetryDelaysMs: [] });
   await b.store.load();
   assert.strictEqual(b.store.status, 'local');
 });
