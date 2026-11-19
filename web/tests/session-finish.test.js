@@ -12,7 +12,7 @@ const webDir = path.join(__dirname, '..');
 const readWeb = (p) => fs.readFileSync(path.join(webDir, p), 'utf8');
 // Returns the body of the first CSS rule whose selector is exactly `sel`.
 const ruleBody = (css, sel) => {
-  const m = css.match(new RegExp('(^|\\n)' + sel.replace(/[.[\]()]/g, '\\$&') + ' \\{([^}]*)\\}', 'g'));
+  const m = css.match(new RegExp('(^|\\n)' + sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ' \\{([^}]*)\\}', 'g'));
   return m ? m.join('\n') : '';
 };
 
