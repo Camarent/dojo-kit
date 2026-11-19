@@ -130,6 +130,36 @@ test('detail is cut to 200 characters', async () => {
   assert.strictEqual(r.detail.length, 200);
 });
 
+// localStorage whose setItem always throws, so a local write fails and the store calls failed().
+function failingLocal() {
+  return { getItem: () => null, setItem: () => { throw new Error('quota'); } };
+}
+
+test('local write failure without a reason records step local-error', async () => {
+  const { store, reasons } = build(null, { localStorage: failingLocal() });
+  store.update((d) => { d.items.a = { s: 1, due: 2, ok: 1, bad: 0, last: 1 }; });
+  assert.strictEqual(store.reason.step, 'local-error');
+  assert.strictEqual(store.reason.detail, '');
+  assert.strictEqual(store.status, 'error');
+  assert.strictEqual(reasons[reasons.length - 1], store.reason);
+});
+
+test('local write failure after an ok reason records step local-error', async () => {
+  const { store } = build(claudeUse((n) => (n === 'db' ? dbOk() : userOk)), { localStorage: failingLocal() });
+  await store.load();
+  assert.strictEqual(store.reason.step, 'ok');
+  store.update((d) => { d.items.a = { s: 1, due: 2, ok: 1, bad: 0, last: 1 }; });
+  assert.strictEqual(store.reason.step, 'local-error');
+});
+
+test('local write failure keeps an existing reason', async () => {
+  const { store } = build(null, { localStorage: failingLocal() });
+  await store.load();
+  assert.strictEqual(store.reason.step, 'no-claude');
+  store.update((d) => { d.items.a = { s: 1, due: 2, ok: 1, bad: 0, last: 1 }; });
+  assert.strictEqual(store.reason.step, 'no-claude');
+});
+
 test('uid path from an error message never reaches the reason', async () => {
   const failing = dbOk(async () => { throw { message: 'data/users/uid-SECRET123/progress-demo', code: 'boom' }; });
   const r = await loadReason(claudeUse((n) => (n === 'db' ? failing : { id: async () => 'uid-SECRET123' })));

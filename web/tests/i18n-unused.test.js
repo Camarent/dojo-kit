@@ -12,6 +12,7 @@ const PLUGIN_KEYS = new Set([
   'session.field.right', 'session.field.wrong',
   'sync.step.no-claude', 'sync.step.no-use', 'sync.step.db-null', 'sync.step.user-null', 'sync.step.no-uid',
   'sync.step.open-error', 'sync.step.refused', 'sync.step.write-too-large', 'sync.step.write-error', 'sync.step.ok',
+  'sync.step.local-error',
 ]);
 const PLURAL = /\.(one|few|many|other)$/;
 

@@ -271,6 +271,7 @@
   "sync.step.open-error": "ошибка подключения",
   "sync.step.refused": "документ отклонён",
   "sync.step.write-too-large": "слишком большой документ",
+  "sync.step.local-error": "ошибка сохранения в этом браузере",
   "sync.step.write-error": "ошибка записи",
   "sync.step.ok": "работает",
   "session.crash.title": "Экран не удалось отрисовать",

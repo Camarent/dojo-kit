@@ -249,6 +249,7 @@
   "sync.step.open-error": "connection error",
   "sync.step.refused": "document refused",
   "sync.step.write-too-large": "document too large",
+  "sync.step.local-error": "saving failed in this browser",
   "sync.step.write-error": "write error",
   "sync.step.ok": "working",
   "session.crash.title": "The screen failed to draw",

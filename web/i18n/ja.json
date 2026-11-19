@@ -246,6 +246,7 @@
   "sync.step.open-error": "接続エラー",
   "sync.step.refused": "ドキュメントが拒否されました",
   "sync.step.write-too-large": "ドキュメントが大きすぎます",
+  "sync.step.local-error": "このブラウザへの保存に失敗しました",
   "sync.step.write-error": "書き込みエラー",
   "sync.step.ok": "正常",
   "session.crash.title": "画面を描画できませんでした",

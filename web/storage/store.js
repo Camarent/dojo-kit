@@ -85,7 +85,11 @@
     };
     /** Error code or name only: e.message can hold the uid path and never goes into the reason. */
     s.reasonDetail = function (e) { return String((e && (e.code || e.name)) || ''); };
-    s.failed = function () { s.setStatus('error'); };
+    /** Sets status error; records step local-error when no failure reason is known yet. */
+    s.failed = function () {
+      if (!s.store.reason || s.store.reason.step === 'ok') s.setReason('local-error', '');
+      s.setStatus('error');
+    };
     s.notifyRemote = function () {
       try { s.onRemoteChange(); } catch (e) { s.warn('store.notifyRemote.onRemoteChange', e); }
     };
