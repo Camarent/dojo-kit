@@ -7,10 +7,10 @@
   var warn = root.DojoStorageWarn ? root.DojoStorageWarn.warn : require('./warn.js').warn;
   var adapters = root.DojoStorageAdapters || require('./adapters.js');
   var body = root.DojoStorageBody || require('./body.js');
+  var write = root.DojoStorageWrite || require('./write.js');
+  var connect = root.DojoStorageConnect || require('./connect.js');
   var clone = adapters.clone;
   var same = adapters.same;
-  /** Waits before each connect retry after a missing claude or uid; about 10 s in total. */
-  var CONNECT_RETRY_DELAYS_MS = [1000, 2000, 3000, 4000];
 
   function initState(opts) {
     return Object.assign(baseState(opts), timerState(opts));
@@ -128,105 +128,6 @@
     };
   }
 
-  function installWrite(s) {
-    s.buildBody = function () {
-      var b = s.lastRemote ? s.withCourse(s.mergeDocs(s.store.doc, s.lastRemote)) : s.withCourse(s.store.doc);
-      return body.buildBody(b, s.lastRemote, s.maxDocBytes);
-    };
-    function onWriteDone(r, b) {
-      if (r !== s.ref) { s.dirty = true; return; }
-      var known = b;
-      try { if (s.lastRemote) known = s.mergeDocs(s.lastRemote, b); } catch (e) { s.warn('store.onWriteDone.merge', e); known = b; }
-      s.lastRemote = known;
-      s.setStatus(s.dirty ? 'saving' : 'cloud');
-    }
-    function onWriteFailed(r, e) {
-      s.dirty = true;
-      if (r !== s.ref || (e && e.cancelled)) return;
-      if (e && adapters.FATAL_CODES.indexOf(e.code) >= 0) s.goLocal();
-      else s.setStatus('error');
-    }
-    s.startWrite = function (b) {
-      var r = s.ref;
-      s.dirty = false;
-      s.setStatus('saving');
-      s.writing = s.db.setWithRetry(r, b).then(function () { onWriteDone(r, b); }, function (e) { onWriteFailed(r, e); }).then(function () {
-        s.writing = null;
-        if (s.pendingWrite) { s.pendingWrite = false; return s.store.flush(); }
-      });
-      return s.writing;
-    };
-    s.canWrite = function () { return s.mode === 'cloud' && s.ref && s.dirty && s.lastRemoteSeen; };
-  }
-
-  function installCloud(s) {
-    function applyRemote(remote, localDoc) {
-      var merged = remote ? s.withCourse(s.mergeDocs(localDoc, remote)) : localDoc;
-      var saved = s.commit(merged);
-      s.lastRemote = remote;
-      s.lastRemoteSeen = true;
-      s.dirty = !remote || !same(remote, saved);
-      return !same(saved, localDoc);
-    }
-    function onSnapshot(snap) {
-      if (!snap.exists || (snap.metadata && snap.metadata.hasPendingWrites)) return;
-      s.guarded(function () {
-        var r = s.sanitize(snap.data());
-        if (!r || s.foreignCourse(r)) return;
-        s.lastRemote = s.lastRemote ? s.mergeDocs(s.lastRemote, r) : r;
-        var m = s.withCourse(s.mergeDocs(s.store.doc, r));
-        if (!same(m, r)) s.dirty = true;
-        if (same(m, s.store.doc)) return;
-        var saved = s.commit(m);
-        s.dirty = !same(saved, r);
-        s.notifyRemote();
-      });
-    }
-    function attachRemote(myGen, opened) {
-      if (myGen !== s.gen) { s.setStatus('local'); return Promise.resolve(); }
-      var remote = s.db.readRemote(opened.snap);
-      var changed = applyRemote(remote, s.store.doc);
-      s.ref = opened.ref;
-      s.mode = 'cloud';
-      s.setStatus('cloud');
-      s.dropUnsub('store.attachRemote.unsub');
-      s.unsub = s.ref.onSnapshot(onSnapshot, function () { /* listener errors: keep writing */ });
-      var done = s.dirty ? s.store.flush() : Promise.resolve();
-      return done.then(function () { if (changed) s.notifyRemote(); });
-    }
-    var connectDelays = s.opts.connectRetryDelaysMs || CONNECT_RETRY_DELAYS_MS;
-    s.cancelConnect = function () {
-      if (s.connectTimer !== null) { s.clearTimer(s.connectTimer); s.connectTimer = null; }
-    };
-    /** attempt = retries done so far; null on the provider path, where absent means local at once. */
-    function connectError(e, myGen, attempt) {
-      s.warn('store.connect', e);
-      if (e && e.kind === 'wasm') { s.goLocal('error'); return; }
-      if (e && e.kind === 'refused') { s.goLocal('foreign'); return; }
-      if (!e || e.kind !== 'absent') { s.goLocal('error'); return; }
-      if (attempt === null || attempt >= connectDelays.length) { s.goLocal('local'); return; }
-      if (myGen !== s.gen) return;
-      s.connectTimer = s.setTimer(function () {
-        s.connectTimer = null;
-        if (myGen === s.gen) s.connect(myGen, attempt + 1);
-      }, connectDelays[attempt]);
-    }
-    s.connect = function (myGen, attempt) {
-      if (s.provider) {
-        s.setStatus('syncing');
-        return Promise.resolve().then(function () { return s.provider.openRef({ courseId: s.courseId, key: s.key }); })
-          .then(function (opened) { return attachRemote(myGen, opened); }).catch(function (e) { connectError(e, myGen, null); });
-      }
-      s.setStatus('syncing');
-      return Promise.resolve().then(function () {
-        s.claude = typeof s.opts.claude === 'function' ? s.opts.claude() : s.opts.claude;
-        if (!s.claude || typeof s.claude.use !== 'function') throw { kind: 'absent' };
-        return s.db.openRef();
-      }).then(function (opened) { return attachRemote(myGen, opened); })
-        .catch(function (e) { connectError(e, myGen, attempt || 0); });
-    };
-  }
-
   function installLoad(s) {
     var store = s.store;
     /** Reads local data, then connects to the cloud when available. Always resolves. */
@@ -330,8 +231,8 @@
     s.local = adapters.localAdapter(s);
     s.db = adapters.dbAdapter(s);
     installCommit(s);
-    installWrite(s);
-    installCloud(s);
+    write.installWrite(s);
+    connect.installCloud(s);
     installLoad(s);
     body.installImport(s);
     installLifecycle(s);

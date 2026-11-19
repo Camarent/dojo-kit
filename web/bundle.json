@@ -7,6 +7,8 @@
     "storage/adapters.js",
     "storage/warn.js",
     "storage/body.js",
+    "storage/write.js",
+    "storage/connect.js",
     "storage/store.js",
     "storage.js",
     "session/util.js",
