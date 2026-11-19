@@ -100,3 +100,30 @@ test('catalog intro lookup ignores Object.prototype names ("constructor" entity,
   assert.strictEqual(c.cat.introOf({ id: 'a', entity: 'constructor' }), null);
   assert.strictEqual(c.cat.introOf({ id: 'b', entity: 'E' }).title, 'Intro E');
 });
+
+// Catalogue counts topics (items sharing an entity count once); Home unit rows count items.
+test('catalog count is topics: items sharing an entity count once', async () => {
+  const items = [gap('x1', 'u1', { entity: 'e1' }), gap('x2', 'u1', { entity: 'e1' }), gap('y1', 'u1')];
+  const c = await open(items);
+  assert.ok(/^2 topics$/.test(c.count()), c.count());
+});
+
+// Listening entry: numeric item on a hidden-text stimulus with no clip and no speech lines has no play button (same rule as the numeric-audio helper).
+test('listening entry without clip or speech lines shows the answer and no play button', async () => {
+  const items = [gap('n1', 'u1', { inputMode: 'numeric', stimulus: 's', answers: ['5'] })];
+  const c = await open(items, { stimuli: [{ id: 's', text: 'x', hideText: true }] });
+  assert.strictEqual(H.text(H.find(c.cat.view(), 'topic-label-n1')), '5');
+  c.cat.setState({ detailItem: items[0] });
+  assert.strictEqual(H.find(c.cat.view(), 'detail-play'), null);
+});
+
+// Class hooks the task-1 CSS targets (.catalog-btn, .catalog-prompt, .catalog-state, .catalog-mastery).
+test('topic row keeps the prompt, state and mastery classes the catalogue CSS targets', async () => {
+  const c = await open([gap('a', 'u1')]);
+  const v = c.cat.view();
+  const row = H.find(v, 'topic-a');
+  assert.ok(row, 'topic row rendered');
+  const classes = new Set();
+  H.walk(row, (n) => { if (typeof n.props.class === 'string') n.props.class.split(' ').forEach((k) => classes.add(k)); });
+  for (const k of ['catalog-btn', 'catalog-prompt', 'catalog-state', 'catalog-mastery']) assert.ok(classes.has(k), k);
+});

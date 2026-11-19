@@ -30,7 +30,7 @@
       }
       return html`<div key=${left.id} class=${cls('match-row', stateClass)} data-testid=${'match-row-' + i}>
         <span class="match-left">${renderText(left.label)}</span>
-        <select class="match-select" data-testid=${'match-select-' + i} aria-label=${left.label} data-autofocus=${i === 0 ? 'true' : undefined} disabled=${!!res}
+        <select class="match-select" id=${'match-select-' + i} name=${'match-' + i} data-testid=${'match-select-' + i} aria-label=${left.label} data-autofocus=${i === 0 ? 'true' : undefined} disabled=${!!res}
           value=${selected === null || selected === undefined ? '' : String(selected)} onChange=${function (e) { handleSelect(i, e); }}>
           <option value="">${t('q.match.choose')}</option>
           ${rights.map(function (r) {

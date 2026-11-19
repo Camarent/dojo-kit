@@ -13,6 +13,7 @@ fn make_course() -> Course {
         modules: Vec::new(),
         topics: None,
         session: None,
+        validate: None,
         timer: None,
         units: vec![
             crate::content::Unit { id: "unit-1".to_string(), title: "Unit 1".to_string(), new_per_day: None, srs: None, placement: None, detail: None, new_order: None, exam_only: None, timer: None },
@@ -180,6 +181,7 @@ fn self_rated_not_exam_eligible() {
         modules: Vec::new(),
         topics: None,
         session: None,
+        validate: None,
         timer: None,
         units: vec![crate::content::Unit { id: "unit-1".to_string(), title: "Unit 1".to_string(), new_per_day: None, srs: None, placement: None, detail: None, new_order: None, exam_only: None, timer: None }],
         types: None,

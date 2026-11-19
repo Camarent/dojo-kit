@@ -209,6 +209,15 @@
     return html`<main class="screen center" data-testid="loading"><p class="muted">${p.t('loading')}</p></main>`;
   }
 
+  // Two-digit zero padding for clock and date parts.
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  // m:ss clock text for a duration in ms (negative clamps to 0:00).
+  function fmtClock(ms) {
+    var s = Math.max(0, Math.round(ms / 1000));
+    return Math.floor(s / 60) + ':' + pad2(s % 60);
+  }
+
   function daysLeft(examDate, todayKey) {
     var re = /^(\d{4})-(\d{2})-(\d{2})$/;
     var a = re.exec(examDate || '');
@@ -272,6 +281,8 @@
     Notice: Notice,
     Loading: Loading,
     // utilities
+    pad2: pad2,
+    fmtClock: fmtClock,
     daysLeft: daysLeft,
     countActiveByUnit: countActiveByUnit,
     visibleUnits: visibleUnits,

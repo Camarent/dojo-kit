@@ -327,14 +327,14 @@
                                         "type": "span",
                                         "props": {
                                           "class": "chip",
-                                          "title": "Item",
+                                          "title": "Item Q u1 2",
                                           "children": [
                                             {
                                               "type": "span",
                                               "props": {
                                                 "class": "chip-text",
                                                 "children": [
-                                                  "Item"
+                                                  "Item Q u1 2"
                                                 ]
                                               }
                                             }
@@ -352,14 +352,14 @@
                                         "type": "span",
                                         "props": {
                                           "class": "chip",
-                                          "title": "Item",
+                                          "title": "Item Q u1 1",
                                           "children": [
                                             {
                                               "type": "span",
                                               "props": {
                                                 "class": "chip-text",
                                                 "children": [
-                                                  "Item"
+                                                  "Item Q u1 1"
                                                 ]
                                               }
                                             }
@@ -2345,6 +2345,7 @@
                 "props": {
                   "data-testid": "export-text",
                   "class": "field mono",
+                  "id": "export-text",
                   "value": "",
                   "aria-label": "Export progress",
                   "readOnly": true
@@ -2399,6 +2400,7 @@
                 "props": {
                   "data-testid": "import-text",
                   "class": "field mono",
+                  "id": "import-text",
                   "value": "",
                   "aria-label": "Import progress",
                   "autocomplete": "off"
@@ -3771,6 +3773,7 @@
                 "props": {
                   "data-testid": "export-text",
                   "class": "field mono",
+                  "id": "export-text",
                   "value": "",
                   "aria-label": "Export progress",
                   "readOnly": true
@@ -3825,6 +3828,7 @@
                 "props": {
                   "data-testid": "import-text",
                   "class": "field mono",
+                  "id": "import-text",
                   "value": "",
                   "aria-label": "Import progress",
                   "autocomplete": "off"
@@ -5574,6 +5578,7 @@
                 "props": {
                   "data-testid": "export-text",
                   "class": "field mono",
+                  "id": "export-text",
                   "value": "",
                   "aria-label": "Export progress",
                   "readOnly": true
@@ -5628,6 +5633,7 @@
                 "props": {
                   "data-testid": "import-text",
                   "class": "field mono",
+                  "id": "import-text",
                   "value": "",
                   "aria-label": "Import progress",
                   "autocomplete": "off"
@@ -7415,8 +7421,9 @@
                         "class": "stat",
                         "children": [
                           {
-                            "type": "b",
+                            "type": "small",
                             "props": {
+                              "class": "muted",
                               "children": [
                                 "nothing recorded"
                               ]

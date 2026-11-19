@@ -26,12 +26,7 @@
   var Notice = DojoCommon.Notice;
   var StatusChip = DojoCommon.StatusChip;
 
-  function pad2(n) { return (n < 10 ? '0' : '') + n; }
-
-  function fmtClock(ms) {
-    var s = Math.max(0, Math.round(ms / 1000));
-    return Math.floor(s / 60) + ':' + pad2(s % 60);
-  }
+  var fmtClock = DojoCommon.fmtClock;
 
   function fmtExamDate(lang, key) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key || '');
@@ -69,7 +64,7 @@
       ${renderStatsSection(t, d, sum.due, sum.newToday)}
       ${statsNoteOrNull(t, c, hasGroups)}
       ${sessionCountOrNull(t, c)}
-      ${planOrNull(t, c)}
+      ${planOrNull(t, c, p.examDaysLeft)}
       ${renderActionsSection({ p: p, t: t, c: c, hasPlacement: course.placement !== undefined, placementDone: !!d.placementDone, canReview: c.due + c.newToday > 0, weakList: weakListOf(p), hasGroups: hasGroups })}
       ${groupsOrNull(o)}
       ${examsOrNull(o)}
@@ -160,27 +155,35 @@
   }
 
   // Helper: actions section
-  // Fixed chip label: aspect name, then the written form (meta.kanji) when the item has one. Never the prompt or gloss.
+  // Chip label: aspect name, then the written form (meta.kanji) when the item has one, else the prompt (or stimulus) truncated to 24 chars.
   function weakLabel(t, w) {
     var key = 'home.weak.aspect.' + (w.aspect || 'default');
     var name = t(key);
     if (name === key) name = t('home.weak.aspect.default');
-    return w.kanji ? name + ' ' + w.kanji : name;
+    if (w.kanji) return name + ' ' + w.kanji;
+    var src = typeof w.prompt === 'string' && w.prompt.trim() !== '' ? w.prompt : w.stimText;
+    if (typeof src !== 'string') return name;
+    var ext = typeof DojoExt !== 'undefined' ? DojoExt : null;
+    var plain = (ext && ext.plain ? ext.plain(src) : src).replace(/\s+/g, ' ').trim();
+    if (plain === '') return name;
+    return name + ' ' + (plain.length > 24 ? plain.slice(0, 24) + '…' : plain);
   }
 
   // Plan block of the next session: numbers from buildSession plan (session/counts.js), warning when over the daily time.
-  function planOrNull(t, c) {
-    return c.plan ? renderPlanSection(t, c.plan) : null;
+  function planOrNull(t, c, examDaysLeft) {
+    return c.plan ? renderPlanSection(t, c.plan, examDaysLeft) : null;
   }
 
-  function renderPlanSection(t, plan) {
+  // Days left come from the exam date (null without a valid future date: units only), never from the plan.
+  function renderPlanSection(t, plan, examDaysLeft) {
+    var hasDays = typeof examDaysLeft === 'number';
     var cap = plan.capacity === null || plan.capacity === undefined ? t('home.plan.capacity.none') : t('home.plan.capacity', { n: plan.capacity });
     return html`<section class="plan-block" data-testid="plan-block" aria-labelledby="plan-title">
         <h3 class="plan-title" id="plan-title">${t('home.plan.title')}</h3>
         <p class="plan-counts" data-testid="plan-counts">${t('home.plan.counts', { weak: plan.weak, new: plan.new, due: plan.due })}</p>
         <p class="plan-total" data-testid="plan-total">${t('home.plan.total', { n: plan.total })}</p>
         <p class="plan-capacity" data-testid="plan-capacity">${cap}</p>
-        <p class="plan-left" data-testid="plan-left">${t('home.plan.left', { days: plan.daysLeft, units: plan.unitsLeft })}</p>
+        <p class="plan-left" data-testid="plan-left">${hasDays ? t('home.plan.left', { days: examDaysLeft, units: plan.unitsLeft }) : t('home.plan.units', { units: plan.unitsLeft })}</p>
         ${plan.warnMinutes > 0 ? html`<p class="plan-warn" data-testid="plan-warn">${t('home.plan.warn', { n: plan.warnMinutes })}</p>` : null}
       </section>`;
   }

@@ -16,9 +16,10 @@
   // SessionFinish: the four numbers of a finished practice run (same markup as ui/session-finish.js).
   // Defined here so a sandbox that loads only results.js renders it.
   // nextDue is a timestamp in the core clock unit (ms); null when nothing is recorded.
-  function nextDueText(t, nextDue) {
-    if (nextDue === null || nextDue === undefined) return t('finish.none');
-    return new Date(nextDue).toLocaleString();
+  // Empty state is a muted label, not a stat value: a long label in <b> overflows a phone tile.
+  function nextDueValue(t, nextDue) {
+    if (nextDue === null || nextDue === undefined) return html`<small class="muted">${t('finish.none')}</small>`;
+    return html`<b>${new Date(nextDue).toLocaleString()}</b>`;
   }
 
   function SessionFinish(p) {
@@ -28,8 +29,8 @@
       <h2>${t('finish.title')}</h2>
       <div class="stat" data-testid="finish-answered"><b>${f.answered}</b><span>${t('finish.answered')}</span></div>
       <div class="stat" data-testid="finish-right"><b>${f.right}</b><span>${t('finish.right')}</span></div>
-      <div class="stat" data-testid="finish-weak-left"><b>${f.weakLeft}</b><span>${t('finish.weakLeft')}</span></div>
-      <div class="stat" data-testid="finish-next-due"><b>${nextDueText(t, f.nextDue)}</b><span>${t('finish.nextDue')}</span></div>
+      <div class="stat" data-testid="finish-weak-left"><b>${f.weakLeft}</b><span>${t('finish.weakLeft', { n: f.weakLeft })}</span></div>
+      <div class="stat" data-testid="finish-next-due">${nextDueValue(t, f.nextDue)}<span>${t('finish.nextDue')}</span></div>
       <p class="notice" data-testid="finish-no-round">${t('finish.noRound')}</p>
     </section>`;
   }
@@ -169,10 +170,19 @@
       </ul>`;
     }
 
+    // Exam items never answered: not in review nor skipped. Practice has no fixed total, so 0.
+    function unansweredOf(sum) {
+      if (sum.mode !== 'exam') return 0;
+      return Math.max(0, sum.total - sum.answered - (sum.skipped || []).length);
+    }
+
     return function missedSection(p, t, sum, missed) {
+      var unanswered = unansweredOf(sum);
+      var none = missed.length === 0 && (!sum.skipped || sum.skipped.length === 0);
       return html`<section>
         <h2>${t('results.missed')}</h2>
-        ${missed.length === 0 && (!sum.skipped || sum.skipped.length === 0) ? html`<p class="muted" data-testid="no-missed">${t('results.none')}</p>` : missedList(p, t, sum, missed)}
+        ${unanswered > 0 ? html`<p class="notice" data-testid="results-unanswered">${t('session.finish.unanswered', { n: unanswered })}</p>` : null}
+        ${none && unanswered === 0 ? html`<p class="muted" data-testid="no-missed">${t('results.none')}</p>` : (none ? null : missedList(p, t, sum, missed))}
       </section>`;
     };
   }
@@ -206,6 +216,7 @@
       return html`<main class="screen" data-testid="results">
         <header class="head"><h1>${t('results.title')}</h1></header>
         ${isPlacement ? html`<p class="banner good" data-testid="placement-result">${t('results.placement')}</p>` : null}
+        ${isPlacement && sum.level ? html`<p data-testid="placement-level">${t('results.placement.level', { level: sum.level })}</p>` : null}
         ${x.verdict}
         ${x.estimate}
         ${x.training}

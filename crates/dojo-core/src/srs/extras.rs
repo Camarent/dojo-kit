@@ -173,6 +173,26 @@ mod tests {
     }
 
     #[test]
+    fn new_key_over_cap_evicts_lowest_count_other_key() {
+        let mut cf: Vec<Value> = (0..8).map(|i| json!([format!("k{i}"), 2])).collect();
+        cf[0] = json!(["k0", 5]);
+        let got = apply_extras(Some(&json!({"cf": cf})), &wrong("new"));
+        let pairs = got["cf"].as_array().unwrap();
+        let keys: Vec<&str> = pairs.iter().map(|p| p[0].as_str().unwrap()).collect();
+        assert_eq!(keys, ["k0", "k2", "k3", "k4", "k5", "k6", "k7", "new"]);
+        assert_eq!(pairs[7], json!(["new", 1]));
+    }
+
+    #[test]
+    fn repeated_key_at_cap_is_counted_not_added() {
+        let cf: Vec<Value> = (0..8).map(|i| json!([format!("k{i}"), 2])).collect();
+        let got = apply_extras(Some(&json!({"cf": cf})), &wrong("k0"));
+        let pairs = got["cf"].as_array().unwrap();
+        assert_eq!(pairs.len(), 8);
+        assert_eq!(pairs[0], json!(["k0", 3]));
+    }
+
+    #[test]
     fn timeout_counts_without_confusion() {
         let o = Outcome { correct: false, given: Some("x"), timed_out: true, weighted: false };
         assert_eq!(apply_extras(Some(&json!({"to": 2.7})), &o), json!({"to": 3}));

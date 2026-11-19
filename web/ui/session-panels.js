@@ -34,7 +34,7 @@
           <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax=${cur.total} aria-valuenow=${cur.position}>
             <span style=${{ width: Math.round(100 * (cur.position - (s.result ? 0 : 1)) / cur.total) + '%' }}></span>
           </div>
-          <span class="count" data-testid="progress">${Math.min(session.answered, session.denominator())} / ${session.denominator()}</span>
+          <span class="count" data-testid="progress">${sc.isExamMode() ? cur.position : Math.min(session.answered, session.denominator())} / ${sc.isExamMode() ? cur.total : session.denominator()}</span>
           <span class=${DojoCommon.cls('badge retry', session.retryCount() === 0 && 'empty')} data-testid="retry-badge">${t('session.retries', { n: session.retryCount() })}</span>
           ${session.repeats() > 0 ? html`<span class="badge repeats" data-testid="repeats">${t('session.repeats', { n: session.repeats() })}</span>` : null}
           ${session.group && session.group.count > 1 ? html`<span class="count" data-testid="group">${t('session.group', { n: session.group.index + 1, total: session.group.count })}</span>` : null}
@@ -80,7 +80,7 @@
     var wrongNext = !exam && !s.result && !s.retry && !!p.session.canNextWrong && p.session.canNextWrong();
     return html`<div class="row actions-row">
           ${sc.renderDontKnow(p, s)}
-          ${examMode ? html`<button type="button" class="btn" data-testid="btn-finish" onClick=${function () { sc.setState({ confirm: 'finish' }); }}>${t('session.finish')}</button>` : null}
+          ${examMode && !last ? html`<button type="button" class="btn" data-testid="btn-finish" onClick=${function () { sc.setState({ confirm: 'finish' }); }}>${t('session.finish')}</button>` : null}
           <button type="button" class="btn primary big" disabled=${!exam && !s.result && !wrongNext} data-testid="btn-next" data-arrow-own
             ref=${function (el) { sc.nextBtn = el; }}
             title=${t('session.next.withArrow')} aria-label=${t('session.next.withArrow')}

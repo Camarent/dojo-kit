@@ -175,3 +175,83 @@ for (const lang of ['ru', 'en']) {
     assert.ok(!/\[object/.test(dialogText), 'contains [object: ' + dialogText);
   });
 }
+
+// ============================================================================
+// (c) Shared .dialog rule: capped height, scrolling body, reachable button row
+// ============================================================================
+
+const { ruleFor } = require('./css-helpers.js');
+
+// Declarations of a rule body as [{ name, value }] in source order.
+function decls(body) {
+  return body.split(';').map((d) => d.trim()).filter(Boolean).map((d) => {
+    const colon = d.indexOf(':');
+    return { name: d.slice(0, colon).trim(), value: d.slice(colon + 1).trim() };
+  });
+}
+
+// Reasons the shared .dialog rule breaks the contract; empty when it holds.
+function dialogProblems(css) {
+  const dialog = ruleFor(css, '.dialog');
+  if (!dialog) return ['no .dialog rule'];
+  const d = decls(dialog.declarations);
+  const problems = [];
+  const maxHeights = d.filter((x) => x.name === 'max-height').map((x) => x.value);
+  if (!maxHeights.some((v) => v.includes('dvh'))) problems.push('.dialog max-height lacks dvh');
+  if (!maxHeights.some((v) => v.includes('100vh'))) problems.push('.dialog max-height lacks vh fallback');
+  const overflow = d.filter((x) => x.name === 'overflow-y' || x.name === 'overflow').map((x) => x.value);
+  if (!overflow.some((v) => v === 'auto' || v === 'scroll')) problems.push('.dialog body does not scroll');
+  const row = ruleFor(css, '.dialog > .row.end');
+  if (!row) {
+    problems.push('no .dialog > .row.end rule');
+  } else {
+    const r = decls(row.declarations);
+    if (!r.some((x) => x.name === 'position' && x.value === 'sticky')) problems.push('button row not sticky');
+    if (!r.some((x) => x.name === 'bottom' && x.value === '0')) problems.push('button row not pinned to bottom');
+  }
+  return problems;
+}
+
+test('CSS: shared .dialog rule caps height (dvh with vh fallback), scrolls, keeps button row reachable', () => {
+  assert.deepStrictEqual(dialogProblems(read('styles/app.css')), []);
+});
+
+test('CSS: dialog contract check fails when max-height is removed from a test-local copy', () => {
+  const css = read('styles/app.css');
+  const body = ruleFor(css, '.dialog').declarations;
+  const withoutMax = decls(body).filter((x) => x.name !== 'max-height').map((x) => x.name + ': ' + x.value).join('; ');
+  const pieces = css.split(body);
+  assert.strictEqual(pieces.length, 2, '.dialog declarations must occur exactly once in app.css');
+  const mutated = pieces.join(withoutMax);
+  assert.ok(dialogProblems(mutated).some((p) => p.includes('max-height')), 'mutated CSS should fail the max-height check');
+});
+
+test('unit settings dialogs for vocab and u-0 open with cancel/save/reset buttons', async () => {
+  const content = mkContent([{ id: 'vocab', title: 'Vocab' }, { id: 'u-0', title: 'U0' }]);
+  const t = await setup(content);
+  const sb = loadApp();
+  const screen = renderSettings({ sb, engine: t.engine, content, doc: t.doc, t: sb.DojoApp._makeT(mkI18n(), 'en') });
+  const before = screen.render(screen.props, screen.state);
+  assert.ok(find(before, 'btn-unit-settings-vocab'), 'vocab unit trigger missing');
+  assert.ok(find(before, 'btn-unit-settings-u-0'), 'u-0 unit trigger missing');
+  for (const id of ['vocab', 'u-0']) {
+    screen.openUnitDialog(id);
+    const rendered = screen.render(screen.props, screen.state);
+    assert.ok(find(rendered, 'btn-unit-reset-cancel'), 'cancel missing for ' + id);
+    assert.ok(find(rendered, 'btn-unit-save'), 'save missing for ' + id);
+    assert.ok(find(rendered, 'btn-unit-reset'), 'reset missing for ' + id);
+  }
+});
+
+test('group settings dialog opens with cancel/save/reset buttons', async () => {
+  const content = mkContent([{ id: 'vocab', title: 'Vocab' }]);
+  content.course.groups = [{ id: 'g', title: 'Group', units: ['vocab'], newPerDay: 2 }];
+  const t = await setup(content);
+  const sb = loadApp();
+  const screen = renderSettings({ sb, engine: t.engine, content, doc: t.doc, t: sb.DojoApp._makeT(mkI18n(), 'en') });
+  screen.openGroupDialog('g');
+  const rendered = screen.render(screen.props, screen.state);
+  assert.ok(find(rendered, 'btn-group-reset-cancel'), 'cancel missing');
+  assert.ok(find(rendered, 'btn-group-save'), 'save missing');
+  assert.ok(find(rendered, 'btn-group-reset'), 'reset missing');
+});

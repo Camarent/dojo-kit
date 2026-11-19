@@ -1,7 +1,7 @@
 use super::Severity;
 
 /// Every validator code with its severity and a one-line description.
-pub const CODES: [(&str, Severity, &str); 130] = [
+pub const CODES: [(&str, Severity, &str); 132] = [
     ("parse_error", Severity::Error, "course.json or a content line does not match the format"),
     ("duplicate_unit", Severity::Error, "two units share an id"),
     ("no_units", Severity::Error, "course has no units"),
@@ -96,6 +96,8 @@ pub const CODES: [(&str, Severity, &str); 130] = [
     ("unit_cap_in_group", Severity::Warning, "unit newPerDay is ignored because the unit is in a group (the group cap applies)"),
     ("duplicate_intro", Severity::Error, "two intros share an id"),
     ("bad_intro", Severity::Error, "intro has an empty id or no title/text/meta"),
+    ("intro_title_ellipsis", Severity::Warning, "intro title ends with '…' (a cut-off title)"),
+    ("intro_empty_text", Severity::Warning, "intro text is present but blank"),
     ("intro_unknown_entity", Severity::Warning, "intro id matches no item entity"),
     ("unknown_tag_kind", Severity::Warning, "tagLabels entry has a kind other than public or internal"),
     ("bad_voice_pattern", Severity::Error, "speech.voices[role].prefer entry is empty or not a valid regular expression"),

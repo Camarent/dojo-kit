@@ -176,7 +176,9 @@ test('Results: "Nothing missed" only when nothing was missed or skipped; skipped
   const withMissed = render(Object.assign({}, sum, { review: [{ id: 'g1', correct: false, given: 'q', expected: 'x' }] }));
   assert.ok(find(withMissed, 'missed-g1'));
   assert.ok(find(withMissed, 'skipped-' + sum.skipped[0]));
-  assert.ok(find(render(Object.assign({}, sum, { skipped: [] })), 'no-missed'));
+  // skipped emptied but items still unanswered (total - answered): not "nothing missed"
+  assert.strictEqual(find(render(Object.assign({}, sum, { skipped: [] })), 'no-missed'), null);
+  assert.ok(find(render(Object.assign({}, sum, { skipped: [], answered: sum.total })), 'no-missed'));
 });
 
 test('Home: a single legacy exam starts directly without a picker', () => {

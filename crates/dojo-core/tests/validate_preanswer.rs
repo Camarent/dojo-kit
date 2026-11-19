@@ -15,6 +15,28 @@ fn leaks(intros: &str) -> bool {
     d.iter().any(|d| d.code == "preanswer_leaks_answer")
 }
 
+fn leaks_in(course: &str, intros: &str) -> bool {
+    let d: Vec<Diagnostic> = validate_all(course, &[file("content/u.jsonl", ITEMS)], None, None, Some(&file("intros.jsonl", intros)));
+    d.iter().any(|d| d.code == "preanswer_leaks_answer")
+}
+
+#[test]
+fn exempt_kinds_custom_list_replaces_default() {
+    let course = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"}],"validate":{"preanswerExemptKinds":["grammar"]}}"#;
+    // Listed kind is exempt.
+    assert!(!leaks_in(course, r#"{"id":"e-1","title":"Italy","text":"Its capital is Rome.","meta":{"kind":"grammar"}}"#));
+    // Former default kinds are no longer exempt once the list is set.
+    assert!(leaks_in(course, r#"{"id":"e-1","title":"Italy","text":"Its capital is Rome.","meta":{"kind":"kanji"}}"#));
+    assert!(leaks_in(course, r#"{"id":"e-1","title":"Italy","text":"Its capital is Rome.","meta":{"kind":"word"}}"#));
+}
+
+#[test]
+fn exempt_kinds_empty_list_exempts_nothing() {
+    let course = r#"{"id":"c","title":"C","uiLanguage":"en","units":[{"id":"u","title":"U"}],"validate":{"preanswerExemptKinds":[]}}"#;
+    assert!(leaks_in(course, r#"{"id":"e-1","title":"Italy","text":"Its capital is Rome.","meta":{"kind":"kanji"}}"#));
+    assert!(leaks_in(course, r#"{"id":"e-1","title":"Italy","text":"Its capital is Rome.","meta":{"kind":"word"}}"#));
+}
+
 #[test]
 fn intro_text_with_answer_flagged() {
     assert!(leaks(r#"{"id":"e-1","title":"Italy","text":"Its capital is Rome."}"#));

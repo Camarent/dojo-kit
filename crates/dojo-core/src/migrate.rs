@@ -237,3 +237,49 @@ pub fn unmigrate(doc: &Value, id: &str) -> Value {
     }
     out
 }
+
+#[cfg(test)]
+mod unmigrate_tests {
+    use super::unmigrate;
+    use serde_json::{Value, json};
+
+    fn migrated_doc() -> Value {
+        json!({
+            "items": {
+                "a": {"s": 9, "s0": 2, "m0": {"due": 5, "ok": 1}, "due": 7},
+                "b": {"s": 4, "s0": 1}
+            },
+            "migrated": {"m1": 100, "m2": 200}
+        })
+    }
+
+    #[test]
+    fn restores_stage_and_fields_for_the_given_id_only() {
+        let out = unmigrate(&migrated_doc(), "m1");
+        assert_eq!(out["items"]["a"], json!({"s": 2, "due": 5, "ok": 1}));
+        assert_eq!(out["items"]["b"], json!({"s": 1}));
+        assert_eq!(out["migrated"], json!({"m2": 200}));
+    }
+
+    #[test]
+    fn last_marker_removes_the_migrated_object() {
+        let out = unmigrate(&migrated_doc(), "m1");
+        let out = unmigrate(&out, "m2");
+        assert!(out.get("migrated").is_none());
+        assert_eq!(out["items"]["a"]["s"], json!(2));
+    }
+
+    #[test]
+    fn doc_without_marker_is_unchanged() {
+        let doc = json!({"items": {"a": {"s": 9, "s0": 2}}});
+        assert_eq!(unmigrate(&doc, "m1"), doc);
+        let other = migrated_doc();
+        assert_eq!(unmigrate(&other, "missing"), other);
+    }
+
+    #[test]
+    fn non_object_doc_is_returned_as_is() {
+        let doc = json!([1, 2, 3]);
+        assert_eq!(unmigrate(&doc, "m1"), doc);
+    }
+}

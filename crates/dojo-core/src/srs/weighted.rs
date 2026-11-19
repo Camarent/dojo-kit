@@ -132,3 +132,41 @@ pub fn weighted_queue<'a>(input: &WeightedIn<'a>) -> Result<Vec<&'a str>, String
     head.extend(sample(pool, weights, state, rest));
     Ok(head)
 }
+
+#[cfg(test)]
+mod direct_tests {
+    use super::{draw_index, parse_seed, unit_random};
+
+    #[test]
+    fn parse_seed_accepts_decimal_u64_only() {
+        assert_eq!(parse_seed("0"), Ok(0));
+        assert_eq!(parse_seed("18446744073709551615"), Ok(u64::MAX));
+        assert!(parse_seed("").is_err());
+        assert!(parse_seed("-1").is_err());
+        assert!(parse_seed("1.5").is_err());
+        assert!(parse_seed("18446744073709551616").is_err());
+        assert!(parse_seed("123456789012345678901").is_err());
+    }
+
+    #[test]
+    fn unit_random_stays_in_unit_interval() {
+        assert_eq!(unit_random(0), 0.0);
+        let top = unit_random(u64::MAX);
+        assert!((0.0..1.0).contains(&top), "{top}");
+    }
+
+    #[test]
+    fn draw_index_picks_by_cumulative_weight() {
+        let w = [1.0, 0.0, 3.0];
+        assert_eq!(draw_index(&w, 0.0), 0);
+        assert_eq!(draw_index(&w, 0.2), 0);
+        assert_eq!(draw_index(&w, 0.3), 2);
+        assert_eq!(draw_index(&w, 0.99), 2);
+    }
+
+    #[test]
+    fn draw_index_falls_back_to_last_index() {
+        assert_eq!(draw_index(&[], 0.5), 0);
+        assert_eq!(draw_index(&[1.0, 1.0], 1.0), 1);
+    }
+}
