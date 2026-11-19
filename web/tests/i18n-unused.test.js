@@ -7,7 +7,12 @@ const path = require('path');
 const web = path.join(__dirname, '..');
 // Keys read only by course plugins (ctx.t); listed in the reference so courses can translate them.
 // session.field.* are added ahead of the field-result rendering (task-5), which must remove them from this list.
-const PLUGIN_KEYS = new Set(['session.field.right', 'session.field.wrong']);
+// sync.step.* are added ahead of the sync status line (task-6); task-7 reads them via a 'sync.step.' + step prefix and must remove them from this list.
+const PLUGIN_KEYS = new Set([
+  'session.field.right', 'session.field.wrong',
+  'sync.step.no-claude', 'sync.step.no-use', 'sync.step.db-null', 'sync.step.user-null', 'sync.step.no-uid',
+  'sync.step.open-error', 'sync.step.refused', 'sync.step.write-too-large', 'sync.step.write-error', 'sync.step.ok',
+]);
 const PLURAL = /\.(one|few|many|other)$/;
 
 function sources() {
