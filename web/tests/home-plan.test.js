@@ -46,6 +46,26 @@ test('home plan: numbers on screen equal the plan of the next session', async ()
   assert.strictEqual(session.total, plan.total, 'next session size equals plan.total');
 });
 
+test('home plan: no exam date shows units only, never a made-up day count', async () => {
+  const m = await mount({ items: ITEMS, course: COURSE, lang: 'en' });
+  Object.assign(m.doc.items, dueAll(ITEMS));
+  m.app.refresh();
+  const left = text(find(m.tree(), 'plan-left'));
+  assert.ok(left.includes('Units left'), left);
+  assert.ok(!left.includes('Days left') && !left.includes('30'), left);
+});
+
+test('home plan: days left equal the days to the exam date', async () => {
+  const m = await mount({ items: ITEMS, course: COURSE, lang: 'en' });
+  Object.assign(m.doc.items, dueAll(ITEMS));
+  const d = new Date(NOW + 10 * DAY);
+  const pad = (n) => (n < 10 ? '0' : '') + n;
+  m.doc.settings = Object.assign({}, m.doc.settings, { examDate: d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) });
+  m.app.refresh();
+  const left = text(find(m.tree(), 'plan-left'));
+  assert.ok(/Days left: 10\b/.test(left), left);
+});
+
 test('home plan: no warn line under capacity', async () => {
   const m = await mount({ items: ITEMS, course: COURSE, lang: 'en' });
   Object.assign(m.doc.items, dueAll(ITEMS));
@@ -75,8 +95,8 @@ test('home weak chips: aspect label and written form, no ellipsis, different asp
   });
   assert.ok(chipTexts.includes('Reading \u8db3'), 'reading chip: ' + chipTexts.join(' | '));
   assert.ok(chipTexts.includes('Meaning \u4f11'), 'meaning chip: ' + chipTexts.join(' | '));
-  assert.ok(chipTexts.includes('Meaning'), 'item without kanji: aspect label only: ' + chipTexts.join(' | '));
-  chipTexts.forEach((c) => assert.ok(!c.endsWith('…'), 'no ellipsis: ' + c));
+  assert.ok(chipTexts.includes('Meaning Q m2'), 'item without kanji: aspect label plus prompt: ' + chipTexts.join(' | '));
+  chipTexts.forEach((c) => assert.ok(!c.endsWith('…'), 'no ellipsis for short text: ' + c));
   assert.strictEqual(findAll(m.tree(), /^weak-chips/).length, 1);
 });
 
@@ -91,6 +111,17 @@ test('home weak chips: meta.entry is the written form when there is no kanji', a
     if (n.props && n.props.class === 'chip-text') chipTexts.push(text(n));
   });
   assert.deepStrictEqual(chipTexts, ['Reading ' + word]);
+});
+
+test('shared format helpers: fmtClock and pad2 live in ui/common.js', () => {
+  const { loadBundle } = require('./load-bundle.js');
+  const sb = { console: { warn() {}, log() {} } };
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ui/common.js'] });
+  const C = sb.DojoCommon;
+  assert.strictEqual(C.fmtClock(65000), '1:05');
+  assert.strictEqual(C.fmtClock(-5), '0:00');
+  assert.strictEqual(C.pad2(7), '07');
+  assert.strictEqual(C.pad2(12), '12');
 });
 
 test('home weak chips: every aspect id used by the chips has a label in all locales', () => {

@@ -56,6 +56,7 @@
   "home.plan.capacity": "Лимит: {n} за сессию",
   "home.plan.capacity.none": "Лимит: нет",
   "home.plan.left": "Дней осталось: {days} · Блоков осталось: {units}",
+  "home.plan.units": "Блоков осталось: {units}",
   "home.plan.warn": "Внимание: примерно на {n} мин больше дневного времени",
   "home.weak.aspect.reading": "Чтение",
   "home.weak.aspect.meaning": "Значение",

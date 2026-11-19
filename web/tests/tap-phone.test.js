@@ -161,18 +161,15 @@ test('Harness: weak chip has title attribute with full plain text', async () => 
     if (node.props && node.props.class && typeof node.props.class === 'string' && node.props.class.includes('chip')) {
       if (node.props.title) {
         foundChipWithTitle = true;
-        if (node.props.title.length > 24) {
-          foundLongText = true;
-          // Check that displayed text is truncated
-          const displayText = text(node);
-          assert.ok(displayText.length <= 27, 'Displayed text should be truncated');
-        }
+        // Label = aspect name + space + prompt truncated to 24 chars + ellipsis; the aspect name here is short.
+        if (node.props.title.length > 'Item '.length + 25) foundLongText = true;
+        assert.strictEqual(text(node), node.props.title, 'chip text equals its title');
       }
     }
   });
-  
+
   assert.ok(foundChipWithTitle, 'At least one chip should have a title attribute');
-  assert.ok(!foundLongText, 'chip titles are the short fixed label, not the prompt text');
+  assert.ok(!foundLongText, 'chip titles are the aspect name plus the prompt truncated to 24 chars');
 });
 
 test('Harness: toggle label chip is rendered', async () => {

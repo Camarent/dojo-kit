@@ -46,6 +46,7 @@
   "home.plan.capacity": "Capacity: {n} per session",
   "home.plan.capacity.none": "Capacity: no limit",
   "home.plan.left": "Days left: {days} · Units left: {units}",
+  "home.plan.units": "Units left: {units}",
   "home.plan.warn": "Warning: about {n} min over the daily time",
   "home.weak.aspect.reading": "Reading",
   "home.weak.aspect.meaning": "Meaning",

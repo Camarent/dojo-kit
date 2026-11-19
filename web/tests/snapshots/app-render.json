@@ -327,14 +327,14 @@
                                         "type": "span",
                                         "props": {
                                           "class": "chip",
-                                          "title": "Item",
+                                          "title": "Item Q u1 2",
                                           "children": [
                                             {
                                               "type": "span",
                                               "props": {
                                                 "class": "chip-text",
                                                 "children": [
-                                                  "Item"
+                                                  "Item Q u1 2"
                                                 ]
                                               }
                                             }
@@ -352,14 +352,14 @@
                                         "type": "span",
                                         "props": {
                                           "class": "chip",
-                                          "title": "Item",
+                                          "title": "Item Q u1 1",
                                           "children": [
                                             {
                                               "type": "span",
                                               "props": {
                                                 "class": "chip-text",
                                                 "children": [
-                                                  "Item"
+                                                  "Item Q u1 1"
                                                 ]
                                               }
                                             }

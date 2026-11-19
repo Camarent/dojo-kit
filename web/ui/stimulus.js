@@ -20,16 +20,12 @@
     return Array.isArray(st.audio) && st.audio.length > 0 && !!root.DojoAudio && root.DojoAudio.ready();
   }
 
-  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  var pad2 = DojoCommon.pad2;
+  var fmtClock = DojoCommon.fmtClock;
 
   function localDay(ms) {
     var d = new Date(ms);
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
-  }
-
-  function fmtClock(ms) {
-    var s = Math.max(0, Math.round(ms / 1000));
-    return Math.floor(s / 60) + ':' + pad2(s % 60);
   }
 
   function percent(fraction) { return Math.round((fraction || 0) * 100); }

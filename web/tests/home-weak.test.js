@@ -114,10 +114,10 @@ test('weak-chips: bad records present -> chips shown with aspect labels', async 
   walk(weakChips, (n) => { if (n.type === 'li') liCount++; });
   assert.strictEqual(liCount, 3, 'Should have 3 li elements for 3 weak items');
   
-  // Chips show the fixed aspect label, never the prompt text
+  // Items without a written form show the aspect label plus a truncated prompt
   const fullText = text(weakChips);
   assert.ok(fullText.includes('Item'), 'Should contain the default aspect label');
-  assert.ok(!fullText.includes('Q k1'), 'Should not contain prompt text');
+  assert.ok(fullText.includes('Q k1'), 'Should contain the prompt fallback');
   
   // Check no bad strings in the whole screen
   assertNoBadStrings(tree);
@@ -237,9 +237,17 @@ test('weak-chips: prompts are truncated to 24 characters', async () => {
   // The prompt should be truncated to 24 characters with ellipsis
   // "This is a very long ques" is 24 chars, so it should be "This is a very long ques..." or similar
   const chipText = fullText;
-  assert.ok(chipText.length <= 27, 'Truncated text should be at most 27 chars (24 + "...")');
+  assert.ok(chipText.length <= 'Item '.length + 25, 'Truncated text should be label + 24 chars + ellipsis');
   assert.ok(!chipText.includes('exceeds'), 'Should not contain the full text beyond 24 chars');
   
   // Check no bad strings in the whole screen
   assertNoBadStrings(tree);
+});
+
+test('weak-chips: two items without a written form give different chips', async () => {
+  const m = await homeWithWeak('en', ['k1', 'v1']);
+  const chips = [];
+  walk(find(m.tree(), 'weak-chips'), (n) => { if (n.type === 'li') chips.push(text(n)); });
+  assert.strictEqual(chips.length, 2);
+  assert.notStrictEqual(chips[0], chips[1], 'chips must differ: ' + chips.join(' | '));
 });

@@ -41,6 +41,14 @@
       </section>`;
     }
 
+    // Readable aspect name from the home chip keys; the course title wins, the raw id only when no key exists.
+    function aspectName(p, a) {
+      if (a.title) return a.title;
+      var key = 'home.weak.aspect.' + a.id;
+      var name = p.t(key);
+      return name === key ? a.id : name;
+    }
+
     // Weak mode filter: topic and aspect pickers, stored as {topic?, aspect?} under session:weakFilter; empty choice = no filter.
     function renderWeakFilter(p, self, stored) {
       var opts = p.engine && p.engine.weakFilterOptions ? p.engine.weakFilterOptions() : null;
@@ -61,8 +69,8 @@
       }
       return html`<div data-testid="weak-filter">
         <h3>${p.t('settings.weak.title')}</h3>
-        ${picker('topic', 'weak-filter-topic', p.t('settings.weak.topic'), opts.topics.map(function (e) { return { id: e }; }))}
-        ${picker('aspect', 'weak-filter-aspect', p.t('settings.weak.aspect'), opts.aspects)}
+        ${picker('topic', 'weak-filter-topic', p.t('settings.weak.topic'), opts.topics.map(function (e, i) { return { id: e, title: '#' + (i + 1) }; }))}
+        ${picker('aspect', 'weak-filter-aspect', p.t('settings.weak.aspect'), opts.aspects.map(function (a) { return { id: a.id, title: aspectName(p, a) }; }))}
       </div>`;
     }
 
