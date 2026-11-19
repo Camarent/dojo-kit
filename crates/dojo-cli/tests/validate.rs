@@ -185,6 +185,24 @@ fn symlink_content_file_is_rejected() {
 }
 
 #[test]
+fn non_utf8_check_stdout_is_a_check_failure() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = unique_dir("check-utf8").unwrap();
+    copy_dir(&demo(), &dir).unwrap();
+    let script = dir.join("bin.sh");
+    fs::write(&script, "#!/bin/sh\nprintf '\\377\\376 not text'\n").unwrap();
+    fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
+    let course_path = dir.join("course.json");
+    let mut course: Value = serde_json::from_str(&fs::read_to_string(&course_path).unwrap()).unwrap();
+    course["checks"] = serde_json::json!([{"id": "bin", "script": "bin.sh"}]);
+    fs::write(&course_path, course.to_string()).unwrap();
+
+    let out = dojo().arg("validate").arg(&*dir).output().unwrap();
+    assert_eq!(code(&out), Some(1));
+    assert!(stdout(&out).contains("checks 'bin': stdout is not UTF-8 text"), "{}", stdout(&out));
+}
+
+#[test]
 fn symlink_ids_lock_is_rejected() {
     use std::os::unix::fs as unix_fs;
     let dir = unique_dir("symlink-lock").unwrap();

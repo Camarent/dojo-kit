@@ -114,3 +114,41 @@ pub fn brief_with_codes(codes: &[(&str, Severity, &str)]) -> String {
     }
     s
 }
+
+#[cfg(test)]
+mod schema_tests {
+    use super::{brief, brief_with_codes, course_schema, item_schema, pretty};
+    use crate::validate::Severity;
+    use serde_json::json;
+
+    #[test]
+    fn schemas_are_object_schemas_with_draft_2020_12() {
+        for schema in [course_schema(), item_schema()] {
+            assert!(schema["$schema"].as_str().is_some_and(|s| s.contains("2020-12")), "{schema}");
+            assert!(schema.get("properties").is_some() || schema.get("oneOf").is_some() || schema.get("anyOf").is_some() || schema.get("$ref").is_some(), "{schema}");
+        }
+    }
+
+    #[test]
+    fn pretty_is_indented_and_ends_with_newline() {
+        let text = pretty(&json!({"a": 1}));
+        assert_eq!(text, "{\n  \"a\": 1\n}\n");
+    }
+
+    #[test]
+    fn brief_lists_every_builtin_validator_code() {
+        let text = brief();
+        assert!(text.starts_with("dojo content format"));
+        for (code, _, _) in crate::validate::CODES.iter() {
+            assert!(text.contains(&format!("  {code} [")), "missing code {code}");
+        }
+    }
+
+    #[test]
+    fn brief_with_codes_prints_only_given_codes() {
+        let codes = [("X_DECOY_CODE", Severity::Error, "decoy what")];
+        let text = brief_with_codes(&codes);
+        assert!(text.ends_with("  X_DECOY_CODE [error] decoy what\n"));
+        assert!(!text.contains("NO_SUCH_BUILTIN_CODE"));
+    }
+}

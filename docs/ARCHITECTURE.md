@@ -17,6 +17,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 - [modules](modules/modules.md) - optional modules `ja` (ruby markup and checks, readings, kanji breakdown) and `ru` (validator words), module system (`modules/<id>/module.json`, `modules/registry`, validator trait, `module_missing`/`module_key_unlisted` rules), and the `modules/registry` crate.
 - [scripts](modules/scripts.md) - `scripts/build-wasm.sh`, check chain (`check-all.sh`), `ci.sh` (local CI mirror), `validate-examples.sh`.
 - [workspace](modules/workspace.md) - gitignored folder for local courses.
+- `ux/<course>/` - UI flow files for a private course. It exists in the working tree, is git-excluded via `.git/info/exclude`, and is never committed; this doc does not describe its contents.
 - [answer block UX spec](ux-answer-block.md) - block order, answer shapes per item type, read-only caption after submit. Some rules are unconfirmed (marked in the spec).
 
 ## Layering (CONTRACT section 3)
@@ -50,6 +51,7 @@ Source of these commands: `CONTRACT.md`, `Cargo.toml`, `package.json`, `.github/
 - WASM: `scripts/build-wasm.sh -q` (cargo release build with `--remap-path-prefix` so no build-machine paths land in the wasm).
 - Rust tests: `cargo test -p dojo-core`, `cargo test -p dojo-cli`.
 - Vectors: `node tests/gen-vectors.js && git diff --exit-code` (must be a no-op).
+- Secret scan: no CI step runs gitleaks (`ci.yml` has no install or scan step; `scripts/ci.sh` has none either). The scan runs only in the local pre-commit and pre-push hooks, which need `gitleaks` on PATH (see `CONTRIBUTING.md`).
 - WASM smoke test: `node tests/wasm-smoke.js` (needs the WASM build).
 - Exam resume: `node --test web/tests/exam-resume.test.js web/tests/app-resume.test.js`.
 - Groups: `node --test web/tests/groups.test.js web/tests/groups-ui.test.js web/tests/groups-build.test.js`.

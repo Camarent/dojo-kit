@@ -27,6 +27,8 @@
     return parts.join('\n');
   }
 
+  // Generic script detection: Unicode block ranges per script name. Kana ranges are
+  // here because no other module owns them (checked: none in web/ or crates/).
   var SCRIPTS = {
     han: /[\u4e00-\u9fff\u3400-\u4dbf\u{20000}-\u{2CEAF}]/u,
     hiragana: /[\u3040-\u309f]/,

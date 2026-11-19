@@ -183,11 +183,12 @@ fn safe_rel(path: &str) -> bool {
 }
 
 /// True when `rel` exists under `dir` but its real path (symlinks followed) lies outside `dir`.
-/// A missing path is not an escape: the later file read reports it.
+/// A missing path is not an escape: the later file read reports it. A base dir that cannot be resolved counts as an escape (fail closed).
 fn escapes_dir(dir: &Path, rel: &str) -> bool {
-    match (dir.canonicalize(), dir.join(rel).canonicalize()) {
-        (Ok(base), Ok(full)) => !full.starts_with(base),
-        _ => false,
+    let Ok(base) = dir.canonicalize() else { return true };
+    match dir.join(rel).canonicalize() {
+        Ok(full) => !full.starts_with(base),
+        Err(_) => false,
     }
 }
 
@@ -316,5 +317,14 @@ mod tests {
         assert_eq!(m.id, "ru");
         assert_eq!(m.hooks, [Hook::Validator]);
         assert!(m.web.is_none());
+    }
+
+    #[test]
+    fn escapes_dir_fails_closed_when_base_cannot_resolve() {
+        let s = Scratch::new();
+        fs::write(s.web().join("a.js"), "").unwrap();
+        assert!(!escapes_dir(&s.web(), "a.js"));
+        assert!(!escapes_dir(&s.web(), "missing.js"));
+        assert!(escapes_dir(&s.0.join("no-such-base"), "a.js"));
     }
 }

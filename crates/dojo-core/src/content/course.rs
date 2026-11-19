@@ -323,6 +323,18 @@ pub struct Course {
     /// Session builder settings; absent = every default of `session::SessionConfig`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub session: Option<SessionSettings>,
+    /// Validator settings; absent = every default of the validator.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub validate: Option<ValidateConfig>,
+}
+
+/// Validator settings from `course.json` `validate`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ValidateConfig {
+    /// `meta.kind` values of intro cards skipped by the pre-answer leak check; absent = `["kanji", "word"]`, `[]` = none skipped.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preanswer_exempt_kinds: Option<Vec<String>>,
 }
 
 /// How the session size is chosen: `auto` from the time budget, `manual` from `sessionCap`.

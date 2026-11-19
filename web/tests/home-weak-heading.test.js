@@ -85,7 +85,7 @@ test('weak-chips: chip texts are rendered', async () => {
   
   const fullText = text(weakChips);
   assert.ok(fullText.includes('Item'), 'Should contain the default aspect label');
-  assert.ok(!fullText.includes('Q k1'), 'Should not contain prompt text');
+  assert.ok(fullText.includes('Q k1'), 'Should contain the prompt fallback');
   
   assertNoBadStrings(tree);
 });

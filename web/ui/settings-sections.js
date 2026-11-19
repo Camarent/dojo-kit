@@ -151,7 +151,7 @@
     return html`<section class="group">
           <h2>${t('settings.export')}</h2>
           <p class="muted">${t('settings.export.hint')}</p>
-          <textarea class="field mono" readOnly rows="5" data-testid="export-text" aria-label=${t('settings.export')} value=${s.exportText}
+          <textarea class="field mono" id="export-text" name="export-text" readOnly rows="5" data-testid="export-text" aria-label=${t('settings.export')} value=${s.exportText}
             ref=${function (el) { self.exportArea = el; }} onFocus=${function (e) { e.target.select(); }}></textarea>
           <div class="row">
             <button type="button" class="btn" data-testid="btn-copy" onClick=${function () { self.copy(); }}>${t('settings.copy')}</button>
@@ -164,7 +164,7 @@
     return html`<section class="group">
           <h2>${t('settings.import')}</h2>
           <p class="muted">${t('settings.import.hint')}</p>
-          <textarea class="field mono" rows="4" data-testid="import-text" aria-label=${t('settings.import')} value=${s.importText}
+          <textarea class="field mono" id="import-text" name="import-text" rows="4" data-testid="import-text" aria-label=${t('settings.import')} value=${s.importText}
             autocomplete="off" spellcheck=${false} onInput=${function (e) { self.setState({ importText: e.target.value, importMsg: null }); }}></textarea>
           <div class="row">
             <button type="button" class="btn" disabled=${s.importText.trim() === ''} data-testid="btn-import" onClick=${function () { self.doImport(); }}>${t('settings.import.btn')}</button>

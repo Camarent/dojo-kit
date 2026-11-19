@@ -15,6 +15,7 @@ h2 { font-size: var(--fs-lg); margin: 0 0 var(--space-2); }
 p { margin: 0; }
 button, input, textarea { font: inherit; color: inherit; }
 input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
+input[type=checkbox] { min-width: 24px; min-height: 24px; }
 .muted { color: var(--fg-muted); font-size: var(--fs-sm); }
 .dojo-credit { text-align: center; padding: var(--space-3); color: var(--fg-muted); font-size: var(--fs-sm); }
 .dojo-credit a { color: inherit; display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
@@ -73,8 +74,9 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
 .banner.bad { background: var(--bad-soft); color: var(--bad); }
 
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+.session-finish h2, .session-finish .notice { grid-column: 1 / -1; }
 .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.stat b { font-size: var(--fs-stat); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat b { font-size: var(--fs-stat); line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .stat span { font-size: var(--fs-sm); color: var(--fg-muted); overflow-wrap: normal; word-break: normal; hyphens: none; }
 
 .actions { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -174,9 +176,11 @@ details pre { overflow: auto; max-height: 40vh; margin: var(--space-2) 0 0; padd
 summary { cursor: pointer; min-height: var(--tap); display: list-item; padding-block: var(--space-2); }
 
 .overlay { position: fixed; inset: 0; background: var(--overlay); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 10; }
-.dialog { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-5); max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: var(--space-4); }
+.dialog { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-5); max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: var(--space-4); max-height: calc(100vh - 2 * var(--space-4)); max-height: calc(100dvh - 2 * var(--space-4)); overflow-y: auto; }
 .dialog .row { flex-wrap: wrap; }
 .dialog .row.end .btn { flex: 1 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; padding-block: var(--space-2); height: auto; min-height: var(--tap); }
+.dialog > h2:first-child { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.dialog > .row.end { position: sticky; bottom: 0; background: var(--surface); z-index: 1; }
 
 @media (prefers-reduced-motion: no-preference) {
   .btn, .opt, .chip, .field { transition: background-color 0.12s, border-color 0.12s; }
@@ -185,6 +189,11 @@ summary { cursor: pointer; min-height: var(--tap); display: list-item; padding-b
 @media (max-width: 380px) {
   .stat b { font-size: 1.4rem; }
   .unit-nums { gap: var(--space-3); }
+}
+/* Finish stats: 2-col grid on narrow phones; heading and note span both columns */
+@media (max-width: 480px) {
+  .session-finish { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .session-finish h2, .session-finish .notice { grid-column: 1 / -1; }
 }
 
 /* Catalog screen */
@@ -213,7 +222,7 @@ summary { cursor: pointer; min-height: var(--tap); display: list-item; padding-b
 .catalog-state.due { border-color: var(--warn); font-weight: 700; }
 .catalog-state.learned { border-color: var(--good); }
 .catalog-mastery { flex-shrink: 0; }
-.catalog-prompt { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.catalog-prompt { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: normal; }
 .catalog-ord { font-size: .85em; }
 html.dojo-no-scroll { overflow: hidden !important; }
 .catalog-detail-dialog { max-width: min(720px, 100%); max-height: 80vh; overflow: auto; margin: 0 auto; }

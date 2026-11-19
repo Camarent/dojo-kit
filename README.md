@@ -70,7 +70,7 @@ Open the repo in your assistant (Claude Code or any other), put your materials i
 - `prompts/` - copy-paste prompts for AI assistants.
 - `tests/` - golden vectors, vector generator, WASM smoke test, wrapper script.
 - `tools/` - frozen reference JS used to generate the vectors.
-- `scripts/` - WASM build script.
+- `scripts/` - build, check and CI scripts (`build-wasm.sh`, `check-all.sh`, `ci.sh`, `ci-local.sh`, `validate-examples.sh`, `course-test.sh`, `bump-version.sh`, others in [docs/modules/scripts.md](docs/modules/scripts.md)).
 
 ## Contributing
 

@@ -301,6 +301,17 @@
           "type": "null"
         }
       ]
+    },
+    "validate": {
+      "description": "Validator settings; absent = every default of the validator.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ValidateConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,
@@ -1504,6 +1515,23 @@
         "auto",
         "manual"
       ]
+    },
+    "ValidateConfig": {
+      "description": "Validator settings from `course.json` `validate`.",
+      "type": "object",
+      "properties": {
+        "preanswerExemptKinds": {
+          "description": "`meta.kind` values of intro cards skipped by the pre-answer leak check; absent = `[\"kanji\", \"word\"]`, `[]` = none skipped.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

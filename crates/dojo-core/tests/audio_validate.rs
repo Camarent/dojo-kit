@@ -154,6 +154,7 @@ fn make_course_with_audio(manifest_path: &str) -> Course {
         modules: Vec::new(),
         topics: None,
         session: None,
+        validate: None,
     }
 }
 

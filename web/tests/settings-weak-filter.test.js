@@ -76,3 +76,29 @@ test('settings pickers store session:weakFilter and clear it', async () => {
   H.find(i.render(i.props, i.state || {}), 'weak-filter-aspect').props.onChange({ target: { value: '' } });
   assert.strictEqual(env.doc.settings[KEY], null);
 });
+
+test('settings weak filter: aspect options show readable names, topics show position', async () => {
+  const H = require('./settings-ui-helpers.js');
+  const { loadBundle } = require('./load-bundle.js');
+  const content = H.mkContent([{ id: 'a', title: 'A' }]);
+  content.course.topics = TOPICS;
+  const env = await H.setup(content, {});
+  const sb = { console: { warn() {}, log() {} } };
+  loadBundle(sb, { only: ['vendor/preact.min.js', 'vendor/htm.umd.js', 'ext/registry.js', 'ext/input-script.js', 'ext.js', 'types/registry.js', 'types/choice.js', 'types/gap.js', 'types/card.js', 'ui/i18n.js', 'ui/play-button.js', 'ui/common.js', 'ui/detail.js', 'ui/catalog-audio.js', 'ui/catalog-detail.js', 'ui/catalog.js', 'ui/group-card.js', 'ui/home.js', 'ui/stimulus.js', 'ui/session-feedback.js', 'ui/session-focus.js', 'ui/session-boundary.js', 'ui/session-panels.js', 'ui/session-screen.js', 'ui/session-finish.js', 'ui/results.js', 'ui/placement.js', 'ui/settings-speech.js', 'ui/settings-timer.js', 'ui/settings-topics.js', 'ui/settings-unit-dialogs.js', 'ui/settings-sections.js', 'ui/settings-plugin.js', 'ui/settings-dialogs.js', 'ui/settings.js', 'ui/app-screens.js', 'ui/app.js'] });
+  const i = H.renderSettings({ sb, engine: env.engine, content, doc: env.doc, t: (k) => H.mkI18n().en[k] || k });
+  // The fixture items carry no aspect tags, so give the picker known options directly.
+  env.engine.weakFilterOptions = () => ({ topics: ['T1', 'T2'], aspects: [{ id: 'meaning' }, { id: 'form' }] });
+  const tr = i.render(i.props, i.state || {});
+  // Collect the <option> labels under a vnode tree.
+  function labels(node, out) {
+    if (!node || typeof node !== 'object') return out;
+    if (Array.isArray(node)) { node.forEach((n) => labels(n, out)); return out; }
+    if (node.type === 'option') out.push(String(node.props.children));
+    return labels(node.props && node.props.children, out);
+  }
+  const aspectLabels = labels(H.find(tr, 'weak-filter-aspect'), []);
+  const topicLabels = labels(H.find(tr, 'weak-filter-topic'), []);
+  assert.ok(aspectLabels.includes('Meaning'), 'aspect label from home.weak.aspect.meaning: ' + aspectLabels.join(' | '));
+  assert.ok(!aspectLabels.includes('meaning'), 'raw aspect id must not show: ' + aspectLabels.join(' | '));
+  assert.deepStrictEqual(topicLabels.slice(1), ['#1', '#2'], 'topics shown by position: ' + topicLabels.join(' | '));
+});

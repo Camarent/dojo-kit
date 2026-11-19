@@ -28,6 +28,13 @@
     </div>`;
   }
 
+  // Plain prompt line, or none when the question type already shows the prompt (as session-screen.js promptLine does).
+  function plainPromptEl(cur) {
+    var def = DojoTypes.get(cur.item.type);
+    var showPlain = !def || !def.ownsPrompt || !def.ownsPrompt(cur.item, cur.view);
+    return showPlain ? renderPromptEl(cur.item, false) : null;
+  }
+
   function countEl(cur) {
     return html`<span class="count" data-testid="progress">${cur.position} / ${cur.total}</span>`;
   }
@@ -230,7 +237,7 @@
         <div class="topbar">${this.exitButton(c)}${progressBar(cur, s)}${countEl(cur)}</div>
         <article class="qcard">
           <${this.deps.Stimulus} stimulus=${cur.stimulus} audio=${audio} />
-          ${renderPromptLine(renderPromptEl(cur.item, false), cur.item, audio, itemLines)}
+          ${renderPromptLine(plainPromptEl(cur), cur.item, audio, itemLines)}
         </article>
         ${s.result ? html`<p class="notice" data-testid="recorded">${t('session.recorded')}</p>` : null}
         ${errorNote(s, t)}
@@ -253,7 +260,7 @@
       if (which === 'exit') return s.confirm === 'exit' ? html`<${Dialog} testid="dlg-exit" title=${t('session.exit.title')} body=${t('session.exit.body')}
           cancelLabel=${t('session.stay')} confirmLabel=${t('session.exit')} danger=${true}
           onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { p.onExit(); }} />` : null;
-      return s.confirm === 'finish' ? html`<${Dialog} testid="dlg-finish" title=${t('session.finish.title')}
+      return s.confirm === 'finish' ? html`<${Dialog} testid="dlg-finish" title=${t('placement.finish.title')}
           body=${t('session.finish.all')}
           cancelLabel=${t('session.stay')} confirmLabel=${t('placement.finish')}
           onCancel=${function () { self.setState({ confirm: null }); }} onConfirm=${function () { self.setState({ confirm: null }); self.finish(); }} />` : null;
@@ -268,7 +275,7 @@
         <div class="topbar">${this.exitButton(c)}${progressBar(cur, s)}${countEl(cur)}</div>
         <article class="qcard" ref=${function (el) { self.qbox = el; }}>
           <${this.deps.Stimulus} stimulus=${cur.stimulus} audio=${audio} />
-          ${renderPromptLine(renderPromptEl(cur.item, false), cur.item, audio, [])}
+          ${renderPromptLine(plainPromptEl(cur), cur.item, audio, [])}
           ${questionEl}
         </article>
         ${s.result ? this.renderFeedback(c.p, s) : null}
