@@ -16,9 +16,10 @@
   // SessionFinish: the four numbers of a finished practice run (same markup as ui/session-finish.js).
   // Defined here so a sandbox that loads only results.js renders it.
   // nextDue is a timestamp in the core clock unit (ms); null when nothing is recorded.
-  function nextDueText(t, nextDue) {
-    if (nextDue === null || nextDue === undefined) return t('finish.none');
-    return new Date(nextDue).toLocaleString();
+  // Empty state is a muted label, not a stat value: a long label in <b> overflows a phone tile.
+  function nextDueValue(t, nextDue) {
+    if (nextDue === null || nextDue === undefined) return html`<small class="muted">${t('finish.none')}</small>`;
+    return html`<b>${new Date(nextDue).toLocaleString()}</b>`;
   }
 
   function SessionFinish(p) {
@@ -29,7 +30,7 @@
       <div class="stat" data-testid="finish-answered"><b>${f.answered}</b><span>${t('finish.answered')}</span></div>
       <div class="stat" data-testid="finish-right"><b>${f.right}</b><span>${t('finish.right')}</span></div>
       <div class="stat" data-testid="finish-weak-left"><b>${f.weakLeft}</b><span>${t('finish.weakLeft', { n: f.weakLeft })}</span></div>
-      <div class="stat" data-testid="finish-next-due"><b>${nextDueText(t, f.nextDue)}</b><span>${t('finish.nextDue')}</span></div>
+      <div class="stat" data-testid="finish-next-due">${nextDueValue(t, f.nextDue)}<span>${t('finish.nextDue')}</span></div>
       <p class="notice" data-testid="finish-no-round">${t('finish.noRound')}</p>
     </section>`;
   }

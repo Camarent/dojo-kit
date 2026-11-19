@@ -74,6 +74,7 @@ input[type=checkbox] { min-width: 24px; min-height: 24px; }
 .banner.bad { background: var(--bad-soft); color: var(--bad); }
 
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+.session-finish h2, .session-finish .notice { grid-column: 1 / -1; }
 .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .stat b { font-size: var(--fs-stat); line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .stat span { font-size: var(--fs-sm); color: var(--fg-muted); overflow-wrap: normal; word-break: normal; hyphens: none; }

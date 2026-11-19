@@ -7421,8 +7421,9 @@
                         "class": "stat",
                         "children": [
                           {
-                            "type": "b",
+                            "type": "small",
                             "props": {
+                              "class": "muted",
                               "children": [
                                 "nothing recorded"
                               ]
