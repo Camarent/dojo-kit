@@ -28,6 +28,13 @@
     </div>`;
   }
 
+  // Plain prompt line, or none when the question type already shows the prompt (as session-screen.js promptLine does).
+  function plainPromptEl(cur) {
+    var def = DojoTypes.get(cur.item.type);
+    var showPlain = !def || !def.ownsPrompt || !def.ownsPrompt(cur.item, cur.view);
+    return showPlain ? renderPromptEl(cur.item, false) : null;
+  }
+
   function countEl(cur) {
     return html`<span class="count" data-testid="progress">${cur.position} / ${cur.total}</span>`;
   }
@@ -230,7 +237,7 @@
         <div class="topbar">${this.exitButton(c)}${progressBar(cur, s)}${countEl(cur)}</div>
         <article class="qcard">
           <${this.deps.Stimulus} stimulus=${cur.stimulus} audio=${audio} />
-          ${renderPromptLine(renderPromptEl(cur.item, false), cur.item, audio, itemLines)}
+          ${renderPromptLine(plainPromptEl(cur), cur.item, audio, itemLines)}
         </article>
         ${s.result ? html`<p class="notice" data-testid="recorded">${t('session.recorded')}</p>` : null}
         ${errorNote(s, t)}
@@ -268,7 +275,7 @@
         <div class="topbar">${this.exitButton(c)}${progressBar(cur, s)}${countEl(cur)}</div>
         <article class="qcard" ref=${function (el) { self.qbox = el; }}>
           <${this.deps.Stimulus} stimulus=${cur.stimulus} audio=${audio} />
-          ${renderPromptLine(renderPromptEl(cur.item, false), cur.item, audio, [])}
+          ${renderPromptLine(plainPromptEl(cur), cur.item, audio, [])}
           ${questionEl}
         </article>
         ${s.result ? this.renderFeedback(c.p, s) : null}
