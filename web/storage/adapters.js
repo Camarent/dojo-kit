@@ -73,21 +73,23 @@
       if (s.retryCancel) { var c = s.retryCancel; s.retryCancel = null; c(); }
     }
 
-    function waitRetry(r) {
+    /** owner is the main ref the write belongs to: a part write is cancelled when the main ref changes. */
+    function waitRetry(owner) {
       return new Promise(function (res, rej) {
         s.retryCancel = function () { rej({ cancelled: true }); };
         s.retryTimer = s.setTimer(function () {
           s.retryTimer = null;
           s.retryCancel = null;
-          if (s.ref !== r) rej({ cancelled: true }); else res();
+          if (s.ref !== owner) rej({ cancelled: true }); else res();
         }, 500 + s.random() * 1000);
       });
     }
 
-    function setWithRetry(r, body) {
+    function setWithRetry(r, body, owner) {
+      var main = owner || r;
       return Promise.resolve().then(function () { return r.set(body); }).catch(function (e) {
         if (e && e.code && e.code !== 'unavailable') throw e;
-        return waitRetry(r).then(function () { return r.set(body); });
+        return waitRetry(main).then(function () { return r.set(body); });
       });
     }
 

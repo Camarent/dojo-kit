@@ -7,6 +7,7 @@
   var warn = root.DojoStorageWarn ? root.DojoStorageWarn.warn : require('./warn.js').warn;
   var adapters = root.DojoStorageAdapters || require('./adapters.js');
   var body = root.DojoStorageBody || require('./body.js');
+  var parts = root.DojoStorageParts || require('./parts.js');
   var write = root.DojoStorageWrite || require('./write.js');
   var connect = root.DojoStorageConnect || require('./connect.js');
   var clone = adapters.clone;
@@ -25,7 +26,7 @@
       onStatus: opts.onStatus || function () {},
       onRemoteChange: opts.onRemoteChange || function () {},
       flushEvery: opts.flushEvery || 5,
-      maxDocBytes: opts.maxDocBytes || 800000,
+      maxDocBytes: opts.maxDocBytes || parts.CLOUD_DOC_BUDGET_BYTES,
       random: opts.random || Math.random,
       key: 'dojo.' + opts.courseId + '.progress.v1',
       mode: 'local', ref: null, unsub: null, lastRemote: null, lastRemoteSeen: false,
@@ -188,10 +189,10 @@
       s.cancelTimer();
       if (!s.canWrite()) return Promise.resolve();
       if (s.writing) { s.pendingWrite = true; return s.writing; }
-      var b;
-      try { b = s.buildBody(); } catch (e) { s.warn('store.flush.buildBody', e); s.failed(); return Promise.resolve(); }
-      if (!b) { s.failed(); return Promise.resolve(); }
-      return s.startWrite(b);
+      var built;
+      try { built = s.buildBody(); } catch (e) { s.warn('store.flush.buildBody', e); s.failed(); return Promise.resolve(); }
+      if (!built.docs) { s.buildFailed(built); return Promise.resolve(); }
+      return s.startWrite(built);
     };
   }
 

@@ -54,12 +54,6 @@
     return size(body) > max ? null : body;
   }
 
-  /** Cloud body from merged doc, or null when it would shrink the remote or not fit. */
-  function buildBody(body, lastRemote, max) {
-    if (shrinks(body, lastRemote)) return null;
-    return fit(body, max);
-  }
-
   /**
    * Cloud docs for body: {docs} in write order (parts first, main last), or {error}.
    * error 'shrink' when it would shrink the remote; 'too-large' when it cannot fit max bytes.
@@ -155,7 +149,7 @@
     };
   }
 
-  var api = { buildBody: buildBody, buildDocs: buildDocs, emptied: emptied, installImport: installImport };
+  var api = { buildDocs: buildDocs, emptied: emptied, installImport: installImport };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
   } else {

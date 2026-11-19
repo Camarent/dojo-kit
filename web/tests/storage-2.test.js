@@ -159,7 +159,7 @@ test('shrink guard blocks a write', async () => {
   assert.strictEqual(store.status, 'error');
 });
 
-test('oversize doc drops day maps in the written body', async () => {
+test('oversize body moves records to part docs; day maps stay in the main doc', async () => {
   const claude = mockClaude();
   const { store } = make({ claude, maxDocBytes: 1400 });
   await store.load();
@@ -171,9 +171,11 @@ test('oversize doc drops day maps in the written body', async () => {
   });
   await store.flush();
   const body = claude.sets[claude.sets.length - 1];
-  assert.deepStrictEqual(body.stats.days, {});
-  assert.deepStrictEqual(body.stats.newByDay, {});
-  assert.strictEqual(Object.keys(body.items).length, 20);
+  assert.deepStrictEqual(body.items, {});
+  assert.ok(body.parts >= 1);
+  assert.deepStrictEqual(body.stats.days, store.doc.stats.days);
+  const partRecords = claude.sets.slice(0, -1).reduce((n, d) => n + Object.keys(d.items).length, 0);
+  assert.strictEqual(partRecords, 20);
 });
 
 test('snapshot with pending writes is ignored; remote snapshot changes the doc once', async () => {
