@@ -4,7 +4,8 @@
 (function (root) {
   'use strict';
 
-  var adapters = root.DojoStorageAdapters || (typeof require !== 'undefined' ? require('./adapters.js') : null);
+  /** Deep copy by JSON round trip; local so parts.js does not require adapters.js (no import cycle). */
+  function clone(v) { return JSON.parse(JSON.stringify(v)); }
 
   /** Max compact UTF-8 bytes per cloud doc (measured platform: pass 139 KB, fail 162 KB). */
   var CLOUD_DOC_BUDGET_BYTES = 120000;
@@ -43,7 +44,7 @@
    * alone does not fit or the count exceeds MAX_PARTS.
    */
   function splitItems(body, budget) {
-    var src = adapters.clone(body);
+    var src = clone(body);
     var srcItems = src.items || {};
     var parts = [];
     var cur = emptyPart(src);
@@ -61,7 +62,7 @@
     }
     if (Object.keys(cur.items).length > 0) parts.push(cur);
     if (parts.length > MAX_PARTS) return null;
-    var main = adapters.clone(body);
+    var main = clone(body);
     main.items = {};
     main.parts = parts.length;
     return { main: main, parts: parts };
@@ -69,7 +70,7 @@
 
   /** Folds merge(acc, part) over partDocs starting from a copy of main, then drops the parts key. */
   function assemble(main, partDocs, merge) {
-    var acc = partDocs.reduce(function (a, p) { return merge(a, p); }, adapters.clone(main));
+    var acc = partDocs.reduce(function (a, p) { return merge(a, p); }, clone(main));
     delete acc.parts;
     return acc;
   }
