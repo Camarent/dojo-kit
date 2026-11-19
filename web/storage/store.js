@@ -9,6 +9,8 @@
   var body = root.DojoStorageBody || require('./body.js');
   var clone = adapters.clone;
   var same = adapters.same;
+  /** Waits before each connect retry after a missing claude or uid; about 10 s in total. */
+  var CONNECT_RETRY_DELAYS_MS = [1000, 2000, 3000, 4000];
 
   function initState(opts) {
     return Object.assign(baseState(opts), timerState(opts));
@@ -28,7 +30,7 @@
       key: 'dojo.' + opts.courseId + '.progress.v1',
       mode: 'local', ref: null, unsub: null, lastRemote: null, lastRemoteSeen: false,
       dirty: false, answers: 0, writing: null, pendingWrite: false, backedUp: null,
-      timer: null, retryTimer: null, retryCancel: null, detached: false, gen: 0,
+      timer: null, retryTimer: null, retryCancel: null, connectTimer: null, detached: false, gen: 0,
       detachLifecycle: null,
       store: { doc: null, status: 'local' },
       warn: function (where, err) { warn(opts, where, err); }
@@ -120,6 +122,7 @@
       s.mode = 'local';
       s.ref = null;
       s.db.cancelRetry();
+      s.cancelConnect();
       s.dropUnsub('store.goLocal.unsub');
       s.setStatus(status || 'local');
     };
@@ -191,19 +194,36 @@
       var done = s.dirty ? s.store.flush() : Promise.resolve();
       return done.then(function () { if (changed) s.notifyRemote(); });
     }
-    function connectError(e) {
+    var connectDelays = s.opts.connectRetryDelaysMs || CONNECT_RETRY_DELAYS_MS;
+    s.cancelConnect = function () {
+      if (s.connectTimer !== null) { s.clearTimer(s.connectTimer); s.connectTimer = null; }
+    };
+    /** attempt = retries done so far; null on the provider path, where absent means local at once. */
+    function connectError(e, myGen, attempt) {
+      s.warn('store.connect', e);
       if (e && e.kind === 'wasm') { s.goLocal('error'); return; }
-      s.goLocal(e && e.kind === 'refused' ? 'foreign' : 'local');
+      if (e && e.kind === 'refused') { s.goLocal('foreign'); return; }
+      if (!e || e.kind !== 'absent') { s.goLocal('error'); return; }
+      if (attempt === null || attempt >= connectDelays.length) { s.goLocal('local'); return; }
+      if (myGen !== s.gen) return;
+      s.connectTimer = s.setTimer(function () {
+        s.connectTimer = null;
+        if (myGen === s.gen) s.connect(myGen, attempt + 1);
+      }, connectDelays[attempt]);
     }
-    s.connect = function (myGen) {
+    s.connect = function (myGen, attempt) {
       if (s.provider) {
         s.setStatus('syncing');
         return Promise.resolve().then(function () { return s.provider.openRef({ courseId: s.courseId, key: s.key }); })
-          .then(function (opened) { return attachRemote(myGen, opened); }).catch(connectError);
+          .then(function (opened) { return attachRemote(myGen, opened); }).catch(function (e) { connectError(e, myGen, null); });
       }
-      if (!s.claude || typeof s.claude.use !== 'function') { s.setStatus('local'); return Promise.resolve(); }
       s.setStatus('syncing');
-      return s.db.openRef().then(function (opened) { return attachRemote(myGen, opened); }).catch(connectError);
+      return Promise.resolve().then(function () {
+        s.claude = typeof s.opts.claude === 'function' ? s.opts.claude() : s.opts.claude;
+        if (!s.claude || typeof s.claude.use !== 'function') throw { kind: 'absent' };
+        return s.db.openRef();
+      }).then(function (opened) { return attachRemote(myGen, opened); })
+        .catch(function (e) { connectError(e, myGen, attempt || 0); });
     };
   }
 
@@ -214,6 +234,7 @@
       var local = null;
       s.detached = false;
       var myGen = ++s.gen, readFailed = false;
+      s.cancelConnect();
       try { local = s.local.readLocal(); } catch (e) {
         s.warn('store.load.readLocal', e);
         s.failed();
