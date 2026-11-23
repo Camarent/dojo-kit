@@ -91,9 +91,20 @@
     return guardedRows(fallbackRowsFn, item, ctx);
   }
 
+  // Optional provider members: when present they must have the stated type (openRef alone is enough).
+  var STORAGE_OPTIONAL_FN = ['cancelRetry', 'setWithRetry', 'readRemote'];
+
+  function checkStorageProvider(provider) {
+    if (!provider || typeof provider.openRef !== 'function') throw new Error('DojoExt.registerStorage: provider with openRef function required');
+    if (provider.name !== undefined && typeof provider.name !== 'string') throw new Error('DojoExt.registerStorage: provider name must be a string when set');
+    STORAGE_OPTIONAL_FN.forEach(function (m) {
+      if (provider[m] !== undefined && typeof provider[m] !== 'function') throw new Error('DojoExt.registerStorage: provider ' + m + ' must be a function when set');
+    });
+  }
+
   // Storage provider for the progress document (openRef); one provider, a second call replaces the first.
   function registerStorage(provider) {
-    if (!provider || typeof provider.openRef !== 'function') throw new Error('DojoExt.registerStorage: provider with openRef function required');
+    checkStorageProvider(provider);
     if (S.storageProvider) warn('registerStorage: replacing the storage provider already registered');
     S.storageProvider = provider;
   }
