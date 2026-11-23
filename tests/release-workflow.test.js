@@ -91,3 +91,7 @@ test('publish creates the release only when gh release view fails, else uploads 
   assert.match(PUBLISH, /download-artifact@[0-9a-f]{40}/);
   assert.match(PUBLISH, /name: release\n {10}path: dist/);
 });
+
+test('rust toolchain targets come from rust-toolchain.toml, not a targets input in release.yml', () => {
+  assert.doesNotMatch(RELEASE_YML, /^\s*targets:/m);
+});
