@@ -18,6 +18,17 @@ function runContract(label, makeProvider, caps) {
   const c = Object.assign({ conflicts: true, errors: true, absent: true }, caps);
   const test = (name, fn) => nodeTest(label + ': ' + name, fn);
   const when = (on, name, fn) => { if (on) test(name, fn); };
+  // retryStore(ref): the stub store object the adapter retry path runs against; no real timers.
+  const retryStore = (ref) => ({
+    courseId: COURSE,
+    random: () => 0,
+    setTimer: (fn) => setImmediate(fn),
+    clearTimer: (h) => clearImmediate(h),
+    retryTimer: null,
+    retryCancel: null,
+    ref,
+    warn() {},
+  });
   test('openRef resolves { ref, snap, partRef, partSnaps } with the expected shape', async () => {
     const { provider } = makeProvider({});
     assert.strictEqual(typeof provider.name, 'string');
@@ -54,17 +65,7 @@ function runContract(label, makeProvider, caps) {
     const { provider, injectError } = makeProvider({});
     const o = await provider.openRef({ courseId: COURSE, key: 'retry' });
     injectError('unavailable', 1);
-    const s = {
-      courseId: COURSE,
-      random: () => 0,
-      setTimer: (fn) => setImmediate(fn),
-      clearTimer: (h) => clearImmediate(h),
-      retryTimer: null,
-      retryCancel: null,
-      ref: o.ref,
-      warn() {},
-    };
-    const db = adapters.dbAdapter(s);
+    const db = adapters.dbAdapter(retryStore(o.ref));
     await db.setWithRetry(o.ref, { v: 1, t: 9 });
     const again = await provider.openRef({ courseId: COURSE, key: 'retry' });
     assert.deepStrictEqual(again.snap.data(), { v: 1, t: 9 });
@@ -74,17 +75,7 @@ function runContract(label, makeProvider, caps) {
     const { provider, injectError } = makeProvider({});
     const o = await provider.openRef({ courseId: COURSE, key: 'fatal' });
     injectError('revoked', 1);
-    const s = {
-      courseId: COURSE,
-      random: () => 0,
-      setTimer: (fn) => setImmediate(fn),
-      clearTimer: (h) => clearImmediate(h),
-      retryTimer: null,
-      retryCancel: null,
-      ref: o.ref,
-      warn() {},
-    };
-    await assert.rejects(adapters.dbAdapter(s).setWithRetry(o.ref, { v: 1 }), (e) => e.code === 'revoked');
+    await assert.rejects(adapters.dbAdapter(retryStore(o.ref)).setWithRetry(o.ref, { v: 1 }), (e) => e.code === 'revoked');
   });
 
   when(c.absent, 'absent capability: openRef rejects with {kind:"absent"}', async () => {
