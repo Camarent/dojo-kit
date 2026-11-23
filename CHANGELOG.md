@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(release): scripts/package-release.sh builds a reproducible, checksummed linux x86_64 archive (dojo, dojo.wasm, web/, THIRD_PARTY_NOTICES.md)
+- feat(cli): dojo build finds dojo.wasm and web/ next to the executable when run from an unpacked release; --wasm and --web flags still win
 - feat(topics): opt-in poolAspects, one item per topic x pooled aspect
 - fix(session): apply topic x aspect pool rule to practice queue
 - fix(session): onlyTags filters practice and daily queues after selection
