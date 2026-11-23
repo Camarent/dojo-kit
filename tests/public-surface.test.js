@@ -11,6 +11,8 @@ const ROOT = path.join(__dirname, '..');
 
 const PRIVATE_BASENAMES = ['AUDIT.md', 'TEAM.md', 'PLAN.md', 'PROGRESS.md'];
 const PRIVATE_PREFIXES = ['.work/', '.notes/'];
+// Public docs that share a private basename (path -> reason: progress storage reference, not a work log).
+const PUBLIC_EXEMPT = ['docs/PROGRESS.md'];
 
 function trackedFiles(root) {
   const r = spawnSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' });
@@ -45,8 +47,9 @@ test('no tracked file is a private doc or lives under .work/ or .notes/', () => 
   const files = trackedFiles(ROOT);
   const bad = files.filter(
     (f) =>
-      PRIVATE_BASENAMES.includes(path.posix.basename(f)) ||
-      PRIVATE_PREFIXES.some((p) => f.startsWith(p)),
+      !PUBLIC_EXEMPT.includes(f) &&
+      (PRIVATE_BASENAMES.includes(path.posix.basename(f)) ||
+        PRIVATE_PREFIXES.some((p) => f.startsWith(p))),
   );
   assert.deepStrictEqual(bad, []);
 });
