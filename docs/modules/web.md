@@ -74,15 +74,15 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 
 The progress document is read and written through one storage provider. The provider is registered with `DojoExt.registerStorage(provider)` (`web/ext/registry.js`); `getStorageProvider()` returns it. The built-in local and artifact adapters (`web/storage/adapters.js`) sit behind this interface.
 
-- Interface: `provider = { name?: string, openRef({courseId, key}) -> Promise<{ref, snap, partRef, partSnaps}>, cancelRetry?, setWithRetry?, readRemote? }`. `registerStorage` throws unless `openRef` is a function; `name` must be a string when set; each optional member must be a function when set.
-- Load: `ref.get() -> Promise<snap>`, `snap = { exists, version, data() }`. `readRemote(snap, partSnaps)` is optional and builds the document from the parts.
-- Save: `ref.set(body, expect?)`. `expect` is the version the writer read. `setWithRetry(r, body, owner)` is optional; `cancelRetry` is optional.
+- Interface: `provider = { name?: string, openRef({courseId, key}) -> Promise<{ref, snap, partRef, partSnaps}> }`. `registerStorage` throws unless `openRef` is a function and `name` is a string when set. Only `openRef` is consumed from a provider. `cancelRetry`, `setWithRetry` and `readRemote` are built-in adapter internals (`web/storage/adapters.js`), not provider members; any other member is ignored.
+- Load: `ref.get() -> Promise<snap>`, `snap = { exists, version, data() }`. The built-in adapter's `readRemote(snap, partSnaps)` builds the document from the parts; a provider does not supply it.
+- Save: `ref.set(body, expect?)`. `expect` is the version the writer read. The built-in adapter's `setWithRetry(r, body, owner)` and `cancelRetry` are not provider members.
 - Version and conflict rule: a write based on a stale version is rejected with `{kind:'refused', code:'conflict'}`. The writer must read again and retry on its own.
 - Errors and offline: `{code:'unavailable'}` is retried by `adapters.setWithRetry`, then saves. Any other error is not retried and reaches the caller. A missing capability makes `openRef` reject with `{kind:'absent'}`.
 - Selection: one provider at a time. A second `registerStorage` call replaces the first and logs a warning.
 - UI reporting: the provider does not touch the UI. Failures reach the store as warnings (`s.warn`, see `web/storage/warn.js`).
 - Fake provider (tests): `web/tests/storage-fake-provider.js` (`createFakeProvider`), in-memory, with `injectError` and `absent` controls.
-- Contract test: `web/tests/storage-provider-contract.test.js` (`runContract`). It runs the fake provider and both built-in adapters; built-ins skip the conflict case (artifact) and the error and absent cases (local). Any new provider must pass all cases.
+- Contract test: `web/tests/storage-provider-contract.test.js` (`runContract`). It runs the fake provider and both built-in adapters; built-ins skip the conflict case (artifact) and the error and absent cases (local). The retry and fatal cases exercise `adapters.dbAdapter`, not the provider. Any new provider must pass all cases its capabilities cover.
 
 ## Key files
 - `web/boot.js` - startup sequence; the only place that reads `__DOJO_WASM__`, `__DOJO_I18N__`.

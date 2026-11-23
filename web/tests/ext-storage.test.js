@@ -51,12 +51,10 @@ test('registerStorage accepts openRef alone and rejects a non-string name', () =
   assert.throws(() => E.registerStorage({ name: 3, openRef() { return null; } }), /name must be a string/);
 });
 
-test('registerStorage rejects an optional member that is not a function', () => {
-  for (const m of ['cancelRetry', 'setWithRetry', 'readRemote']) {
-    const { E } = ext();
-    assert.throws(() => E.registerStorage({ [m]: 'x', openRef() { return null; } }), new RegExp(m + ' must be a function'));
-    assert.strictEqual(E.getStorageProvider(), null);
-  }
+test('registerStorage ignores a member the registry does not consume (readRemote:"x" is not rejected)', () => {
+  const { E } = ext();
+  E.registerStorage({ readRemote: 'x', openRef() { return Promise.resolve(null); } });
+  assert.notStrictEqual(E.getStorageProvider(), null);
 });
 
 test('reset clears the storage provider', () => {
