@@ -56,6 +56,21 @@ fn release_layout(release: &Path) -> Res {
     Ok(())
 }
 
+// Runs the copied release binary. A sibling test thread that forks while the copy is still open for
+// writing leaves the child holding that write handle, so exec fails with ETXTBSY until the child
+// execs or exits; retry that one error for a bounded time, never any other.
+fn dojo_run(release: &Path, cwd: &Path, args: &[&std::ffi::OsStr]) -> Res<std::process::Output> {
+    const ATTEMPTS: u32 = 100;
+    const WAIT: std::time::Duration = std::time::Duration::from_millis(20);
+    for _ in 1..ATTEMPTS {
+        match Command::new(release.join("dojo")).current_dir(cwd).args(args).output() {
+            Err(e) if e.kind() == std::io::ErrorKind::ExecutableFileBusy => std::thread::sleep(WAIT),
+            other => return Ok(other?),
+        }
+    }
+    Ok(Command::new(release.join("dojo")).current_dir(cwd).args(args).output()?)
+}
+
 #[test]
 fn build_uses_web_and_wasm_beside_binary_without_flags() -> Res {
     let guard = TempDir::new("dojo-build-release-layout")?;
@@ -82,13 +97,11 @@ fn build_uses_web_and_wasm_beside_binary_without_flags() -> Res {
     let cwd = repo.join("sub");
     std::fs::create_dir_all(&cwd)?;
     let out = root.join("dist");
-    let o = Command::new(release.join("dojo"))
-        .current_dir(&cwd)
-        .arg("build")
-        .arg(&course)
-        .arg("--out")
-        .arg(&out)
-        .output()?;
+    let o = dojo_run(
+        &release,
+        &cwd,
+        &["build".as_ref(), course.as_os_str(), "--out".as_ref(), out.as_os_str()],
+    )?;
     assert_eq!(o.status.code(), Some(0), "{}", String::from_utf8_lossy(&o.stderr));
     let html = std::fs::read_to_string(out.join("demo/index.html"))?;
     assert!(html.starts_with("<title>Demo course</title>"), "{html}");
@@ -111,11 +124,11 @@ fn validate_and_lock_use_web_beside_binary_from_decoy_cwd() -> Res {
     // Cwd with no web/ in it or any parent under root: only the beside-binary web/ can supply the reference.
     let cwd = root.join("elsewhere");
     std::fs::create_dir_all(&cwd)?;
-    let v = Command::new(release.join("dojo")).current_dir(&cwd).arg("validate").arg(&course).output()?;
+    let v = dojo_run(&release, &cwd, &["validate".as_ref(), course.as_os_str()])?;
     let v_out = String::from_utf8_lossy(&v.stdout).to_string();
     assert_eq!(v.status.code(), Some(1), "{v_out}{}", String::from_utf8_lossy(&v.stderr));
     assert!(v_out.contains("i18n_placeholder"), "{v_out}");
-    let l = Command::new(release.join("dojo")).current_dir(&cwd).arg("lock").arg(&course).output()?;
+    let l = dojo_run(&release, &cwd, &["lock".as_ref(), course.as_os_str()])?;
     assert_eq!(l.status.code(), Some(1), "{}{}", String::from_utf8_lossy(&l.stdout), String::from_utf8_lossy(&l.stderr));
     Ok(())
 }
