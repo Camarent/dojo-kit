@@ -83,6 +83,42 @@ test('two runs produce identical archive bytes', () => {
   });
 });
 
+test('pack scripts are executable', () => {
+  for (const script of ['package-release.sh', 'package-release-pack.sh']) {
+    const mode = fs.statSync(path.join(ROOT, 'scripts', script)).mode;
+    assert.notStrictEqual(mode & 0o111, 0, `${script} is not executable`);
+  }
+});
+
+test('pack fails naming a listed web file that git does not track', () => {
+  const decoy = fs.mkdtempSync(path.join(os.tmpdir(), 'package-release-decoy-'));
+  try {
+    fs.mkdirSync(path.join(decoy, 'scripts'));
+    fs.copyFileSync(PACK, path.join(decoy, 'scripts', 'package-release-pack.sh'));
+    fs.copyFileSync(path.join(ROOT, 'THIRD_PARTY_NOTICES.md'), path.join(decoy, 'THIRD_PARTY_NOTICES.md'));
+    fs.cpSync(path.join(ROOT, 'web'), path.join(decoy, 'web'), { recursive: true });
+    const env = { ...process.env, SOURCE_DATE_EPOCH: '1700000000' };
+    const git = (args) => spawnSync('git', ['-C', decoy, ...args], { env, timeout: 60000 });
+    assert.strictEqual(git(['init', '-q']).status, 0);
+    assert.strictEqual(git(['add', '-A']).status, 0);
+    const untracked = 'web/index.template.html';
+    assert.strictEqual(git(['rm', '--cached', '-q', untracked]).status, 0);
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'package-release-out-'));
+    try {
+      fs.writeFileSync(path.join(tmpDir, 'dojo-stub'), '#!/bin/sh\necho stub\n', { mode: 0o755 });
+      fs.writeFileSync(path.join(tmpDir, 'wasm-stub'), Buffer.from([0x00, 0x61, 0x73, 0x6d]));
+      const result = spawnSync('bash', [path.join(decoy, 'scripts', 'package-release-pack.sh'), TAG, path.join(tmpDir, 'out'),
+        path.join(tmpDir, 'dojo-stub'), path.join(tmpDir, 'wasm-stub')], { cwd: decoy, env, timeout: 60000 });
+      assert.notStrictEqual(result.status, 0);
+      assert.ok(result.stderr.toString().includes(untracked), result.stderr.toString());
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  } finally {
+    fs.rmSync(decoy, { recursive: true, force: true });
+  }
+});
+
 test('pack script refuses a wrong argument count', () => {
   const result = spawnSync('bash', [PACK, TAG], { cwd: ROOT, timeout: 60000 });
   assert.strictEqual(result.status, 2);

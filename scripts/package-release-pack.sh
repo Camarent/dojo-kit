@@ -39,9 +39,11 @@ install -D -m 0755 "$DOJO_BIN" "$STAGE/dojo"
 install -D -m 0644 "$WASM_FILE" "$STAGE/dojo.wasm"
 install -D -m 0644 "$REPO_ROOT/THIRD_PARTY_NOTICES.md" "$STAGE/THIRD_PARTY_NOTICES.md"
 for f in "${candidates[@]}"; do
-    if [ -n "${tracked[$f]:-}" ]; then
-        install -D -m 0644 "$REPO_ROOT/$f" "$STAGE/$f"
+    if [ -z "${tracked[$f]:-}" ]; then
+        echo "error: listed web file is not tracked by git: $f" >&2
+        exit 1
     fi
+    install -D -m 0644 "$REPO_ROOT/$f" "$STAGE/$f"
 done
 
 mkdir -p "$OUT"
