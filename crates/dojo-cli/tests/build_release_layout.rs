@@ -96,3 +96,26 @@ fn build_uses_web_and_wasm_beside_binary_without_flags() -> Res {
     assert!(html.contains(r#"window.__DOJO_WASM__="AGFzbQEAAAA=";"#), "{html}");
     Ok(())
 }
+
+// validate and lock must find the release web/ beside the binary, not only the repo web/ above cwd.
+#[test]
+fn validate_and_lock_use_web_beside_binary_from_decoy_cwd() -> Res {
+    let guard = TempDir::new("dojo-validate-release-layout")?;
+    let root = guard.to_path_buf();
+    let release = root.join("release");
+    release_layout(&release)?;
+    let course = root.join("course");
+    copy_dir(&demo(), &course)?;
+    // The release web/ reference has "hi" without a placeholder, so this course key is an error only with web.
+    put(&course.join("i18n/en.json"), r#"{"hi":"Hello {name}"}"#)?;
+    // Cwd with no web/ in it or any parent under root: only the beside-binary web/ can supply the reference.
+    let cwd = root.join("elsewhere");
+    std::fs::create_dir_all(&cwd)?;
+    let v = Command::new(release.join("dojo")).current_dir(&cwd).arg("validate").arg(&course).output()?;
+    let v_out = String::from_utf8_lossy(&v.stdout).to_string();
+    assert_eq!(v.status.code(), Some(1), "{v_out}{}", String::from_utf8_lossy(&v.stderr));
+    assert!(v_out.contains("i18n_placeholder"), "{v_out}");
+    let l = Command::new(release.join("dojo")).current_dir(&cwd).arg("lock").arg(&course).output()?;
+    assert_eq!(l.status.code(), Some(1), "{}{}", String::from_utf8_lossy(&l.stdout), String::from_utf8_lossy(&l.stderr));
+    Ok(())
+}

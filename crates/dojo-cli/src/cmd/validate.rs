@@ -10,7 +10,7 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
 use crate::course_files::*;
-use crate::cmd::build::find_web_dir;
+use crate::cmd::build::resolve_web;
 use crate::USAGE;
 
 /// Wall-clock limit for one course check script.
@@ -220,7 +220,7 @@ pub(crate) fn run_validate(args: &[String]) -> Result<u8, String> {
     }
     let dir = dir.ok_or_else(|| USAGE.to_string())?;
     let course = load(Path::new(dir))?;
-    let web = web.or_else(|| find_web_dir().ok());
+    let web = resolve_web(web.as_ref()).ok();
     let mut diags = validate_course(Path::new(dir), &course, web.as_deref());
     diags.extend(course.lock_text.as_deref().and_then(dojo_core::lock::canonical_diagnostic));
     if !no_checks {
