@@ -198,10 +198,15 @@ test('getSetting returns default when accessor returns undefined', () => {
   assert.strictEqual(ext.getSetting('mysetting'), 'a');
 });
 
-test('getSetting returns default when accessor throws', () => {
+test('getSetting returns default when accessor throws', (t) => {
+  // The registry warns on a throwing accessor; capture it so the test output stays clean.
+  const warnings = [];
+  t.mock.method(console, 'warn', (...args) => { warnings.push(args.join(' ')); });
   ext.registerSetting({ key: 'mysetting', label: 'L', options: [{value: 'a'}, {value: 'b'}], default: 'a' });
   ext.bindSettings(function () { throw new Error('fail'); });
   assert.strictEqual(ext.getSetting('mysetting'), 'a');
+  assert.strictEqual(warnings.length, 1);
+  assert.match(warnings[0], /getSetting accessor failed/);
 });
 
 test('bindSettings requires a function', () => {
