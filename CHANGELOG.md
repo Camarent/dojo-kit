@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - test(guard): course-test fails on a stale wasm, tmp-leak check uses its own TMPDIR, tracked tests never read private course paths
 - feat(units): unit entity is a number range, aspect is direction
 
+## [0.5.1] - 2026-11-23
+
+- chore(dojo-n5-storage): dojo-n5-storage/phases/03-finish
+
 ## [0.5.0] - 2026-11-23
 
 - feat(release): prebuilt checksummed linux release archive

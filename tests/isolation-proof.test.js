@@ -42,3 +42,18 @@ test('command leaving a file in the counted dir exits non-zero', (t) => {
   assert.notStrictEqual(res.status, 0);
   assert.match(res.stderr, /count grew/);
 });
+
+test('command that swaps a file for another one exits non-zero', (t) => {
+  const counted = privateDir(t);
+  fs.writeFileSync(path.join(counted, 'old.txt'), 'x');
+  // Count-only checks miss this: one entry removed, one created, same total.
+  const res = run(['--', 'sh', '-c', 'rm "$1/old.txt" && touch "$1/new.txt"', 'sh', counted], counted);
+  assert.notStrictEqual(res.status, 0);
+  assert.match(res.stderr, /new\.txt/);
+});
+
+test('command leaving a file in its own TMPDIR exits non-zero', (t) => {
+  const res = run(['--', 'sh', '-c', 'mktemp "$TMPDIR/leak-XXXXXX"'], privateDir(t));
+  assert.notStrictEqual(res.status, 0);
+  assert.match(res.stderr, /left entries in its TMPDIR/);
+});

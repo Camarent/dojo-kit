@@ -70,6 +70,20 @@ Single-page app that runs a course in the browser. Grading, scheduling, merge an
 - Example plugin: `modules/ja/examples/ja-readings/` (`ja-readings.js`, `ja-readings.css`, README). It registers the `readings` setting (`kana` default | `romaji` | `none`, `modules/ja/examples/ja-readings/ja-readings.js`) and the markup `ja-readings` (furigana `{漢字|よみ}`). Course opt-in: `course.json` `plugins` plus `"markup": "ja-readings"`; without `markup` it does nothing.
 - Globals required by `ui/app.js`: `preact`, `htm`, `DojoStorage`, `DojoSession`, `DojoTypes`, `DojoExt` (optional; `ui/app.js` falls back when a method is missing), `DojoSpeech` (optional; read once at load, `web/ui/app.js`).
 
+## Storage provider (seam)
+
+The progress document is read and written through one storage provider. The provider is registered with `DojoExt.registerStorage(provider)` (`web/ext/registry.js`); `getStorageProvider()` returns it. The built-in local and artifact adapters (`web/storage/adapters.js`) sit behind this interface.
+
+- Interface: `provider = { name?: string, openRef({courseId, key}) -> Promise<{ref, snap, partRef, partSnaps}> }`. `registerStorage` throws unless `openRef` is a function and `name` is a string when set. Only `openRef` is consumed from a provider. `cancelRetry`, `setWithRetry` and `readRemote` are built-in adapter internals (`web/storage/adapters.js`), not provider members; any other member is ignored.
+- Load: `ref.get() -> Promise<snap>`, `snap = { exists, version, data() }`. The built-in adapter's `readRemote(snap, partSnaps)` builds the document from the parts; a provider does not supply it.
+- Save: `ref.set(body, expect?)`. `expect` is the version the writer read. The built-in adapter's `setWithRetry(r, body, owner)` and `cancelRetry` are not provider members.
+- Version and conflict rule: a write based on a stale version is rejected with `{kind:'refused', code:'conflict'}`. The writer must read again and retry on its own.
+- Errors and offline: `{code:'unavailable'}` is retried by `adapters.setWithRetry`, then saves. Any other error is not retried and reaches the caller. A missing capability makes `openRef` reject with `{kind:'absent'}`.
+- Selection: one provider at a time. A second `registerStorage` call replaces the first and logs a warning.
+- UI reporting: the provider does not touch the UI. Failures reach the store as warnings (`s.warn`, see `web/storage/warn.js`).
+- Fake provider (tests): `web/tests/storage-fake-provider.js` (`createFakeProvider`), in-memory, with `injectError` and `absent` controls.
+- Contract test: `web/tests/storage-provider-contract.test.js` (`runContract`). It runs the fake provider and both built-in adapters; built-ins skip the conflict case (artifact) and the error and absent cases (local). The retry and fatal cases exercise `adapters.dbAdapter`, not the provider. Any new provider must pass all cases its capabilities cover.
+
 ## Key files
 - `web/boot.js` - startup sequence; the only place that reads `__DOJO_WASM__`, `__DOJO_I18N__`.
 - `web/bundle.json` - ordered list of scripts, styles, i18n languages and vendored licenses that `dojo build` inlines. The order matters: registry and `ext.js` before the types, `@course` (course plugin scripts) after the types and before `ui/app.js`, `speech.js` before `ui/app.js` (app.js reads `root.DojoSpeech` at load), `boot.js` last. In `styles`, `@course` is a placeholder; plugin CSS is appended after all listed styles.

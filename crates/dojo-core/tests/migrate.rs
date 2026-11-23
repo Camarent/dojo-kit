@@ -234,3 +234,14 @@ fn equal_last_predecessors_take_extra_fields_from_lower_id() {
     assert_eq!(got["note"], json!("lo"));
     assert_eq!((got["ok"].clone(), got["bad"].clone()), (json!(7), json!(1)));
 }
+
+#[test]
+fn fold_keeps_successor_m0_and_s0() {
+    // grammar-862 shape: the retired duplicate has a later `last`, so the fold takes its fields; the learner's own m0/s0 stay.
+    let succ = json!({"s": 4, "due": 1000, "ok": 25, "bad": 4, "last": 100, "s0": 5, "m0": {"ok": 5, "bad": 1}});
+    let dup = json!({"s": 2, "due": 900, "ok": 0, "bad": 10, "last": 200, "s0": 0, "m0": {"bad": 1}});
+    let out = run(&doc(0, json!({"g": succ, "d": dup})), &links(&[("g", &["d"])])).0.unwrap();
+    let g = item_of(&out, "g");
+    assert_eq!(g["s0"], json!(5));
+    assert_eq!(g["m0"], json!({"ok": 5, "bad": 1}));
+}

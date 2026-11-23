@@ -44,6 +44,19 @@ test('registerStorage rejects a value without openRef', () => {
   assert.strictEqual(E.getStorageProvider(), null);
 });
 
+test('registerStorage accepts openRef alone and rejects a non-string name', () => {
+  const { E } = ext();
+  E.registerStorage({ openRef() { return Promise.resolve(null); } });
+  assert.notStrictEqual(E.getStorageProvider(), null);
+  assert.throws(() => E.registerStorage({ name: 3, openRef() { return null; } }), /name must be a string/);
+});
+
+test('registerStorage ignores a member the registry does not consume (readRemote:"x" is not rejected)', () => {
+  const { E } = ext();
+  E.registerStorage({ readRemote: 'x', openRef() { return Promise.resolve(null); } });
+  assert.notStrictEqual(E.getStorageProvider(), null);
+});
+
 test('reset clears the storage provider', () => {
   const { E } = ext();
   E.registerStorage(provider('a'));

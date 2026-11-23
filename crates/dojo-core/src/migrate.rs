@@ -40,7 +40,7 @@ fn pick<'a>(recs: &[&'a Map<String, Value>], k: &str, max: bool) -> Option<&'a V
 /// Folds records of retired predecessors into their successors. Fold applies to a successor when a valid predecessor
 /// exists and the successor has no record or some predecessor has a strictly greater `last`. Folded record:
 /// `s`, `due` = min; `ok`, `bad`, `last` = max; other fields from the record with the greatest `last`
-/// (ties: successor first, then predecessors by ascending id). Invalid successor records are kept and listed in `skipped`.
+/// (ties: successor first, then predecessors by ascending id); `m0`/`s0` always from the successor's own record (absent when it has none). Invalid successor records are kept and listed in `skipped`.
 /// Predecessors with `last < resetAt` are ignored when `resetAt != 0`. Idempotent.
 pub fn migrate_progress(doc: &Value, links: &Links) -> Result<Migration, MigrateError> {
     let mut doc = sanitize(doc).ok_or(MigrateError::InvalidDocument)?;
@@ -80,6 +80,16 @@ pub fn migrate_progress(doc: &Value, links: &Links) -> Result<Migration, Migrate
         for (key, max) in [("s", false), ("due", false), ("ok", true), ("bad", true), ("last", true)] {
             if let Some(v) = pick(&recs, key, max) {
                 out.insert(key.into(), v.clone());
+            }
+        }
+        // m0/s0 hold the successor's own pre-migration state: never taken from a retired predecessor.
+        out.remove("m0");
+        out.remove("s0");
+        if let Some(s) = own_valid {
+            for key in ["m0", "s0"] {
+                if let Some(v) = s.get(key) {
+                    out.insert(key.into(), v.clone());
+                }
             }
         }
         items.insert(succ.clone(), Value::Object(out));
