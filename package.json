@@ -35,10 +35,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.0.0",
+    "eslint": "^10.15.0",
     "globals": "^17.14.0",
     "jscpd": "5.4.3",
-    "knip": "6.45.1",
+    "knip": "6.46.1",
     "madge": "8.0.0"
   },
   "overrides": {
