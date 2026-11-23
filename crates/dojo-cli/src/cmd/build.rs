@@ -48,6 +48,33 @@ pub(crate) fn find_web_dir() -> Result<PathBuf, String> {
     }
 }
 
+// Directory of the running dojo binary; a release layout keeps web/ and dojo.wasm beside it.
+fn exe_dir() -> Option<PathBuf> {
+    std::env::current_exe().ok()?.parent().map(Path::to_path_buf)
+}
+
+// Order: --web flag, then web/ beside the binary, then the repo web/ found from the current directory.
+pub(crate) fn resolve_web(flag: Option<&PathBuf>) -> Result<PathBuf, String> {
+    if let Some(w) = flag {
+        return Ok(w.clone());
+    }
+    if let Some(w) = exe_dir().map(|d| d.join("web")).filter(|w| w.join("bundle.json").is_file()) {
+        return Ok(w);
+    }
+    find_web_dir()
+}
+
+// Order: --wasm flag, then dojo.wasm beside the binary, then the repo target/ build beside web/.
+fn resolve_wasm(flag: Option<&PathBuf>, web: &Path) -> PathBuf {
+    if let Some(w) = flag {
+        return w.clone();
+    }
+    if let Some(w) = exe_dir().map(|d| d.join("dojo.wasm")).filter(|w| w.is_file()) {
+        return w;
+    }
+    web.parent().unwrap_or(Path::new(".")).join("target/wasm32-unknown-unknown/release/dojo_wasm.wasm")
+}
+
 pub(crate) fn write_out(path: &Path, bytes: &[u8]) -> Result<(), String> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
@@ -91,7 +118,8 @@ fn build_course(args: &[String]) -> Step<u8> {
     let a = fatal(parse_build_args(args))?;
     let dir = Path::new(&a.dir);
     let course = fatal(load(dir))?;
-    let mut diags = validate_course(dir, &course, a.web.clone().or_else(|| find_web_dir().ok()).as_deref());
+    let web_found = resolve_web(a.web.as_ref());
+    let mut diags = validate_course(dir, &course, web_found.as_deref().ok());
     // The build's own i18n loader reports unreadable or non-string files with its exact messages.
     diags.retain(|d| d.code != "i18n_bad_file" && d.code != "i18n_not_string");
     let warnings = count(&diags, Severity::Warning);
@@ -102,14 +130,8 @@ fn build_course(args: &[String]) -> Step<u8> {
     if warnings > 0 {
         print_text(&diags);
     }
-    let web = match &a.web {
-        Some(w) => w.clone(),
-        None => fatal(find_web_dir())?,
-    };
-    let wasm_path = match &a.wasm {
-        Some(w) => w.clone(),
-        None => web.parent().unwrap_or(Path::new(".")).join("target/wasm32-unknown-unknown/release/dojo_wasm.wasm"),
-    };
+    let web = fatal(web_found)?;
+    let wasm_path = resolve_wasm(a.wasm.as_ref(), &web);
 
     let course_json: serde_json::Value = fatal(serde_json::from_str(&course.course_text).map_err(|e| format!("course.json: {e}")))?;
     let course_json = failed(build_audio::materialise_timers(&course_json))?;

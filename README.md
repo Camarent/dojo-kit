@@ -49,6 +49,33 @@ Screens of the [examples/showcase](examples/showcase) course, the demo behind th
 
 `./dojo schema --brief` prints the item-type cheat-sheet (main fields; `schema/course.schema.json` is the complete reference); `./dojo stats <course-dir>` and `./dojo next-id <course-dir> <prefix>` are also available. Exit codes: 0 ok, 1 validation or build refusal, 2 usage or I/O error.
 
+## Using a release
+
+Prebuilt archives need no Rust toolchain. Each release on GitHub ships `dojo-<tag>-linux-x86_64.tar.gz` and a checksum file `dojo-<tag>-linux-x86_64.tar.gz.sha256`.
+
+1. Check the archive:
+
+   ```
+   sha256sum -c dojo-<tag>-linux-x86_64.tar.gz.sha256
+   ```
+
+2. Unpack it. The archive root holds exactly:
+
+   ```
+   dojo                    the CLI
+   dojo.wasm               the WASM engine
+   web/                    the browser runtime files that dojo build reads
+   THIRD_PARTY_NOTICES.md  licence texts
+   ```
+
+3. Build a course from the unpacked directory. `dojo.wasm` and `web/` are found next to the binary, so no flags are needed:
+
+   ```
+   ./dojo build <course> --out D
+   ```
+
+`--wasm` and `--web` override the paths when the files live elsewhere. Scripts and tools that embed dojo-kit can pin the archive by tag and checksum.
+
 ## Requirements
 
 Rust toolchain and Node.js 24 or newer; full list in [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md).

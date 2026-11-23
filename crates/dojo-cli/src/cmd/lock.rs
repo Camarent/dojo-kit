@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 use crate::course_files::*;
 use crate::cmd::validate::{count, print_text};
-use crate::cmd::build::find_web_dir;
+use crate::cmd::build::resolve_web;
 use crate::USAGE;
 
 pub(crate) fn run_lock(args: &[String]) -> Result<u8, String> {
@@ -17,7 +17,7 @@ pub(crate) fn run_lock(args: &[String]) -> Result<u8, String> {
     }
     let dir = Path::new(dir);
     let course = load(dir)?;
-    let diags = validate_course(dir, &course, find_web_dir().ok().as_deref());
+    let diags = validate_course(dir, &course, resolve_web(None).ok().as_deref());
     if count(&diags, Severity::Error) > 0 {
         print_text(&diags);
         return Ok(1);
