@@ -9,8 +9,9 @@ Small courses and one plugin that show the course format. Not shipped in builds.
 
 ## Public surface
 - Module example plugins live under the module, not here: `modules/<id>/examples/` (`ja`: `modules/ja/examples/ja-readings/`). See [modules.md](modules.md).
-- `examples/demo/course.json` - minimal course (units incl. an `examOnly` unit).
-- `examples/showcase/course.json` - course the CLI test `crates/dojo-cli/tests/showcase.rs` builds and validates.
+- `examples/demo/course.json` - minimal course (geography and math units, incl. an `examOnly` unit).
+- `examples/listening/course.json` - one-unit listening course ("Count the beeps") with audio stimuli from `make-audio.js`.
+- `examples/showcase/course.json` - course (shapes and numbers units) that the CLI test `crates/dojo-cli/tests/showcase.rs` builds and validates.
 - The ja-readings plugin moved to `modules/ja/examples/ja-readings/` (see `docs/modules/modules.md`); it is no longer in this folder.
 
 ## Invariants and gotchas
