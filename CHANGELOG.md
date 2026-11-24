@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - test(guard): course-test fails on a stale wasm, tmp-leak check uses its own TMPDIR, tracked tests never read private course paths
 - feat(units): unit entity is a number range, aspect is direction
 
+## [0.5.2] - 2026-11-24
+
+- docs: fix stale docs, cites and links
+
 ## [0.5.1] - 2026-11-23
 
 - Progress migration keeps each course's own pre-migration state (m0/s0) and never copies it from retired predecessors.
