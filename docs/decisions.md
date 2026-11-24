@@ -9,9 +9,9 @@ Actual after load through `web/storage/store.js` (`s.migrated`, `web/storage/sto
 Producing line: `crates/dojo-core/src/migrate.rs:76-78`. The supersedes fold (`migrate_progress`, `crates/dojo-core/src/migrate.rs:45-97`) replaces the successor record with a clone of the retired duplicate when that duplicate has a later `last`. The clone carries the duplicate's `m0` and `s0` and drops the successor's own. `migrate_doc` runs this fold at `crates/dojo-core/src/migrate.rs:145` before the `migrated[id]` marker check at `crates/dojo-core/src/migrate.rs:153`, so the fold runs on every load even when `migrated["n5-units-2"]` is set. The unit step does not cause it: `crates/dojo-core/src/migrate.rs:176` (unguarded `s0` write) is past the marker check at `:153`, so it does not run on this export; `crates/dojo-core/src/migrate.rs:193` and `:201` are guarded by `contains_key`. `web/migrate.js` has no `m0`/`s0` handling.
 
 Failing tests (run with `cs-qrun -- node --test`):
-- `workspace/n5/tests/kana-removal-migration.test.js:54` (test at :54:3): `AssertionError: items.grammar-862 changed` (assert at :62:16), actual `"m0":{"bad":1,"due":1793831306871,"last":1793831306871,"ok":0}`, `"s0":0`; expected `m0.ok 5`, `s0 5`.
-- `workspace/n5/tests/reading-drill-migration.test.js:143` (assert at :102 in `checkFold`): `AssertionError: grammar-862 changed`, same actual/expected diff.
-- `workspace/n5/tests/scope-progress.test.js:80`: `AssertionError: n5-progress-2026-11-23 manually exported.json: grammar-862 rewritten` (assert at :42, `assertRecordsKept`), same diff.
+- [historical, private: workspace/n5 is not in the public clone] `workspace/n5/tests/kana-removal-migration.test.js:54` (test at :54:3): `AssertionError: items.grammar-862 changed` (assert at :62:16), actual `"m0":{"bad":1,"due":1793831306871,"last":1793831306871,"ok":0}`, `"s0":0`; expected `m0.ok 5`, `s0 5`.
+- [historical, private: workspace/n5 is not in the public clone] `workspace/n5/tests/reading-drill-migration.test.js:143` (assert at :102 in `checkFold`): `AssertionError: grammar-862 changed`, same actual/expected diff.
+- [historical, private: workspace/n5 is not in the public clone] `workspace/n5/tests/scope-progress.test.js:80`: `AssertionError: n5-progress-2026-11-23 manually exported.json: grammar-862 rewritten` (assert at :42, `assertRecordsKept`), same diff.
 
 Verdict: real migration bug
 
@@ -40,4 +40,4 @@ Reason: no stored shape changed. Task-1 changed only the fold logic in `migrate_
 ## Stale docs/tests fixed in phase 01
 
 - None from task-2 (`stale-notes.md` says `none`).
-- Fixture move: `workspace/n5/tests/migrate-learned.test.js:19` reads `workspace/n5/tools/fixtures/live-progress-SYNTHETIC.json` (no longer the old path).
+- Fixture move [historical, private: workspace/n5 is not in the public clone]: `workspace/n5/tests/migrate-learned.test.js:19` reads `workspace/n5/tools/fixtures/live-progress-SYNTHETIC.json` (no longer the old path).
