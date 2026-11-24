@@ -24,7 +24,7 @@ The `modules/registry` crate maps ids to validator implementations; the CLI and 
 - `modules/ja/rust/src/lang.rs` - `is_fragment` (`pub(crate)`, :12) used as `fragment_check` for `ja`.
 - `modules/ja/web/ruby.js` - built-in `ruby` markup, registered by `registry.registerBuiltinMarkup('ruby', markup)` at :165. `scriptRuns` (:47) splits a base into kanji and non-kanji runs (astral kanji count as kanji); `kanjiEnd` (:52) and `splitRuby` (:56) align readings to kanji runs.
 - `modules/ja/rust/src/ruby.rs` - `skip_set` (:52), `RubyChecker` (:94); skip rules run only when `markup` is `ruby` and a skip source is set (:2, :51).
-- `modules/ja/web/kanji-rows.js` - default feedback rows via `ext.registerFeedbackRows` at :17.
+- `modules/ja/web/kanji-rows.js` - default feedback rows via `ext.registerFeedbackRows` at :18.
 - `modules/ja/web/readings.js` - `kanjiBreakdown` at :87.
 - `modules/ja/examples/ja-readings/ja-readings.js` - example DojoExt plugin (not a module; `registerSetting` :272, `registerMarkup` :287).
 

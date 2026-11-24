@@ -115,7 +115,7 @@ Course-level counterparts and extras: `srs`, `srsByType` (per item type), `newOr
 - `srs.jumpTo`: integer 2..=top stage of the ladder. A correct answer on an item at stage 1 that is due goes to this stage instead of stage 2. Absent: +1 stage.
 - `srs.wrongFloor`: integer 1..=top stage of the ladder. A wrong answer on an item that was ever learned cannot drop below this stage. Absent: stage 1.
 - `jumpTo` and `wrongFloor` are not allowed in `srsByType` (`scope_by_type`); set them on the course `srs` or a unit `srs`. Out of range: `bad_jump` / `bad_floor`.
-- `learnedStage` (integer >= 1): stage at which an item counts as learned; default 4 in the web app (`web/session.js`), capped by the length of the unit's ladder.
+- `learnedStage` (integer >= 1): stage at which an item counts as learned; default 4 in the web app (`web/session/util.js:137`, `DEFAULT_LEARNED_STAGE`), capped by the length of the unit's ladder.
 
 ## Placement test
 Course-level `placement`: `{"perUnit": 5, "mode": "check"}`. `perUnit` = items sampled per unit (default 5, minimum 1). `mode` defaults to `check` (cards skipped, types mixed, units interleaved); the web app also has a `self` mode. Exclude units with unit-level `placement:false`.

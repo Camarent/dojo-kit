@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- feat(release): scripts/package-release.sh builds a reproducible, checksummed linux x86_64 archive (dojo, dojo.wasm, web/, THIRD_PARTY_NOTICES.md)
 - feat(cli): dojo build finds dojo.wasm and web/ next to the executable when run from an unpacked release; --wasm and --web flags still win
 - feat(topics): opt-in poolAspects, one item per topic x pooled aspect
 - fix(session): apply topic x aspect pool rule to practice queue
@@ -25,13 +24,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - test(guard): course-test fails on a stale wasm, tmp-leak check uses its own TMPDIR, tracked tests never read private course paths
 - feat(units): unit entity is a number range, aspect is direction
 
+## [0.5.2] - 2026-11-24
+
+- docs: fix stale docs, cites and links
+
 ## [0.5.1] - 2026-11-23
 
-- chore(dojo-n5-storage): dojo-n5-storage/phases/03-finish
+- Progress migration keeps each course's own pre-migration state (m0/s0) and never copies it from retired predecessors.
 
 ## [0.5.0] - 2026-11-23
 
 - feat(release): prebuilt checksummed linux release archive
+- feat(release): scripts/package-release.sh builds a reproducible, checksummed linux x86_64 archive (dojo, dojo.wasm, web/, THIRD_PARTY_NOTICES.md)
 
 ## [0.4.6] - 2026-11-19
 

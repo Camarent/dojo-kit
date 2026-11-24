@@ -45,7 +45,7 @@ The suite runs in three modes, each a `package.json` script that calls `scripts/
 - CONTRACT check: `node tests/gen-vectors.js && git diff --exit-code` must pass with no changes.
 - `wasm-smoke.js` needs the release WASM built first (`scripts/build-wasm.sh`, the same command the root `dojo` wrapper runs).
 - The `merge` vectors cover diverged documents, foreign documents and unknown fields; do not drop cases to make tests pass.
-- `merge.json` has 37 `merge_examDraft_*` cases (closed vs open, ties, `resetAt`, invalid drafts, unknown fields, `_join_*` sets folded in every order). Their `expect` comes from the JS oracle, not from the Rust code. Regenerating them is a deliberate contract change.
+- `merge.json` has `merge_examDraft_*` cases: 37 by line count and by unique name (`jq -r '.cases[].name' tests/vectors/merge.json`). They cover closed vs open, ties, `resetAt`, invalid drafts, unknown fields, and `_join_*` sets folded in every order. Their `expect` comes from the JS oracle, not from the Rust code. Regenerating them is a deliberate contract change.
 - The `gapVerdict` vectors pin the precedence: an input matching an answer is `ok` even when it also matches a `retry` reading. The Rust side runs them through `crates/dojo-core/tests/check_vectors.rs`, which dispatches `gapVerdict` next to the existing `check` cases.
 - Wrapper check: `bash tests/wrapper.sh`.
 
