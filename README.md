@@ -11,7 +11,7 @@ For people with study materials (a textbook, lecture notes, past exam questions)
 
 Under the hood: a Rust core compiled to WASM, a native `dojo` CLI and a Preact web UI; content is plain `course.json` plus one JSONL file per unit.
 
-No Rust toolchain? Use the [live demo](https://camarent.github.io/dojo-kit/) (the showcase course). Building your own trainer needs Rust: no prebuilt download is published yet.
+No Rust toolchain? Use the [live demo](https://camarent.github.io/dojo-kit/) (the showcase course). Building your own trainer needs Rust; prebuilt archives are described in [Using a release](#using-a-release).
 
 Using an AI assistant? Copy a prompt from [docs/PROMPTS.md](docs/PROMPTS.md); the assistant follows [AGENTS.md](AGENTS.md).
 
@@ -92,7 +92,7 @@ Open the repo in your assistant (Claude Code or any other), put your materials i
 - `web/` - Preact UI, storage adapters, i18n, styles, dev server.
 - `schema/` - generated JSON Schemas for `course.json` and items.
 - `modules/` - optional modules (`ja`, `ru`, registry crate); enabled per course with `modules` in `course.json`, see CONTRACT section 13.
-- `examples/` - `demo`, `showcase` courses and an example plugin.
+- `examples/` - `demo`, `listening` and `showcase` courses. The ja module's example plugin is in `modules/ja/examples/ja-readings`.
 - `docs/` - architecture, module docs, authoring guide, prompts.
 - `prompts/` - copy-paste prompts for AI assistants.
 - `tests/` - golden vectors, vector generator, WASM smoke test, wrapper script.
