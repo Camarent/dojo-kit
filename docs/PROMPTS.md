@@ -1,6 +1,6 @@
 # Prompts for an AI assistant
 
-Ready-to-paste prompts live in `prompts/`. Replace each `<...>` placeholder. The assistant follows `AGENTS.md` (procedure) and `docs/AUTHORING.md` (reference rules). All commands below exist in `crates/dojo-cli/src/main.rs`: `init`, `add`, `next-id`, `validate`, `lock`, `stats`, `build`, `schema`.
+Ready-to-paste prompts live in `prompts/`. Replace each `<...>` placeholder. The assistant follows `AGENTS.md` (procedure) and `docs/AUTHORING.md` (reference rules). All commands below exist in `crates/dojo-cli/src/main.rs`: `init`, `add`, `next-id`, `validate`, `lock`, `stats`, `build`, `schema` (`schema --out` also writes `topic-stats.schema.json`).
 
 | file | use when | placeholders | expected result |
 |---|---|---|---|

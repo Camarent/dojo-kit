@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TopicStats",
+  "description": "Topic statistics document for one course.",
+  "type": "object",
+  "properties": {
+    "v": {
+      "description": "Layout version, see `TOPIC_STATS_VERSION`.",
+      "type": "integer",
+      "format": "int64"
+    },
+    "course": {
+      "description": "Course id.",
+      "type": "string"
+    },
+    "generated_at": {
+      "description": "Generation time (ISO 8601).",
+      "type": "string"
+    },
+    "changed_since": {
+      "description": "Start of the incremental window, or null for a full run.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "groups": {
+      "description": "One entry per topic or unit group.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TopicGroup"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "v",
+    "course",
+    "generated_at",
+    "changed_since",
+    "groups"
+  ],
+  "$defs": {
+    "TopicGroup": {
+      "description": "Statistics of one topic or unit group.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "description": "Group kind.",
+          "$ref": "#/$defs/GroupKind"
+        },
+        "id": {
+          "description": "Group id.",
+          "type": "string"
+        },
+        "label": {
+          "description": "Human-readable label.",
+          "type": "string"
+        },
+        "unit": {
+          "description": "Unit id, or unit ids for a group spanning units.",
+          "$ref": "#/$defs/UnitRef"
+        },
+        "items": {
+          "description": "Item counts per learning stage.",
+          "$ref": "#/$defs/StageCounts"
+        },
+        "last_answered": {
+          "description": "Time of the last answer in the group, or null.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_changed": {
+          "description": "Time of the last content change in the group, or null.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "label",
+        "unit",
+        "items",
+        "last_answered",
+        "last_changed"
+      ]
+    },
+    "GroupKind": {
+      "description": "Kind of a topic group.",
+      "type": "string",
+      "enum": [
+        "topic",
+        "unit"
+      ]
+    },
+    "UnitRef": {
+      "description": "Unit reference of a group: one unit id, or a list when the group spans units.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "StageCounts": {
+      "description": "Item counts per learning stage.",
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "unseen": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "learning": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "mature": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "unseen",
+        "learning",
+        "mature"
+      ]
+    }
+  }
+}

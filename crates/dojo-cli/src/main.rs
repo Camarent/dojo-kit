@@ -26,7 +26,8 @@ pub(crate) const USAGE: &str = "usage: dojo schema (--out <dir> | --brief)\n    
 fn write_schemas(dir: &Path) -> std::io::Result<()> {
     fs::create_dir_all(dir)?;
     fs::write(dir.join("course.schema.json"), schema::pretty(&schema::course_schema()))?;
-    fs::write(dir.join("item.schema.json"), schema::pretty(&schema::item_schema()))
+    fs::write(dir.join("item.schema.json"), schema::pretty(&schema::item_schema()))?;
+    fs::write(dir.join("topic-stats.schema.json"), schema::pretty(&schema::topic_stats_schema()))
 }
 
 fn run(args: &[String]) -> Result<u8, String> {

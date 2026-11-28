@@ -13,6 +13,11 @@ pub fn course_schema() -> Value {
     to_value(&schemars::schema_for!(Course))
 }
 
+/// JSON Schema (draft 2020-12) for `topic-stats.json`.
+pub fn topic_stats_schema() -> Value {
+    to_value(&schemars::schema_for!(crate::topic_stats::TopicStats))
+}
+
 /// JSON Schema (draft 2020-12) for one content JSONL line.
 pub fn item_schema() -> Value {
     to_value(&schemars::schema_for!(Item))

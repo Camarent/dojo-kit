@@ -47,5 +47,5 @@ The `modules/registry` crate maps ids to validator implementations; the CLI and 
 
 ## Depends on / used by
 - Depends on: `dojo-core` (`ValidatorModule`, `Course`, `Item`, `ItemType`), `dojo-core` `validate::ItemChecker`.
-- Used by: `crates/dojo-cli` (`crates/dojo-cli/src/main.rs:36`, `crates/dojo-cli/src/course_files.rs:181`) via `dojo_modules::validator`; `crates/dojo-cli/tests/build_modules.rs` and `validate_modules.rs`; web build (`crates/dojo-cli/src/modules.rs`) for `web` paths.
+- Used by: `crates/dojo-cli` (`run` in `crates/dojo-cli/src/main.rs`, `crates/dojo-cli/src/course_files.rs:181`) via `dojo_modules::validator`; `crates/dojo-cli/tests/build_modules.rs` and `validate_modules.rs`; web build (`crates/dojo-cli/src/modules.rs`) for `web` paths.
 - Tests: `modules/ja/tests/*.test.js` and `modules/ru/tests/*.test.js` (run by the `node --test` step of `scripts/check-all.sh`), `modules/ja/rust/tests/*.rs`, `modules/ru/rust/tests/ru_words.rs`, `modules/registry/tests/registry.rs`.
