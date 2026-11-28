@@ -7,4 +7,5 @@ pub(crate) mod init;
 pub(crate) mod lock;
 pub(crate) mod next_id;
 pub(crate) mod stats;
+pub(crate) mod topic_stats;
 pub(crate) mod validate;

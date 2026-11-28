@@ -5,7 +5,7 @@ mod cmd;
 mod course_files;
 mod modules;
 
-use cmd::{add::run_add, build::run_build, import_progress::run_import_progress, init::run_init, lock::run_lock, next_id::run_next_id, stats::run_stats, validate::run_validate};
+use cmd::{add::run_add, build::run_build, import_progress::run_import_progress, init::run_init, lock::run_lock, next_id::run_next_id, stats::run_stats, topic_stats::run_topic_stats, validate::run_validate};
 use course_files::{load, read, CourseFiles};
 use dojo_core::schema;
 use dojo_core::validate::{Diagnostic, Severity, ValidatorModule, all_codes};
@@ -19,6 +19,7 @@ pub(crate) const USAGE: &str = "usage: dojo schema (--out <dir> | --brief)\n    
        dojo build <course-dir> [--out <dir>] [--wasm <file>] [--web <dir>] [--strict]\n\
        dojo init <course-id> [--title T] [--ui LANG] [--content-lang LANG] [--workspace DIR]\n\
        dojo stats <course-dir> [--json]\n\
+       dojo topic-stats <course-dir> --progress <file> [--changed-since ISO] --json\n\
        dojo next-id <course-dir> <prefix> [--count N]\n\
        dojo add <course-dir> <unit-id> [--file F] [--dry-run]\n\
        dojo import-progress <old.json> --map <id-map.json> --course <dir> [--out <file>] [--write] [--now <ISO>";
@@ -46,6 +47,7 @@ fn run(args: &[String]) -> Result<u8, String> {
         [cmd, rest @ ..] if cmd == "build" => run_build(rest),
         [cmd, rest @ ..] if cmd == "init" => run_init(rest),
         [cmd, rest @ ..] if cmd == "stats" => run_stats(rest),
+        [cmd, rest @ ..] if cmd == "topic-stats" => run_topic_stats(rest),
         [cmd, rest @ ..] if cmd == "next-id" => run_next_id(rest),
         [cmd, rest @ ..] if cmd == "add" => run_add(rest),
         [cmd, rest @ ..] if cmd == "import-progress" => run_import_progress(rest),

@@ -135,6 +135,7 @@ Commands (`USAGE` and dispatch `run` in `crates/dojo-cli/src/main.rs`; each comm
 - `dojo build <course-dir> [--out <dir>] [--wasm <file>] [--web <dir>] [--strict]` (`crates/dojo-cli/src/cmd/build.rs`). Default out `dist`.
 - `dojo init <course-id> [--title T] [--ui LANG] [--content-lang LANG] [--workspace DIR]` (`crates/dojo-cli/src/cmd/init.rs`).
 - `dojo stats <course-dir> [--json]` (`crates/dojo-cli/src/cmd/stats.rs`).
+- `dojo topic-stats <course-dir> --progress <file> [--changed-since ISO] --json` (`crates/dojo-cli/src/cmd/topic_stats.rs`, `run_topic_stats`). Read-only: prints the `TopicStats` JSON to stdout. Refuses (exit 2) a progress file whose `course` differs from the course id, or a split `parts` document (join the `.partN` bodies first).
 - `dojo next-id <course-dir> <prefix> [--count N]` (`crates/dojo-cli/src/cmd/next_id.rs`).
 - `dojo add <course-dir> <unit-id> [--file F] [--dry-run]` (`crates/dojo-cli/src/cmd/add.rs`, logic in `crates/dojo-cli/src/cmd/add.rs`). Reads JSON objects from stdin or file; all-or-nothing. Exits 1 before reading the course when `<unit-id>` does not match the slug rule `^[a-z0-9][a-z0-9_-]{0,47}$` (`validate::is_valid_course_id`).
 - `dojo import-progress <old.json> --map <id-map.json> --course <dir> [--out <file>] [--write] [--now <ISO>]` (`crates/dojo-cli/src/cmd/import_progress/`). Converts legacy progress to v:1 format; dry-run by default (prints report, writes nothing). `--write` requires an explicit `--out` (no default path) and refuses a symlinked target. Clamps by the course ladder only (unit-level ladders/scope are not consulted; course-level `srs.scope=entity` is). Only the target file itself is checked for symlinks; symlinked parent directories are not refused. Separate from load-time `supersedes` migration (`crates/dojo-core/src/migrate.rs`), which runs in the browser.
@@ -148,7 +149,7 @@ Commands (`USAGE` and dispatch `run` in `crates/dojo-cli/src/main.rs`; each comm
 
 ### Key files
 - `src/main.rs` - `USAGE`, `run` (command dispatch), `main`.
-- `src/cmd/*.rs` - one file per command (`run_add`, `run_build`, `run_import_progress`, `run_init`, `run_lock`, `run_next_id`, `run_stats`, `run_validate`); `cmd/build.rs` holds `find_web_dir`.
+- `src/cmd/*.rs` - one file per command (`run_add`, `run_build`, `run_import_progress`, `run_init`, `run_lock`, `run_next_id`, `run_stats`, `run_topic_stats`, `run_validate`); `cmd/build.rs` holds `find_web_dir`.
 - `src/course_files.rs` - `CourseFiles`, `load`, `check_symlink`, `i18n_check`, `validate_course`, `plugin_files`.
 - `src/cmd/build_audio.rs` - audio pack limits used by `dojo build`: `MAX_FILE_BYTES` 16 MiB, `MAX_DIST_BYTES` 60 MiB, `MAX_FILES` 250; the build fails above them. Manifest copied to `data/audio/manifest.json`, packs to `data/audio/<file>`.
 - `src/build/` - pure helpers for the build step: `text.rs` (encoding, escaping, template filling), `i18n.rs` (`select_language`, UI language files).
