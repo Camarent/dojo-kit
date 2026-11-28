@@ -4,7 +4,7 @@
 
 Input: a manually exported progress file (read only, not copied). Its `migrated` marker is already set for the unit migration, so that migration does not run again on load.
 
-Actual after load through `web/storage/store.js` (`s.migrated`, `web/storage/store.js:103` and `web/storage/store.js:160`): `m0 {bad:1, due:<timestamp>, last:<timestamp>, ok:0}`, `s0 0`, `s 4`, `ok 25`, `bad 10`. The original `m0` and `s0` are lost, and `bad` rises from 4 to 10 because the fold takes the retired duplicate's `bad` count (max pick).
+Actual after load through `web/storage/store.js` (`s.migrated`, `web/storage/store.js:103` and `web/storage/store.js:160`): the `m0` and `s0` record is replaced by the fold's output. The original `m0` and `s0` are lost, and `bad` rises above its stored value because the fold takes the retired duplicate's `bad` count (max pick).
 
 Producing line: `crates/dojo-core/src/migrate.rs:76-78`. The supersedes fold (`migrate_progress`, `crates/dojo-core/src/migrate.rs:45-97`) replaces the successor record with a clone of the retired duplicate when that duplicate has a later `last`. The clone carries the duplicate's `m0` and `s0` and drops the successor's own. `migrate_doc` runs this fold at `crates/dojo-core/src/migrate.rs:155` before the `migrated[id]` marker check at `crates/dojo-core/src/migrate.rs:163`, so the fold runs on every load even when `migrated["n5-units-2"]` is set. The unit step does not cause it: `crates/dojo-core/src/migrate.rs:186` (unguarded `s0` write) is past the marker check at `:163`, so it does not run on that load; `crates/dojo-core/src/migrate.rs:203` is guarded by `contains_key`. `web/migrate.js` has no `m0`/`s0` handling.
 
