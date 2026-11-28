@@ -20,7 +20,7 @@ Verdict: two gates are uncovered. Record them as a lead hand edit; ci-drift stay
 
 Verdict: list is not in the repo. The gate was not run, so no hits are reported.
 - No tracked file defines `public_forbidden_words` (`git grep`, empty).
-- `request.md:25` places it in `tools/pipeline/configuration/public.py` outside the repo. That file was not found under `/workspace` or `/home/cam/workspace/claude-safe`. A search of `/home/cam` was not approved.
+- The stage request (`.work/backlog-cleanup/request.md`, check 5) places it in `tools/pipeline/configuration/public.py` outside the repo. That file was not found under `/workspace` or `/home/cam/workspace/claude-safe`. A search of `/home/cam` was not approved.
 - Fixed hits in tracked files: none. The gate could not run.
 - Lead action: locate the pipeline tools, run the public-words gate over the tracked tree, and fix real hits in a follow-up task.
 
