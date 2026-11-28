@@ -44,7 +44,6 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 - WASM exports: `alloc`, `dealloc`, `call` in `crates/dojo-wasm/src/lib.rs`.
 
 ## Build and test
-Backlog cleanup findings (build and test follow-ups): [backlog-cleanup-findings.md](backlog-cleanup-findings.md).
 Source of these commands: `CONTRACT.md`, `Cargo.toml`, `package.json`, `.github/workflows/ci.yml`, `dojo` wrapper, `tests/wrapper.sh`. The repo has no Makefile.
 - Build workspace: `cargo build --workspace` (CONTRACT section 9).
 - Node deps and checks: `npm ci`, `npm run lint` (ESLint), `npm test` (= `scripts/check-all.sh`, unit tests plus smoke steps). The split runs: `npm run test:unit` (`--unit`), `npm run test:premerge` (`--premerge`, isolation proof), `npm run test:smoke` (`--smoke`, wasm smoke, vectors drift, hooks-test, course tests). See [tests.md](modules/tests.md#test-runs-scriptscheck-allsh-modes). CI (`.github/workflows/ci.yml`) runs on Node 24 (matrix `[24]`); `scripts/ci.sh` runs the same steps locally.
