@@ -29,7 +29,7 @@ fn out_writes_files_equal_to_committed() {
     let out = dojo().args(["schema", "--out"]).arg(&dir).output().unwrap();
     assert_eq!(out.status.code(), Some(0));
     let committed = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../schema");
-    for f in ["course.schema.json", "item.schema.json"] {
+    for f in ["course.schema.json", "item.schema.json", "topic-stats.schema.json"] {
         assert_eq!(std::fs::read(dir.join(f)).unwrap(), std::fs::read(committed.join(f)).unwrap());
     }
 }

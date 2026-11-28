@@ -1,0 +1,64 @@
+{
+  "v": 1,
+  "course": "showcase",
+  "generated_at": "1970-01-01T00:00:00.000Z",
+  "changed_since": null,
+  "groups": [
+    {
+      "kind": "unit",
+      "id": "numbers-exam",
+      "label": "Numbers exam",
+      "unit": "numbers-exam",
+      "items": {
+        "total": 1,
+        "unseen": 0,
+        "learning": 0,
+        "mature": 1
+      },
+      "last_answered": "2026-01-03T00:00:00.000Z",
+      "last_changed": "2026-01-03T00:00:00.000Z"
+    },
+    {
+      "kind": "unit",
+      "id": "numbers",
+      "label": "Numbers",
+      "unit": "numbers",
+      "items": {
+        "total": 16,
+        "unseen": 13,
+        "learning": 1,
+        "mature": 2
+      },
+      "last_answered": "2026-01-02T00:00:00.000Z",
+      "last_changed": "2026-01-02T00:00:00.000Z"
+    },
+    {
+      "kind": "unit",
+      "id": "shapes-exam",
+      "label": "Shapes exam",
+      "unit": "shapes-exam",
+      "items": {
+        "total": 1,
+        "unseen": 0,
+        "learning": 1,
+        "mature": 0
+      },
+      "last_answered": "2026-01-03T00:00:00.000Z",
+      "last_changed": "2026-01-03T00:00:00.000Z"
+    },
+    {
+      "kind": "unit",
+      "id": "shapes",
+      "label": "Shapes",
+      "unit": "shapes",
+      "items": {
+        "total": 16,
+        "unseen": 14,
+        "learning": 1,
+        "mature": 1
+      },
+      "last_answered": "2026-01-02T00:00:00.000Z",
+      "last_changed": "2026-01-02T00:00:00.000Z"
+    }
+  ]
+}

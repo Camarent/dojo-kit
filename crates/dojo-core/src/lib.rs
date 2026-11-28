@@ -15,6 +15,7 @@ pub mod session;
 pub mod slug;
 pub mod srs;
 pub mod stats;
+pub mod topic_stats;
 pub mod validate;
 pub mod migrate;
 pub mod supersedes;

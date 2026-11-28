@@ -1,6 +1,7 @@
 use crate::progress::truthy;
 use serde_json::Value;
 
+const MS_PER_HOUR: i64 = 3_600_000;
 const MS_PER_MINUTE: i64 = 60_000;
 const MS_PER_DAY: i64 = 86_400_000;
 const DAYS_FROM_0000_TO_1970: i64 = 719_468;
@@ -37,6 +38,18 @@ fn format_key(days_since_epoch: i64) -> String {
 pub fn day_key(ms: i64, tz_offset_min: i32) -> String {
     let shifted = ms.saturating_add(i64::from(tz_offset_min) * MS_PER_MINUTE);
     format_key(shifted.div_euclid(MS_PER_DAY))
+}
+
+/// ISO 8601 UTC timestamp "YYYY-MM-DDTHH:MM:SS.mmmZ" of `ms` since the Unix epoch.
+/// Negative `ms` (before 1970) floors to the earlier instant.
+pub fn format_iso_ms(ms: i64) -> String {
+    let (y, m, d) = civil_from_days(ms.div_euclid(MS_PER_DAY));
+    let rem = ms.rem_euclid(MS_PER_DAY);
+    let hour = rem / MS_PER_HOUR;
+    let minute = rem % MS_PER_HOUR / MS_PER_MINUTE;
+    let second = rem % MS_PER_MINUTE / 1000;
+    let millis = rem % 1000;
+    format!("{y:04}-{m:02}-{d:02}T{hour:02}:{minute:02}:{second:02}.{millis:03}Z")
 }
 
 /// Day number of a well-formed "YYYY-MM-DD" key; `None` for anything else or a non-existent date.

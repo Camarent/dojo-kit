@@ -40,3 +40,14 @@ Each entry of `items` has these fields (`crates/dojo-core/src/progress/sanitize.
 - `last` — last review time in epoch milliseconds.
 
 Unknown keys on an item record are kept as they are.
+
+## Topic stats export
+
+`dojo topic-stats` reads a progress document and prints per-topic counts. It reads the progress document, never writes it (`crates/dojo-cli/src/cmd/topic_stats.rs`).
+
+- Record fields used: `s` (stability) and `last` (last review time), from `progress.items` (`crates/dojo-core/src/topic_stats/compute.rs`, `topic_stats`).
+- An item with no record, or a `null` record, counts as `unseen` (`is_new`, `crates/dojo-core/src/srs/mod.rs`).
+- The stage is an SRS stage, not a learning verdict. An item is `mature` when `s` is at or above the threshold, else `learning`.
+- Threshold = course `learnedStage` if set, else `DEFAULT_LEARNED_STAGE` (`DEFAULT_LEARNED_STAGE`, `crates/dojo-core/src/groups/mod.rs`).
+- A progress document with `parts` > 0 is refused: join the part bodies first.
+- `last_changed` is a proxy: it equals the last review time `last` of the group, the same value as `last_answered`. It is not a separate change log.

@@ -1,6 +1,6 @@
 ---
 paths: [schema/]
-summary: Committed JSON Schemas for course.json and item lines, generated from the Rust types.
+summary: Committed JSON Schemas for course.json, item lines and topic-stats.json, generated from the Rust types.
 ---
 # schema
 
@@ -13,7 +13,8 @@ Machine-readable description of the authoring format, for editors and AI agents.
 - `topics` key of `course.schema.json` (`:283`): `$defs/TopicsConfig` (`:1327`, `units`, `aspects`, `sessionCap`, `poolAspects` at `:1354`: array of aspect ids, opt-in, checked by `topics_pool_unknown`) and `$defs/AspectRule` (`:1371`). Structure only; `topics_*` semantic checks are in `dojo validate`.
 - Not in the schema: `hint_leaks_answer` (warning, `crates/dojo-core/src/validate/quality.rs` `check_hint_leak`) flags a parenthesised hint in a gap, cloze, choice or order prompt that contains the item's answer or an order step; it covers order items too. Listed in `crates.md`.
 - `schema/item.schema.json` - JSON Schema of one content line (the `Item` enum, `crates/dojo-core/src/content/`, via `item_schema`, `crates/dojo-core/src/schema.rs`). Every item type accepts an optional free-form `meta` object, an optional `stimulus` string (id of a `stimuli.jsonl` entry) and an optional `speak` string (text read aloud for the item). `gap` and `cloze` `normalize` objects accept `fold` (list of `[from, to]` string pairs). `gap` accepts an optional `inputMode` (`numeric` | `decimal` | `text`, enum at `schema/item.schema.json:835`, Rust `InputMode` at `crates/dojo-core/src/content/input_mode.rs:7`); it is nullable and display only. Every item type has an optional `supersedes` array of retired ids (progress migration, see `docs/AUTHORING.md`). Every item type has an optional `entity` string (`item.schema.json`, nullable; items sharing an entity count once in group caps).
-- Regenerate: `dojo schema --out schema` (`write_schemas`, `crates/dojo-cli/src/main.rs`, writes both files). `dojo schema --brief` prints the compact cheat-sheet instead (`crates/dojo-core/src/schema.rs`).
+- `schema/topic-stats.schema.json` - JSON Schema of `topic-stats.json` (the `TopicStats` type in `crates/dojo-core/src/topic_stats/types.rs`, via `topic_stats_schema`, `crates/dojo-core/src/schema.rs`). Every field is required; nullable fields accept `null`; objects reject unknown keys.
+- Regenerate: `dojo schema --out schema` (`write_schemas`, `crates/dojo-cli/src/main.rs`, writes all three files). `dojo topic-stats` (`crates/dojo-cli/src/cmd/topic_stats.rs`) prints a `TopicStats` document, the type this schema describes, and writes no file. `dojo schema --brief` prints the compact cheat-sheet instead (`crates/dojo-core/src/schema.rs`).
 
 ## Key files
 - `course.schema.json` - top-level course fields. New in it: `$defs/SrsMigrate` (`srs.migrate`: `id`, `ladderFrom`, `unify`), `$defs/SrsScope` (`item`, `entity`, `unit`), top-level `session` (`$defs/SessionSettings`, `$defs/SessionMode`), top-level `validate` (`$defs/ValidateConfig`, `preanswerExemptKinds`: array of intro `meta.kind` values skipped by `preanswer_leaks_answer`; absent = `["kanji", "word"]`, `[]` = none skipped; `crates/dojo-core/src/validate/quality.rs`), and `ruby.checkAnswers` next to `checkQuestions`.

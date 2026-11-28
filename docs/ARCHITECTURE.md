@@ -38,7 +38,7 @@ dojo-kit is a public MIT framework for building exam or practice trainers from y
 
 ## Entry points
 - `./dojo` (repo root) - bash wrapper: builds `dojo-cli` (and the WASM for `build`) when sources are newer, then runs the binary. Honours `CARGO_TARGET_DIR`. Path arguments are resolved against the caller's cwd, not the repo root.
-- `dojo` binary: `crates/dojo-cli/src/main.rs` `main`; commands dispatched in `run` at `crates/dojo-cli/src/main.rs`.
+- `dojo` binary: `crates/dojo-cli/src/main.rs` `main`; commands dispatched in `run` at `crates/dojo-cli/src/main.rs`. `dojo schema --out schema` writes the committed `course`, `item` and `topic-stats` JSON Schemas. `dojo topic-stats` (`crates/dojo-cli/src/cmd/topic_stats.rs`) prints a `TopicStats` document read-only.
 - Browser: `web/boot.js` (runs on load, `index.html` embeds it).
 - Dev server: `node web/dev/serve.js <dist/courseId> [port]`.
 - WASM exports: `alloc`, `dealloc`, `call` in `crates/dojo-wasm/src/lib.rs`.
