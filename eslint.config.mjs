@@ -4,7 +4,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["web/vendor/**", "node_modules/**", "target/**", "dist/**", "workspace/**"],
+    ignores: ["web/vendor/**", "node_modules/**", "target/**", "dist/**", "workspace/**", ".check-all-fixture-*/**"],
   },
   js.configs.recommended,
   {
